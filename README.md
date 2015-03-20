@@ -1,4 +1,4 @@
-# VB-BAGIS
+# vb-bagis
 
 BAGIS is a Basin Analysis GIS used for water forecasting. BAGIS allows users to analyze basins, create AOI's, and generate 
 high quality maps. 
