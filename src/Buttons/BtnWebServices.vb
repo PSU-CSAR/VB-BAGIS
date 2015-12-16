@@ -44,7 +44,7 @@ Public Class BtnWebServices
 
     Protected Sub QueryFields()
         Dim webServiceUrl As String = "http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_SNOTEL_ALL/FeatureServer/0"
-        Dim fieldNames As IList(Of String) = BA_QueryFeatureServiceFieldNames(webServiceUrl)
+        Dim fieldNames As IList(Of String) = BA_QueryFeatureServiceFieldNames(webServiceUrl, esriFieldType.esriFieldTypeString)
     End Sub
 
 End Class
