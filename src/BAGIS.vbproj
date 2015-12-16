@@ -118,6 +118,9 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ESRI.ArcGIS.GISClient, Version=10.2.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="ESRI.ArcGIS.SpatialAnalyst, Version=10.0.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
@@ -135,9 +138,6 @@
     <Reference Include="ESRI.ArcGIS.Version, Version=10.0.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Office.Interop.Excel, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -169,8 +169,15 @@
     <Compile Include="AOI\frmCreateAOIfromExistingBND.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Buttons\BtnWebServices.vb" />
     <Compile Include="enumerations\SiteScenarioLayerType.vb" />
     <Compile Include="enumerations\SiteType.vb" />
+    <Compile Include="Forms\FrmWebservices.Designer.vb">
+      <DependentUpon>FrmWebservices.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\FrmWebservices.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Maps_Tables\BtnScenario1.vb" />
     <Compile Include="BtnAddRefLayers.vb" />
     <Compile Include="BAGIS_PublicModule.vb" />
@@ -340,6 +347,9 @@
   <ItemGroup>
     <EmbeddedResource Include="AOI\frmCreateAOIfromExistingBND.resx">
       <DependentUpon>frmCreateAOIfromExistingBND.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmWebservices.resx">
+      <DependentUpon>FrmWebservices.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmAbout.resx">
       <DependentUpon>frmAbout.vb</DependentUpon>
@@ -571,6 +581,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+    <AddInContent Include="Images\BtnWebServices.png" />
     <Content Include="Images\GenericYellowLeftArrow32.png" />
     <Content Include="Images\GenericYellowRightArrow32.png" />
     <AddInContent Include="Images\SelectSiteTool.png" />
@@ -580,6 +591,35 @@
       <Project>{DA894C59-5DA0-44DD-B8A6-89110BB0830B}</Project>
       <Name>BAGIS_ClassLibrary</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Microsoft.Office.Core">
+      <Guid>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>5</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="Microsoft.Office.Interop.Excel">
+      <Guid>{00020813-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>7</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="VBIDE">
+      <Guid>{0002E157-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>5</VersionMajor>
+      <VersionMinor>3</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
   <PropertyGroup>
     <ZipFileExtension>esriAddIn</ZipFileExtension>
