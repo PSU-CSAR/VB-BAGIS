@@ -15,7 +15,8 @@ Public Class FrmWebservices
         pGxDialog.AllowMultiSelect = False
         pGxDialog.Title = "Browse For AGIS Map Service"
         'Dim pGxFilter As IGxObjectFilter = New GxFilterMapServers
-        Dim pGxFilter As IGxObjectFilter = New GxFilterMapDatasetsLayersAndResults
+        'Dim pGxFilter As IGxObjectFilter = New GxFilterMapDatasetsLayersAndResults
+        Dim pGxFilter As IGxObjectFilter = New BA_GxFilterFeatureServers
         pGxDialog.ObjectFilter = pGxFilter
         Dim pGxObjects As IEnumGxObject = Nothing
         If pGxDialog.DoModalOpen(0, pGxObjects) Then
