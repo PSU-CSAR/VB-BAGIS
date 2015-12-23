@@ -43,8 +43,6 @@ Partial Class FrmWebservices
         Me.TxtWebService.ReadOnly = True
         Me.TxtWebService.Size = New System.Drawing.Size(459, 22)
         Me.TxtWebService.TabIndex = 64
-        Me.TxtWebService.Text = "http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_SNOTEL_ALL/FeatureSe" & _
-    "rver/0"
         '
         'Label5
         '

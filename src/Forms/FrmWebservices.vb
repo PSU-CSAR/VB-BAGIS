@@ -13,7 +13,7 @@ Public Class FrmWebservices
     Private Sub BtnSet_Click(sender As System.Object, e As System.EventArgs) Handles BtnSet.Click
         Dim pGxDialog As IGxDialog = New GxDialog
         pGxDialog.AllowMultiSelect = False
-        pGxDialog.Title = "Browse For AGIS Map Service"
+        pGxDialog.Title = "Browse For Feature Service"
         'Dim pGxFilter As IGxObjectFilter = New GxFilterMapServers
         'Dim pGxFilter As IGxObjectFilter = New GxFilterMapDatasetsLayersAndResults
         Dim pGxFilter As IGxObjectFilter = New BA_GxFilterFeatureServers
@@ -26,15 +26,24 @@ Public Class FrmWebservices
             Dim sName As IAGSServerObjectName = agsObj.AGSServerObjectName
             Dim url As String = agsObj.AGSServerObjectName.URL
             Dim propertySet As IPropertySet = agsObj.AGSServerObjectName.AGSServerConnectionName.ConnectionProperties()
-            Dim names(propertySet.Count - 1) As Object
-            Dim values(propertySet.Count - 1) As Object
-            propertySet.GetAllProperties(names, values)
-            Dim sb As StringBuilder = New StringBuilder()
-            For i As Integer = 0 To propertySet.Count - 1
-                sb.Append(CStr(names(i)) & vbCrLf)
-                sb.Append(values(i).ToString & vbCrLf)
-            Next
-            Windows.Forms.MessageBox.Show(sb.ToString)
+            'Build the REST url
+            Dim prefix As String = propertySet.GetProperty("RestUrl")
+            'Extract the selected service information
+            Dim idxServices As Integer = url.IndexOf("/services")
+            Dim idxMapServer As Integer = url.IndexOf("MapServer")
+            Dim serviceText As String = url.Substring(idxServices, idxMapServer - idxServices - 1)   'subtract 1 to avoid trailing /
+            'Example: http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_SNOTEL_ALL/FeatureServer/0
+            TxtWebService.Text = prefix & serviceText & BA_EnumDescription(PublicPath.FeatureServiceUrl)
+            cboFields.Items.Clear()
+            'Dim names(propertySet.Count - 1) As Object
+            'Dim values(propertySet.Count - 1) As Object
+            'propertySet.GetAllProperties(names, values)
+            'Dim sb As StringBuilder = New StringBuilder()
+            'For i As Integer = 0 To propertySet.Count - 1
+            '    sb.Append(CStr(names(i)) & vbCrLf)
+            '    sb.Append(values(i).ToString & vbCrLf)
+            'Next
+            'Windows.Forms.MessageBox.Show(sb.ToString)
         End If
 
 
