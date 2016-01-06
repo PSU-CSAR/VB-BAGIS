@@ -16,7 +16,7 @@ Public Class FrmWebservices
         pGxDialog.Title = "Browse For Feature Service"
         'Dim pGxFilter As IGxObjectFilter = New GxFilterMapServers
         'Dim pGxFilter As IGxObjectFilter = New GxFilterMapDatasetsLayersAndResults
-        Dim pGxFilter As IGxObjectFilter = New BA_GxFilterFeatureServers
+        Dim pGxFilter As IGxObjectFilter = New GxFilterFeatureServers
         pGxDialog.ObjectFilter = pGxFilter
         Dim pGxObjects As IEnumGxObject = Nothing
         If pGxDialog.DoModalOpen(0, pGxObjects) Then
@@ -67,7 +67,25 @@ Public Class FrmWebservices
         BtnFields.Focus()
     End Sub
 
-    Private Sub BtnLayerFile_Click(sender As System.Object, e As System.EventArgs) Handles BtnLayerFile.Click
+    Private Sub BtnImageFile_Click(sender As System.Object, e As System.EventArgs) Handles BtnImage.Click
+        Dim pGxDialog As IGxDialog = New GxDialog
+        pGxDialog.AllowMultiSelect = False
+        pGxDialog.Title = "Browse For Image Service"
+        Dim pGxFilter As IGxObjectFilter = New GxFilterImageServers
 
+        pGxDialog.ObjectFilter = pGxFilter
+        Dim pGxObjects As IEnumGxObject = Nothing
+        If pGxDialog.DoModalOpen(0, pGxObjects) Then
+            pGxObjects.Reset()
+            Dim pGxObj As IGxObject = pGxObjects.Next
+            Dim agsObj As IGxAGSObject = CType(pGxObj, IGxAGSObject)
+            TxtImageUrl.Text = agsObj.AGSServerObjectName.URL
+        End If
+    End Sub
+
+    Private Sub BtnClip_Click(sender As System.Object, e As System.EventArgs) Handles BtnClip.Click
+        Dim clipFilePath As String = "C:\Docs\Lesley\teton_aoi\aoi.gdb\aoib"
+        Dim newFilePath As String = "C:\Docs\Lesley\teton_aoi\layers.gdb\dem_web"
+        Dim success As BA_ReturnCode = BA_ClipImageService(clipFilePath, TxtImageUrl.Text, newFilePath)
     End Sub
 End Class

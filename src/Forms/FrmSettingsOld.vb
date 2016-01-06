@@ -1,4 +1,4 @@
-﻿Imports ESRI.ArcGIS.Catalog
+Imports ESRI.ArcGIS.Catalog
 Imports ESRI.ArcGIS.CatalogUI
 Imports ESRI.ArcGIS.Geodatabase
 Imports ESRI.ArcGIS.DataSourcesFile
@@ -9,7 +9,7 @@ Imports ESRI.ArcGIS.Desktop.AddIns
 Imports ESRI.ArcGIS.esriSystem
 Imports ESRI.ArcGIS.Framework
 
-Public Class frmSettings
+Public Class FrmSettingsOld
 
     Private Sub CmdSetTerrainRef_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetTerrainRef.Click
         Dim bObjectSelected As Boolean
@@ -903,12 +903,14 @@ AbandonSub:
     'End Sub
 
     Private Sub CmdUndo_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdUndo.Click
-        BA_Read_Settings(Me)
+        '@ToDo: Fix compile error; keeping copy of this form
+        Dim tempForm As frmSettings = New frmSettings
+        BA_Read_Settings(tempForm)
         CmdUndo.Enabled = False
     End Sub
 
-    Private Sub frmSettings_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
-        Dim settings_message As String
+    Private Sub FrmSettingsNew_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+        Dim settings_message As String = Nothing
         BA_SetSettingPath() 'set the BA_Settings_Filepath global variable
         Me.ComboStation_Value.Items.Clear()
         Me.ComboStation_Value.Items.Add("Unknown")
@@ -926,8 +928,10 @@ AbandonSub:
         Me.ComboSC_Name.Items.Add("none")
         Me.ComboSC_Name.SelectedIndex = 0
 
-        'set settings
-        settings_message = BA_Read_Settings(Me)
+        'set settings        
+        Dim tempForm As frmSettings = New frmSettings
+        BA_Read_Settings(tempForm)
+        'settings_message = BA_Read_Settings(Me)
         Dim cboSelectBasin = AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
         If Len(settings_message) > 0 Then
             MsgBox(settings_message)
@@ -1017,14 +1021,5 @@ AbandonSub:
         ComboSC_Name.Visible = not_Status
         lblSnowCourseUnit.Visible = not_Status
         GrpBoxSnowCourseUnit.Visible = not_Status
-    End Sub
-
-    Public Sub New()
-
-        ' This call is required by the designer.
-        InitializeComponent()
-
-        ' Add any initialization after the InitializeComponent() call.
-
     End Sub
 End Class

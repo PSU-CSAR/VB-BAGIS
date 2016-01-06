@@ -28,9 +28,10 @@ Partial Class FrmWebservices
         Me.Label1 = New System.Windows.Forms.Label()
         Me.cboFields = New System.Windows.Forms.ComboBox()
         Me.BtnFields = New System.Windows.Forms.Button()
-        Me.BtnLayerFile = New System.Windows.Forms.Button()
-        Me.TextBox1 = New System.Windows.Forms.TextBox()
+        Me.BtnImage = New System.Windows.Forms.Button()
+        Me.TxtImageUrl = New System.Windows.Forms.TextBox()
         Me.Label2 = New System.Windows.Forms.Label()
+        Me.BtnClip = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'TxtWebService
@@ -68,7 +69,7 @@ Partial Class FrmWebservices
         '
         Me.Label1.AutoSize = True
         Me.Label1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label1.Location = New System.Drawing.Point(7, 94)
+        Me.Label1.Location = New System.Drawing.Point(14, 149)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(48, 16)
         Me.Label1.TabIndex = 67
@@ -79,7 +80,7 @@ Partial Class FrmWebservices
         Me.cboFields.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cboFields.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.cboFields.FormattingEnabled = True
-        Me.cboFields.Location = New System.Drawing.Point(61, 94)
+        Me.cboFields.Location = New System.Drawing.Point(68, 149)
         Me.cboFields.Name = "cboFields"
         Me.cboFields.Size = New System.Drawing.Size(135, 24)
         Me.cboFields.TabIndex = 68
@@ -87,33 +88,33 @@ Partial Class FrmWebservices
         'BtnFields
         '
         Me.BtnFields.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnFields.Location = New System.Drawing.Point(207, 91)
+        Me.BtnFields.Location = New System.Drawing.Point(214, 146)
         Me.BtnFields.Name = "BtnFields"
         Me.BtnFields.Size = New System.Drawing.Size(108, 30)
         Me.BtnFields.TabIndex = 69
         Me.BtnFields.Text = "Get Fields"
         Me.BtnFields.UseVisualStyleBackColor = True
         '
-        'BtnLayerFile
+        'BtnImage
         '
-        Me.BtnLayerFile.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnLayerFile.Location = New System.Drawing.Point(508, 46)
-        Me.BtnLayerFile.Name = "BtnLayerFile"
-        Me.BtnLayerFile.Size = New System.Drawing.Size(108, 30)
-        Me.BtnLayerFile.TabIndex = 72
-        Me.BtnLayerFile.Text = "Set"
-        Me.BtnLayerFile.UseVisualStyleBackColor = True
+        Me.BtnImage.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnImage.Location = New System.Drawing.Point(508, 46)
+        Me.BtnImage.Name = "BtnImage"
+        Me.BtnImage.Size = New System.Drawing.Size(108, 30)
+        Me.BtnImage.TabIndex = 72
+        Me.BtnImage.Text = "Set"
+        Me.BtnImage.UseVisualStyleBackColor = True
         '
-        'TextBox1
+        'TxtImageUrl
         '
-        Me.TextBox1.BackColor = System.Drawing.SystemColors.ButtonFace
-        Me.TextBox1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TextBox1.ForeColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(192, Byte), Integer))
-        Me.TextBox1.Location = New System.Drawing.Point(82, 50)
-        Me.TextBox1.Name = "TextBox1"
-        Me.TextBox1.ReadOnly = True
-        Me.TextBox1.Size = New System.Drawing.Size(418, 22)
-        Me.TextBox1.TabIndex = 71
+        Me.TxtImageUrl.BackColor = System.Drawing.SystemColors.ButtonFace
+        Me.TxtImageUrl.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TxtImageUrl.ForeColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(192, Byte), Integer))
+        Me.TxtImageUrl.Location = New System.Drawing.Point(82, 50)
+        Me.TxtImageUrl.Name = "TxtImageUrl"
+        Me.TxtImageUrl.ReadOnly = True
+        Me.TxtImageUrl.Size = New System.Drawing.Size(418, 22)
+        Me.TxtImageUrl.TabIndex = 71
         '
         'Label2
         '
@@ -121,17 +122,28 @@ Partial Class FrmWebservices
         Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label2.Location = New System.Drawing.Point(7, 53)
         Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(70, 16)
+        Me.Label2.Size = New System.Drawing.Size(69, 16)
         Me.Label2.TabIndex = 70
-        Me.Label2.Text = "Layer File:"
+        Me.Label2.Text = "Image Url:"
+        '
+        'BtnClip
+        '
+        Me.BtnClip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnClip.Location = New System.Drawing.Point(508, 82)
+        Me.BtnClip.Name = "BtnClip"
+        Me.BtnClip.Size = New System.Drawing.Size(108, 30)
+        Me.BtnClip.TabIndex = 73
+        Me.BtnClip.Text = "Clip"
+        Me.BtnClip.UseVisualStyleBackColor = True
         '
         'FrmWebservices
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(682, 262)
-        Me.Controls.Add(Me.BtnLayerFile)
-        Me.Controls.Add(Me.TextBox1)
+        Me.Controls.Add(Me.BtnClip)
+        Me.Controls.Add(Me.BtnImage)
+        Me.Controls.Add(Me.TxtImageUrl)
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.BtnFields)
         Me.Controls.Add(Me.cboFields)
@@ -152,7 +164,8 @@ Partial Class FrmWebservices
     Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents cboFields As System.Windows.Forms.ComboBox
     Friend WithEvents BtnFields As System.Windows.Forms.Button
-    Friend WithEvents BtnLayerFile As System.Windows.Forms.Button
-    Friend WithEvents TextBox1 As System.Windows.Forms.TextBox
+    Friend WithEvents BtnImage As System.Windows.Forms.Button
+    Friend WithEvents TxtImageUrl As System.Windows.Forms.TextBox
     Friend WithEvents Label2 As System.Windows.Forms.Label
+    Friend WithEvents BtnClip As System.Windows.Forms.Button
 End Class
