@@ -133,12 +133,6 @@ Public Class frmClipDEMtoAOI
 
         Dim inputraster As String
 
-        ' Set Workspace to Parent Path
-        Dim pDEM As IGeoDataset2 = BA_OpenRasterFromFile(sourceDEMPath, sourceDEMName)
-        'Dim pRasterDataset As IRasterDataset2 = New RasterDataset
-        'Dim pRasterBand As IRasterBand = Nothing
-        'Dim pRasterBandCollection As IRasterBandCollection = Nothing
-
         Try
             'save the dem, dem extent, and the dem info file
             'response = BA_Create_FolderType_File(BasinFolderBase, BA_Basin_Type, strDEMText)
@@ -177,6 +171,7 @@ Public Class frmClipDEMtoAOI
 
             inputraster = sourceDEMPath & "\" & sourceDEMName
 
+            Dim demWType As WorkspaceType = BA_GetWorkspaceTypeFromPath(strDEMDataSet)
             If ChkSmoothDEM.Checked Then
                 response = BA_ClipAOIRaster(BasinFolderBase, inputraster, "tempdem", destSurfGDB, AOIClipFile.AOIExtentCoverage, False)
                 Dim ptempDEM As IGeoDataset2 = BA_OpenRasterFromGDB(destSurfGDB, "tempdem")
@@ -200,19 +195,25 @@ Public Class frmClipDEMtoAOI
 
                 BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.dem_gdb))
             Else
-                response = BA_ClipAOIRaster(BasinFolderBase, inputraster, BA_EnumDescription(MapsFileName.dem_gdb), destSurfGDB, AOIClipFile.AOIExtentCoverage, False)
-            End If
+                If demWType = WorkspaceType.ImageServer Then
+                    Dim clipFilePath As String = BA_GeodatabasePath(BasinFolderBase, GeodatabaseNames.Aoi, True) & BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
+                    Dim newFilePath As String = destSurfGDB & "\" & BA_EnumDescription(MapsFileName.dem_gdb)
+                    response = -1
+                    Dim success As BA_ReturnCode = BA_ClipImageServiceToVector(clipFilePath, BA_FIELD_AOI_NAME, strDEMDataSet, _
+                                                                               newFilePath, Nothing)
+                    If success = BA_ReturnCode.Success Then response = 1
+                Else
+                    response = BA_ClipAOIRaster(BasinFolderBase, inputraster, BA_EnumDescription(MapsFileName.dem_gdb), destSurfGDB, AOIClipFile.AOIExtentCoverage, False)
+                End If
+             End If
 
             If response <= 0 Then
                 pStepProg.Hide()
                 progressDialog2.HideDialog()
                 MsgBox("There is no DEM within the specified area! Please check your DEM source data.")
                 clipDEMButton.selectedProperty = False
-                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pDEM)
                 GoTo AbandonClipDEM
             End If
-
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pDEM)
 
 
             '=====================================================================================================================

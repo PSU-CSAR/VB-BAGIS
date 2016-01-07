@@ -84,8 +84,11 @@ Public Class FrmWebservices
     End Sub
 
     Private Sub BtnClip_Click(sender As System.Object, e As System.EventArgs) Handles BtnClip.Click
-        Dim clipFilePath As String = "C:\Docs\Lesley\teton_aoi\aoi.gdb\aoib"
+        'Dim clipFilePath As String = "C:\Docs\Lesley\teton_aoi\aoi.gdb\aoib"
+        Dim clipFilePath As String = "C:\Docs\Lesley\teton_aoi\aoi.gdb\aoi_v"
         Dim newFilePath As String = "C:\Docs\Lesley\teton_aoi\layers.gdb\dem_web"
-        Dim success As BA_ReturnCode = BA_ClipImageService(clipFilePath, TxtImageUrl.Text, newFilePath)
+        'Dim success As BA_ReturnCode = BA_ClipImageService(clipFilePath, TxtImageUrl.Text, newFilePath)
+        Dim success As BA_ReturnCode = BA_ClipImageServiceToVector(clipFilePath, BA_FIELD_AOI_NAME, TxtImageUrl.Text, _
+                                                                   newFilePath, Nothing)
     End Sub
 End Class

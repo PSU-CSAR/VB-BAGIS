@@ -1243,35 +1243,46 @@ Function_Exit:
     End Sub
 
     Public Sub BA_GetRasterDimension(ByVal RasterFile_PathName As String, ByRef dem As BA_DEMInfo)
-        'get raster information
-        Dim filepath As String = ""
-        Dim FileName As String
+        Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(RasterFile_PathName)
 
-        If Len(RasterFile_PathName) = 0 Then 'not a valide input
-            Exit Sub
-        End If
-
-        FileName = BA_GetBareName(RasterFile_PathName, filepath)
-
-        On Error GoTo ErrorHandler
-
+        Dim pRasterP As IRasterProps = Nothing
         Dim pDEUtility As IDEUtilities = New DEUtilities
 
         Dim pRasterDataset As IRasterDataset = New RasterDataset
         Dim pWS As IRasterWorkspace
         Dim pWSF As IWorkspaceFactory = New RasterWorkspaceFactory
-        pWS = pWSF.OpenFromFile(filepath, 0)
-        pRasterDataset = pWS.OpenRasterDataset(FileName)
-
-        '2. QI Raster to IRasterBand
         Dim pRasterBand As IRasterBand
         Dim pRasterBandCollection As IRasterBandCollection
-        pRasterBandCollection = pRasterDataset
-        pRasterBand = pRasterBandCollection.Item(0)
+        If wType = WorkspaceType.Raster Then
+            'get raster information
+            Dim filepath As String = ""
+            Dim FileName As String
 
-        'QI IRasterProps
-        Dim pRasterP As IRasterProps
-        pRasterP = pRasterBand
+            If Len(RasterFile_PathName) = 0 Then 'not a valide input
+                Exit Sub
+            End If
+
+            FileName = BA_GetBareName(RasterFile_PathName, filepath)
+
+            On Error GoTo ErrorHandler
+
+
+            pWS = pWSF.OpenFromFile(filepath, 0)
+            pRasterDataset = pWS.OpenRasterDataset(FileName)
+
+            '2. QI Raster to IRasterBand
+            pRasterBandCollection = pRasterDataset
+            pRasterBand = pRasterBandCollection.Item(0)
+
+            'QI IRasterProps
+            pRasterP = CType(pRasterBand, IRasterProps)
+
+        ElseIf wType = WorkspaceType.ImageServer Then
+            Dim isLayer As IImageServerLayer = New ImageServerLayerClass
+            isLayer.Initialize(RasterFile_PathName)
+            Dim imageRaster As IRaster = isLayer.Raster
+            pRasterP = CType(imageRaster, IRasterProps)
+        End If
 
         'get map extent coordinates
         Dim pRasterExt As IEnvelope
@@ -1691,7 +1702,7 @@ ErrorHandler:
         Try
             'add AOIName field
             ' check if field exist
-            FName = "AOINAME"
+            FName = BA_FIELD_AOI_NAME
             FieldIndex = pFClass.FindField(FName)
 
             ' Define field type
