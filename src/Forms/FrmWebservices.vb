@@ -27,10 +27,10 @@ Public Class FrmWebservices
             Dim url As String = agsObj.AGSServerObjectName.URL
             Dim propertySet As IPropertySet = agsObj.AGSServerObjectName.AGSServerConnectionName.ConnectionProperties()
             'Build the REST url
-            Dim prefix As String = propertySet.GetProperty("RestUrl")
+            Dim prefix As String = propertySet.GetProperty(BA_Property_RestUrl)
             'Extract the selected service information
-            Dim idxServices As Integer = url.IndexOf("/services")
-            Dim idxMapServer As Integer = url.IndexOf("MapServer")
+            Dim idxServices As Integer = url.IndexOf(BA_Url_Services)
+            Dim idxMapServer As Integer = url.IndexOf(BA_Url_MapServer)
             Dim serviceText As String = url.Substring(idxServices, idxMapServer - idxServices - 1)   'subtract 1 to avoid trailing /
             'Example: http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_SNOTEL_ALL/FeatureServer/0
             TxtWebService.Text = prefix & serviceText & BA_EnumDescription(PublicPath.FeatureServiceUrl)

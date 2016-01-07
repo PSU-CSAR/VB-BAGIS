@@ -2065,6 +2065,9 @@ ErrorHandler:
         Dim workspaceType As WorkspaceType = BA_GetWorkspaceTypeFromPath(layerPathName)
         Dim pGeoDataset As IGeoDataset = Nothing
         Dim pSpRef As ISpatialReference = Nothing
+        Dim isLayer As IImageServerLayer = New ImageServerLayerClass
+        Dim isLayerInfo As IImageServiceInfo2
+
         Try
             'Open the dataset to extract the spatial reference
             If workspaceType = workspaceType.Raster Then
@@ -2073,7 +2076,6 @@ ErrorHandler:
                 Else 'input is a grid
                     pGeoDataset = BA_OpenRasterFromFile(parentPath, fileName)
                 End If
-
             ElseIf workspaceType = workspaceType.Geodatabase Then 'input is in a fgdb
                 Dim pWSFactory As IWorkspaceFactory = New FileGDBWorkspaceFactory()
                 Dim pWS As IWorkspace2 = Nothing
@@ -2089,22 +2091,29 @@ ErrorHandler:
 
                 pWS = Nothing
                 pWSFactory = Nothing
+            ElseIf workspaceType = workspaceType.ImageServer Then
+                'Create an image server layer by passing a URL.
+                isLayer.Initialize(layerPathName)
+                'Get the info from the image server layer.
+                isLayerInfo = isLayer.ServiceInfo
+                'Spatial reference for the dataset in question
+                pSpRef = isLayerInfo.SpatialReference
             End If
 
             If pGeoDataset IsNot Nothing Then
                 'Spatial reference for the dataset in question
                 pSpRef = pGeoDataset.SpatialReference
+            End If
+
+            If pSpRef IsNot Nothing Then
                 'Extract datum string from spatial reference
-                If pSpRef IsNot Nothing Then
-                    ' Explicit cast
-                    Dim parameterExport1 As IESRISpatialReferenceGEN2 = CType(pSpRef, IESRISpatialReferenceGEN2)
-                    Dim buffer As String = Nothing
-                    Dim bytes As Long = Nothing
-                    parameterExport1.ExportToESRISpatialReference2(buffer, bytes)
-                    Dim datumPos As Integer = InStr(buffer, "PROJCS")
-                    Dim primePos As Integer = InStr(buffer, "GEOGCS")
-                    Return buffer.Substring(datumPos + 7, primePos - datumPos - 10)
-                End If
+                Dim parameterExport1 As IESRISpatialReferenceGEN2 = CType(pSpRef, IESRISpatialReferenceGEN2)    ' Explicit cast
+                Dim buffer As String = Nothing
+                Dim bytes As Long = Nothing
+                parameterExport1.ExportToESRISpatialReference2(buffer, bytes)
+                Dim datumPos As Integer = InStr(buffer, "PROJCS")
+                Dim primePos As Integer = InStr(buffer, "GEOGCS")
+                Return buffer.Substring(datumPos + 7, primePos - datumPos - 10)
             End If
             Return Nothing
         Catch ex As Exception

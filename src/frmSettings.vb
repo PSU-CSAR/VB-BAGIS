@@ -125,6 +125,7 @@ Public Class frmSettings
         txtDEM10.Text = data_fullname
         CmdUndo.Enabled = True
     End Sub
+
     Private Sub CmdSet30MDEM_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSet30MDEM.Click
         Dim bObjectSelected As Boolean = True
         Dim pGxDialog As IGxDialog = New GxDialog
@@ -1019,12 +1020,28 @@ AbandonSub:
         GrpBoxSnowCourseUnit.Visible = not_Status
     End Sub
 
-    Public Sub New()
+    Private Sub CmdWeb30MDEM_Click(sender As System.Object, e As System.EventArgs) Handles CmdWeb30MDEM.Click
+        Dim bObjectSelected As Boolean = True
+        Dim pGxDialog As IGxDialog = New GxDialog
+        Dim pGxObject As IEnumGxObject = Nothing
+        Dim pFilter As IGxObjectFilter = New GxFilterImageServers
 
-        ' This call is required by the designer.
-        InitializeComponent()
+        'initialize and open mini browser
+        With pGxDialog
+            .AllowMultiSelect = False
+            .ButtonCaption = "Select"
+            .Title = "Select 30 Meters DEM image service"
+            .ObjectFilter = pFilter
+            bObjectSelected = .DoModalOpen(0, pGxObject)
+        End With
 
-        ' Add any initialization after the InitializeComponent() call.
+        If bObjectSelected = False Then Exit Sub
 
+        'get the url of the selected image service
+        pGxObject.Reset()
+        Dim pGxObj As IGxObject = pGxObject.Next
+        Dim agsObj As IGxAGSObject = CType(pGxObj, IGxAGSObject)
+        txtDEM30.Text = agsObj.AGSServerObjectName.URL
+        CmdUndo.Enabled = True
     End Sub
 End Class

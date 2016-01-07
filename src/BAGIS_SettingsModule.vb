@@ -165,7 +165,7 @@ Module BAGIS_SettingsModule
                 demname = BA_GetBareName(TempPathName, myPath)
                 If Right(myPath, 1) = "\" Then myPath = Left(myPath, Len(myPath) - 1)
 
-                If Not BA_File_ExistsRaster(myPath, demname) Then
+                If Not BA_File_Exists(TempPathName, WorkspaceType.ImageServer, esriDatasetType.esriDTRasterDataset) Then
                     return_message = return_message & vbCrLf & "DEM Data Missing: " & TempPathName
                 End If
 
