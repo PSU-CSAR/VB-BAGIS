@@ -2109,6 +2109,8 @@ ErrorHandler:
                 isLayerInfo = isLayer.ServiceInfo
                 'Spatial reference for the dataset in question
                 pSpRef = isLayerInfo.SpatialReference
+            ElseIf workspaceType = BAGIS_ClassLibrary.WorkspaceType.FeatureServer Then
+                pSpRef = BA_FeatureServiceSpatialReference(layerPathName)
             End If
 
             If pGeoDataset IsNot Nothing Then

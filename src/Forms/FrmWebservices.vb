@@ -3,6 +3,7 @@ Imports ESRI.ArcGIS.Catalog
 Imports ESRI.ArcGIS.GISClient
 Imports System.Text
 Imports ESRI.ArcGIS.esriSystem
+Imports ESRI.ArcGIS.Geometry
 Imports BAGIS_ClassLibrary
 
 
@@ -35,15 +36,15 @@ Public Class FrmWebservices
             'Example: http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_SNOTEL_ALL/FeatureServer/0
             TxtWebService.Text = prefix & serviceText & BA_EnumDescription(PublicPath.FeatureServiceUrl)
             cboFields.Items.Clear()
-            'Dim names(propertySet.Count - 1) As Object
-            'Dim values(propertySet.Count - 1) As Object
-            'propertySet.GetAllProperties(names, values)
-            'Dim sb As StringBuilder = New StringBuilder()
-            'For i As Integer = 0 To propertySet.Count - 1
-            '    sb.Append(CStr(names(i)) & vbCrLf)
-            '    sb.Append(values(i).ToString & vbCrLf)
-            'Next
-            'Windows.Forms.MessageBox.Show(sb.ToString)
+            Dim names(propertySet.Count - 1) As Object
+            Dim values(propertySet.Count - 1) As Object
+            propertySet.GetAllProperties(names, values)
+            Dim sb As StringBuilder = New StringBuilder()
+            For i As Integer = 0 To propertySet.Count - 1
+                sb.Append(CStr(names(i)) & vbCrLf)
+                sb.Append(values(i).ToString & vbCrLf)
+            Next
+            Windows.Forms.MessageBox.Show(sb.ToString)
         End If
 
 
@@ -90,5 +91,9 @@ Public Class FrmWebservices
         'Dim success As BA_ReturnCode = BA_ClipImageService(clipFilePath, TxtImageUrl.Text, newFilePath)
         Dim success As BA_ReturnCode = BA_ClipImageServiceToVector(clipFilePath, BA_FIELD_AOI_NAME, TxtImageUrl.Text, _
                                                                    newFilePath, Nothing)
+    End Sub
+
+    Private Sub BtnTest_Click(sender As System.Object, e As System.EventArgs) Handles BtnTest.Click
+        Dim spRef As ISpatialReference = BA_FeatureServiceSpatialReference(TxtWebService.Text)
     End Sub
 End Class

@@ -8,6 +8,7 @@ Imports BAGIS_ClassLibrary
 Imports ESRI.ArcGIS.Desktop.AddIns
 Imports ESRI.ArcGIS.esriSystem
 Imports ESRI.ArcGIS.Framework
+Imports ESRI.ArcGIS.GISClient
 
 Public Class frmSettings
 
@@ -726,15 +727,18 @@ AbandonSub:
         Dim mismatchList As New SortedList
         For Each key As String In projectionsToCheck.Keys
             Dim projPath As String = projectionsToCheck(key)
-            Dim parentPath As String = "Please Return"
-            'Although this is an optional argument, it's the only to strip the file type from the text field
-            Dim tempExt As String = "tempExt"
-            Dim fileName As String = BA_GetBareNameAndExtension(projPath, parentPath, tempExt)
-            Dim layerType As WorkspaceType = BA_GetWorkspaceTypeFromPath(parentPath)
-            If layerType = WorkspaceType.Raster And tempExt = "(Shapefile)" Then
-                fileName = BA_StandardizeShapefileName(fileName, True)
+            Dim layerType As WorkspaceType = BA_GetWorkspaceTypeFromPath(projPath)
+            If layerType <> WorkspaceType.FeatureServer Then
+                Dim parentPath As String = "Please Return"
+                'Although this is an optional argument, it's the only to strip the file type from the text field
+                Dim tempExt As String = "tempExt"
+                Dim fileName As String = BA_GetBareNameAndExtension(projPath, parentPath, tempExt)
+                If layerType = WorkspaceType.Raster And tempExt = "(Shapefile)" Then
+                    fileName = BA_StandardizeShapefileName(fileName, True)
+                End If
+                projPath = parentPath & fileName
             End If
-            Dim projString As String = BA_GetProjectionString(parentPath & fileName)
+            Dim projString As String = BA_GetProjectionString(projPath)
             If demProjText <> projString Then
                 mismatchList.Add(key, projString)
             End If
@@ -1043,5 +1047,37 @@ AbandonSub:
         Dim agsObj As IGxAGSObject = CType(pGxObj, IGxAGSObject)
         txtDEM30.Text = agsObj.AGSServerObjectName.URL
         CmdUndo.Enabled = True
+    End Sub
+
+    Private Sub CmdSetSNOTELWeb_Click(sender As System.Object, e As System.EventArgs) Handles CmdSetSNOTELWeb.Click
+        Dim pGxDialog As IGxDialog = New GxDialog
+        pGxDialog.AllowMultiSelect = False
+        pGxDialog.Title = "Select SNOTEL Feature Service"
+        Dim pGxFilter As IGxObjectFilter = New GxFilterFeatureServers
+        pGxDialog.ObjectFilter = pGxFilter
+        Dim pGxObjects As IEnumGxObject = Nothing
+        If pGxDialog.DoModalOpen(0, pGxObjects) Then
+            pGxObjects.Reset()
+            Dim pGxObj As IGxObject = pGxObjects.Next
+            Dim agsObj As IGxAGSObject = CType(pGxObj, IGxAGSObject)
+            Dim sName As IAGSServerObjectName = agsObj.AGSServerObjectName
+            Dim url As String = agsObj.AGSServerObjectName.URL
+            Dim propertySet As IPropertySet = agsObj.AGSServerObjectName.AGSServerConnectionName.ConnectionProperties()
+            'Build the REST url
+            Dim prefix As String = propertySet.GetProperty(BA_Property_RestUrl)
+            'Extract the selected service information
+            Dim idxServices As Integer = url.IndexOf(BA_Url_Services)
+            Dim idxMapServer As Integer = url.IndexOf(BA_Url_MapServer)
+            Dim serviceText As String = url.Substring(idxServices, idxMapServer - idxServices - 1)   'subtract 1 to avoid trailing /
+            txtSNOTEL.Text = prefix & serviceText & BA_EnumDescription(PublicPath.FeatureServiceUrl)
+
+            'elevation field
+            ComboSNOTEL_Elevation.Items.Clear()
+
+            'name field
+            ComboSNOTEL_Name.Items.Clear()
+            ComboSNOTEL_Name.Items.Add("None")
+
+        End If
     End Sub
 End Class

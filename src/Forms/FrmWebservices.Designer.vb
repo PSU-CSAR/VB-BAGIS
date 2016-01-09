@@ -32,6 +32,7 @@ Partial Class FrmWebservices
         Me.TxtImageUrl = New System.Windows.Forms.TextBox()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.BtnClip = New System.Windows.Forms.Button()
+        Me.BtnTest = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'TxtWebService
@@ -98,7 +99,7 @@ Partial Class FrmWebservices
         'BtnImage
         '
         Me.BtnImage.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnImage.Location = New System.Drawing.Point(508, 46)
+        Me.BtnImage.Location = New System.Drawing.Point(508, 99)
         Me.BtnImage.Name = "BtnImage"
         Me.BtnImage.Size = New System.Drawing.Size(108, 30)
         Me.BtnImage.TabIndex = 72
@@ -110,7 +111,7 @@ Partial Class FrmWebservices
         Me.TxtImageUrl.BackColor = System.Drawing.SystemColors.ButtonFace
         Me.TxtImageUrl.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.TxtImageUrl.ForeColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(192, Byte), Integer))
-        Me.TxtImageUrl.Location = New System.Drawing.Point(82, 50)
+        Me.TxtImageUrl.Location = New System.Drawing.Point(82, 103)
         Me.TxtImageUrl.Name = "TxtImageUrl"
         Me.TxtImageUrl.ReadOnly = True
         Me.TxtImageUrl.Size = New System.Drawing.Size(418, 22)
@@ -120,7 +121,7 @@ Partial Class FrmWebservices
         '
         Me.Label2.AutoSize = True
         Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label2.Location = New System.Drawing.Point(7, 53)
+        Me.Label2.Location = New System.Drawing.Point(7, 106)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(69, 16)
         Me.Label2.TabIndex = 70
@@ -129,18 +130,29 @@ Partial Class FrmWebservices
         'BtnClip
         '
         Me.BtnClip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClip.Location = New System.Drawing.Point(508, 82)
+        Me.BtnClip.Location = New System.Drawing.Point(508, 135)
         Me.BtnClip.Name = "BtnClip"
         Me.BtnClip.Size = New System.Drawing.Size(108, 30)
         Me.BtnClip.TabIndex = 73
         Me.BtnClip.Text = "Clip"
         Me.BtnClip.UseVisualStyleBackColor = True
         '
+        'BtnTest
+        '
+        Me.BtnTest.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnTest.Location = New System.Drawing.Point(508, 44)
+        Me.BtnTest.Name = "BtnTest"
+        Me.BtnTest.Size = New System.Drawing.Size(108, 30)
+        Me.BtnTest.TabIndex = 74
+        Me.BtnTest.Text = "Test"
+        Me.BtnTest.UseVisualStyleBackColor = True
+        '
         'FrmWebservices
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(682, 262)
+        Me.Controls.Add(Me.BtnTest)
         Me.Controls.Add(Me.BtnClip)
         Me.Controls.Add(Me.BtnImage)
         Me.Controls.Add(Me.TxtImageUrl)
@@ -168,4 +180,5 @@ Partial Class FrmWebservices
     Friend WithEvents TxtImageUrl As System.Windows.Forms.TextBox
     Friend WithEvents Label2 As System.Windows.Forms.Label
     Friend WithEvents BtnClip As System.Windows.Forms.Button
+    Friend WithEvents BtnTest As System.Windows.Forms.Button
 End Class
