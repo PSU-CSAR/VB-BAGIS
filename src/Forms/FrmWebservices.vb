@@ -36,15 +36,15 @@ Public Class FrmWebservices
             'Example: http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_SNOTEL_ALL/FeatureServer/0
             TxtWebService.Text = prefix & serviceText & BA_EnumDescription(PublicPath.FeatureServiceUrl)
             cboFields.Items.Clear()
-            Dim names(propertySet.Count - 1) As Object
-            Dim values(propertySet.Count - 1) As Object
-            propertySet.GetAllProperties(names, values)
-            Dim sb As StringBuilder = New StringBuilder()
-            For i As Integer = 0 To propertySet.Count - 1
-                sb.Append(CStr(names(i)) & vbCrLf)
-                sb.Append(values(i).ToString & vbCrLf)
-            Next
-            Windows.Forms.MessageBox.Show(sb.ToString)
+            'Dim names(propertySet.Count - 1) As Object
+            'Dim values(propertySet.Count - 1) As Object
+            'propertySet.GetAllProperties(names, values)
+            'Dim sb As StringBuilder = New StringBuilder()
+            'For i As Integer = 0 To propertySet.Count - 1
+            '    sb.Append(CStr(names(i)) & vbCrLf)
+            '    sb.Append(values(i).ToString & vbCrLf)
+            'Next
+            'Windows.Forms.MessageBox.Show(sb.ToString)
         End If
 
 
@@ -94,6 +94,9 @@ Public Class FrmWebservices
     End Sub
 
     Private Sub BtnTest_Click(sender As System.Object, e As System.EventArgs) Handles BtnTest.Click
-        Dim spRef As ISpatialReference = BA_FeatureServiceSpatialReference(TxtWebService.Text)
+        Dim aoiPath As String = "C:\Docs\Lesley\New_Basin\Fern_Ridge_Lake_Inflow_01122016"
+        Dim clipFilePath As String = aoiPath & "\aoi.gdb\aoib_v"
+        Dim newFilePath As String = aoiPath & "\layers.gdb\snotel_sites_web"
+        BA_ClipFeatureService(clipFilePath, TxtWebService.Text, newFilePath, aoiPath)
     End Sub
 End Class

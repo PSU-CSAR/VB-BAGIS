@@ -753,5 +753,91 @@ Module BAGIS_AOIModule
             contool = Nothing
         End Try
     End Function
+
+    'return value
+    '-1: unknown error
+    '-2: output exists
+    '-3: missing parameters
+    '-4: no input shapefile
+    '0: no intersect between the input and the clip layers
+    '1: clipping is done successfully
+    Public Function BA_ClipAOISnoWebServices(ByVal AOIFolder As String, ByVal url As String, ByVal Is_SNOTEL As Boolean) As Integer
+        Dim ClipName As String, ClipShapeFile As String
+        Dim OutputName As String, OutputKey As String
+        Dim return_value As Integer, response As Integer
+
+        return_value = -3
+
+        If String.IsNullOrEmpty(url) Then
+            Return -3
+        End If
+
+        'set output file name - GP parameter
+        If Is_SNOTEL Then
+            OutputName = BA_GeodatabasePath(AOIFolder, GeodatabaseNames.Layers, True) & BA_EnumDescription(MapsFileName.Snotel)
+            OutputKey = BA_EnumDescription(MapsFileName.Snotel)
+        Else
+            OutputName = BA_GeodatabasePath(AOIFolder, GeodatabaseNames.Layers, True) & BA_EnumDescription(MapsFileName.SnowCourse)
+            OutputKey = BA_EnumDescription(MapsFileName.SnowCourse)
+        End If
+
+        ClipShapeFile = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
+        ClipName = BA_GeodatabasePath(AOIFolder, GeodatabaseNames.Aoi, True) & ClipShapeFile  'GP parameter
+
+        'check if a layer of the same name exists in the AOI
+        If BA_File_Exists(OutputName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+            Return -2
+        End If
+
+        Try
+            return_value = -1
+            Dim success As BA_ReturnCode = BA_ClipFeatureService(ClipName, url, OutputName, AOIFolder)
+            If success = BA_ReturnCode.ReadError Then return_value = 0
+
+            If success = BA_ReturnCode.Success Then
+                Dim pClipFClass As IFeatureClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolder, GeodatabaseNames.Layers, True), OutputKey)
+                If pClipFClass IsNot Nothing Then
+                    If pClipFClass.FeatureCount(Nothing) > 0 Then
+                        'update snotel attribute table to contain standard attribute info
+                        Dim ElevFieldName As String
+                        Dim NameFieldName As String
+                        Dim unit_factor As Double
+
+                        'read the definition file to get the parameter
+                        BA_SetSettingPath()
+                        response = BA_ReadBAGISSettings(BA_Settings_Filepath)
+
+                        If Is_SNOTEL Then
+                            ElevFieldName = BA_SystemSettings.SNOTEL_ElevationField
+                            If UCase(BA_SystemSettings.SNOTEL_NameField) <> "NONE" Then
+                                NameFieldName = BA_SystemSettings.SNOTEL_NameField
+                            Else
+                                NameFieldName = ""
+                            End If
+                            unit_factor = BA_SetConversionFactor(True, BA_SystemSettings.SNOTEL_ZUnit_IsMeter)
+
+                        Else
+                            ElevFieldName = BA_SystemSettings.SCourse_ElevationField
+                            If UCase(BA_SystemSettings.SCourse_NameField) <> "NONE" Then
+                                NameFieldName = BA_SystemSettings.SCourse_NameField
+                            Else
+                                NameFieldName = ""
+                            End If
+                            unit_factor = BA_SetConversionFactor(True, BA_SystemSettings.SCourse_ZUnit_IsMeter)
+
+                        End If
+
+                        response = BA_UpdateSiteAttributes(BA_GeodatabasePath(AOIFolder, GeodatabaseNames.Layers), OutputKey, _
+                                                           ElevFieldName, NameFieldName, unit_factor)
+
+                        return_value = 1
+                    End If
+                End If
+            End If
+        Catch ex As Exception
+            MessageBox.Show("BA_ClipAOISnoWebServices() Exception: " & ex.Message)
+        End Try
+        Return return_value
+    End Function
 End Module
 
