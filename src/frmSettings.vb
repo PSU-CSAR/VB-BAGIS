@@ -358,7 +358,7 @@ AbandonSub:
         For i = 0 To nfields - 1 'Selects only numerical data types
             aField = pFields.Field(i)
             qType = aField.Type
-            If qType <= 3 Then 'numerical data types
+            If qType <= esriFieldType.esriFieldTypeDouble Then 'numerical data types
                 ComboSNOTEL_Elevation.Items.Add(aField.Name)
             End If
         Next
@@ -369,7 +369,7 @@ AbandonSub:
         For i = 1 To nfields 'Selects only string data types
             aField = pFields.Field(i - 1)
             qType = aField.Type
-            If qType = 4 Then 'string data types
+            If qType = esriFieldType.esriFieldTypeString Then 'string data types
                 ComboSNOTEL_Name.Items.Add(aField.Name)
             End If
         Next
@@ -1073,11 +1073,25 @@ AbandonSub:
 
             'elevation field
             ComboSNOTEL_Elevation.Items.Clear()
+            Dim fsFields As IList(Of FeatureServiceField) = BA_QueryAllFeatureServiceFieldNames(txtSNOTEL.Text)
+            For Each fField As FeatureServiceField In fsFields
+                If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
+                    ComboSNOTEL_Elevation.Items.Add(fField.alias)
+                End If
+            Next
+            ComboSNOTEL_Elevation.SelectedIndex = 0
 
             'name field
             ComboSNOTEL_Name.Items.Clear()
             ComboSNOTEL_Name.Items.Add("None")
+            ComboSNOTEL_Name.SelectedItem = "None"
+            For Each fField As FeatureServiceField In fsFields
+                If fField.fieldType = esriFieldType.esriFieldTypeString Then
+                    ComboSNOTEL_Name.Items.Add(fField.alias)
+                End If
+            Next
 
+            CmdUndo.Enabled = True
         End If
     End Sub
 End Class

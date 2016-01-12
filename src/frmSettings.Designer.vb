@@ -371,6 +371,7 @@ Partial Class frmSettings
         Me.ComboSNOTEL_Elevation.FormattingEnabled = True
         resources.ApplyResources(Me.ComboSNOTEL_Elevation, "ComboSNOTEL_Elevation")
         Me.ComboSNOTEL_Elevation.Name = "ComboSNOTEL_Elevation"
+        Me.ComboSNOTEL_Elevation.Sorted = True
         '
         'ComboSNOTEL_Name
         '
@@ -378,6 +379,7 @@ Partial Class frmSettings
         Me.ComboSNOTEL_Name.FormattingEnabled = True
         resources.ApplyResources(Me.ComboSNOTEL_Name, "ComboSNOTEL_Name")
         Me.ComboSNOTEL_Name.Name = "ComboSNOTEL_Name"
+        Me.ComboSNOTEL_Name.Sorted = True
         '
         'lblSNOTELUnit
         '

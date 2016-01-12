@@ -201,7 +201,7 @@ Module BAGIS_SettingsModule
                 Dim pWksFactory As IWorkspaceFactory
                 Dim pFeatWorkspace As IFeatureWorkspace
                 Dim pFeatClass As IFeatureClass
-                Dim pFields As IFields
+                Dim pFields As IFields = Nothing
                 Dim aField As IField
                 Dim i As Integer, nfields As Integer, qType As Integer
                 Dim icount As Integer
@@ -309,14 +309,18 @@ Module BAGIS_SettingsModule
                 linestring = sr.ReadLine()                                                                                                                  '13
                 SettingsForm.txtSNOTEL.Text = Trim(linestring)
 
+                Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtSNOTEL.Text)
                 If Trim(linestring) = "" Then
                     TempPathName = "SNOTEL"
                     FileExists = False
                 Else
-                    File_Name = BA_GetBareNameAndExtension(SettingsForm.txtSNOTEL.Text, File_Path, layertype)
-
-                    TempPathName = File_Path & File_Name
-                    FileExists = BA_Shapefile_Exists(TempPathName)
+                    If wType = WorkspaceType.Raster Then
+                        File_Name = BA_GetBareNameAndExtension(SettingsForm.txtSNOTEL.Text, File_Path, layertype)
+                        TempPathName = File_Path & File_Name
+                        FileExists = BA_Shapefile_Exists(TempPathName)
+                    ElseIf wType = WorkspaceType.Geodatabase Or wType = WorkspaceType.FeatureServer Then
+                        FileExists = BA_File_Exists(SettingsForm.txtSNOTEL.Text, wType, esriDatasetType.esriDTFeatureClass)
+                    End If
                 End If
 
                 'set snotel field
@@ -325,34 +329,50 @@ Module BAGIS_SettingsModule
                 linestring2 = sr.ReadLine() 'elevation unit                                                                                                 '16
 
                 If FileExists Then  'text exists for the setting of this layer
-                    pWksFactory = New ShapefileWorkspaceFactory
-                    pFeatWorkspace = pWksFactory.OpenFromFile(File_Path, 0)
-                    pFeatClass = pFeatWorkspace.OpenFeatureClass(File_Name)
-
-                    'get fields
-                    pFields = pFeatClass.Fields
-                    nfields = pFields.FieldCount
 
                     'set elevation field
                     SettingsForm.ComboSNOTEL_Elevation.Items.Clear()
                     FieldIndex = -1
                     icount = 0
+                    'Object for feature service fields
+                    Dim allFields As IList(Of FeatureServiceField) = New List(Of FeatureServiceField)
 
-                    For i = 0 To nfields - 1
-                        aField = pFields.Field(i)
-                        qType = aField.Type
-                        If qType <= 3 Then
-                            SettingsForm.ComboSNOTEL_Elevation.Items.Add(aField.Name)
-                            If aField.Name = linestring Then FieldIndex = icount
-                            icount = icount + 1
+                    If wType = WorkspaceType.Geodatabase Or wType = WorkspaceType.Raster Then
+                        If wType = WorkspaceType.Raster Then
+                            pFeatClass = BA_OpenFeatureClassFromFile(File_Path, File_Name)
+                        Else
+                            pFeatClass = BA_OpenFeatureClassFromGDB(File_Path, File_Name)
                         End If
-                    Next
+
+                        'get fields
+                        pFields = pFeatClass.Fields
+                        nfields = pFields.FieldCount
+
+                        For i = 0 To nfields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType <= 3 Then
+                                SettingsForm.ComboSNOTEL_Elevation.Items.Add(aField.Name)
+                                If aField.Name = linestring Then FieldIndex = icount
+                                icount = icount + 1
+                            End If
+                        Next
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        allFields = BA_QueryAllFeatureServiceFieldNames(SettingsForm.txtSNOTEL.Text)
+                        For Each fField As FeatureServiceField In allFields
+                            If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
+                                SettingsForm.ComboSNOTEL_Elevation.Items.Add(fField.alias)
+                                If fField.alias = linestring Then FieldIndex = icount
+                                icount = icount + 1
+                            End If
+                        Next
+                    End If
 
                     If FieldIndex < 0 Then
-                        return_message = return_message & vbCrLf & "Attibute Field Missing: " & linestring & " is not in " & TempPathName
-                        My.ArcMap.Application.SettingsForm.ComboSNOTEL_Elevation.ListIndex = 0
+                        return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring & " is not in " & TempPathName
+                        SettingsForm.ComboSNOTEL_Elevation.SelectedIndex = 0
                     Else
-                        SettingsForm.ComboSNOTEL_Elevation.SelectedIndex = FieldIndex
+                        SettingsForm.ComboSNOTEL_Elevation.SelectedItem = linestring
                     End If
 
                     'set name field
@@ -362,23 +382,33 @@ Module BAGIS_SettingsModule
                     FieldIndex = -1
                     icount = 0
 
-                    For i = 0 To nfields - 1
-                        aField = pFields.Field(i)
-                        qType = aField.Type
-                        If qType = 4 Then
-                            SettingsForm.ComboSNOTEL_Name.Items.Add(aField.Name)
-                            If aField.Name = linestring1 Then FieldIndex = icount + 1
-                            icount = icount + 1
-                        End If
-                    Next
+                    If wType = WorkspaceType.Geodatabase Or wType = WorkspaceType.Raster Then
+                        For i = 0 To nfields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType = 4 Then
+                                SettingsForm.ComboSNOTEL_Name.Items.Add(aField.Name)
+                                If aField.Name = linestring1 Then FieldIndex = icount + 1
+                                icount = icount + 1
+                            End If
+                        Next
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        For Each fField As FeatureServiceField In allFields
+                            If fField.fieldType = esriFieldType.esriFieldTypeString Then
+                                SettingsForm.ComboSNOTEL_Name.Items.Add(fField.alias)
+                                If fField.name = linestring1 Then FieldIndex = icount + 1
+                                icount = icount + 1
+                            End If
+                        Next
+                    End If
 
                     If FieldIndex < 0 Then
                         If linestring1 <> "None" Then
                             return_message = return_message & vbCrLf & "Attibute Field Missing: " & linestring1 & " is not in " & TempPathName
                         End If
-                        SettingsForm.ComboSNOTEL_Name.SelectedIndex = 0
+                        SettingsForm.ComboSNOTEL_Name.SelectedItem = "None"
                     Else
-                        SettingsForm.ComboSNOTEL_Name.SelectedIndex = FieldIndex
+                        SettingsForm.ComboSNOTEL_Name.SelectedItem = linestring1
                     End If
 
                     If UCase(Trim(linestring2)) = "TRUE" Then 'meter is the Z unit
@@ -560,7 +590,8 @@ Module BAGIS_SettingsModule
             End If
 
             If return_message = "WARNING!" Then return_message = "" 'i.e., no issue found in the definition file
-        Catch
+        Catch ex As Exception
+            Debug.Print("BA_Read_Settings Exception: " & ex.Message)
         End Try
 
         Return return_message
