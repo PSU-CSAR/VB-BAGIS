@@ -288,111 +288,135 @@ AbandonSub:
 
     Private Sub CmdSetSNOTEL_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetSNOTEL.Click
         Dim bObjectSelected As Boolean
-        Dim pGxDialog As IGxDialog
-        pGxDialog = New GxDialog
-        Dim Data_Path As String, Data_Name As String, data_type As Integer
-        Dim data_fullname As String
-        Dim data_type_name As String
+        Dim filterCollection As IGxObjectFilterCollection = New GxDialogClass()
         Dim pGxObject As IEnumGxObject = Nothing
+        Const NONE_ITEM As String = "None"
 
-        Dim pFilter As IGxObjectFilter
-        pFilter = New GxFilterPointFeatureClasses
+        Dim pointFilter As IGxObjectFilter = New GxFilterPointFeatureClasses
+        filterCollection.AddFilter(pointFilter, False)
+        Dim featureServiceFilter As IGxObjectFilter = New GxFilterFeatureServers
+        filterCollection.AddFilter(featureServiceFilter, True)
+        Dim pGxDialog As IGxDialog = CType(filterCollection, IGxDialog)
+
 
         'initialize and open mini browser
         With pGxDialog
             .AllowMultiSelect = False
             .ButtonCaption = "Select"
             .Title = "Select SNOTEL Layer"
-            .ObjectFilter = pFilter
             bObjectSelected = .DoModalOpen(My.ArcMap.Application.hWnd, pGxObject)
         End With
 
         If bObjectSelected = False Then Exit Sub
 
-        'get the name of the selected folder
-        Dim pGxDataset As IGxDataset
-        pGxDataset = pGxObject.Next
-        Dim pDatasetName As IDatasetName
-        pDatasetName = pGxDataset.DatasetName
-        Data_Path = pDatasetName.WorkspaceName.PathName
-        Data_Name = pDatasetName.Name
-        data_type = pDatasetName.Type
+        Dim pGxObj As IGxObject = pGxObject.Next
+        If pGxObj.Category = BA_EnumDescription(GxFilterCategory.FeatureService) Then
+            Dim agsObj As IGxAGSObject = CType(pGxObj, IGxAGSObject)
+            Dim sName As IAGSServerObjectName = agsObj.AGSServerObjectName
+            Dim url As String = agsObj.AGSServerObjectName.URL
+            Dim propertySet As IPropertySet = agsObj.AGSServerObjectName.AGSServerConnectionName.ConnectionProperties()
+            'Build the REST url
+            Dim prefix As String = propertySet.GetProperty(BA_Property_RestUrl)
+            'Extract the selected service information
+            Dim idxServices As Integer = url.IndexOf(BA_Url_Services)
+            Dim idxMapServer As Integer = url.IndexOf(BA_Url_MapServer)
+            Dim serviceText As String = url.Substring(idxServices, idxMapServer - idxServices - 1)   'subtract 1 to avoid trailing /
+            txtSNOTEL.Text = prefix & serviceText & BA_EnumDescription(PublicPath.FeatureServiceUrl)
 
-        'Set Data Type Name from Data Type
-        If data_type = 4 Then
-            data_type_name = " (Shapefile)"
-        ElseIf data_type = 5 Then
-            data_type_name = " (Shapefile)"
-        ElseIf data_type = 12 Then
-            data_type_name = " (Raster)"
-        ElseIf data_type = 13 Then
-            data_type_name = " (Raster)"
-        ElseIf data_type = 14 Then
-            data_type_name = " (Tin)"
+            'elevation field
+            ComboSNOTEL_Elevation.Items.Clear()
+            Dim fsFields As IList(Of FeatureServiceField) = BA_QueryAllFeatureServiceFieldNames(txtSNOTEL.Text)
+            For Each fField As FeatureServiceField In fsFields
+                If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
+                    ComboSNOTEL_Elevation.Items.Add(fField.alias)
+                End If
+            Next
+            ComboSNOTEL_Elevation.SelectedIndex = 0
+
+            'name field
+            ComboSNOTEL_Name.Items.Clear()
+            ComboSNOTEL_Name.Items.Add(NONE_ITEM)
+            ComboSNOTEL_Name.SelectedItem = NONE_ITEM
+            For Each fField As FeatureServiceField In fsFields
+                If fField.fieldType = esriFieldType.esriFieldTypeString Then
+                    ComboSNOTEL_Name.Items.Add(fField.alias)
+                End If
+            Next
         Else
-            data_type_name = " (Cannot Clip)"
+            'get the name of the selected folder
+            Dim pGxDataset As IGxDataset = CType(pGxObj, IGxDataset)
+            Dim pDatasetName As IDatasetName = pGxDataset.DatasetName
+            Dim Data_Path As String = pDatasetName.WorkspaceName.PathName
+            Dim Data_Name As String = pDatasetName.Name
+            Dim data_type As esriDatasetType = pDatasetName.Type
+            Dim data_type_name As String
+
+            'Set Data Type Name from Data Type
+            If data_type = esriDatasetType.esriDTFeatureDataset Then
+                data_type_name = " (Shapefile)"
+            ElseIf data_type = esriDatasetType.esriDTFeatureClass Then
+                data_type_name = " (Shapefile)"
+            ElseIf data_type = esriDatasetType.esriDTRasterDataset Then
+                data_type_name = " (Raster)"
+            ElseIf data_type = esriDatasetType.esriDTRasterBand Then
+                data_type_name = " (Raster)"
+            ElseIf data_type = esriDatasetType.esriDTTin Then
+                data_type_name = " (Tin)"
+            Else
+                data_type_name = " (Cannot Clip)"
+            End If
+
+            'pad a backslash to the path if it doesn't have one.
+            Data_Path = BA_StandardizePathString(Data_Path, True)
+
+            Dim data_fullname As String = Data_Path & Data_Name & data_type_name
+            If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
+            txtSNOTEL.Text = data_fullname
+
+            'read the fields in the attribute table and add to CmboxStationAtt
+            Dim pFeatClass As IFeatureClass = BA_OpenFeatureClassFromFile(Data_Path, Data_Name)
+
+            'get fields
+            Dim pFields As IFields = pFeatClass.Fields
+            Dim aField As IField
+            Dim i As Integer, nfields As Integer, qType As Integer
+            nfields = pFields.FieldCount
+
+            'elevation field
+            ComboSNOTEL_Elevation.Items.Clear()
+            For i = 0 To nfields - 1 'Selects only numerical data types
+                aField = pFields.Field(i)
+                qType = aField.Type
+                If qType <= esriFieldType.esriFieldTypeDouble Then 'numerical data types
+                    ComboSNOTEL_Elevation.Items.Add(aField.Name)
+                End If
+            Next
+            ComboSNOTEL_Elevation.SelectedIndex = 0
+
+            'name field
+            ComboSNOTEL_Name.Items.Clear()
+            ComboSNOTEL_Name.Items.Add(NONE_ITEM)
+            ComboSNOTEL_Name.SelectedItem = NONE_ITEM
+            For i = 1 To nfields 'Selects only string data types
+                aField = pFields.Field(i - 1)
+                qType = aField.Type
+                If qType = esriFieldType.esriFieldTypeString Then 'string data types
+                    ComboSNOTEL_Name.Items.Add(aField.Name)
+                End If
+            Next
+
+            'Release ArcObjects
+            aField = Nothing
+            pFields = Nothing
+            pFeatClass = Nothing
+            pDatasetName = Nothing
+            pGxDataset = Nothing
         End If
 
-        'pad a backslash to the path if it doesn't have one.
-        'If Right(Data_Path, 1) <> "\" Then Data_Path = Data_Path & "\"
-        Data_Path = BA_StandardizePathString(Data_Path, True)
+        If Not String.IsNullOrEmpty(txtSNOTEL.Text) Then CmdUndo.Enabled = True
 
-        data_fullname = Data_Path & Data_Name & data_type_name
-        If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
-        txtSNOTEL.Text = data_fullname
-
-        'read the fields in the attribute table and add to CmboxStationAtt
-        Dim pWksFactory As IWorkspaceFactory
-        pWksFactory = New ShapefileWorkspaceFactory
-        Dim pFeatWorkspace As IFeatureWorkspace
-
-        pFeatWorkspace = pWksFactory.OpenFromFile(Data_Path, 0)
-        Dim pFeatClass As IFeatureClass
-        pFeatClass = pFeatWorkspace.OpenFeatureClass(Data_Name)
-
-        'get fields
-        Dim pFields As IFields
-        Dim aField As IField
-        Dim i As Integer, nfields As Integer, qType As Integer
-        pFields = pFeatClass.Fields
-        nfields = pFields.FieldCount
-
-        'elevation field
-        ComboSNOTEL_Elevation.Items.Clear()
-        For i = 0 To nfields - 1 'Selects only numerical data types
-            aField = pFields.Field(i)
-            qType = aField.Type
-            If qType <= esriFieldType.esriFieldTypeDouble Then 'numerical data types
-                ComboSNOTEL_Elevation.Items.Add(aField.Name)
-            End If
-        Next
-
-        'name field
-        ComboSNOTEL_Name.Items.Clear()
-        ComboSNOTEL_Name.Items.Add("None")
-        For i = 1 To nfields 'Selects only string data types
-            aField = pFields.Field(i - 1)
-            qType = aField.Type
-            If qType = esriFieldType.esriFieldTypeString Then 'string data types
-                ComboSNOTEL_Name.Items.Add(aField.Name)
-            End If
-        Next
-
-        aField = Nothing
-        pFields = Nothing
-        pFeatClass = Nothing
-        pFeatWorkspace = Nothing
-        pWksFactory = Nothing
-
-        pDatasetName = Nothing
-        pGxDataset = Nothing
-        pFilter = Nothing
         pGxObject = Nothing
         pGxDialog = Nothing
-
-        ComboSNOTEL_Name.SelectedIndex = 0
-        ComboSNOTEL_Elevation.SelectedIndex = 0
-        CmdUndo.Enabled = True
     End Sub
 
     Private Sub CmdSetSnowC_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetSnowC.Click
@@ -1028,49 +1052,4 @@ AbandonSub:
         GrpBoxSnowCourseUnit.Visible = not_Status
     End Sub
 
-    Private Sub CmdSetSNOTELWeb_Click(sender As System.Object, e As System.EventArgs) Handles CmdSetSNOTELWeb.Click
-        Dim pGxDialog As IGxDialog = New GxDialog
-        pGxDialog.AllowMultiSelect = False
-        pGxDialog.Title = "Select SNOTEL Feature Service"
-        Dim pGxFilter As IGxObjectFilter = New GxFilterFeatureServers
-        pGxDialog.ObjectFilter = pGxFilter
-        Dim pGxObjects As IEnumGxObject = Nothing
-        If pGxDialog.DoModalOpen(0, pGxObjects) Then
-            pGxObjects.Reset()
-            Dim pGxObj As IGxObject = pGxObjects.Next
-            Dim agsObj As IGxAGSObject = CType(pGxObj, IGxAGSObject)
-            Dim sName As IAGSServerObjectName = agsObj.AGSServerObjectName
-            Dim url As String = agsObj.AGSServerObjectName.URL
-            Dim propertySet As IPropertySet = agsObj.AGSServerObjectName.AGSServerConnectionName.ConnectionProperties()
-            'Build the REST url
-            Dim prefix As String = propertySet.GetProperty(BA_Property_RestUrl)
-            'Extract the selected service information
-            Dim idxServices As Integer = url.IndexOf(BA_Url_Services)
-            Dim idxMapServer As Integer = url.IndexOf(BA_Url_MapServer)
-            Dim serviceText As String = url.Substring(idxServices, idxMapServer - idxServices - 1)   'subtract 1 to avoid trailing /
-            txtSNOTEL.Text = prefix & serviceText & BA_EnumDescription(PublicPath.FeatureServiceUrl)
-
-            'elevation field
-            ComboSNOTEL_Elevation.Items.Clear()
-            Dim fsFields As IList(Of FeatureServiceField) = BA_QueryAllFeatureServiceFieldNames(txtSNOTEL.Text)
-            For Each fField As FeatureServiceField In fsFields
-                If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
-                    ComboSNOTEL_Elevation.Items.Add(fField.alias)
-                End If
-            Next
-            ComboSNOTEL_Elevation.SelectedIndex = 0
-
-            'name field
-            ComboSNOTEL_Name.Items.Clear()
-            ComboSNOTEL_Name.Items.Add("None")
-            ComboSNOTEL_Name.SelectedItem = "None"
-            For Each fField As FeatureServiceField In fsFields
-                If fField.fieldType = esriFieldType.esriFieldTypeString Then
-                    ComboSNOTEL_Name.Items.Add(fField.alias)
-                End If
-            Next
-
-            CmdUndo.Enabled = True
-        End If
-    End Sub
 End Class
