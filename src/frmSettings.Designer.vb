@@ -90,7 +90,6 @@ Partial Class frmSettings
         Me.GrpBoxSnowCourseUnit = New System.Windows.Forms.GroupBox()
         Me.GrpBoxSNOTELUnit = New System.Windows.Forms.GroupBox()
         Me.ChkboxAOIOnly = New System.Windows.Forms.CheckBox()
-        Me.CmdWeb30MDEM = New System.Windows.Forms.Button()
         Me.CmdSetSNOTELWeb = New System.Windows.Forms.Button()
         Me.FrameDEM.SuspendLayout()
         Me.FrameUnit.SuspendLayout()
@@ -532,12 +531,6 @@ Partial Class frmSettings
         Me.ChkboxAOIOnly.Name = "ChkboxAOIOnly"
         Me.ChkboxAOIOnly.UseVisualStyleBackColor = True
         '
-        'CmdWeb30MDEM
-        '
-        resources.ApplyResources(Me.CmdWeb30MDEM, "CmdWeb30MDEM")
-        Me.CmdWeb30MDEM.Name = "CmdWeb30MDEM"
-        Me.CmdWeb30MDEM.UseVisualStyleBackColor = True
-        '
         'CmdSetSNOTELWeb
         '
         resources.ApplyResources(Me.CmdSetSNOTELWeb, "CmdSetSNOTELWeb")
@@ -549,7 +542,6 @@ Partial Class frmSettings
         resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.Controls.Add(Me.CmdSetSNOTELWeb)
-        Me.Controls.Add(Me.CmdWeb30MDEM)
         Me.Controls.Add(Me.ChkboxAOIOnly)
         Me.Controls.Add(Me.lstLayers)
         Me.Controls.Add(Me.GrpBoxSNOTELUnit)
@@ -691,6 +683,5 @@ Partial Class frmSettings
     Friend WithEvents GrpBoxSnowCourseUnit As System.Windows.Forms.GroupBox
     Friend WithEvents GrpBoxSNOTELUnit As System.Windows.Forms.GroupBox
     Friend WithEvents ChkboxAOIOnly As System.Windows.Forms.CheckBox
-    Friend WithEvents CmdWeb30MDEM As System.Windows.Forms.Button
     Friend WithEvents CmdSetSNOTELWeb As System.Windows.Forms.Button
 End Class

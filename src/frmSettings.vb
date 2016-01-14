@@ -129,37 +129,41 @@ Public Class frmSettings
 
     Private Sub CmdSet30MDEM_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSet30MDEM.Click
         Dim bObjectSelected As Boolean = True
-        Dim pGxDialog As IGxDialog = New GxDialog
-
-        Dim Data_Path As String, Data_Name As String
-        Dim data_fullname As String
+        Dim filterCollection As IGxObjectFilterCollection = New GxDialogClass()
         Dim pGxObject As IEnumGxObject = Nothing
 
-        Dim pFilter As IGxObjectFilter
-        pFilter = New GxFilterRasterDatasets
+        Dim rasFilter As IGxObjectFilter = New GxFilterRasterDatasets
+        filterCollection.AddFilter(rasFilter, False)
+        Dim imageFilter As IGxObjectFilter = New GxFilterImageServers
+        filterCollection.AddFilter(imageFilter, True)
+        Dim pGxDialog As IGxDialog = CType(filterCollection, IGxDialog)
 
         'initialize and open mini browser
         With pGxDialog
             .AllowMultiSelect = False
             .ButtonCaption = "Select"
             .Title = "Select 30 Meters DEM"
-            .ObjectFilter = pFilter
             bObjectSelected = .DoModalOpen(My.ArcMap.Application.hWnd, pGxObject)
         End With
 
         If bObjectSelected = False Then Exit Sub
 
-        'get the name of the selected folder
-        Dim pGxDataset As IGxDataset
-        pGxDataset = pGxObject.Next
-        Dim pDatasetName As IDatasetName
-        pDatasetName = pGxDataset.DatasetName
-        Data_Path = pDatasetName.WorkspaceName.PathName
-        Data_Name = pDatasetName.Name
-        data_fullname = Data_Path & Data_Name
-        If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
-        txtDEM30.Text = data_fullname
-        CmdUndo.Enabled = True
+        Dim pGxObj As IGxObject = pGxObject.Next
+        If pGxObj.Category.Equals(BA_EnumDescription(GxFilterCategory.ImageService)) Then
+            'get the url of the selected image service
+            Dim agsObj As IGxAGSObject = CType(pGxObj, IGxAGSObject)
+            txtDEM30.Text = agsObj.AGSServerObjectName.URL
+        Else
+            'get the name of the selected folder and file
+            Dim pGxDataset As IGxDataset = CType(pGxObj, IGxDataset)
+            Dim pDatasetName As IDatasetName = pGxDataset.DatasetName
+            Dim Data_Path As String = pDatasetName.WorkspaceName.PathName
+            Dim data_fullname As String = Data_Path & pDatasetName.Name
+            If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
+            txtDEM30.Text = data_fullname
+        End If
+
+        If Not String.IsNullOrEmpty(txtDEM30.Text) Then CmdUndo.Enabled = True
     End Sub
 
     Private Sub CmdSetGadgeLayer_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetGadgeLayer.Click
@@ -1022,31 +1026,6 @@ AbandonSub:
         ComboSC_Name.Visible = not_Status
         lblSnowCourseUnit.Visible = not_Status
         GrpBoxSnowCourseUnit.Visible = not_Status
-    End Sub
-
-    Private Sub CmdWeb30MDEM_Click(sender As System.Object, e As System.EventArgs) Handles CmdWeb30MDEM.Click
-        Dim bObjectSelected As Boolean = True
-        Dim pGxDialog As IGxDialog = New GxDialog
-        Dim pGxObject As IEnumGxObject = Nothing
-        Dim pFilter As IGxObjectFilter = New GxFilterImageServers
-
-        'initialize and open mini browser
-        With pGxDialog
-            .AllowMultiSelect = False
-            .ButtonCaption = "Select"
-            .Title = "Select 30 Meters DEM image service"
-            .ObjectFilter = pFilter
-            bObjectSelected = .DoModalOpen(0, pGxObject)
-        End With
-
-        If bObjectSelected = False Then Exit Sub
-
-        'get the url of the selected image service
-        pGxObject.Reset()
-        Dim pGxObj As IGxObject = pGxObject.Next
-        Dim agsObj As IGxAGSObject = CType(pGxObj, IGxAGSObject)
-        txtDEM30.Text = agsObj.AGSServerObjectName.URL
-        CmdUndo.Enabled = True
     End Sub
 
     Private Sub CmdSetSNOTELWeb_Click(sender As System.Object, e As System.EventArgs) Handles CmdSetSNOTELWeb.Click
