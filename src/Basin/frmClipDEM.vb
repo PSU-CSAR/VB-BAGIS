@@ -556,8 +556,7 @@ AbandonClipDEM:
     Private Function ClipAOIImageServer(ByVal strDEMDataSet As String, ByVal newFilePath As String) As Integer
         Dim clipFilePath As String = BA_GeodatabasePath(BasinFolderBase, GeodatabaseNames.Aoi, True) & BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
         Dim response As Integer = -1
-        Dim success As BA_ReturnCode = BA_ClipImageServiceToVector(clipFilePath, BA_FIELD_AOI_NAME, strDEMDataSet, _
-                                                                   newFilePath, Nothing)
+        Dim success As BA_ReturnCode = BA_ClipImageServiceToVector(clipFilePath, strDEMDataSet, newFilePath)
         If success = BA_ReturnCode.Success Then response = 1
         Return response
     End Function

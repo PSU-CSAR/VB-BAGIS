@@ -88,15 +88,19 @@ Public Class FrmWebservices
         'Dim clipFilePath As String = "C:\Docs\Lesley\teton_aoi\aoi.gdb\aoib"
         Dim clipFilePath As String = "C:\Docs\Lesley\teton_aoi\aoi.gdb\aoi_v"
         Dim newFilePath As String = "C:\Docs\Lesley\teton_aoi\layers.gdb\dem_web"
-        'Dim success As BA_ReturnCode = BA_ClipImageService(clipFilePath, TxtImageUrl.Text, newFilePath)
-        Dim success As BA_ReturnCode = BA_ClipImageServiceToVector(clipFilePath, BA_FIELD_AOI_NAME, TxtImageUrl.Text, _
-                                                                   newFilePath, Nothing)
+        Dim success As BA_ReturnCode = BA_ClipImageServiceToVector(clipFilePath, TxtImageUrl.Text, newFilePath)
     End Sub
 
     Private Sub BtnTest_Click(sender As System.Object, e As System.EventArgs) Handles BtnTest.Click
-        Dim aoiPath As String = "C:\Docs\Lesley\New_Basin\Fern_Ridge_Lake_Inflow_01122016"
-        Dim clipFilePath As String = aoiPath & "\aoi.gdb\aoib_v"
-        Dim newFilePath As String = aoiPath & "\layers.gdb\snotel_sites_web"
-        BA_ClipFeatureService(clipFilePath, TxtWebService.Text, newFilePath, aoiPath)
+        'Dim aoiPath As String = "C:\Docs\Lesley\New_Basin\Fern_Ridge_Lake_Inflow_01122016"
+        'Dim clipFilePath As String = aoiPath & "\aoi.gdb\aoib_v"
+        'Dim newFilePath As String = aoiPath & "\layers.gdb\snotel_sites_web"
+        'BA_ClipFeatureService(clipFilePath, TxtWebService.Text, newFilePath, aoiPath)
+        Dim cellSize As Double = BA_CellSize("C:\Docs\Lesley\teton_aoi\surfaces.gdb", "dem_filled")
+        Dim xCols As Long = -1
+        Dim yRows As Long = -1
+        Dim extent As IEnvelope = Nothing
+        BA_GetColumnRowCountFromVector("C:\Docs\Lesley\teton_aoi\aoi.gdb\p_aoi_v", cellSize, cellSize, _
+                                       extent, xCols, yRows)
     End Sub
 End Class
