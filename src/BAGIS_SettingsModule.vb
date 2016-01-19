@@ -149,10 +149,8 @@ Module BAGIS_SettingsModule
                 BA_SystemSettings.DEM10M = TempPathName
                 SettingsForm.txtDEM10.Text = BA_SystemSettings.DEM10M
                 'check if file exists
-                Dim myPath As String = "", demname As String = ""
-                demname = BA_GetBareName(TempPathName, myPath)
-                If Right(myPath, 1) = "\" Then myPath = Left(myPath, Len(myPath) - 1)
-                If Not BA_File_ExistsRaster(myPath, demname) Then 'this was file.exists(temppathname) 03-23-2012
+                Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(TempPathName)
+                If Not BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTRasterDataset) Then
                     return_message = return_message & vbCrLf & "DEM Data Missing: " & TempPathName
                 End If
 
@@ -161,11 +159,8 @@ Module BAGIS_SettingsModule
                 BA_SystemSettings.DEM30M = TempPathName
                 SettingsForm.txtDEM30.Text = BA_SystemSettings.DEM30M
                 'check if file exists
-                myPath = ""
-                demname = BA_GetBareName(TempPathName, myPath)
-                If Right(myPath, 1) = "\" Then myPath = Left(myPath, Len(myPath) - 1)
-
-                If Not BA_File_Exists(TempPathName, WorkspaceType.ImageServer, esriDatasetType.esriDTRasterDataset) Then
+                wType = BA_GetWorkspaceTypeFromPath(TempPathName)
+                If Not BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTRasterDataset) Then
                     return_message = return_message & vbCrLf & "DEM Data Missing: " & TempPathName
                 End If
 
@@ -309,7 +304,7 @@ Module BAGIS_SettingsModule
                 linestring = sr.ReadLine()                                                                                                                  '13
                 SettingsForm.txtSNOTEL.Text = Trim(linestring)
 
-                Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtSNOTEL.Text)
+                wType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtSNOTEL.Text)
                 If Trim(linestring) = "" Then
                     TempPathName = "SNOTEL"
                     FileExists = False

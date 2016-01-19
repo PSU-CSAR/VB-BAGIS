@@ -77,8 +77,6 @@ Public Class frmClipDEMtoAOI
         End If
 
         'check if the Surfaces GDB exists, if so delete the GDB, otherwise, create it
-        Dim sourceDEMPath As String = ""
-        Dim sourceDEMName As String = BA_GetBareName(strDEMDataSet, sourceDEMPath)
         Dim sourceAOIGDB As String = BasinFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Aoi)
         Dim destSurfGDB As String = BasinFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Surfaces)
         Dim destAOIGDB As String = BasinFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Aoi)
@@ -131,8 +129,6 @@ Public Class frmClipDEMtoAOI
         progressDialog2.ShowDialog()
         pStepProg.Message = "Preparing for clipping..."
 
-        Dim inputraster As String
-
         Try
             'save the dem, dem extent, and the dem info file
             'response = BA_Create_FolderType_File(BasinFolderBase, BA_Basin_Type, strDEMText)
@@ -169,15 +165,13 @@ Public Class frmClipDEMtoAOI
             pStepProg.Message = "Clipping DEM... (step 1 of " & nstep & ")"
             pStepProg.Step()
 
-            inputraster = sourceDEMPath & "\" & sourceDEMName
-
             Dim demWType As WorkspaceType = BA_GetWorkspaceTypeFromPath(strDEMDataSet)
             If ChkSmoothDEM.Checked Then
                 If demWType = WorkspaceType.ImageServer Then
                     Dim newFilePath As String = destSurfGDB & "\" & "tempdem"
                     response = BA_ClipAOIImageServer(BasinFolderBase, strDEMDataSet, newFilePath, AOIClipFile.AOIExtentCoverage)
                 Else
-                    response = BA_ClipAOIRaster(BasinFolderBase, inputraster, "tempdem", destSurfGDB, AOIClipFile.AOIExtentCoverage, False)
+                    response = BA_ClipAOIRaster(BasinFolderBase, strDEMDataSet, "tempdem", destSurfGDB, AOIClipFile.AOIExtentCoverage, False)
                 End If
 
                 Dim ptempDEM As IGeoDataset2 = BA_OpenRasterFromGDB(destSurfGDB, "tempdem")
@@ -205,7 +199,7 @@ Public Class frmClipDEMtoAOI
                     Dim newFilePath As String = destSurfGDB & "\" & BA_EnumDescription(MapsFileName.dem_gdb)
                     response = BA_ClipAOIImageServer(BasinFolderBase, strDEMDataSet, newFilePath, AOIClipFile.AOIExtentCoverage)
                 Else
-                    response = BA_ClipAOIRaster(BasinFolderBase, inputraster, BA_EnumDescription(MapsFileName.dem_gdb), _
+                    response = BA_ClipAOIRaster(BasinFolderBase, strDEMDataSet, BA_EnumDescription(MapsFileName.dem_gdb), _
                                                 destSurfGDB, AOIClipFile.AOIExtentCoverage, False)
                 End If
             End If

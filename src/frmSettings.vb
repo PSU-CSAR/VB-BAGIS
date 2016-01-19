@@ -93,38 +93,42 @@ Public Class frmSettings
     End Sub
 
     Private Sub CmdSet10MDEM_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSet10MDEM.Click
-        Dim bObjectSelected As Boolean
-        Dim pGxDialog As IGxDialog
-        pGxDialog = New GxDialog
-        Dim Data_Path As String, Data_Name As String
-        Dim data_fullname As String
+        Dim bObjectSelected As Boolean = True
+        Dim filterCollection As IGxObjectFilterCollection = New GxDialogClass()
         Dim pGxObject As IEnumGxObject = Nothing
 
-        Dim pFilter As IGxObjectFilter
-        pFilter = New GxFilterRasterDatasets
+        Dim rasFilter As IGxObjectFilter = New GxFilterRasterDatasets
+        filterCollection.AddFilter(rasFilter, True)
+        Dim imageFilter As IGxObjectFilter = New GxFilterImageServers
+        filterCollection.AddFilter(imageFilter, False)
+        Dim pGxDialog As IGxDialog = CType(filterCollection, IGxDialog)
 
         'initialize and open mini browser
         With pGxDialog
             .AllowMultiSelect = False
             .ButtonCaption = "Select"
             .Title = "Select 10 Meters DEM"
-            .ObjectFilter = pFilter
             bObjectSelected = .DoModalOpen(My.ArcMap.Application.hWnd, pGxObject)
         End With
 
         If bObjectSelected = False Then Exit Sub
 
-        'get the name of the selected folder
-        Dim pGxDataset As IGxDataset
-        pGxDataset = pGxObject.Next
-        Dim pDatasetName As IDatasetName
-        pDatasetName = pGxDataset.DatasetName
-        Data_Path = pDatasetName.WorkspaceName.PathName
-        Data_Name = pDatasetName.Name
-        data_fullname = Data_Path & Data_Name
-        If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
-        txtDEM10.Text = data_fullname
-        CmdUndo.Enabled = True
+        Dim pGxObj As IGxObject = pGxObject.Next
+        If pGxObj.Category.Equals(BA_EnumDescription(GxFilterCategory.ImageService)) Then
+            'get the url of the selected image service
+            Dim agsObj As IGxAGSObject = CType(pGxObj, IGxAGSObject)
+            txtDEM10.Text = agsObj.AGSServerObjectName.URL
+        Else
+            'get the name of the selected folder and file
+            Dim pGxDataset As IGxDataset = CType(pGxObj, IGxDataset)
+            Dim pDatasetName As IDatasetName = pGxDataset.DatasetName
+            Dim Data_Path As String = pDatasetName.WorkspaceName.PathName
+            Dim data_fullname As String = Data_Path & pDatasetName.Name
+            If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
+            txtDEM10.Text = data_fullname
+        End If
+
+        If Not String.IsNullOrEmpty(txtDEM10.Text) Then CmdUndo.Enabled = True
     End Sub
 
     Private Sub CmdSet30MDEM_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSet30MDEM.Click
@@ -133,9 +137,9 @@ Public Class frmSettings
         Dim pGxObject As IEnumGxObject = Nothing
 
         Dim rasFilter As IGxObjectFilter = New GxFilterRasterDatasets
-        filterCollection.AddFilter(rasFilter, False)
+        filterCollection.AddFilter(rasFilter, True)
         Dim imageFilter As IGxObjectFilter = New GxFilterImageServers
-        filterCollection.AddFilter(imageFilter, True)
+        filterCollection.AddFilter(imageFilter, False)
         Dim pGxDialog As IGxDialog = CType(filterCollection, IGxDialog)
 
         'initialize and open mini browser
