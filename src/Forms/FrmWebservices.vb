@@ -5,6 +5,7 @@ Imports System.Text
 Imports ESRI.ArcGIS.esriSystem
 Imports ESRI.ArcGIS.Geometry
 Imports BAGIS_ClassLibrary
+Imports ESRI.ArcGIS.Geodatabase
 
 
 Public Class FrmWebservices
@@ -102,5 +103,14 @@ Public Class FrmWebservices
         Dim extent As IEnvelope = Nothing
         BA_GetColumnRowCountFromVector("C:\Docs\Lesley\teton_aoi\aoi.gdb\p_aoi_v", cellSize, cellSize, _
                                        extent, xCols, yRows)
+        Dim featClass As IFeatureClass = BA_OpenFeatureClassFromGDB("C:\Docs\Lesley\teton_aoi\aoi.gdb", "aoi_v")
+        Dim snapRasterPath As String = "C:\Docs\Lesley\BASIN2\surfaces.gdb\" & BA_EnumDescription(MapsFileName.filled_dem_gdb)
+        'Dim snapRasterPath As String = TxtImageUrl.Text
+        Dim newFileName As String = "snapTest2"
+        Dim layersGdb As String = "C:\Docs\Lesley\teton_aoi\layers.gdb"
+        If BA_File_Exists(layersGdb & "\" & newFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+            BA_RemoveRasterFromGDB(layersGdb, newFileName)
+        End If
+        BA_ShapeFile2RasterGDB(featClass, layersGdb, newFileName, cellSize, BA_FIELD_AOI_NAME, snapRasterPath)
     End Sub
 End Class

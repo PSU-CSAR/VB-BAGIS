@@ -143,8 +143,6 @@ Public Class frmCreateAOIfromExistingBND
         End If
 
         'check if the Surfaces GDB exists, if so delete the GDB, otherwise, create it
-        Dim sourceDEMPath As String = ""
-        Dim sourceDEMName As String = BA_GetBareName(strDEMDataSet, sourceDEMPath)
         Dim destSurfGDB As String = UserAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Surfaces)
         Dim destAOIGDB As String = UserAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Aoi)
         Dim destLayersGDB As String = UserAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers)
@@ -223,20 +221,27 @@ Public Class frmCreateAOIfromExistingBND
         progressDialog2.ShowDialog()
         pStepProg.Message = "Preparing for clipping..."
 
-        Dim inputraster As String
-        Dim sourceShapePath As String = ""
-        Dim sourceShapeName As String = BA_GetBareName(txtSourceData.Text, sourceShapePath)
-
-        Dim Distance As Double
+        Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(strDEMDataSet)
         Dim DEMCellSize As Double = 0
-        BA_GetRasterStats(sourceDEMPath & "\" & sourceDEMName, DEMCellSize)
+        Dim inputraster As String
+        Dim Distance As Double
+        If wType = WorkspaceType.ImageServer Then
+            DEMCellSize = BA_CellSizeImageService(strDEMDataSet)
+        Else
+            Dim sourceDEMPath As String = ""
+            Dim sourceDEMName As String = BA_GetBareName(strDEMDataSet, sourceDEMPath)
+            BA_GetRasterStats(sourceDEMPath & "\" & sourceDEMName, DEMCellSize)
+        End If
 
         Try
             ''create a raster version of the AOI boundary
             'BA_EnumDescription(PublicPath.AoiGrid)
+            Dim sourceShapePath As String = ""
+            Dim sourceShapeName As String = BA_GetBareName(txtSourceData.Text, sourceShapePath)
+
             If BA_AddValueFieldtoShapefile(txtSourceData.Text, "RASTERID", 1) > 0 Then
                 Dim pinFClass As IFeatureClass = BA_OpenFeatureClassFromFile(sourceShapePath, BA_StandardizeShapefileName(sourceShapeName, False, False))
-                BA_ShapeFile2RasterGDB(pinFClass, destAOIGDB, BA_AOIExtentRaster, DEMCellSize, "RASTERID", sourceDEMPath & "\" & sourceDEMName)
+                BA_ShapeFile2RasterGDB(pinFClass, destAOIGDB, BA_AOIExtentRaster, DEMCellSize, "RASTERID", strDEMDataSet)
                 pinFClass = Nothing
             Else
                 MsgBox("Input shapefile does not contain valid polygons! Please visually inspect the file.")
@@ -332,11 +337,17 @@ Public Class frmCreateAOIfromExistingBND
             retVal = BA_Feature2RasterGP(UserAOIFolderBase & BA_StandardizeShapefileName(BA_BufferedAOIExtentCoverage, True, True), destAOIGDB & BA_EnumDescription(PublicPath.AoiBufferedGrid), "ID", DEMCellSize, fullLayerPath)
             BA_Remove_Shapefile(UserAOIFolderBase, BA_StandardizeShapefileName(BA_BufferedAOIExtentCoverage, False))
 
-            inputraster = sourceDEMPath & "\" & sourceDEMName
+            inputraster = strDEMDataSet
 
             If ChkSmoothDEM.Checked Then
-                response = BA_ClipAOIRaster(UserAOIFolderBase, inputraster, "originaldem", destSurfGDB, AOIClipFile.BufferedAOIExtentCoverage, False)
-                Dim ptempDEM As IGeoDataset2 = BA_OpenRasterFromGDB(destSurfGDB, "originaldem")
+                Dim originalDem As String = "originaldem"
+                If wType = WorkspaceType.ImageServer Then
+                    Dim newFilePath As String = destSurfGDB & "\" & originalDem
+                    response = BA_ClipAOIImageServer(UserAOIFolderBase, strDEMDataSet, newFilePath, AOIClipFile.BufferedAOIExtentCoverage)
+                Else
+                    response = BA_ClipAOIRaster(UserAOIFolderBase, inputraster, originalDem, destSurfGDB, AOIClipFile.BufferedAOIExtentCoverage, False)
+                End If
+                Dim ptempDEM As IGeoDataset2 = BA_OpenRasterFromGDB(destSurfGDB, originalDem)
                 pClippedDEM = Smooth(ptempDEM, Val(txtHeight.Text), Val(txtWidth.Text))
                 ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(ptempDEM)
 
@@ -365,7 +376,13 @@ Public Class frmCreateAOIfromExistingBND
 
                 BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.dem_gdb))
             Else
-                response = BA_ClipAOIRaster(UserAOIFolderBase, inputraster, BA_EnumDescription(MapsFileName.dem_gdb), destSurfGDB, AOIClipFile.BufferedAOIExtentCoverage, False)
+                If wType = WorkspaceType.ImageServer Then
+                    Dim newFilePath As String = destSurfGDB & "\" & BA_EnumDescription(MapsFileName.dem_gdb)
+                    response = BA_ClipAOIImageServer(UserAOIFolderBase, strDEMDataSet, newFilePath, AOIClipFile.BufferedAOIExtentCoverage)
+                Else
+                    response = BA_ClipAOIRaster(UserAOIFolderBase, inputraster, BA_EnumDescription(MapsFileName.dem_gdb), _
+                                                destSurfGDB, AOIClipFile.BufferedAOIExtentCoverage, False)
+                End If
             End If
 
             If response <= 0 Then
@@ -983,66 +1000,5 @@ Public Class frmCreateAOIfromExistingBND
 
         End Try
     End Function
-
-
-    Public Sub BA_ShapeFile2RasterGDB(ByVal featClass As IFeatureClass, ByVal gdbPath As String, _
-                                ByVal FileName As String, ByVal Cellsize As Object, _
-                                ByVal valueField As String, ByVal snapRasterPath As String)
-        Dim pWS As IWorkspace = Nothing
-        Dim pWSFactory As IWorkspaceFactory = New RasterWorkspaceFactory
-        Dim pConversionOp As IConversionOp = New RasterConversionOp
-        Dim pEnv As IRasterAnalysisEnvironment = Nothing
-        Dim pRDS As IRasterDataset = Nothing
-        Dim snapGDS As IGeoDataset = Nothing
-        Dim envelope As IEnvelope = Nothing
-        Dim pFDesc As IFeatureClassDescriptor = New FeatureClassDescriptor
-        pFDesc.Create(featClass, Nothing, valueField)
-        Dim pGeoDataset As IGeoDataset = CType(featClass, IGeoDataset)
-
-        Try
-            'Commenting out check for integer values since we may also convert text values; Field values should be checked
-            'before this is called from either BA_Feature2RasterInteger or BA_Feature2RasterDouble
-            'If BA_IsIntegerField(featClassDescr, valueField) Then
-            Dim hruPath As String = ""
-            Dim tmpName As String = BA_GetBareName(gdbPath, hruPath)
-            pWS = pWSFactory.OpenFromFile(hruPath, 0)
-            pEnv = pConversionOp
-            pEnv.SetCellSize(esriRasterEnvSettingEnum.esriRasterEnvValue, Cellsize)
-            If Not String.IsNullOrEmpty(snapRasterPath) Then
-                Dim snapPath As String = "PleaseReturn"
-                Dim snapName As String = BA_GetBareName(snapRasterPath, snapPath)
-
-                Dim workspaceType As WorkspaceType = BA_GetWorkspaceTypeFromPath(snapPath)
-                If workspaceType = workspaceType.Geodatabase Then
-                    snapGDS = BA_OpenRasterFromGDB(snapPath, snapName)
-                ElseIf workspaceType = workspaceType.Raster Then 'input is a GRID
-                    snapGDS = BA_OpenRasterFromFile(snapPath, snapName)
-                End If
-
-                envelope = pGeoDataset.Extent
-                Dim object_Envelope As System.Object = CType(envelope, System.Object) ' Explicit Cast
-                pEnv.SetExtent(esriRasterEnvSettingEnum.esriRasterEnvValue, object_Envelope, snapRasterPath)
-            End If
-            pRDS = pConversionOp.ToRasterDataset(pFDesc, "GRID", pWS, FileName)
-            Dim success As Integer = BA_SaveRasterDatasetGDB(pRDS, gdbPath, BA_RASTER_FORMAT, FileName)
-            If success = 1 Then
-                BA_Remove_Raster(hruPath, FileName)
-            End If
-            'Else
-            'Throw New Exception("Invalid values found in value field. Values must be whole numbers.")
-            'End If
-        Catch ex As Exception
-            MessageBox.Show("BA_ShapeFile2RasterGDB Exception: " + ex.Message)
-        Finally
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pWS)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFDesc)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pConversionOp)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(snapGDS)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(envelope)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pEnv)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pRDS)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pGeoDataset)
-        End Try
-    End Sub
 
 End Class

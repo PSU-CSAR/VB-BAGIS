@@ -175,7 +175,7 @@ Public Class frmClipDEMtoAOI
             If ChkSmoothDEM.Checked Then
                 If demWType = WorkspaceType.ImageServer Then
                     Dim newFilePath As String = destSurfGDB & "\" & "tempdem"
-                    response = ClipAOIImageServer(strDEMDataSet, newFilePath)
+                    response = BA_ClipAOIImageServer(BasinFolderBase, strDEMDataSet, newFilePath, AOIClipFile.AOIExtentCoverage)
                 Else
                     response = BA_ClipAOIRaster(BasinFolderBase, inputraster, "tempdem", destSurfGDB, AOIClipFile.AOIExtentCoverage, False)
                 End If
@@ -203,7 +203,7 @@ Public Class frmClipDEMtoAOI
             Else
                 If demWType = WorkspaceType.ImageServer Then
                     Dim newFilePath As String = destSurfGDB & "\" & BA_EnumDescription(MapsFileName.dem_gdb)
-                    response = ClipAOIImageServer(strDEMDataSet, newFilePath)
+                    response = BA_ClipAOIImageServer(BasinFolderBase, strDEMDataSet, newFilePath, AOIClipFile.AOIExtentCoverage)
                 Else
                     response = BA_ClipAOIRaster(BasinFolderBase, inputraster, BA_EnumDescription(MapsFileName.dem_gdb), _
                                                 destSurfGDB, AOIClipFile.AOIExtentCoverage, False)
@@ -553,11 +553,4 @@ AbandonClipDEM:
         MsgBox(mText, MsgBoxStyle.Information, "Why Smooth DEM")
     End Sub
 
-    Private Function ClipAOIImageServer(ByVal strDEMDataSet As String, ByVal newFilePath As String) As Integer
-        Dim clipFilePath As String = BA_GeodatabasePath(BasinFolderBase, GeodatabaseNames.Aoi, True) & BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
-        Dim response As Integer = -1
-        Dim success As BA_ReturnCode = BA_ClipImageServiceToVector(clipFilePath, strDEMDataSet, newFilePath)
-        If success = BA_ReturnCode.Success Then response = 1
-        Return response
-    End Function
 End Class
