@@ -533,9 +533,9 @@ Public Class frmCreateAOI
             pStepProg.Step()
             System.Windows.Forms.Application.DoEvents()
 
-            'clip snotel shapefile
+            'clip snotel vector
             Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(strInLayerPath)
-            If strExtension = "(Shapefile)" Then
+            If wType = WorkspaceType.Raster Then
                 strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
                 response = BA_ClipAOISNOTEL(AOIFolderBase, strParentName & "\" & strInLayerBareName, True)
             ElseIf wType = WorkspaceType.FeatureServer Then
@@ -560,29 +560,34 @@ Public Class frmCreateAOI
 
             'clip snow course layer
             strInLayerPath = BA_SystemSettings.SCourseLayer
-            strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
 
-            pStepProg.Message = "Clipping " & strInLayerBareName & " layer... (step 8 of " & nstep & ")"
+            pStepProg.Message = "Clipping Snow Course layer... (step 8 of " & nstep & ")"
             pStepProg.Step()
             System.Windows.Forms.Application.DoEvents()
 
-            'clip snow course shapefile
-            If strExtension = "(Shapefile)" Then
+            'clip snow course vector
+            wType = BA_GetWorkspaceTypeFromPath(strInLayerPath)
+            If wType = WorkspaceType.Raster Then
+                strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
                 response = BA_ClipAOISNOTEL(AOIFolderBase, strParentName & "\" & strInLayerBareName, False)
-                If response <> 1 Then
-                    Select Case response
-                        Case -1 '-1: unknown error
-                            MsgBox("Unknown error occurred when clipping data to AOI!")
-                        Case -2 '-2: output exists
-                            MsgBox("Output target layer exists in the AOI. Unable to clip new data to AOI!")
-                        Case -3 '-3: missing parameters
-                            MsgBox("Missing clipping parameters. Unable to clip new data to AOI!")
-                        Case -4 '-4: no input shapefile
-                            MsgBox("Missing the clipping shapefile. Unable to clip new data to AOI!")
-                        Case 0 '0: no intersect between the input and the clip layers
-                            'MsgBox("No Snow course data exists within the AOI. Unable to clip new SNOTEL data to AOI!")
-                    End Select
-                End If
+            ElseIf wType = WorkspaceType.FeatureServer Then
+                response = BA_ClipAOISnoWebServices(AOIFolderBase, strInLayerPath, False)
+            End If
+
+            'Display error message if appropriate
+            If response <> 1 Then
+                Select Case response
+                    Case -1 '-1: unknown error
+                        MsgBox("Unknown error occurred when clipping data to AOI!")
+                    Case -2 '-2: output exists
+                        MsgBox("Output target layer exists in the AOI. Unable to clip new data to AOI!")
+                    Case -3 '-3: missing parameters
+                        MsgBox("Missing clipping parameters. Unable to clip new data to AOI!")
+                    Case -4 '-4: no input shapefile
+                        MsgBox("Missing the clipping shapefile. Unable to clip new data to AOI!")
+                    Case 0 '0: no intersect between the input and the clip layers
+                        'MsgBox("No SNOTEL data exists within the AOI. Unable to clip new SNOTEL data to AOI!")
+                End Select
             End If
 
             'clip PRISM raster data
