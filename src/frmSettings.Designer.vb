@@ -48,7 +48,7 @@ Partial Class frmSettings
         Me.CmdSetWatershedRef = New System.Windows.Forms.Button()
         Me.CmdSet10MDEM = New System.Windows.Forms.Button()
         Me.CmdSet30MDEM = New System.Windows.Forms.Button()
-        Me.CmdSetGadgeLayer = New System.Windows.Forms.Button()
+        Me.CmdSetGaugeLayer = New System.Windows.Forms.Button()
         Me.CmdSetSNOTEL = New System.Windows.Forms.Button()
         Me.CmdSetPrecip = New System.Windows.Forms.Button()
         Me.CmdSetSnowC = New System.Windows.Forms.Button()
@@ -254,11 +254,11 @@ Partial Class frmSettings
         Me.CmdSet30MDEM.Name = "CmdSet30MDEM"
         Me.CmdSet30MDEM.UseVisualStyleBackColor = True
         '
-        'CmdSetGadgeLayer
+        'CmdSetGaugeLayer
         '
-        resources.ApplyResources(Me.CmdSetGadgeLayer, "CmdSetGadgeLayer")
-        Me.CmdSetGadgeLayer.Name = "CmdSetGadgeLayer"
-        Me.CmdSetGadgeLayer.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.CmdSetGaugeLayer, "CmdSetGaugeLayer")
+        Me.CmdSetGaugeLayer.Name = "CmdSetGaugeLayer"
+        Me.CmdSetGaugeLayer.UseVisualStyleBackColor = True
         '
         'CmdSetSNOTEL
         '
@@ -406,6 +406,7 @@ Partial Class frmSettings
         Me.ComboSC_Elevation.FormattingEnabled = True
         resources.ApplyResources(Me.ComboSC_Elevation, "ComboSC_Elevation")
         Me.ComboSC_Elevation.Name = "ComboSC_Elevation"
+        Me.ComboSC_Elevation.Sorted = True
         '
         'ComboSC_Name
         '
@@ -413,6 +414,7 @@ Partial Class frmSettings
         Me.ComboSC_Name.FormattingEnabled = True
         resources.ApplyResources(Me.ComboSC_Name, "ComboSC_Name")
         Me.ComboSC_Name.Name = "ComboSC_Name"
+        Me.ComboSC_Name.Sorted = True
         '
         'lblSnowCourseUnit
         '
@@ -557,7 +559,7 @@ Partial Class frmSettings
         Me.Controls.Add(Me.CmdAddLayer)
         Me.Controls.Add(Me.CmdSetPrecip)
         Me.Controls.Add(Me.CmdSetSNOTEL)
-        Me.Controls.Add(Me.CmdSetGadgeLayer)
+        Me.Controls.Add(Me.CmdSetGaugeLayer)
         Me.Controls.Add(Me.CmdSet30MDEM)
         Me.Controls.Add(Me.CmdSet10MDEM)
         Me.Controls.Add(Me.CmdSetWatershedRef)
@@ -633,7 +635,7 @@ Partial Class frmSettings
     Friend WithEvents CmdSetWatershedRef As System.Windows.Forms.Button
     Friend WithEvents CmdSet10MDEM As System.Windows.Forms.Button
     Friend WithEvents CmdSet30MDEM As System.Windows.Forms.Button
-    Friend WithEvents CmdSetGadgeLayer As System.Windows.Forms.Button
+    Friend WithEvents CmdSetGaugeLayer As System.Windows.Forms.Button
     Friend WithEvents CmdSetSNOTEL As System.Windows.Forms.Button
     Friend WithEvents CmdSetPrecip As System.Windows.Forms.Button
     Friend WithEvents CmdSetSnowC As System.Windows.Forms.Button

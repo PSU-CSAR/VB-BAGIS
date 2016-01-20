@@ -125,6 +125,10 @@ Public Class frmSettings
             Dim Data_Path As String = pDatasetName.WorkspaceName.PathName
             Dim data_fullname As String = Data_Path & pDatasetName.Name
             If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
+            If BA_GetWorkspaceTypeFromPath(data_fullname) = WorkspaceType.Geodatabase Then
+                ShowGeodatabaseErrorMessage("DEM data")
+                Exit Sub
+            End If
             txtDEM10.Text = data_fullname
         End If
 
@@ -164,13 +168,17 @@ Public Class frmSettings
             Dim Data_Path As String = pDatasetName.WorkspaceName.PathName
             Dim data_fullname As String = Data_Path & pDatasetName.Name
             If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
+            If BA_GetWorkspaceTypeFromPath(data_fullname) = WorkspaceType.Geodatabase Then
+                ShowGeodatabaseErrorMessage("DEM data")
+                Exit Sub
+            End If
             txtDEM30.Text = data_fullname
         End If
 
         If Not String.IsNullOrEmpty(txtDEM30.Text) Then CmdUndo.Enabled = True
     End Sub
 
-    Private Sub CmdSetGadgeLayer_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetGadgeLayer.Click
+    Private Sub CmdSetGaugeLayer_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetGaugeLayer.Click
         Dim bObjectSelected As Boolean
         Dim pGxDialog As IGxDialog
         pGxDialog = New GxDialog
@@ -194,10 +202,8 @@ Public Class frmSettings
         If bObjectSelected = False Then Exit Sub
 
         'get the name of the selected folder
-        Dim pGxDataset As IGxDataset
-        pGxDataset = pGxObject.Next
-        Dim pDatasetName As IDatasetName
-        pDatasetName = pGxDataset.DatasetName
+        Dim pGxDataset As IGxDataset = pGxObject.Next
+        Dim pDatasetName As IDatasetName = pGxDataset.DatasetName
         Data_Path = pDatasetName.WorkspaceName.PathName
         Data_Name = pDatasetName.Name
         data_type = pDatasetName.Type
@@ -297,9 +303,9 @@ AbandonSub:
         Const NONE_ITEM As String = "None"
 
         Dim pointFilter As IGxObjectFilter = New GxFilterPointFeatureClasses
-        filterCollection.AddFilter(pointFilter, False)
+        filterCollection.AddFilter(pointFilter, True)
         Dim featureServiceFilter As IGxObjectFilter = New GxFilterFeatureServers
-        filterCollection.AddFilter(featureServiceFilter, True)
+        filterCollection.AddFilter(featureServiceFilter, False)
         Dim pGxDialog As IGxDialog = CType(filterCollection, IGxDialog)
 
 
@@ -375,6 +381,10 @@ AbandonSub:
 
             Dim data_fullname As String = Data_Path & Data_Name & data_type_name
             If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
+            If BA_GetWorkspaceTypeFromPath(data_fullname) = WorkspaceType.Geodatabase Then
+                ShowGeodatabaseErrorMessage("SNOTEL data")
+                Exit Sub
+            End If
             txtSNOTEL.Text = data_fullname
 
             'read the fields in the attribute table and add to CmboxStationAtt
@@ -425,109 +435,139 @@ AbandonSub:
 
     Private Sub CmdSetSnowC_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetSnowC.Click
         Dim bObjectSelected As Boolean
-        Dim pGxDialog As IGxDialog
-        pGxDialog = New GxDialog
+        Dim filterCollection As IGxObjectFilterCollection = New GxDialogClass()
         Dim pGxObject As IEnumGxObject = Nothing
-        Dim Data_Path As String, Data_Name As String, data_type As Integer
-        Dim data_fullname As String
-        Dim data_type_name As String
+        Const NONE_ITEM As String = "None"
 
-        Dim pFilter As IGxObjectFilter = New GxFilterPointFeatureClasses
+        Dim pointFilter As IGxObjectFilter = New GxFilterPointFeatureClasses
+        filterCollection.AddFilter(pointFilter, True)
+        Dim featureServiceFilter As IGxObjectFilter = New GxFilterFeatureServers
+        filterCollection.AddFilter(featureServiceFilter, False)
+        Dim pGxDialog As IGxDialog = CType(filterCollection, IGxDialog)
 
         'initialize and open mini browser
         With pGxDialog
             .AllowMultiSelect = False
             .ButtonCaption = "Select"
             .Title = "Select Snow Course Layer"
-            .ObjectFilter = pFilter
             bObjectSelected = .DoModalOpen(My.ArcMap.Application.hWnd, pGxObject)
         End With
 
         If bObjectSelected = False Then Exit Sub
 
-        'get the name of the selected folder
-        Dim pGxDataset As IGxDataset
-        pGxDataset = pGxObject.Next
-        Dim pDatasetName As IDatasetName
-        pDatasetName = pGxDataset.DatasetName
-        Data_Path = pDatasetName.WorkspaceName.PathName
-        Data_Name = pDatasetName.Name
-        data_type = pDatasetName.Type
+        Dim pGxObj As IGxObject = pGxObject.Next
+        If pGxObj.Category = BA_EnumDescription(GxFilterCategory.FeatureService) Then
+            Dim agsObj As IGxAGSObject = CType(pGxObj, IGxAGSObject)
+            Dim sName As IAGSServerObjectName = agsObj.AGSServerObjectName
+            Dim url As String = agsObj.AGSServerObjectName.URL
+            Dim propertySet As IPropertySet = agsObj.AGSServerObjectName.AGSServerConnectionName.ConnectionProperties()
+            'Build the REST url
+            Dim prefix As String = propertySet.GetProperty(BA_Property_RestUrl)
+            'Extract the selected service information
+            Dim idxServices As Integer = url.IndexOf(BA_Url_Services)
+            Dim idxMapServer As Integer = url.IndexOf(BA_Url_MapServer)
+            Dim serviceText As String = url.Substring(idxServices, idxMapServer - idxServices - 1)   'subtract 1 to avoid trailing /
+            txtSnowCourse.Text = prefix & serviceText & BA_EnumDescription(PublicPath.FeatureServiceUrl)
 
-        'Set Data Type Name from Data Type
-        If data_type = 4 Then
-            data_type_name = " (Shapefile)"
-        ElseIf data_type = 5 Then
-            data_type_name = " (Shapefile)"
-        ElseIf data_type = 12 Then
-            data_type_name = " (Raster)"
-        ElseIf data_type = 13 Then
-            data_type_name = " (Raster)"
-        ElseIf data_type = 14 Then
-            data_type_name = " (Tin)"
+            'elevation field
+            ComboSC_Elevation.Items.Clear()
+            Dim fsFields As IList(Of FeatureServiceField) = BA_QueryAllFeatureServiceFieldNames(txtSnowCourse.Text)
+            For Each fField As FeatureServiceField In fsFields
+                If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
+                    ComboSC_Elevation.Items.Add(fField.alias)
+                End If
+            Next
+            ComboSC_Elevation.SelectedIndex = 0
+
+            'name field
+            ComboSC_Name.Items.Clear()
+            ComboSC_Name.Items.Add(NONE_ITEM)
+            ComboSC_Name.SelectedItem = NONE_ITEM
+            For Each fField As FeatureServiceField In fsFields
+                If fField.fieldType = esriFieldType.esriFieldTypeString Then
+                    ComboSC_Name.Items.Add(fField.alias)
+                End If
+            Next
         Else
-            data_type_name = " (Cannot Clip)"
+            'get the name of the selected folder
+            Dim pGxDataset As IGxDataset = CType(pGxObj, IGxDataset)
+            Dim pDatasetName As IDatasetName = pGxDataset.DatasetName
+            Dim Data_Path As String = pDatasetName.WorkspaceName.PathName
+            Dim Data_Name As String = pDatasetName.Name
+            Dim data_type As esriDatasetType = pDatasetName.Type
+            Dim data_type_name As String
+
+            'Set Data Type Name from Data Type
+            If data_type = esriDatasetType.esriDTFeatureDataset Then
+                data_type_name = " (Shapefile)"
+            ElseIf data_type = esriDatasetType.esriDTFeatureClass Then
+                data_type_name = " (Shapefile)"
+            ElseIf data_type = esriDatasetType.esriDTRasterDataset Then
+                data_type_name = " (Raster)"
+            ElseIf data_type = esriDatasetType.esriDTRasterBand Then
+                data_type_name = " (Raster)"
+            ElseIf data_type = esriDatasetType.esriDTTin Then
+                data_type_name = " (Tin)"
+            Else
+                data_type_name = " (Cannot Clip)"
+            End If
+
+            'pad a backslash to the path if it doesn't have one.
+            Data_Path = BA_StandardizePathString(Data_Path, True)
+
+            Dim data_fullname As String = Data_Path & Data_Name & data_type_name
+            If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
+            If BA_GetWorkspaceTypeFromPath(data_fullname) = WorkspaceType.Geodatabase Then
+                ShowGeodatabaseErrorMessage("Snow course data")
+                Exit Sub
+            End If
+            txtSnowCourse.Text = data_fullname
+
+            'read the fields in the attribute table and add to CmboxStationAtt
+            Dim pFeatClass As IFeatureClass = BA_OpenFeatureClassFromFile(Data_Path, Data_Name)
+
+            'get fields
+            Dim pFields As IFields = pFeatClass.Fields
+            Dim aField As IField
+            Dim i As Integer, nfields As Integer, qType As Integer
+            nfields = pFields.FieldCount
+
+            'elevation field
+            ComboSC_Elevation.Items.Clear()
+            For i = 0 To nfields - 1 'Selects only numerical data types
+                aField = pFields.Field(i)
+                qType = aField.Type
+                If qType <= esriFieldType.esriFieldTypeDouble Then 'numerical data types
+                    ComboSC_Elevation.Items.Add(aField.Name)
+                End If
+            Next
+            ComboSC_Elevation.SelectedIndex = 0
+
+            'name field
+            ComboSC_Name.Items.Clear()
+            ComboSC_Name.Items.Add(NONE_ITEM)
+            ComboSC_Name.SelectedItem = NONE_ITEM
+            For i = 1 To nfields 'Selects only string data types
+                aField = pFields.Field(i - 1)
+                qType = aField.Type
+                If qType = esriFieldType.esriFieldTypeString Then 'string data types
+                    ComboSC_Name.Items.Add(aField.Name)
+                End If
+            Next
+
+            'Release ArcObjects
+            aField = Nothing
+            pFields = Nothing
+            pFeatClass = Nothing
+            pDatasetName = Nothing
+            pGxDataset = Nothing
         End If
 
-        'pad a backslash to the path if it doesn't have one.
-        'If Right(Data_Path, 1) <> "\" Then Data_Path = Data_Path & "\"
-        Data_Path = BA_StandardizePathString(Data_Path, True)
+        If Not String.IsNullOrEmpty(txtSnowCourse.Text) Then CmdUndo.Enabled = True
 
-        data_fullname = Data_Path & Data_Name & data_type_name
-        If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
-        txtSnowCourse.Text = data_fullname
-
-        'read the fields in the attribute table and add to CmboxStationAtt
-        Dim pWksFactory As IWorkspaceFactory
-        pWksFactory = New ShapefileWorkspaceFactory
-        Dim pFeatWorkspace As IFeatureWorkspace
-        pFeatWorkspace = pWksFactory.OpenFromFile(Data_Path, 0)
-        Dim pFeatClass As IFeatureClass
-        pFeatClass = pFeatWorkspace.OpenFeatureClass(Data_Name)
-
-        'get fields
-        Dim pFields As IFields
-        Dim aField As IField
-        Dim i As Integer, nfields As Integer, qType As Integer
-        pFields = pFeatClass.Fields
-        nfields = pFields.FieldCount
-
-        'elevation field
-        ComboSC_Elevation.Items.Clear()
-        For i = 0 To nfields - 1 'Selects only numerical data types
-            aField = pFields.Field(i)
-            qType = aField.Type
-            If qType <= 3 Then 'numerical data types
-                ComboSC_Elevation.Items.Add(aField.Name)
-            End If
-        Next
-
-        'name field
-        ComboSC_Name.Items.Clear()
-        ComboSC_Name.Items.Add("None")
-        For i = 1 To nfields 'Selects only string data types
-            aField = pFields.Field(i - 1)
-            qType = aField.Type
-            If qType = 4 Then 'string data types
-                ComboSC_Name.Items.Add(aField.Name)
-            End If
-        Next
-
-        aField = Nothing
-        pFields = Nothing
-        pFeatClass = Nothing
-        pFeatWorkspace = Nothing
-        pWksFactory = Nothing
-
-        pDatasetName = Nothing
-        pGxDataset = Nothing
-        pFilter = Nothing
         pGxObject = Nothing
         pGxDialog = Nothing
 
-        ComboSC_Name.SelectedIndex = 0
-        ComboSC_Elevation.SelectedIndex = 0
-        CmdUndo.Enabled = True
     End Sub
 
     Private Sub CmdSetPrecip_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetPrecip.Click
@@ -1054,6 +1094,14 @@ AbandonSub:
         ComboSC_Name.Visible = not_Status
         lblSnowCourseUnit.Visible = not_Status
         GrpBoxSnowCourseUnit.Visible = not_Status
+    End Sub
+
+    Private Sub ShowGeodatabaseErrorMessage(ByVal dataName As String)
+        Dim sb As StringBuilder = New StringBuilder
+        sb.Append(dataName)
+        sb.Append(" cannot use data from a file geodatabase.")
+        sb.Append(" Please select a different data source.")
+        MessageBox.Show(sb.ToString, "Invalid data source", MessageBoxButtons.OK, MessageBoxIcon.Error)
     End Sub
 
 End Class

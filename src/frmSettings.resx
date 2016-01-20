@@ -764,31 +764,31 @@
   <data name="&gt;&gt;CmdSet30MDEM.ZOrder" xml:space="preserve">
     <value>24</value>
   </data>
-  <data name="CmdSetGadgeLayer.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="CmdSetGaugeLayer.Font" type="System.Drawing.Font, System.Drawing">
     <value>Verdana, 9.75pt</value>
   </data>
-  <data name="CmdSetGadgeLayer.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="CmdSetGaugeLayer.Location" type="System.Drawing.Point, System.Drawing">
     <value>529, 187</value>
   </data>
-  <data name="CmdSetGadgeLayer.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="CmdSetGaugeLayer.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
   </data>
-  <data name="CmdSetGadgeLayer.TabIndex" type="System.Int32, mscorlib">
+  <data name="CmdSetGaugeLayer.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
   </data>
-  <data name="CmdSetGadgeLayer.Text" xml:space="preserve">
+  <data name="CmdSetGaugeLayer.Text" xml:space="preserve">
     <value>set</value>
   </data>
-  <data name="&gt;&gt;CmdSetGadgeLayer.Name" xml:space="preserve">
-    <value>CmdSetGadgeLayer</value>
+  <data name="&gt;&gt;CmdSetGaugeLayer.Name" xml:space="preserve">
+    <value>CmdSetGaugeLayer</value>
   </data>
-  <data name="&gt;&gt;CmdSetGadgeLayer.Type" xml:space="preserve">
+  <data name="&gt;&gt;CmdSetGaugeLayer.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;CmdSetGadgeLayer.Parent" xml:space="preserve">
+  <data name="&gt;&gt;CmdSetGaugeLayer.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;CmdSetGadgeLayer.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;CmdSetGaugeLayer.ZOrder" xml:space="preserve">
     <value>23</value>
   </data>
   <data name="CmdSetSNOTEL.Font" type="System.Drawing.Font, System.Drawing">
