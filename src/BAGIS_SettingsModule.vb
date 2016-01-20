@@ -573,11 +573,17 @@ Module BAGIS_SettingsModule
                         'If (Len(Trim(linestring)) <> 0) Then SettingsForm.lstLayers.Items.Add(Trim(linestring))
                         File_Name = BA_GetBareNameAndExtension(linestring, File_Path, layertype)
                         TempPathName = File_Path & File_Name
+                        wType = BA_GetWorkspaceTypeFromPath(TempPathName)
                         Select Case layertype
                             Case "(Shapefile)" 'shapefile
-                                FileExists = BA_Shapefile_Exists(TempPathName)
+                                If wType = WorkspaceType.Raster Then
+                                    FileExists = BA_Shapefile_Exists(TempPathName)
+                                Else
+                                    FileExists = BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTFeatureClass)
+                                End If
                             Case "(Raster)" 'raster
-                                FileExists = BA_Workspace_Exists(TempPathName)
+                                'FileExists = BA_Workspace_Exists(TempPathName)
+                                FileExists = BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTRasterDataset)
                             Case Else
                                 return_message = return_message & vbCrLf & "Participating Data Unknown Type: " & TempPathName & " " & layertype
                         End Select
