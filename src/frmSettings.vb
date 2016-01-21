@@ -180,120 +180,146 @@ Public Class frmSettings
 
     Private Sub CmdSetGaugeLayer_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetGaugeLayer.Click
         Dim bObjectSelected As Boolean
-        Dim pGxDialog As IGxDialog
-        pGxDialog = New GxDialog
-        Dim Data_Path As String, Data_Name As String
-        Dim data_fullname As String, data_type As Integer
-        Dim data_type_name As String
+        Dim filterCollection As IGxObjectFilterCollection = New GxDialogClass()
         Dim pGxObject As IEnumGxObject = Nothing
 
-        Dim pFilter As IGxObjectFilter
-        pFilter = New GxFilterPointFeatureClasses
+        Dim pointFilter As IGxObjectFilter = New GxFilterPointFeatureClasses
+        filterCollection.AddFilter(pointFilter, True)
+        Dim featureServiceFilter As IGxObjectFilter = New GxFilterFeatureServers
+        filterCollection.AddFilter(featureServiceFilter, False)
+        Dim pGxDialog As IGxDialog = CType(filterCollection, IGxDialog)
+        Dim NO_DATA_ITEM As String = "No data"
 
         'initialize and open mini browser
         With pGxDialog
             .AllowMultiSelect = False
             .ButtonCaption = "Select"
-            .Title = "Select Gadge Station Layer"
-            .ObjectFilter = pFilter
+            .Title = "Select Gauge Station Layer"
             bObjectSelected = .DoModalOpen(My.ArcMap.Application.hWnd, pGxObject)
         End With
 
         If bObjectSelected = False Then Exit Sub
 
-        'get the name of the selected folder
-        Dim pGxDataset As IGxDataset = pGxObject.Next
-        Dim pDatasetName As IDatasetName = pGxDataset.DatasetName
-        Data_Path = pDatasetName.WorkspaceName.PathName
-        Data_Name = pDatasetName.Name
-        data_type = pDatasetName.Type
+        Dim pGxObj As IGxObject = pGxObject.Next
+        If pGxObj.Category = BA_EnumDescription(GxFilterCategory.FeatureService) Then
+            Dim agsObj As IGxAGSObject = CType(pGxObj, IGxAGSObject)
+            Dim sName As IAGSServerObjectName = agsObj.AGSServerObjectName
+            Dim url As String = agsObj.AGSServerObjectName.URL
+            Dim propertySet As IPropertySet = agsObj.AGSServerObjectName.AGSServerConnectionName.ConnectionProperties()
+            'Build the REST url
+            Dim prefix As String = propertySet.GetProperty(BA_Property_RestUrl)
+            'Extract the selected service information
+            Dim idxServices As Integer = url.IndexOf(BA_Url_Services)
+            Dim idxMapServer As Integer = url.IndexOf(BA_Url_MapServer)
+            Dim serviceText As String = url.Substring(idxServices, idxMapServer - idxServices - 1)   'subtract 1 to avoid trailing /
+            txtGaugeStation.Text = prefix & serviceText & BA_EnumDescription(PublicPath.FeatureServiceUrl)
 
-        'Set Data Type Name from Data Type
-        If data_type = 4 Then
-            data_type_name = " (Shapefile)"
-        ElseIf data_type = 5 Then
-            data_type_name = " (Shapefile)"
-        ElseIf data_type = 12 Then
-            data_type_name = " (Raster)"
-        ElseIf data_type = 13 Then
-            data_type_name = " (Raster)"
-        ElseIf data_type = 14 Then
-            data_type_name = " (Tin)"
+            'elevation field
+            CmboxStationAtt.Items.Clear()
+
+            Dim fsFields As IList(Of FeatureServiceField) = BA_QueryAllFeatureServiceFieldNames(txtGaugeStation.Text)
+            For Each fField As FeatureServiceField In fsFields
+                If fField.fieldType <= esriFieldType.esriFieldTypeInteger Or _
+                    fField.fieldType = esriFieldType.esriFieldTypeString Then
+                    CmboxStationAtt.Items.Add(fField.alias)
+                End If
+            Next
+            CmboxStationAtt.SelectedIndex = 0
+            If CmboxStationAtt.Items.Count = 0 Then
+                MsgBox("No valid attribute field in the attribute table! Please check data." & vbCrLf & txtGaugeStation.Text)
+            End If
+
+            'Area field
+            ComboStationArea.Items.Clear()
+            ComboStationArea.Items.Add(NO_DATA_ITEM)
+            ComboStationArea.SelectedItem = NO_DATA_ITEM
+            For Each fField As FeatureServiceField In fsFields
+                If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
+                    ComboStationArea.Items.Add(fField.alias)
+                End If
+            Next
         Else
-            data_type_name = " (Cannot Clip)"
+            'get the name of the selected folder
+            Dim pGxDataset As IGxDataset = CType(pGxObj, IGxDataset)
+            Dim pDatasetName As IDatasetName = pGxDataset.DatasetName
+            Dim Data_Path As String = pDatasetName.WorkspaceName.PathName
+            Dim Data_Name As String = pDatasetName.Name
+            Dim data_type As esriDatasetType = pDatasetName.Type
+            Dim data_type_name As String
+
+            'Set Data Type Name from Data Type
+            If data_type = esriDatasetType.esriDTFeatureDataset Then
+                data_type_name = " (Shapefile)"
+            ElseIf data_type = esriDatasetType.esriDTFeatureClass Then
+                data_type_name = " (Shapefile)"
+            ElseIf data_type = esriDatasetType.esriDTRasterDataset Then
+                data_type_name = " (Raster)"
+            ElseIf data_type = esriDatasetType.esriDTRasterBand Then
+                data_type_name = " (Raster)"
+            ElseIf data_type = esriDatasetType.esriDTTin Then
+                data_type_name = " (Tin)"
+            Else
+                data_type_name = " (Cannot Clip)"
+            End If
+
+            'pad a backslash to the path if it doesn't have one.
+            Data_Path = BA_StandardizePathString(Data_Path, True)
+
+            Dim data_fullname As String = Data_Path & Data_Name & data_type_name
+            If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
+            If BA_GetWorkspaceTypeFromPath(data_fullname) = WorkspaceType.Geodatabase Then
+                ShowGeodatabaseErrorMessage("Gauge station data")
+                Exit Sub
+            End If
+            txtGaugeStation.Text = data_fullname
+
+            'read the fields in the attribute table and add to CmboxStationAtt
+            Dim pFeatClass As IFeatureClass = BA_OpenFeatureClassFromFile(Data_Path, Data_Name)
+
+            'get fields
+            Dim pFields As IFields = pFeatClass.Fields
+            Dim aField As IField
+            Dim i As Integer, nfields As Integer, qType As Integer
+            nfields = pFields.FieldCount
+
+            'elevation field
+            CmboxStationAtt.Items.Clear()
+            For i = 0 To nfields - 1 'Selects only numerical data types
+                aField = pFields.Field(i)
+                qType = aField.Type
+                If qType <= esriFieldType.esriFieldTypeInteger Or _
+                    qType = esriFieldType.esriFieldTypeString Then
+                    CmboxStationAtt.Items.Add(aField.Name)
+                End If
+            Next
+            CmboxStationAtt.SelectedIndex = 0
+
+            'Area field
+            ComboStationArea.Items.Clear()
+            ComboStationArea.Items.Add(NO_DATA_ITEM)
+            ComboStationArea.SelectedItem = NO_DATA_ITEM
+            For i = 1 To nfields 'Selects only string data types
+                aField = pFields.Field(i - 1)
+                qType = aField.Type
+                If qType <= esriFieldType.esriFieldTypeDouble Then 'numeric data types
+                    ComboStationArea.Items.Add(aField.Name)
+                End If
+            Next
+
+            'Release ArcObjects
+            aField = Nothing
+            pFields = Nothing
+            pFeatClass = Nothing
+            pDatasetName = Nothing
+            pGxDataset = Nothing
         End If
 
-        'pad a backslash to the path if it doesn't have one.
-        'If Right(Data_Path, 1) <> "\" Then Data_Path = Data_Path & "\"
-        Data_Path = BA_StandardizePathString(Data_Path, True)
-
-        data_fullname = Data_Path & Data_Name & data_type_name
-        If Len(Trim(data_fullname)) = 0 Then Exit Sub 'user cancelled the action
-        txtGaugeStation.Text = data_fullname
-
-        'read the fields in the attribute table and add to CmboxStationAtt
-        Dim pWksFactory As IWorkspaceFactory = New ShapefileWorkspaceFactory
-        Dim pFeatWorkspace As IFeatureWorkspace = pWksFactory.OpenFromFile(Data_Path, 0)
-        Dim pFeatClass As IFeatureClass = pFeatWorkspace.OpenFeatureClass(Data_Name)
-
-        'get fields
-        Dim pFields As IFields = pFeatClass.Fields
-        Dim aField As IField
-        Dim i As Integer, nfields As Integer, qType As Integer
-        Dim naddedfield As Integer
-
-        nfields = pFields.FieldCount
-        CmboxStationAtt.Items.Clear()
-
-        naddedfield = 0
-        For i = 0 To nfields - 1 'Selects only integers and strings
-            aField = pFields.Field(i)
-            qType = aField.Type
-            If qType <= 1 Or qType = 4 Then
-                CmboxStationAtt.Items.Add(aField.Name)
-                naddedfield = naddedfield + 1
-            End If
-        Next
-
-        If naddedfield = 0 Then
-            MsgBox("No valid attribute field in the attribute table! Please check data." & vbCrLf & Data_Path & Data_Name)
-            GoTo AbandonSub
-        End If
-
-        'Area field
-        ComboStationArea.Items.Clear()
-        ComboStationArea.Items.Add("No data")
-        naddedfield = 0
-        For i = 0 To nfields - 1 'Selects only numerical data types
-            aField = pFields.Field(i)
-            qType = aField.Type
-            If qType <= 3 Then 'numerical data types
-                ComboStationArea.Items.Add(aField.Name)
-                naddedfield = naddedfield + 1
-            End If
-        Next
-        ComboStationArea.SelectedIndex = 0
-
+        If Not String.IsNullOrEmpty(txtGaugeStation.Text) Then CmdUndo.Enabled = True
         'set area unit to unknown
         ComboStation_Value.SelectedIndex = 0
 
-
-
-AbandonSub:
-        aField = Nothing
-        pFields = Nothing
-        pFeatClass = Nothing
-        pFeatWorkspace = Nothing
-        pWksFactory = Nothing
-
-        pDatasetName = Nothing
-        pGxDataset = Nothing
-        pFilter = Nothing
         pGxObject = Nothing
         pGxDialog = Nothing
-
-        CmboxStationAtt.SelectedIndex = 0
-        CmdUndo.Enabled = True
     End Sub
 
     Private Sub CmdSetSNOTEL_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetSNOTEL.Click
