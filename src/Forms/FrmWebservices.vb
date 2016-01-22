@@ -6,6 +6,7 @@ Imports ESRI.ArcGIS.esriSystem
 Imports ESRI.ArcGIS.Geometry
 Imports BAGIS_ClassLibrary
 Imports ESRI.ArcGIS.Geodatabase
+Imports ESRI.ArcGIS.Carto
 
 
 Public Class FrmWebservices
@@ -97,20 +98,40 @@ Public Class FrmWebservices
         'Dim clipFilePath As String = aoiPath & "\aoi.gdb\aoib_v"
         'Dim newFilePath As String = aoiPath & "\layers.gdb\snotel_sites_web"
         'BA_ClipFeatureService(clipFilePath, TxtWebService.Text, newFilePath, aoiPath)
-        Dim cellSize As Double = BA_CellSize("C:\Docs\Lesley\teton_aoi\surfaces.gdb", "dem_filled")
-        Dim xCols As Long = -1
-        Dim yRows As Long = -1
-        Dim extent As IEnvelope = Nothing
-        BA_GetColumnRowCountFromVector("C:\Docs\Lesley\teton_aoi\aoi.gdb\p_aoi_v", cellSize, cellSize, _
-                                       extent, xCols, yRows)
-        Dim featClass As IFeatureClass = BA_OpenFeatureClassFromGDB("C:\Docs\Lesley\teton_aoi\aoi.gdb", "aoi_v")
-        Dim snapRasterPath As String = "C:\Docs\Lesley\BASIN2\surfaces.gdb\" & BA_EnumDescription(MapsFileName.filled_dem_gdb)
-        'Dim snapRasterPath As String = TxtImageUrl.Text
-        Dim newFileName As String = "snapTest2"
-        Dim layersGdb As String = "C:\Docs\Lesley\teton_aoi\layers.gdb"
-        If BA_File_Exists(layersGdb & "\" & newFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-            BA_RemoveRasterFromGDB(layersGdb, newFileName)
-        End If
-        BA_ShapeFile2RasterGDB(featClass, layersGdb, newFileName, cellSize, BA_FIELD_AOI_NAME, snapRasterPath)
+
+        'Dim cellSize As Double = BA_CellSize("C:\Docs\Lesley\teton_aoi\surfaces.gdb", "dem_filled")
+        'Dim xCols As Long = -1
+        'Dim yRows As Long = -1
+        'Dim extent As IEnvelope = Nothing
+        'BA_GetColumnRowCountFromVector("C:\Docs\Lesley\teton_aoi\aoi.gdb\p_aoi_v", cellSize, cellSize, _
+        '                               extent, xCols, yRows)
+        'Dim featClass As IFeatureClass = BA_OpenFeatureClassFromGDB("C:\Docs\Lesley\teton_aoi\aoi.gdb", "aoi_v")
+        'Dim snapRasterPath As String = "C:\Docs\Lesley\BASIN2\surfaces.gdb\" & BA_EnumDescription(MapsFileName.filled_dem_gdb)
+        ''Dim snapRasterPath As String = TxtImageUrl.Text
+        'Dim newFileName As String = "snapTest2"
+        'Dim layersGdb As String = "C:\Docs\Lesley\teton_aoi\layers.gdb"
+        'If BA_File_Exists(layersGdb & "\" & newFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+        '    BA_RemoveRasterFromGDB(layersGdb, newFileName)
+        'End If
+        'BA_ShapeFile2RasterGDB(featClass, layersGdb, newFileName, cellSize, BA_FIELD_AOI_NAME, snapRasterPath)
+
+        'Define the connection properties to the ESRI_ShadedRelief_World_2D  map service
+
+        Dim layerUrl As String = "http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_USGS_ALL/FeatureServer"
+        Dim sipFc As IFeatureClass = BA_OpenFeatureClassFromService(layerUrl, 0)
+        Dim fl As IFeatureLayer = New FeatureLayer()
+        fl.Name = "Testing"
+        fl.FeatureClass = sipFc
+        My.Document.FocusMap.AddLayer(fl)
+        My.Document.ActiveView.Refresh()
+        My.Document.UpdateContents()
+
+        'IGroupLayer grpLayer = new GroupLayerClass();
+        'grpLayer.Name = Constants.ArcGISOnlineGroupLayerName;
+        'IFeatureClass sipFC = sipFWS.OpenFeatureClass("0");
+        'IFeatureLayer fl = new FeatureLayerClass();
+        'fl.Name = featureLayerName;
+        'fl.FeatureClass = sipFC;
+        'grpLayer.Add(fl as ILayer);
     End Sub
 End Class

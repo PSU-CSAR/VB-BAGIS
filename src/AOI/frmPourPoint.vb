@@ -115,10 +115,6 @@ Public Class frmPourPoint
             'For i = 0 To lstPPoints.Items.Count - 1
             AOIName = Trim(lstPPoints.SelectedItem.ToString)
         Next
-        Dim File_Path As String = "Please Return"
-        Dim File_Name As String = Nothing
-        Dim fileType As String = "please return"
-        File_Name = BA_GetBareNameAndExtension(BA_SystemSettings.PourPointLayer, File_Path, fileType)
 
         'Ver1E Update - reset the BA_AOI_Forecast_ID value with the forecast point id
         BA_AOI_Forecast_ID = "Unknown"
@@ -132,12 +128,16 @@ Public Class frmPourPoint
                 AOI_ReferenceArea = 0
             Else
                 'get the reference area from the attribute table
-                AOI_ReferenceArea = CDbl(BA_QueryAttributeTable(File_Path, File_Name, _
+                AOI_ReferenceArea = CDbl(BA_QueryAttributeTable(BA_SystemSettings.PourPointLayer, _
                                                                 BA_SystemSettings.PourPointField, _
                                                                 AOIName, BA_STRING_ATTRIBUTE, BA_SystemSettings.PourAreaField))
-                BA_AOI_Forecast_ID = CStr(BA_QueryAttributeTable(File_Path, File_Name, _
+                Dim aoiIdField As String = BA_AOI_IDField
+                If BA_GetWorkspaceTypeFromPath(BA_SystemSettings.PourPointLayer) = WorkspaceType.FeatureServer Then
+                    aoiIdField = BA_AOI_IDFieldFeatService
+                End If
+                BA_AOI_Forecast_ID = CStr(BA_QueryAttributeTable(BA_SystemSettings.PourPointLayer, _
                                                                  BA_SystemSettings.PourPointField, _
-                                                                 AOIName, BA_STRING_ATTRIBUTE, BA_AOI_IDField))
+                                                                 AOIName, BA_STRING_ATTRIBUTE, aoiIdField))
                 If BA_AOI_Forecast_ID = "0" Or BA_AOI_Forecast_ID = "" Then 'invalid id
                     MsgBox("WARNING!!!" & vbCrLf & "The attribute table of the forecast point layer does not contain valid data in " & BA_AOI_IDField & ".")
                 End If
@@ -410,14 +410,13 @@ ErrorHandler:
         'load gauge station layer if it doesn't already exist
         Dim File_Path As String = "Please Return"
         Dim File_Name As String
-        Dim GaugeStationLayerName As String
+        Dim GaugeStationLayerName As String = "Gauge Stations"
         Dim messagetext As String
         Dim nametext As String
         Dim layertype As String = "please return"
 
         Dim pFeature As IFeature
         Dim LoadGaugeLayer As Boolean
-        GaugeStationLayerName = "Gauge Stations"
         Dim pMxDoc As IMxDocument = My.ArcMap.Document
         Dim pMap As IMap = pMxDoc.FocusMap
 
@@ -431,8 +430,6 @@ ErrorHandler:
         Dim pFeatCursor As IFeatureCursor
         Dim pFilter As ISpatialFilter
         Dim pField As IFields
-        Dim pWksFactory As IWorkspaceFactory
-        Dim pFeatWorkspace As IFeatureWorkspace
         Dim pFeatClass As IFeatureClass
 
         nlayers = pMap.LayerCount
@@ -451,16 +448,18 @@ ErrorHandler:
             End If
         Next
 
-        ''''' File_Name = BA_GetBareNameAndExtension(frmSettings.txtGaugeStation.Text, File_Path, layertype)
-        File_Name = BA_GetBareNameAndExtension(BA_SystemSettings.PourPointLayer, File_Path, layertype)
-
-        'exit if file_name is null
-        If Len(File_Name) = 0 Then GoTo ErrorHandlerGaugeLayerInvalid
-
-        'open the gauge station layer
-        pWksFactory = New ShapefileWorkspaceFactory
-        pFeatWorkspace = pWksFactory.OpenFromFile(File_Path, 0)
-        pFeatClass = pFeatWorkspace.OpenFeatureClass(File_Name)
+        Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(BA_SystemSettings.PourPointLayer)
+        If wType = WorkspaceType.Raster Then
+            ''''' File_Name = BA_GetBareNameAndExtension(frmSettings.txtGaugeStation.Text, File_Path, layertype)
+            File_Name = BA_GetBareNameAndExtension(BA_SystemSettings.PourPointLayer, File_Path, layertype)
+            'exit if file_name is null
+            If Len(File_Name) = 0 Then GoTo ErrorHandlerGaugeLayerInvalid
+            'open the gauge station layer
+            pFeatClass = BA_OpenFeatureClassFromFile(File_Path, File_Name)
+        Else
+            'Currently we assume there is only one layer (0) in the feature service
+            pFeatClass = BA_OpenFeatureClassFromService(BA_SystemSettings.PourPointLayer, 0)
+        End If
 
         'add featureclass to current data frame
         If LoadGaugeLayer Then 'gauge station layer hasn't been added to the map frame
@@ -559,8 +558,6 @@ ErrorHandler:
         pFeatClass = Nothing
         pFeatCursor = Nothing
         pFilter = Nothing
-        pFeatWorkspace = Nothing
-        pWksFactory = Nothing
         pTempLayer = Nothing
         pFLayer = Nothing
         pMxDoc.ActiveView.Refresh()
@@ -572,8 +569,6 @@ ErrorHandlerGaugeLayerInvalid:
         pFeatClass = Nothing
         pFeatCursor = Nothing
         pFilter = Nothing
-        pFeatWorkspace = Nothing
-        pWksFactory = Nothing
         pTempLayer = Nothing
         pFLayer = Nothing
         MsgBox("Gauge station layer specified in the settings is invalid!")

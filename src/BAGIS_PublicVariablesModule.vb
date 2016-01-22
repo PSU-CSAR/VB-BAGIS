@@ -53,6 +53,7 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_AOIRefUnitField = "AOIREFUNIT"
     'Ver1E update - new field to be added to pourpoin and aoi layers
     Public Const BA_AOI_IDField = "awdb_id"
+    Public Const BA_AOI_IDFieldFeatService = "usgs_id"
 
     'analysis output data names
     Public Const BA_RasterElevationZones = "elevzone"
@@ -200,6 +201,7 @@ Module BAGIS_PublicVariablesModule
         Public OtherLayers() As String
         Public listCount As Integer
         Public GenerateAOIOnly As Boolean
+        Public AOI_Id_Field As String
         'Public listlayers As Integer
     End Structure
 

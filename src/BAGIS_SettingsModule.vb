@@ -205,8 +205,10 @@ Module BAGIS_SettingsModule
                         File_Name = BA_GetBareNameAndExtension(SettingsForm.txtGaugeStation.Text, File_Path, layertype)
                         TempPathName = File_Path & File_Name
                         FileExists = BA_Shapefile_Exists(TempPathName)
+                        BA_SystemSettings.AOI_Id_Field = BA_AOI_IDField
                     ElseIf wType = WorkspaceType.FeatureServer Then
                         FileExists = BA_File_Exists(SettingsForm.txtGaugeStation.Text, wType, esriDatasetType.esriDTFeatureClass)
+                        BA_SystemSettings.AOI_Id_Field = BA_AOI_IDFieldFeatService
                     End If
                 End If
 
@@ -261,6 +263,7 @@ Module BAGIS_SettingsModule
 
                     FieldIndex = -1
                     iCount = 0
+                    Dim idxFieldId = -1
 
                     If wType = WorkspaceType.Raster Then
                         For i = 0 To nFields - 1
@@ -275,18 +278,22 @@ Module BAGIS_SettingsModule
 
                         'Ver1E Update - check awdb_id field in the forecast point layer
                         '@ToDo: How to handle this for feature service layer. Different field name? usgs_id  
-                        Dim idxFieldId = -1
-                        idxFieldId = pFields.FindField(BA_AOI_IDField)
-
-                        If idxFieldId <= 0 Then
-                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & BA_AOI_IDField & " is not in " & TempPathName
-                        End If
-                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        idxFieldId = pFields.FindField(BA_SystemSettings.AOI_Id_Field)
+                     ElseIf wType = WorkspaceType.FeatureServer Then
+                        'Populate the area dropdown
                         For Each fField As FeatureServiceField In allFields
                             If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
                                 SettingsForm.ComboStationArea.Items.Add(fField.alias)
                                 If fField.alias = linestring1 Then FieldIndex = iCount + 1
                                 iCount = iCount + 1
+                            End If
+                        Next
+                        'Check for the index field
+                        Dim idCount As Integer = 0
+                        For Each fField As FeatureServiceField In allFields
+                            If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
+                                If fField.alias.Equals(BA_SystemSettings.AOI_Id_Field) Then idxFieldId = idCount
+                                idCount = idCount + 1
                             End If
                         Next
                     End If
@@ -301,6 +308,11 @@ Module BAGIS_SettingsModule
                             SettingsForm.ComboStationArea.SelectedIndex = FieldIndex
                         End If
                     End If
+
+                    If idxFieldId <= 0 Then
+                        return_message = return_message & vbCrLf & "Attribute Field Missing: " & BA_SystemSettings.AOI_Id_Field & " is not in " & TempPathName
+                    End If
+
 
                     If UCase(Trim(linestring2)) = "TRUE" Then 'meter is the Z unit
                         SettingsForm.OptSTMeter.Checked = "True"
