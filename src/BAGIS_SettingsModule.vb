@@ -347,23 +347,23 @@ Module BAGIS_SettingsModule
                 'Display Area Unit
                 SettingsForm.ComboStation_Value.SelectedIndex = UnitIndex
 
-                    'set snotel file
-                    linestring = sr.ReadLine()                                                                                                                  '13
-                    SettingsForm.txtSNOTEL.Text = Trim(linestring)
+                'set snotel file
+                linestring = sr.ReadLine()                                                                                                                  '13
+                SettingsForm.txtSNOTEL.Text = Trim(linestring)
 
-                    wType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtSNOTEL.Text)
-                    If Trim(linestring) = "" Then
-                        TempPathName = "SNOTEL"
-                        FileExists = False
-                    Else
-                        If wType = WorkspaceType.Raster Then
-                            File_Name = BA_GetBareNameAndExtension(SettingsForm.txtSNOTEL.Text, File_Path, layertype)
-                            TempPathName = File_Path & File_Name
-                            FileExists = BA_Shapefile_Exists(TempPathName)
-                        ElseIf wType = WorkspaceType.FeatureServer Then
-                            FileExists = BA_File_Exists(SettingsForm.txtSNOTEL.Text, wType, esriDatasetType.esriDTFeatureClass)
-                        End If
+                wType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtSNOTEL.Text)
+                If Trim(linestring) = "" Then
+                    TempPathName = "SNOTEL"
+                    FileExists = False
+                Else
+                    If wType = WorkspaceType.Raster Then
+                        File_Name = BA_GetBareNameAndExtension(SettingsForm.txtSNOTEL.Text, File_Path, layertype)
+                        TempPathName = File_Path & File_Name
+                        FileExists = BA_Shapefile_Exists(TempPathName)
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        FileExists = BA_File_Exists(SettingsForm.txtSNOTEL.Text, wType, esriDatasetType.esriDTFeatureClass)
                     End If
+                End If
 
                     'set snotel field
                     linestring = sr.ReadLine()  'elevation field                                                                                                '14
@@ -587,24 +587,31 @@ Module BAGIS_SettingsModule
 
 
                 linestring = sr.ReadLine() 'read the prism layer name                                                                                       '21
-                    SettingsForm.txtPRISM.Text = Trim(linestring)
+                SettingsForm.txtPRISM.Text = Trim(linestring)
 
-                    If Trim(linestring) = "" Then
-                        TempPathName = "PRISM folder"
-                        FileExists = False
+                If Trim(linestring) = "" Then
+                    TempPathName = "PRISM folder"
+                    FileExists = False
+                Else
+                    wType = BA_GetWorkspaceTypeFromPath(linestring)
+                    If wType = WorkspaceType.ImageServer Then
+                        TempPathName = linestring & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString & _
+                         "/" & BA_Url_ImageServer
+                        FileExists = BA_File_ExistsImageServer(TempPathName)
                     Else
                         TempPathName = linestring & "\Q4\grid"
                         FileExists = BA_Workspace_Exists(TempPathName)
                     End If
+                End If
 
-                    'check if file exists
-                    If Not FileExists Then
-                        return_message = return_message & vbCrLf & "PRISM Data Missing: " & TempPathName
-                    Else
-                        PRISMDataExist = True
-                    End If
+                'check if file exists
+                If Not FileExists Then
+                    return_message = return_message & vbCrLf & "PRISM Data Missing: " & TempPathName
+                Else
+                    PRISMDataExist = True
+                End If
 
-                    SettingsForm.lstLayers.Items.Clear()
+                SettingsForm.lstLayers.Items.Clear()
 
                     'omitted?
                     'Just Read the line specified to the lstLayers list count and do nothing. 

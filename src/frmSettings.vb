@@ -598,13 +598,11 @@ Public Class frmSettings
 
     Private Sub CmdSetPrecip_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetPrecip.Click
         Dim bObjectSelected As Boolean
-        Dim pGxDialog As IGxDialog
-        pGxDialog = New GxDialog
+        Dim pGxDialog As IGxDialog = New GxDialog
         Dim pGxObject As IEnumGxObject = Nothing
         Dim Data_Path As String = ""
 
-        Dim pFilter As IGxObjectFilter
-        pFilter = New GxFilterContainers
+        Dim pFilter As IGxObjectFilter = New GxFilterContainers
 
         Try
             'initialize and open mini browser
@@ -618,24 +616,47 @@ Public Class frmSettings
 
             If bObjectSelected = False Then Exit Sub
 
-            'get the name of the selected folder
-            Dim pGxDataFolder As IGxFile
-            pGxDataFolder = pGxObject.Next
-            Data_Path = pGxDataFolder.Path
-            If Len(Trim(Data_Path)) = 0 Then Exit Sub 'user cancelled the action
-
-            Dim TempPathName As String
-            TempPathName = Data_Path & "\Q4\grid"
-
-            If Not BA_Workspace_Exists(TempPathName) Then
-                MsgBox(Data_Path & " is not a valid PRISM data folder!")
-                txtPRISM.Text = ""
+            Dim pGxObj As IGxObject = pGxObject.Next
+            If pGxObj.Category.Equals(BA_EnumDescription(GxFilterCategory.ArcGisServerFolder)) Then
+                'get the url of the selected image service
+                Dim agsFolder As IGxAGSFolder = CType(pGxObj, IGxAGSFolder)
+                Dim propertySet As IPropertySet = agsFolder.AGSServerConnectionName.ConnectionProperties
+                Dim sb As StringBuilder = New StringBuilder
+                sb.Append(propertySet.GetProperty(BA_Property_SoapUrl)) 'Image services use the SOAP url
+                sb.Append("/" & pGxObj.BaseName)    'PRISM
+                Data_Path = sb.ToString
+                Dim TempPathName As String = sb.ToString & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString
+                TempPathName = TempPathName & "/" & BA_Url_ImageServer
+                If Not BA_File_ExistsImageServer(TempPathName) Then
+                    txtPRISM.Text = ""
+                Else
+                    txtPRISM.Text = Data_Path
+                End If
             Else
-                txtPRISM.Text = Data_Path
+                'get the name of the selected folder and file
+                Dim pGxDataFolder As IGxFile = CType(pGxObj, IGxFile)
+                Data_Path = pGxDataFolder.Path
+                Dim TempPathName As String = Data_Path & "\Q4\grid"
+                If Len(Trim(Data_Path)) = 0 Then Exit Sub 'user cancelled the action
+                If BA_GetWorkspaceTypeFromPath(Data_Path) = WorkspaceType.Geodatabase Then
+                    ShowGeodatabaseErrorMessage("PRISM data")
+                    Exit Sub
+                End If
+                If Not BA_Workspace_Exists(TempPathName) Then
+                    txtPRISM.Text = ""
+                Else
+                    txtPRISM.Text = Data_Path
+                End If
+            End If            
+
+            If String.IsNullOrEmpty(txtPRISM.Text) Then
+                MsgBox(Data_Path & " is not a valid PRISM data folder!")
+            Else
+                CmdUndo.Enabled = True
             End If
 
-            CmdUndo.Enabled = True
-        Catch
+        Catch ex As Exception
+            Debug.Print("CmdSetPrecip_Click Exception: " & ex.Message)
             MsgBox("Please select a folder containing PRISM data!" & vbCrLf & Data_Path & " is not a valid PRISM data folder!")
         End Try
     End Sub
