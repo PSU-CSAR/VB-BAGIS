@@ -201,7 +201,6 @@ Module BAGIS_PublicVariablesModule
         Public OtherLayers() As String
         Public listCount As Integer
         Public GenerateAOIOnly As Boolean
-        Public AOI_Id_Field As String
         'Public listlayers As Integer
     End Structure
 

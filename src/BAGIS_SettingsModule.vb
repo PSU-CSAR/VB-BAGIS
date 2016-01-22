@@ -199,16 +199,16 @@ Module BAGIS_SettingsModule
                 Dim pFields As IFields = Nothing
                 Dim aField As IField
                 Dim FieldIndex As Integer
+                Dim aoiIdField As String = BA_AOI_IDField
 
                 If Not String.IsNullOrEmpty(linestring) Then
                     If wType = WorkspaceType.Raster Then
                         File_Name = BA_GetBareNameAndExtension(SettingsForm.txtGaugeStation.Text, File_Path, layertype)
                         TempPathName = File_Path & File_Name
                         FileExists = BA_Shapefile_Exists(TempPathName)
-                        BA_SystemSettings.AOI_Id_Field = BA_AOI_IDField
                     ElseIf wType = WorkspaceType.FeatureServer Then
                         FileExists = BA_File_Exists(SettingsForm.txtGaugeStation.Text, wType, esriDatasetType.esriDTFeatureClass)
-                        BA_SystemSettings.AOI_Id_Field = BA_AOI_IDFieldFeatService
+                        aoiIdField = BA_AOI_IDFieldFeatService
                     End If
                 End If
 
@@ -218,6 +218,7 @@ Module BAGIS_SettingsModule
                     SettingsForm.CmboxStationAtt.Items.Clear()
                     FieldIndex = -1
                     iCount = 0
+                    Dim idxFieldId = -1
                     'Object for feature service fields
                     Dim allFields As IList(Of FeatureServiceField) = New List(Of FeatureServiceField)
 
@@ -244,7 +245,10 @@ Module BAGIS_SettingsModule
                             If fField.fieldType <= esriFieldType.esriFieldTypeInteger Or _
                                 fField.fieldType = esriFieldType.esriFieldTypeString Then
                                 SettingsForm.CmboxStationAtt.Items.Add(fField.alias)
-                                If fField.alias = linestring Then FieldIndex = iCount
+                                If String.Compare(fField.alias, linestring, True) = 0 Then FieldIndex = iCount
+                                'Check for the index field; It is a String
+                                'Raster datasets use findField method down below
+                                If String.Compare(fField.alias, aoiIdField, True) = 0 Then idxFieldId = iCount
                                 iCount = iCount + 1
                             End If
                         Next
@@ -263,7 +267,6 @@ Module BAGIS_SettingsModule
 
                     FieldIndex = -1
                     iCount = 0
-                    Dim idxFieldId = -1
 
                     If wType = WorkspaceType.Raster Then
                         For i = 0 To nFields - 1
@@ -278,22 +281,14 @@ Module BAGIS_SettingsModule
 
                         'Ver1E Update - check awdb_id field in the forecast point layer
                         '@ToDo: How to handle this for feature service layer. Different field name? usgs_id  
-                        idxFieldId = pFields.FindField(BA_SystemSettings.AOI_Id_Field)
+                        idxFieldId = pFields.FindField(aoiIdField)
                      ElseIf wType = WorkspaceType.FeatureServer Then
                         'Populate the area dropdown
                         For Each fField As FeatureServiceField In allFields
                             If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
                                 SettingsForm.ComboStationArea.Items.Add(fField.alias)
-                                If fField.alias = linestring1 Then FieldIndex = iCount + 1
+                                If String.Compare(fField.alias, linestring1, True) = 0 Then FieldIndex = iCount + 1
                                 iCount = iCount + 1
-                            End If
-                        Next
-                        'Check for the index field
-                        Dim idCount As Integer = 0
-                        For Each fField As FeatureServiceField In allFields
-                            If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
-                                If fField.alias.Equals(BA_SystemSettings.AOI_Id_Field) Then idxFieldId = idCount
-                                idCount = idCount + 1
                             End If
                         Next
                     End If
@@ -310,7 +305,7 @@ Module BAGIS_SettingsModule
                     End If
 
                     If idxFieldId <= 0 Then
-                        return_message = return_message & vbCrLf & "Attribute Field Missing: " & BA_SystemSettings.AOI_Id_Field & " is not in " & TempPathName
+                        return_message = return_message & vbCrLf & "Attribute Field Missing: " & aoiIdField & " is not in " & TempPathName
                     End If
 
 
@@ -375,101 +370,101 @@ Module BAGIS_SettingsModule
                     linestring1 = sr.ReadLine() 'name field                                                                                                     '15
                     linestring2 = sr.ReadLine() 'elevation unit                                                                                                 '16
 
-                    If FileExists Then  'text exists for the setting of this layer
+                If FileExists Then  'text exists for the setting of this layer
 
-                        'set elevation field
-                        SettingsForm.ComboSNOTEL_Elevation.Items.Clear()
-                        FieldIndex = -1
-                        icount = 0
-                        'Object for feature service fields
-                        Dim allFields As IList(Of FeatureServiceField) = New List(Of FeatureServiceField)
+                    'set elevation field
+                    SettingsForm.ComboSNOTEL_Elevation.Items.Clear()
+                    FieldIndex = -1
+                    iCount = 0
+                    'Object for feature service fields
+                    Dim allFields As IList(Of FeatureServiceField) = New List(Of FeatureServiceField)
 
-                        If wType = WorkspaceType.Raster Then
-                            pFeatClass = BA_OpenFeatureClassFromFile(File_Path, File_Name)
+                    If wType = WorkspaceType.Raster Then
+                        pFeatClass = BA_OpenFeatureClassFromFile(File_Path, File_Name)
 
-                            'get fields
-                            pFields = pFeatClass.Fields
-                            nfields = pFields.FieldCount
+                        'get fields
+                        pFields = pFeatClass.Fields
+                        nFields = pFields.FieldCount
 
-                            For i = 0 To nfields - 1
-                                aField = pFields.Field(i)
-                                qType = aField.Type
-                                If qType <= esriFieldType.esriFieldTypeDouble Then
-                                    SettingsForm.ComboSNOTEL_Elevation.Items.Add(aField.Name)
-                                    If aField.Name = linestring Then FieldIndex = icount
-                                    icount = icount + 1
-                                End If
-                            Next
-                        ElseIf wType = WorkspaceType.FeatureServer Then
-                            allFields = BA_QueryAllFeatureServiceFieldNames(SettingsForm.txtSNOTEL.Text)
-                            For Each fField As FeatureServiceField In allFields
-                                If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
-                                    SettingsForm.ComboSNOTEL_Elevation.Items.Add(fField.alias)
-                                    If fField.alias = linestring Then FieldIndex = icount
-                                    icount = icount + 1
-                                End If
-                            Next
-                        End If
-
-                        If FieldIndex < 0 Then
-                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring & " is not in " & TempPathName
-                            SettingsForm.ComboSNOTEL_Elevation.SelectedIndex = 0
-                        Else
-                            SettingsForm.ComboSNOTEL_Elevation.SelectedItem = linestring
-                        End If
-
-                        'set name field
-                        SettingsForm.ComboSNOTEL_Name.Items.Clear()
-                        SettingsForm.ComboSNOTEL_Name.Items.Add("None")
-
-                        FieldIndex = -1
-                        icount = 0
-
-                        If wType = WorkspaceType.Raster Then
-                            For i = 0 To nfields - 1
-                                aField = pFields.Field(i)
-                                qType = aField.Type
-                                If qType = esriFieldType.esriFieldTypeString Then
-                                    SettingsForm.ComboSNOTEL_Name.Items.Add(aField.Name)
-                                    If aField.Name = linestring1 Then FieldIndex = icount + 1
-                                    icount = icount + 1
-                                End If
-                            Next
-                        ElseIf wType = WorkspaceType.FeatureServer Then
-                            For Each fField As FeatureServiceField In allFields
-                                If fField.fieldType = esriFieldType.esriFieldTypeString Then
-                                    SettingsForm.ComboSNOTEL_Name.Items.Add(fField.alias)
-                                    If fField.alias = linestring1 Then FieldIndex = icount + 1
-                                    icount = icount + 1
-                                End If
-                            Next
-                        End If
-
-                        If FieldIndex < 0 Then
-                            If linestring1 <> "None" Then
-                                return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring1 & " is not in " & TempPathName
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType <= esriFieldType.esriFieldTypeDouble Then
+                                SettingsForm.ComboSNOTEL_Elevation.Items.Add(aField.Name)
+                                If String.Compare(aField.Name, linestring, True) = 0 Then FieldIndex = iCount
+                                iCount = iCount + 1
                             End If
-                            SettingsForm.ComboSNOTEL_Name.SelectedItem = "None"
-                        Else
-                            SettingsForm.ComboSNOTEL_Name.SelectedItem = linestring1
-                        End If
-
-                        If UCase(Trim(linestring2)) = "TRUE" Then 'meter is the Z unit
-                            SettingsForm.OptSTMeter.Checked = "True"
-                        Else
-                            SettingsForm.OptSTFoot.Checked = "True"
-                        End If
-
-                        SNOTELDataExist = True
-
-                        aField = Nothing
-                        pFields = Nothing
-                        pFeatClass = Nothing
-                        pFeatWorkspace = Nothing
-                        pWksFactory = Nothing
-                    Else
-                        return_message = return_message & vbCrLf & "SNOTEL data Missing: " & TempPathName
+                        Next
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        allFields = BA_QueryAllFeatureServiceFieldNames(SettingsForm.txtSNOTEL.Text)
+                        For Each fField As FeatureServiceField In allFields
+                            If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
+                                SettingsForm.ComboSNOTEL_Elevation.Items.Add(fField.alias)
+                                If String.Compare(fField.alias, linestring, True) Then FieldIndex = iCount
+                                iCount = iCount + 1
+                            End If
+                        Next
                     End If
+
+                    If FieldIndex < 0 Then
+                        return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring & " is not in " & TempPathName
+                        SettingsForm.ComboSNOTEL_Elevation.SelectedIndex = 0
+                    Else
+                        SettingsForm.ComboSNOTEL_Elevation.SelectedItem = linestring
+                    End If
+
+                    'set name field
+                    SettingsForm.ComboSNOTEL_Name.Items.Clear()
+                    SettingsForm.ComboSNOTEL_Name.Items.Add("None")
+
+                    FieldIndex = -1
+                    iCount = 0
+
+                    If wType = WorkspaceType.Raster Then
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType = esriFieldType.esriFieldTypeString Then
+                                SettingsForm.ComboSNOTEL_Name.Items.Add(aField.Name)
+                                If aField.Name = linestring1 Then FieldIndex = iCount + 1
+                                iCount = iCount + 1
+                            End If
+                        Next
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        For Each fField As FeatureServiceField In allFields
+                            If fField.fieldType = esriFieldType.esriFieldTypeString Then
+                                SettingsForm.ComboSNOTEL_Name.Items.Add(fField.alias)
+                                If String.Compare(fField.alias, linestring1, True) Then FieldIndex = iCount + 1
+                                iCount = iCount + 1
+                            End If
+                        Next
+                    End If
+
+                    If FieldIndex < 0 Then
+                        If linestring1 <> "None" Then
+                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring1 & " is not in " & TempPathName
+                        End If
+                        SettingsForm.ComboSNOTEL_Name.SelectedItem = "None"
+                    Else
+                        SettingsForm.ComboSNOTEL_Name.SelectedItem = linestring1
+                    End If
+
+                    If UCase(Trim(linestring2)) = "TRUE" Then 'meter is the Z unit
+                        SettingsForm.OptSTMeter.Checked = "True"
+                    Else
+                        SettingsForm.OptSTFoot.Checked = "True"
+                    End If
+
+                    SNOTELDataExist = True
+
+                    aField = Nothing
+                    pFields = Nothing
+                    pFeatClass = Nothing
+                    pFeatWorkspace = Nothing
+                    pWksFactory = Nothing
+                Else
+                    return_message = return_message & vbCrLf & "SNOTEL data Missing: " & TempPathName
+                End If
 
                     'read snow course
                     linestring = sr.ReadLine()                                                                                                                  '13
@@ -503,32 +498,32 @@ Module BAGIS_SettingsModule
                         'Object for feature service fields
                         Dim allFields As IList(Of FeatureServiceField) = New List(Of FeatureServiceField)
 
-                        If wType = WorkspaceType.Raster Then
-                            pFeatClass = BA_OpenFeatureClassFromFile(File_Path, File_Name)
+                    If wType = WorkspaceType.Raster Then
+                        pFeatClass = BA_OpenFeatureClassFromFile(File_Path, File_Name)
 
-                            'get fields
-                            pFields = pFeatClass.Fields
-                            nfields = pFields.FieldCount
+                        'get fields
+                        pFields = pFeatClass.Fields
+                        nFields = pFields.FieldCount
 
-                            For i = 0 To nfields - 1
-                                aField = pFields.Field(i)
-                                qType = aField.Type
-                                If qType <= esriFieldType.esriFieldTypeDouble Then
-                                    SettingsForm.ComboSC_Elevation.Items.Add(aField.Name)
-                                    If aField.Name = linestring Then FieldIndex = icount
-                                    icount = icount + 1
-                                End If
-                            Next
-                        ElseIf wType = WorkspaceType.FeatureServer Then
-                            allFields = BA_QueryAllFeatureServiceFieldNames(SettingsForm.txtSnowCourse.Text)
-                            For Each fField As FeatureServiceField In allFields
-                                If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
-                                    SettingsForm.ComboSC_Elevation.Items.Add(fField.alias)
-                                    If fField.alias = linestring Then FieldIndex = icount
-                                    icount = icount + 1
-                                End If
-                            Next
-                        End If
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType <= esriFieldType.esriFieldTypeDouble Then
+                                SettingsForm.ComboSC_Elevation.Items.Add(aField.Name)
+                                If aField.Name = linestring Then FieldIndex = iCount
+                                iCount = iCount + 1
+                            End If
+                        Next
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        allFields = BA_QueryAllFeatureServiceFieldNames(SettingsForm.txtSnowCourse.Text)
+                        For Each fField As FeatureServiceField In allFields
+                            If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
+                                SettingsForm.ComboSC_Elevation.Items.Add(fField.alias)
+                                If String.Compare(fField.alias, linestring, True) = 0 Then FieldIndex = iCount
+                                iCount = iCount + 1
+                            End If
+                        Next
+                    End If
 
                         If FieldIndex < 0 Then
                             return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring & " is not in " & TempPathName
@@ -544,54 +539,54 @@ Module BAGIS_SettingsModule
                         FieldIndex = -1
                         icount = 0
 
-                        If wType = WorkspaceType.Raster Then
-                            For i = 0 To nfields - 1
-                                aField = pFields.Field(i)
-                                qType = aField.Type
-                                If qType = esriFieldType.esriFieldTypeString Then
-                                    SettingsForm.ComboSC_Name.Items.Add(aField.Name)
-                                    If aField.Name = linestring1 Then FieldIndex = icount + 1
-                                    icount = icount + 1
-                                End If
-                            Next
-                        ElseIf wType = WorkspaceType.FeatureServer Then
-                            For Each fField As FeatureServiceField In allFields
-                                If fField.fieldType = esriFieldType.esriFieldTypeString Then
-                                    SettingsForm.ComboSC_Name.Items.Add(fField.alias)
-                                    If fField.alias = linestring1 Then FieldIndex = icount + 1
-                                    icount = icount + 1
-                                End If
-                            Next
-                        End If
-
-                        If FieldIndex < 0 Then
-                            If linestring1 <> "None" Then
-                                return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring1 & " is not in " & TempPathName
+                    If wType = WorkspaceType.Raster Then
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType = esriFieldType.esriFieldTypeString Then
+                                SettingsForm.ComboSC_Name.Items.Add(aField.Name)
+                                If aField.Name = linestring1 Then FieldIndex = iCount + 1
+                                iCount = iCount + 1
                             End If
-                            SettingsForm.ComboSC_Name.SelectedItem = "None"
-                        Else
-                            SettingsForm.ComboSC_Name.SelectedItem = linestring1
-                        End If
-
-                        If UCase(Trim(linestring2)) = "TRUE" Then 'meter is the Z unit
-                            SettingsForm.OptSTMeter.Checked = "True"
-                        Else
-                            SettingsForm.OptSTFoot.Checked = "True"
-                        End If
-
-                        SnowCourseDataExist = True
-
-                        aField = Nothing
-                        pFields = Nothing
-                        pFeatClass = Nothing
-                        pFeatWorkspace = Nothing
-                        pWksFactory = Nothing
-                    Else
-                        return_message = return_message & vbCrLf & "Snow course data Missing: " & TempPathName
+                        Next
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        For Each fField As FeatureServiceField In allFields
+                            If fField.fieldType = esriFieldType.esriFieldTypeString Then
+                                SettingsForm.ComboSC_Name.Items.Add(fField.alias)
+                                If String.Compare(fField.alias, linestring1, True) Then FieldIndex = iCount + 1
+                                iCount = iCount + 1
+                            End If
+                        Next
                     End If
 
+                    If FieldIndex < 0 Then
+                        If linestring1 <> "None" Then
+                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring1 & " is not in " & TempPathName
+                        End If
+                        SettingsForm.ComboSC_Name.SelectedItem = "None"
+                    Else
+                        SettingsForm.ComboSC_Name.SelectedItem = linestring1
+                    End If
 
-                    linestring = sr.ReadLine() 'read the prism layer name                                                                                       '21
+                    If UCase(Trim(linestring2)) = "TRUE" Then 'meter is the Z unit
+                        SettingsForm.OptSTMeter.Checked = "True"
+                    Else
+                        SettingsForm.OptSTFoot.Checked = "True"
+                    End If
+
+                    SnowCourseDataExist = True
+
+                    aField = Nothing
+                    pFields = Nothing
+                    pFeatClass = Nothing
+                    pFeatWorkspace = Nothing
+                    pWksFactory = Nothing
+                Else
+                    return_message = return_message & vbCrLf & "Snow course data Missing: " & TempPathName
+                End If
+
+
+                linestring = sr.ReadLine() 'read the prism layer name                                                                                       '21
                     SettingsForm.txtPRISM.Text = Trim(linestring)
 
                     If Trim(linestring) = "" Then
