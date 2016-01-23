@@ -598,14 +598,30 @@ Public Class frmCreateAOI
 
             'there are 17 prism rasters to be clipped
             BA_SetPRISMFolderNames()
+            wType = BA_GetWorkspaceTypeFromPath(strInLayerPath)
+            Dim prismServices As System.Array = Nothing
+            If wType = WorkspaceType.ImageServer Then
+                prismServices = System.Enum.GetValues(GetType(PrismServiceNames))
+            End If
+
             Dim j As Integer
             For j = 0 To 16
                 System.Windows.Forms.Application.DoEvents()
+
+                'Local File
                 strInLayerBareName = PRISMLayer(j)
                 pStepProg.Message = "Clipping PRISM " & strInLayerBareName & " layer... (step " & j + 9 & " of " & nstep & ")"
                 pStepProg.Step()
 
-                response = BA_ClipAOIRaster(AOIFolderBase, strInLayerPath & "\" & strInLayerBareName & "\grid", strInLayerBareName, destPRISMGDB, AOIClipFile.PrismClipAOIExtentCoverage)
+                If wType = WorkspaceType.ImageServer Then
+                    Dim clipFilePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_EnumDescription(AOIClipFile.PrismClipAOIExtentCoverage)
+                    Dim webServiceUrl As String = strInLayerPath & "/" & prismServices(j).ToString & _
+                         "/" & BA_Url_ImageServer
+                    Dim newFilePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True) & strInLayerBareName
+                    success = BA_ClipImageServiceToVector(clipFilePath, webServiceUrl, newFilePath)
+                Else
+                    response = BA_ClipAOIRaster(AOIFolderBase, strInLayerPath & "\" & strInLayerBareName & "\grid", strInLayerBareName, destPRISMGDB, AOIClipFile.PrismClipAOIExtentCoverage)
+                End If
                 If response <= 0 Then
                     MsgBox("frmCreateAOI: Clipping " & strInLayerBareName & "\grid" & " failed! Return value = " & response & ".")
                 End If
