@@ -748,15 +748,22 @@ Public Class frmCreateAOIfromExistingBND
         If Not BA_SystemSettings.GenerateAOIOnly Then
             'clip snotel layer
             strInLayerPath = BA_SystemSettings.SNOTELLayer
-            strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
 
-            pStepProg.Message = "Clipping" & strInLayerBareName & " layer... (step 7 of " & nstep & ")"
+            pStepProg.Message = "Clipping SNOTEL layer... (step 7 of " & nstep & ")"
             pStepProg.Step()
             System.Windows.Forms.Application.DoEvents()
 
+            'clip snotel vector
+            wType = BA_GetWorkspaceTypeFromPath(strInLayerPath)
+            If wType = WorkspaceType.Raster Then
+                strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
+                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, True)
+            ElseIf wType = WorkspaceType.FeatureServer Then
+                response = BA_ClipAOISnoWebServices(UserAOIFolderBase, strInLayerPath, True)
+            End If
+
             'clip snotel shapefile
             If strExtension = "(Shapefile)" Then
-                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, True)
                 If response <> 1 Then
                     Select Case response
                         Case -1 '-1: unknown error
@@ -775,15 +782,22 @@ Public Class frmCreateAOIfromExistingBND
 
             'clip snow course layer
             strInLayerPath = BA_SystemSettings.SCourseLayer
-            strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
 
-            pStepProg.Message = "Clipping " & strInLayerBareName & " layer... (step 8 of " & nstep & ")"
+            pStepProg.Message = "Clipping Snow Course layer... (step 8 of " & nstep & ")"
             pStepProg.Step()
             System.Windows.Forms.Application.DoEvents()
 
+            'clip snow course vector
+            wType = BA_GetWorkspaceTypeFromPath(strInLayerPath)
+            If wType = WorkspaceType.Raster Then
+                strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
+                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, False)
+            ElseIf wType = WorkspaceType.FeatureServer Then
+                response = BA_ClipAOISnoWebServices(UserAOIFolderBase, strInLayerPath, False)
+            End If
+
             'clip snow course shapefile
             If strExtension = "(Shapefile)" Then
-                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, False)
                 If response <> 1 Then
                     Select Case response
                         Case -1 '-1: unknown error
@@ -808,16 +822,36 @@ Public Class frmCreateAOIfromExistingBND
 
             'there are 17 prism rasters to be clipped
             BA_SetPRISMFolderNames()
+            wType = BA_GetWorkspaceTypeFromPath(strInLayerPath)
+            Dim prismServices As System.Array = Nothing
+            If wType = WorkspaceType.ImageServer Then
+                prismServices = System.Enum.GetValues(GetType(PrismServiceNames))
+            End If
+
             Dim j As Integer
             For j = 0 To 16
                 System.Windows.Forms.Application.DoEvents()
+
+                'Local File
                 strInLayerBareName = PRISMLayer(j)
                 pStepProg.Message = "Clipping PRISM " & strInLayerBareName & " layer... (step " & j + 9 & " of " & nstep & ")"
                 pStepProg.Step()
 
-                response = BA_ClipAOIRaster(UserAOIFolderBase, strInLayerPath & "\" & strInLayerBareName & "\grid", strInLayerBareName, destPRISMGDB, AOIClipFile.PrismClipAOIExtentCoverage)
+                If wType = WorkspaceType.ImageServer Then
+                    Dim clipFilePath As String = BA_GeodatabasePath(UserAOIFolderBase, GeodatabaseNames.Aoi, True) & BA_EnumDescription(AOIClipFile.PrismClipAOIExtentCoverage)
+                    Dim webServiceUrl As String = strInLayerPath & "/" & prismServices(j).ToString & _
+                         "/" & BA_Url_ImageServer
+                    Dim newFilePath As String = BA_GeodatabasePath(UserAOIFolderBase, GeodatabaseNames.Prism, True) & strInLayerBareName
+                    If BA_ClipImageServiceToVector(clipFilePath, webServiceUrl, newFilePath) = BA_ReturnCode.Success Then
+                        response = 1
+                    Else
+                        response = -1
+                    End If
+                Else
+                    response = BA_ClipAOIRaster(UserAOIFolderBase, strInLayerPath & "\" & strInLayerBareName & "\grid", strInLayerBareName, destPRISMGDB, AOIClipFile.PrismClipAOIExtentCoverage)
+                End If
                 If response <= 0 Then
-                    MsgBox("frmCreateAOI: Clipping " & strInLayerBareName & "\grid" & " failed! Return value = " & response & ".")
+                    MsgBox("frmCreateAOIFromExistingBND: Clipping " & strInLayerBareName & "\grid" & " failed! Return value = " & response & ".")
                 End If
             Next
 
@@ -852,16 +886,25 @@ Public Class frmCreateAOIfromExistingBND
                     pStepProg.Message = "Clipping " & strInLayerBareName & " layer... (step " & j + internalLayerCount + 1 & " of " & nstep & ")"
                     pStepProg.Step()
 
+                    Dim workspaceType As WorkspaceType = BA_GetWorkspaceTypeFromPath(strParentName)
                     If strExtension = "(Shapefile)" Then
-                        If BA_Shapefile_Exists(strParentName & strInLayerBareName) Then
+                        Dim featureClassExists As Boolean = False
+                        If workspaceType = BAGIS_ClassLibrary.WorkspaceType.Raster Then
+                            featureClassExists = BA_Shapefile_Exists(strParentName & strInLayerBareName)
+                        Else
+                            featureClassExists = BA_File_Exists(strParentName & strInLayerBareName, workspaceType, esriDatasetType.esriDTFeatureClass)
+                        End If
+                        If featureClassExists = True Then
+                            'If BA_Shapefile_Exists(strParentName & strInLayerBareName) Then
                             response = BA_ClipAOIVector(UserAOIFolderBase, strParentName & strInLayerBareName, strInLayerBareName, _
-                                                        destLayersGDB, True)
+                                                        destLayersGDB, True) 'always use buffered aoi to clip the layers
                         Else
                             MsgBox(strInLayerBareName & " does not exist", "Missing input")
                         End If
 
                     ElseIf strExtension = "(Raster)" Then
-                        If BA_File_ExistsRaster(strParentName, strInLayerBareName) Then
+                        'If BA_File_ExistsRaster(strParentName, strInLayerBareName) Then
+                        If BA_File_Exists(strParentName & strInLayerBareName, workspaceType, esriDatasetType.esriDTRasterDataset) Then
                             response = BA_ClipAOIRaster(UserAOIFolderBase, strParentName & strInLayerBareName, strInLayerBareName, destLayersGDB, AOIClipFile.BufferedAOIExtentCoverage)
                             If response <= 0 Then
                                 MsgBox("Clipping " & strInLayerBareName & " failed! Return value = " & response & ".")

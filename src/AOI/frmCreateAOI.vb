@@ -618,7 +618,11 @@ Public Class frmCreateAOI
                     Dim webServiceUrl As String = strInLayerPath & "/" & prismServices(j).ToString & _
                          "/" & BA_Url_ImageServer
                     Dim newFilePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True) & strInLayerBareName
-                    success = BA_ClipImageServiceToVector(clipFilePath, webServiceUrl, newFilePath)
+                    If BA_ClipImageServiceToVector(clipFilePath, webServiceUrl, newFilePath) = BA_ReturnCode.Success Then
+                        response = 1
+                    Else
+                        response = -1
+                    End If
                 Else
                     response = BA_ClipAOIRaster(AOIFolderBase, strInLayerPath & "\" & strInLayerBareName & "\grid", strInLayerBareName, destPRISMGDB, AOIClipFile.PrismClipAOIExtentCoverage)
                 End If
