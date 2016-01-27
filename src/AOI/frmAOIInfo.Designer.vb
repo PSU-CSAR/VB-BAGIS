@@ -451,10 +451,10 @@ Partial Class frmAOIInfo
         '
         'CmdReClip
         '
-        Me.CmdReClip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CmdReClip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CmdReClip.Location = New System.Drawing.Point(45, 132)
         Me.CmdReClip.Name = "CmdReClip"
-        Me.CmdReClip.Size = New System.Drawing.Size(147, 27)
+        Me.CmdReClip.Size = New System.Drawing.Size(160, 27)
         Me.CmdReClip.TabIndex = 3
         Me.CmdReClip.Text = "Re-clip Selected Layers"
         Me.CmdReClip.UseVisualStyleBackColor = True
@@ -528,27 +528,27 @@ Partial Class frmAOIInfo
         '
         'CmdAddLayer
         '
-        Me.CmdAddLayer.Location = New System.Drawing.Point(547, 423)
+        Me.CmdAddLayer.Location = New System.Drawing.Point(547, 419)
         Me.CmdAddLayer.Name = "CmdAddLayer"
-        Me.CmdAddLayer.Size = New System.Drawing.Size(147, 27)
+        Me.CmdAddLayer.Size = New System.Drawing.Size(160, 27)
         Me.CmdAddLayer.TabIndex = 3
         Me.CmdAddLayer.Text = "Add A New Layer"
         Me.CmdAddLayer.UseVisualStyleBackColor = True
         '
         'CmdUpdateWeasel
         '
-        Me.CmdUpdateWeasel.Location = New System.Drawing.Point(547, 456)
+        Me.CmdUpdateWeasel.Location = New System.Drawing.Point(547, 452)
         Me.CmdUpdateWeasel.Name = "CmdUpdateWeasel"
-        Me.CmdUpdateWeasel.Size = New System.Drawing.Size(147, 27)
+        Me.CmdUpdateWeasel.Size = New System.Drawing.Size(160, 27)
         Me.CmdUpdateWeasel.TabIndex = 3
         Me.CmdUpdateWeasel.Text = "Update Weasel Info"
         Me.CmdUpdateWeasel.UseVisualStyleBackColor = True
         '
         'cmdOK
         '
-        Me.cmdOK.Location = New System.Drawing.Point(547, 489)
+        Me.cmdOK.Location = New System.Drawing.Point(547, 485)
         Me.cmdOK.Name = "cmdOK"
-        Me.cmdOK.Size = New System.Drawing.Size(147, 27)
+        Me.cmdOK.Size = New System.Drawing.Size(160, 27)
         Me.cmdOK.TabIndex = 3
         Me.cmdOK.Text = "Close"
         Me.cmdOK.UseVisualStyleBackColor = True

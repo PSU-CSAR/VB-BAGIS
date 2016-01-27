@@ -129,9 +129,6 @@ Public Class frmAOIInfo
         BA_SetAOI(tempAOIFolderBase)
         AOIFolderBase = tempAOIFolderBase
 
-        'update caption
-        Me.Text = "AOI: " & Me.Tag
-
         If String.IsNullOrEmpty(AOIFolderBase) Then
             'MsgBox "Please set an AOI first!"
             FrameBAGISLayers.Enabled = False
@@ -179,7 +176,8 @@ Public Class frmAOIInfo
 
         Dim aoiName As String = BA_GetBareName(tempAOIFolderBase)
         m_aoi = New Aoi(aoiName, tempAOIFolderBase, Nothing, m_version)
-        'TxtAoiPath.Text = m_aoi.FilePath
+        'update caption
+        Me.Text = "AOI: " & aoiName
         LoadLstLayers()
 
         MsgBox(aoiName & " is set as the current AOI!", MsgBoxStyle.Information)
@@ -217,9 +215,6 @@ Public Class frmAOIInfo
         CmdAddLayer.Enabled = True
         CmdUpdateWeasel.Enabled = True
         FrameUserLayers.Enabled = True
-
-        'update caption
-        Me.Text = "AOI: " & Me.Tag
 
         'display folder paths
         txtDEMFolder.Text = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Surfaces)
@@ -296,6 +291,8 @@ Public Class frmAOIInfo
 
         Dim aoiName As String = BA_GetBareName(AOIFolderBase)
         m_aoi = New Aoi(aoiName, AOIFolderBase, Nothing, m_version)
+        'update caption
+        Me.Text = "AOI: " & aoiName
         LoadLstLayers()
     End Sub
 
@@ -368,23 +365,49 @@ Public Class frmAOIInfo
             If String.IsNullOrEmpty(Trim(InPRISMPath)) Then
                 MsgBox("PRISM data source is not defined! Please use the Options dialog to define the data source.")
             Else
-                Dim temppathname As String = InPRISMPath & "\Q4\grid"
-                If BA_Workspace_Exists(temppathname) Then
+                Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(InPRISMPath)
+                Dim prismServices As System.Array = Nothing
+                Dim prismExists As Boolean = False
+                If wType = WorkspaceType.ImageServer Then
+                    Dim tempPathName As String = InPRISMPath & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString & _
+                        "/" & BA_Url_ImageServer
+                    prismExists = BA_File_ExistsImageServer(tempPathName)
+                    prismServices = System.Enum.GetValues(GetType(PrismServiceNames))
+                Else
+                    Dim tempPathName As String = InPRISMPath & "\Q4\grid"
+                    prismExists = BA_Workspace_Exists(tempPathName)
+                End If
+                If prismExists Then
                     BA_SetPRISMFolderNames()
+
                     'there are 17 prism rasters to be clipped
                     For j = 0 To 16
                         DataName = PRISMLayer(j)
                         pStepProg.Step()
                         System.Windows.Forms.Application.DoEvents()
 
-                        'input PRISM raster is in GRID format, output is in FGDB format 
-                        Dim outputFolder As String = m_aoi.FilePath & "\" & BA_EnumDescription(GeodatabaseNames.Prism)
-                        response = BA_ClipAOIRaster(m_aoi.FilePath, InPRISMPath & "\" & DataName & "\grid", DataName, outputFolder, AOIClipFile.PrismClipAOIExtentCoverage)
+                        If wType = WorkspaceType.ImageServer Then
+                            Dim clipFilePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_EnumDescription(AOIClipFile.PrismClipAOIExtentCoverage)
+                            Dim webServiceUrl As String = InPRISMPath & "/" & prismServices(j).ToString & _
+                                 "/" & BA_Url_ImageServer
+                            Dim newFilePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True) & DataName
+                            If BA_ClipImageServiceToVector(clipFilePath, webServiceUrl, newFilePath) = BA_ReturnCode.Success Then
+                                response = 1
+                            Else
+                                response = -1
+                            End If
+                        Else
+                            'input PRISM raster is in GRID format, output is in FGDB format 
+                            Dim outputFolder As String = m_aoi.FilePath & "\" & BA_EnumDescription(GeodatabaseNames.Prism)
+                            response = BA_ClipAOIRaster(AOIFolderBase, InPRISMPath & "\" & DataName & "\grid", DataName, outputFolder, AOIClipFile.PrismClipAOIExtentCoverage)
+                        End If
+
                         If response <= 0 Then
                             MsgBox("Clipping " & DataName & " failed! Return value = " & response & ".")
-                            Exit Sub 'I added this part to avoid getting bunch of exceprion messages related to clipping prism layers
+                            Exit Sub 'I added this part to avoid getting bunch of exception messages related to clipping prism layers
                         End If
                     Next
+
                     Me.ChkPRISMExist.Checked = True
                     'response = BA_RemoveLayers(My.Document, "grid")
                 Else
@@ -395,7 +418,7 @@ Public Class frmAOIInfo
 
         Dim InLayerString As String
         Dim LayerPath As String = ""
-        Dim LayerName As String, strExtension As String = ""
+        Dim LayerName As String = "", strExtension As String = ""
 
         'SNOTEL
         If ChkSNOTELSelected.Checked = True Then 'clip SNOTEL data
@@ -403,9 +426,21 @@ Public Class frmAOIInfo
             If String.IsNullOrEmpty(Trim(InLayerString)) Then
                 MsgBox("SNOTEL data source is not defined! Please use the Options dialog to define the data source.")
             Else
-                LayerName = BA_GetBareNameAndExtension(InLayerString, LayerPath, strExtension)
-                If BA_Shapefile_Exists(LayerPath & LayerName) Then
-                    response = BA_ClipAOISNOTEL(AOIFolderBase, LayerPath & LayerName, True)
+                Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(InLayerString)
+                Dim snotelExists As Boolean = False
+                If wType = WorkspaceType.Raster Then
+                    LayerName = BA_GetBareNameAndExtension(InLayerString, LayerPath, strExtension)
+                    snotelExists = BA_Shapefile_Exists(LayerPath & LayerName)
+                ElseIf wType = WorkspaceType.FeatureServer Then
+                    snotelExists = BA_File_ExistsFeatureServer(InLayerString)
+                End If
+
+                If snotelExists Then
+                    If wType = WorkspaceType.Raster Then
+                        response = BA_ClipAOISNOTEL(AOIFolderBase, LayerPath & LayerName, True)
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        response = BA_ClipAOISnoWebServices(AOIFolderBase, InLayerString, True)
+                    End If
                     If response <> 1 Then
                         Select Case response
                             Case -1 '-1: unknown error
@@ -436,9 +471,21 @@ Public Class frmAOIInfo
             If String.IsNullOrEmpty(Trim(InLayerString)) Then
                 MsgBox("Snow Course data source is not defined! Please use the Options dialog to define the data source.")
             Else
-                LayerName = BA_GetBareNameAndExtension(InLayerString, LayerPath, strExtension)
-                If BA_Shapefile_Exists(LayerPath & LayerName) Then
-                    response = BA_ClipAOISNOTEL(AOIFolderBase, LayerPath & LayerName, False)
+                Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(InLayerString)
+                Dim scExists As Boolean = False
+                If wType = WorkspaceType.Raster Then
+                    LayerName = BA_GetBareNameAndExtension(InLayerString, LayerPath, strExtension)
+                    scExists = BA_Shapefile_Exists(LayerPath & LayerName)
+                ElseIf wType = WorkspaceType.FeatureServer Then
+                    scExists = BA_File_ExistsFeatureServer(InLayerString)
+                End If
+
+                If scExists Then
+                    If wType = WorkspaceType.Raster Then
+                        response = BA_ClipAOISNOTEL(AOIFolderBase, LayerPath & LayerName, False)
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        response = BA_ClipAOISnoWebServices(AOIFolderBase, InLayerString, False)
+                    End If
                     If response <> 1 Then
                         Select Case response
                             Case -1 '-1: unknown error
