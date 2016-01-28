@@ -1151,4 +1151,41 @@ Public Class frmSettings
         MessageBox.Show(sb.ToString, "Invalid data source", MessageBoxButtons.OK, MessageBoxIcon.Error)
     End Sub
 
+    Private Sub BtnDefault_Click(sender As System.Object, e As System.EventArgs) Handles BtnDefault.Click
+        Dim settingsPath As String = BA_GetAddInDirectory() & "\defaultSettings.json"
+        Dim defaultSettings As Settings = BA_ReadDefaultSettingsFromJson(settingsPath)
+        If defaultSettings IsNot Nothing Then
+            txtTerrain.Text = Nothing
+            If Not String.IsNullOrEmpty(defaultSettings.terrain) Then txtTerrain.Text = _
+                BA_Settings_Filepath & "\" & defaultSettings.terrain
+            'As of 28-JAN-2016, all 3 terrain layers are included in txtTerrain so we set the others to nothing
+            txtDrainage.Text = Nothing
+            txtWatershed.Text = Nothing
+            'As of 28-JAN-2016, there is no 10m DEM so we set it to nothing
+            txtDEM10.Text = Nothing
+            'No default DEM until we know one exists
+            Opt10M.Checked = False
+            Opt30M.Checked = False
+            txtDEM30.Text = Nothing
+            'check if file exists
+            Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.dem30)
+            If BA_File_Exists(defaultSettings.dem30, wType, esriDatasetType.esriDTRasterDataset) Then
+                txtDEM30.Text = defaultSettings.dem30
+                Opt30M.Checked = True
+            End If
+            Select Case defaultSettings.demElevUnit
+                Case BA_EnumDescription(MeasurementUnit.Meters)
+                    OptMeter.Checked = True
+                    OptFoot.Checked = False
+                Case BA_EnumDescription(MeasurementUnit.Feet)
+                    OptMeter.Checked = False
+                    OptFoot.Checked = True
+                Case Else
+                    OptMeter.Checked = False
+                    OptFoot.Checked = False
+            End Select
+        Else
+            MessageBox.Show("The default settings could not be loaded", "Default Settings", MessageBoxButtons.OK)
+        End If
+    End Sub
 End Class

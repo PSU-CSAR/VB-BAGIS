@@ -143,6 +143,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
@@ -348,6 +349,7 @@
     <Compile Include="AOI\setPourPointtool.vb" />
     <Compile Include="Objects\Analysis.vb" />
     <Compile Include="Objects\AreaStatistics.vb" />
+    <Compile Include="Objects\Settings.vb" />
     <Compile Include="Objects\Site.vb" />
   </ItemGroup>
   <ItemGroup>
@@ -426,6 +428,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="defaultSettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>

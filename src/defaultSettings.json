@@ -1,0 +1,6 @@
+{
+  "terrain": "BAGIS_Reference_Maps.lyr",
+  "dem30": "http://atlas.geog.pdx.edu/arcgis/services/30_Meters_DEM/westus_30m/ImageServer",
+  "preferredDem": "dem30",
+  "demElevUnit" : "Meters"
+}

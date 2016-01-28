@@ -90,6 +90,7 @@ Partial Class frmSettings
         Me.GrpBoxSnowCourseUnit = New System.Windows.Forms.GroupBox()
         Me.GrpBoxSNOTELUnit = New System.Windows.Forms.GroupBox()
         Me.ChkboxAOIOnly = New System.Windows.Forms.CheckBox()
+        Me.BtnDefault = New System.Windows.Forms.Button()
         Me.FrameDEM.SuspendLayout()
         Me.FrameUnit.SuspendLayout()
         Me.GrpBoxSnowCourseUnit.SuspendLayout()
@@ -532,10 +533,17 @@ Partial Class frmSettings
         Me.ChkboxAOIOnly.Name = "ChkboxAOIOnly"
         Me.ChkboxAOIOnly.UseVisualStyleBackColor = True
         '
+        'BtnDefault
+        '
+        resources.ApplyResources(Me.BtnDefault, "BtnDefault")
+        Me.BtnDefault.Name = "BtnDefault"
+        Me.BtnDefault.UseVisualStyleBackColor = True
+        '
         'frmSettings
         '
         resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.BtnDefault)
         Me.Controls.Add(Me.ChkboxAOIOnly)
         Me.Controls.Add(Me.lstLayers)
         Me.Controls.Add(Me.GrpBoxSNOTELUnit)
@@ -677,4 +685,5 @@ Partial Class frmSettings
     Friend WithEvents GrpBoxSnowCourseUnit As System.Windows.Forms.GroupBox
     Friend WithEvents GrpBoxSNOTELUnit As System.Windows.Forms.GroupBox
     Friend WithEvents ChkboxAOIOnly As System.Windows.Forms.CheckBox
+    Friend WithEvents BtnDefault As System.Windows.Forms.Button
 End Class

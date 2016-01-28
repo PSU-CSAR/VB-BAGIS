@@ -979,4 +979,43 @@ Module BAGIS_SettingsModule
         '    End If
         'End If
     End Function
+
+    Public Function BA_ReadDefaultSettingsFromJson(ByVal filePath As String) As Settings
+ 
+        Try
+            Dim bytes() As Byte = New Byte(0) {}
+            Dim settings As Settings = Nothing
+            Using fsSource As FileStream = New FileStream(filePath, _
+                FileMode.Open, FileAccess.Read)
+                ' Read the source file into a byte array.
+                ReDim bytes((fsSource.Length) - 1)
+                Dim numBytesToRead As Integer = CType(fsSource.Length, Integer)
+                Dim numBytesRead As Integer = 0
+
+                While (numBytesToRead > 0)
+                    ' Read may return anything from 0 to numBytesToRead.
+                    Dim n As Integer = fsSource.Read(bytes, numBytesRead, _
+                        numBytesToRead)
+                    ' Break when the end of the file is reached.
+                    If (n = 0) Then
+                        Exit While
+                    End If
+                    numBytesRead = (numBytesRead + n)
+                    numBytesToRead = (numBytesToRead - n)
+                End While
+            End Using
+
+            If bytes.Length > 0 Then
+                Using memStream As MemoryStream = New MemoryStream(bytes)
+                    settings = New Settings()
+                    Dim ser As System.Runtime.Serialization.Json.DataContractJsonSerializer = New System.Runtime.Serialization.Json.DataContractJsonSerializer(settings.[GetType]())
+                    Return CType(ser.ReadObject(memStream), Settings)
+                End Using
+            End If
+            Return settings
+        Catch ex As Exception
+            Debug.Print("BA_ReadDefaultSettingsFromJson Exception: " & ex.Message)
+            Return Nothing
+        End Try
+    End Function
 End Module
