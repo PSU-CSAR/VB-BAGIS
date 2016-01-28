@@ -12,6 +12,7 @@ Imports System.ComponentModel
 Imports ESRI.ArcGIS.DataSourcesGDB
 Imports ESRI.ArcGIS.DataSourcesRaster
 Imports System.IO
+Imports System.Text
 
 Public Class frmAOIInfo
     Private AOIRasterList() As String
@@ -98,12 +99,19 @@ Public Class frmAOIInfo
         BA_SystemSettings.GenerateAOIOnly = False
 
         'PRISM
-        Dim temppathname As String = tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Prism) & "\Q4"
-        If BA_File_Exists(temppathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-            ChkPRISMExist.Checked = True
-        Else
+        Dim temppathname As String = tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Prism) & "\" & AOIPrismFolderNames.annual.ToString
+        If Not BA_File_Exists(temppathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
             ChkPRISMExist.Checked = False
             BA_SystemSettings.GenerateAOIOnly = True
+        Else
+            ChkPRISMExist.Checked = True
+            Dim depthUnits As MeasurementUnit = BA_GetDepthUnit(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Prism), AOIPrismFolderNames.annual.ToString)
+            Select Case depthUnits
+                Case MeasurementUnit.Inches
+                    rbtnDepthInch.Checked = True
+                Case MeasurementUnit.Millimeters
+                    rbtnDepthMM.Checked = True
+            End Select
         End If
 
         'SNOTEL
@@ -266,11 +274,18 @@ Public Class frmAOIInfo
         CmdReClip.Enabled = False
 
         'PRISM
-        Dim temppathname As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Prism) & "\Q4"
+        Dim temppathname As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Prism) & "\" & AOIPrismFolderNames.annual.ToString
         If Not BA_File_Exists(temppathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
             ChkPRISMExist.Checked = False
         Else
             ChkPRISMExist.Checked = True
+            Dim depthUnits As MeasurementUnit = BA_GetDepthUnit(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Prism), AOIPrismFolderNames.annual.ToString)
+            Select Case depthUnits
+                Case MeasurementUnit.Inches
+                    rbtnDepthInch.Checked = True
+                Case MeasurementUnit.Millimeters
+                    rbtnDepthMM.Checked = True
+            End Select
         End If
 
         'SNOTEL
@@ -341,10 +356,9 @@ Public Class frmAOIInfo
 
         ' Create/configure a step progressor
         Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, nstep)
-        Dim progressDialog2 As IProgressDialog2 = Nothing
-        progressDialog2 = BA_GetProgressDialog(pStepProg, "Clipping selected layers ", "Clipping...")
+        Dim progressDialog2 As IProgressDialog2 = BA_GetProgressDialog(pStepProg, "Clipping selected layers ", "Clipping...")
         pStepProg.Show()
-        progressDialog2.ShowDialog()
+        pStepProg.Step()
         System.Windows.Forms.Application.DoEvents()
 
         'regenerate the files/folders
@@ -360,6 +374,15 @@ Public Class frmAOIInfo
             'BA_UpdateHashtableForPrism(AOIFolderBase, rasterNamesTable)
 
             Dim InPRISMPath As String = BA_SystemSettings.PRISMFolder
+
+            'Make sure units are selected
+            If Not rbtnDepthInch.Checked And _
+                Not rbtnDepthMM.Checked Then
+                MessageBox.Show("Depth units for PRISM layers are required. Please select depth units.", "Missing units", _
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                rbtnDepthInch.Focus()
+                Exit Sub
+            End If
 
             'PRISM
             If String.IsNullOrEmpty(Trim(InPRISMPath)) Then
@@ -407,6 +430,24 @@ Public Class frmAOIInfo
                             Exit Sub 'I added this part to avoid getting bunch of exception messages related to clipping prism layers
                         End If
                     Next
+
+                    'update the Z unit metadata of PRISM
+                    'We need to update the depth units on new PRISM layers
+                    Dim inputFolder As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
+                    Dim inputFile As String = AOIPrismFolderNames.annual.ToString
+
+                    Dim unitText As String = BA_EnumDescription(MeasurementUnit.Inches)
+                    If rbtnDepthMM.Checked Then
+                        unitText = BA_EnumDescription(MeasurementUnit.Millimeters)
+                    End If
+
+                    Dim sb As StringBuilder = New StringBuilder
+                    sb.Append(BA_BAGIS_TAG_PREFIX)
+                    sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Depth.ToString & "; ")
+                    sb.Append(BA_ZUNIT_VALUE_TAG & unitText & ";")
+                    sb.Append(BA_BAGIS_TAG_SUFFIX)
+                    BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS, _
+                                      sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
 
                     Me.ChkPRISMExist.Checked = True
                     'response = BA_RemoveLayers(My.Document, "grid")
@@ -593,6 +634,9 @@ Public Class frmAOIInfo
         Else
             CmdReClip.Enabled = False
         End If
+        grpboxPRISMUnit.Enabled = ChkPRISMSelected.Checked
+        rbtnDepthInch.Enabled = ChkPRISMSelected.Checked
+        rbtnDepthMM.Enabled = ChkPRISMSelected.Checked
     End Sub
 
     Private Sub ChkSNOTELSelected_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ChkSNOTELSelected.CheckedChanged

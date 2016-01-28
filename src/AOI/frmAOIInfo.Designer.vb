@@ -68,8 +68,12 @@ Partial Class frmAOIInfo
         Me.CmdAddLayer = New System.Windows.Forms.Button()
         Me.CmdUpdateWeasel = New System.Windows.Forms.Button()
         Me.cmdOK = New System.Windows.Forms.Button()
+        Me.grpboxPRISMUnit = New System.Windows.Forms.GroupBox()
+        Me.rbtnDepthInch = New System.Windows.Forms.RadioButton()
+        Me.rbtnDepthMM = New System.Windows.Forms.RadioButton()
         Me.FrameUserLayers.SuspendLayout()
         Me.FrameBAGISLayers.SuspendLayout()
+        Me.grpboxPRISMUnit.SuspendLayout()
         Me.SuspendLayout()
         '
         'Label17
@@ -352,7 +356,7 @@ Partial Class frmAOIInfo
         '
         'CmdSetAOI
         '
-        Me.CmdSetAOI.Location = New System.Drawing.Point(598, 203)
+        Me.CmdSetAOI.Location = New System.Drawing.Point(616, 187)
         Me.CmdSetAOI.Name = "CmdSetAOI"
         Me.CmdSetAOI.Size = New System.Drawing.Size(127, 30)
         Me.CmdSetAOI.TabIndex = 3
@@ -414,7 +418,7 @@ Partial Class frmAOIInfo
         '
         'CmbAddSelectionsToMap
         '
-        Me.CmbAddSelectionsToMap.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CmbAddSelectionsToMap.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CmbAddSelectionsToMap.Location = New System.Drawing.Point(236, 27)
         Me.CmbAddSelectionsToMap.Name = "CmbAddSelectionsToMap"
         Me.CmbAddSelectionsToMap.Size = New System.Drawing.Size(160, 29)
@@ -424,7 +428,7 @@ Partial Class frmAOIInfo
         '
         'CmdClearSelected
         '
-        Me.CmdClearSelected.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CmdClearSelected.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CmdClearSelected.Location = New System.Drawing.Point(52, 27)
         Me.CmdClearSelected.Name = "CmdClearSelected"
         Me.CmdClearSelected.Size = New System.Drawing.Size(132, 29)
@@ -434,6 +438,7 @@ Partial Class frmAOIInfo
         '
         'FrameBAGISLayers
         '
+        Me.FrameBAGISLayers.Controls.Add(Me.grpboxPRISMUnit)
         Me.FrameBAGISLayers.Controls.Add(Me.CmdReClip)
         Me.FrameBAGISLayers.Controls.Add(Me.Label3)
         Me.FrameBAGISLayers.Controls.Add(Me.ChkSnowCourseExist)
@@ -442,9 +447,9 @@ Partial Class frmAOIInfo
         Me.FrameBAGISLayers.Controls.Add(Me.ChkPRISMSelected)
         Me.FrameBAGISLayers.Controls.Add(Me.ChkSNOTELExist)
         Me.FrameBAGISLayers.Controls.Add(Me.ChkPRISMExist)
-        Me.FrameBAGISLayers.Location = New System.Drawing.Point(502, 250)
+        Me.FrameBAGISLayers.Location = New System.Drawing.Point(502, 240)
         Me.FrameBAGISLayers.Name = "FrameBAGISLayers"
-        Me.FrameBAGISLayers.Size = New System.Drawing.Size(241, 167)
+        Me.FrameBAGISLayers.Size = New System.Drawing.Size(241, 195)
         Me.FrameBAGISLayers.TabIndex = 5
         Me.FrameBAGISLayers.TabStop = False
         Me.FrameBAGISLayers.Text = "Presence of BAGIS Layers"
@@ -452,7 +457,7 @@ Partial Class frmAOIInfo
         'CmdReClip
         '
         Me.CmdReClip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdReClip.Location = New System.Drawing.Point(45, 132)
+        Me.CmdReClip.Location = New System.Drawing.Point(45, 162)
         Me.CmdReClip.Name = "CmdReClip"
         Me.CmdReClip.Size = New System.Drawing.Size(160, 27)
         Me.CmdReClip.TabIndex = 3
@@ -462,7 +467,7 @@ Partial Class frmAOIInfo
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(161, 27)
+        Me.Label3.Location = New System.Drawing.Point(161, 21)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(62, 16)
         Me.Label3.TabIndex = 2
@@ -471,7 +476,7 @@ Partial Class frmAOIInfo
         'ChkSnowCourseExist
         '
         Me.ChkSnowCourseExist.Enabled = False
-        Me.ChkSnowCourseExist.Location = New System.Drawing.Point(15, 99)
+        Me.ChkSnowCourseExist.Location = New System.Drawing.Point(15, 133)
         Me.ChkSnowCourseExist.Name = "ChkSnowCourseExist"
         Me.ChkSnowCourseExist.Size = New System.Drawing.Size(106, 20)
         Me.ChkSnowCourseExist.TabIndex = 0
@@ -481,7 +486,7 @@ Partial Class frmAOIInfo
         'ChkSnowCourseSelected
         '
         Me.ChkSnowCourseSelected.AutoSize = True
-        Me.ChkSnowCourseSelected.Location = New System.Drawing.Point(177, 102)
+        Me.ChkSnowCourseSelected.Location = New System.Drawing.Point(177, 136)
         Me.ChkSnowCourseSelected.Name = "ChkSnowCourseSelected"
         Me.ChkSnowCourseSelected.Size = New System.Drawing.Size(15, 14)
         Me.ChkSnowCourseSelected.TabIndex = 0
@@ -490,7 +495,7 @@ Partial Class frmAOIInfo
         'ChkSNOTELSelected
         '
         Me.ChkSNOTELSelected.AutoSize = True
-        Me.ChkSNOTELSelected.Location = New System.Drawing.Point(177, 76)
+        Me.ChkSNOTELSelected.Location = New System.Drawing.Point(177, 113)
         Me.ChkSNOTELSelected.Name = "ChkSNOTELSelected"
         Me.ChkSNOTELSelected.Size = New System.Drawing.Size(15, 14)
         Me.ChkSNOTELSelected.TabIndex = 0
@@ -499,7 +504,7 @@ Partial Class frmAOIInfo
         'ChkPRISMSelected
         '
         Me.ChkPRISMSelected.AutoSize = True
-        Me.ChkPRISMSelected.Location = New System.Drawing.Point(177, 50)
+        Me.ChkPRISMSelected.Location = New System.Drawing.Point(177, 42)
         Me.ChkPRISMSelected.Name = "ChkPRISMSelected"
         Me.ChkPRISMSelected.Size = New System.Drawing.Size(15, 14)
         Me.ChkPRISMSelected.TabIndex = 0
@@ -509,7 +514,7 @@ Partial Class frmAOIInfo
         '
         Me.ChkSNOTELExist.Enabled = False
         Me.ChkSNOTELExist.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.7!)
-        Me.ChkSNOTELExist.Location = New System.Drawing.Point(15, 73)
+        Me.ChkSNOTELExist.Location = New System.Drawing.Point(15, 110)
         Me.ChkSNOTELExist.Name = "ChkSNOTELExist"
         Me.ChkSNOTELExist.Size = New System.Drawing.Size(81, 20)
         Me.ChkSNOTELExist.TabIndex = 0
@@ -519,7 +524,7 @@ Partial Class frmAOIInfo
         'ChkPRISMExist
         '
         Me.ChkPRISMExist.Enabled = False
-        Me.ChkPRISMExist.Location = New System.Drawing.Point(15, 47)
+        Me.ChkPRISMExist.Location = New System.Drawing.Point(15, 39)
         Me.ChkPRISMExist.Name = "ChkPRISMExist"
         Me.ChkPRISMExist.Size = New System.Drawing.Size(113, 20)
         Me.ChkPRISMExist.TabIndex = 0
@@ -528,7 +533,7 @@ Partial Class frmAOIInfo
         '
         'CmdAddLayer
         '
-        Me.CmdAddLayer.Location = New System.Drawing.Point(547, 419)
+        Me.CmdAddLayer.Location = New System.Drawing.Point(547, 445)
         Me.CmdAddLayer.Name = "CmdAddLayer"
         Me.CmdAddLayer.Size = New System.Drawing.Size(160, 27)
         Me.CmdAddLayer.TabIndex = 3
@@ -537,7 +542,7 @@ Partial Class frmAOIInfo
         '
         'CmdUpdateWeasel
         '
-        Me.CmdUpdateWeasel.Location = New System.Drawing.Point(547, 452)
+        Me.CmdUpdateWeasel.Location = New System.Drawing.Point(547, 478)
         Me.CmdUpdateWeasel.Name = "CmdUpdateWeasel"
         Me.CmdUpdateWeasel.Size = New System.Drawing.Size(160, 27)
         Me.CmdUpdateWeasel.TabIndex = 3
@@ -546,18 +551,55 @@ Partial Class frmAOIInfo
         '
         'cmdOK
         '
-        Me.cmdOK.Location = New System.Drawing.Point(547, 485)
+        Me.cmdOK.Location = New System.Drawing.Point(547, 511)
         Me.cmdOK.Name = "cmdOK"
         Me.cmdOK.Size = New System.Drawing.Size(160, 27)
         Me.cmdOK.TabIndex = 3
         Me.cmdOK.Text = "Close"
         Me.cmdOK.UseVisualStyleBackColor = True
         '
+        'grpboxPRISMUnit
+        '
+        Me.grpboxPRISMUnit.Controls.Add(Me.rbtnDepthInch)
+        Me.grpboxPRISMUnit.Controls.Add(Me.rbtnDepthMM)
+        Me.grpboxPRISMUnit.Enabled = False
+        Me.grpboxPRISMUnit.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.grpboxPRISMUnit.Location = New System.Drawing.Point(25, 64)
+        Me.grpboxPRISMUnit.Name = "grpboxPRISMUnit"
+        Me.grpboxPRISMUnit.Size = New System.Drawing.Size(177, 45)
+        Me.grpboxPRISMUnit.TabIndex = 18
+        Me.grpboxPRISMUnit.TabStop = False
+        Me.grpboxPRISMUnit.Text = "PRISM Depth Unit:"
+        '
+        'rbtnDepthInch
+        '
+        Me.rbtnDepthInch.AutoSize = True
+        Me.rbtnDepthInch.Enabled = False
+        Me.rbtnDepthInch.ForeColor = System.Drawing.Color.Blue
+        Me.rbtnDepthInch.Location = New System.Drawing.Point(9, 18)
+        Me.rbtnDepthInch.Name = "rbtnDepthInch"
+        Me.rbtnDepthInch.Size = New System.Drawing.Size(65, 20)
+        Me.rbtnDepthInch.TabIndex = 1
+        Me.rbtnDepthInch.Text = "Inches"
+        Me.rbtnDepthInch.UseVisualStyleBackColor = True
+        '
+        'rbtnDepthMM
+        '
+        Me.rbtnDepthMM.AutoSize = True
+        Me.rbtnDepthMM.Enabled = False
+        Me.rbtnDepthMM.ForeColor = System.Drawing.Color.Blue
+        Me.rbtnDepthMM.Location = New System.Drawing.Point(81, 18)
+        Me.rbtnDepthMM.Name = "rbtnDepthMM"
+        Me.rbtnDepthMM.Size = New System.Drawing.Size(90, 20)
+        Me.rbtnDepthMM.TabIndex = 0
+        Me.rbtnDepthMM.Text = "Millimeters"
+        Me.rbtnDepthMM.UseVisualStyleBackColor = True
+        '
         'frmAOIInfo
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(792, 525)
+        Me.ClientSize = New System.Drawing.Size(792, 552)
         Me.Controls.Add(Me.cmdOK)
         Me.Controls.Add(Me.CmdUpdateWeasel)
         Me.Controls.Add(Me.CmdAddLayer)
@@ -599,6 +641,8 @@ Partial Class frmAOIInfo
         Me.FrameUserLayers.PerformLayout()
         Me.FrameBAGISLayers.ResumeLayout(False)
         Me.FrameBAGISLayers.PerformLayout()
+        Me.grpboxPRISMUnit.ResumeLayout(False)
+        Me.grpboxPRISMUnit.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -649,4 +693,7 @@ Partial Class frmAOIInfo
     Friend WithEvents CmdAddLayer As System.Windows.Forms.Button
     Friend WithEvents CmdUpdateWeasel As System.Windows.Forms.Button
     Friend WithEvents cmdOK As System.Windows.Forms.Button
+    Friend WithEvents grpboxPRISMUnit As System.Windows.Forms.GroupBox
+    Friend WithEvents rbtnDepthInch As System.Windows.Forms.RadioButton
+    Friend WithEvents rbtnDepthMM As System.Windows.Forms.RadioButton
 End Class

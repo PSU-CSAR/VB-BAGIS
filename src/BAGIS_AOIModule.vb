@@ -839,5 +839,25 @@ Module BAGIS_AOIModule
         End Try
         Return return_value
     End Function
+
+    Public Function BA_GetDepthUnit(ByVal inputFolder As String, ByVal inputFile As String) As MeasurementUnit
+        Dim depthUnit As MeasurementUnit = MeasurementUnit.Missing
+        If BA_File_Exists(inputFolder & "\" & inputFile, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+            Dim tagsList As IList(Of String) = BA_ReadMetaData(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS)
+            If tagsList IsNot Nothing Then
+                For Each pInnerText As String In tagsList
+                    'This is our BAGIS tag
+                    If pInnerText.IndexOf(BA_BAGIS_TAG_PREFIX) = 0 Then
+                        Dim strUnits As String = BA_GetValueForKey(pInnerText, BA_ZUNIT_VALUE_TAG)
+                        If strUnits IsNot Nothing Then
+                            depthUnit = BA_GetMeasurementUnit(strUnits)
+                        End If
+                        Exit For
+                    End If
+                Next
+            End If
+        End If
+        Return depthUnit
+    End Function
 End Module
 
