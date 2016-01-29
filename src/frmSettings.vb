@@ -1158,32 +1158,112 @@ Public Class frmSettings
             txtTerrain.Text = Nothing
             If Not String.IsNullOrEmpty(defaultSettings.terrain) Then txtTerrain.Text = _
                 BA_Settings_Filepath & "\" & defaultSettings.terrain
-            'As of 28-JAN-2016, all 3 terrain layers are included in txtTerrain so we set the others to nothing
-            txtDrainage.Text = Nothing
-            txtWatershed.Text = Nothing
+            'As of 28-JAN-2016, all 3 terrain layers are included in txtTerrain the others are likely null
+            txtDrainage.Text = defaultSettings.drainage
+            txtWatershed.Text = defaultSettings.watershed
             'As of 28-JAN-2016, there is no 10m DEM so we set it to nothing
-            txtDEM10.Text = Nothing
+            txtDEM10.Text = defaultSettings.dem10
             'No default DEM until we know one exists
             Opt10M.Checked = False
             Opt30M.Checked = False
+            txtDEM10.Text = Nothing
+            'check if file exists
+            If Not String.IsNullOrEmpty(defaultSettings.dem10) Then
+                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.dem10)
+                If BA_File_Exists(defaultSettings.dem10, wType, esriDatasetType.esriDTRasterDataset) Then
+                    txtDEM10.Text = defaultSettings.dem10
+                    If defaultSettings.preferredDem = BA_Settings_dem10 Then Opt10M.Checked = True
+                End If
+            End If
             txtDEM30.Text = Nothing
             'check if file exists
-            Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.dem30)
-            If BA_File_Exists(defaultSettings.dem30, wType, esriDatasetType.esriDTRasterDataset) Then
-                txtDEM30.Text = defaultSettings.dem30
-                Opt30M.Checked = True
+            If Not String.IsNullOrEmpty(defaultSettings.dem30) Then
+                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.dem30)
+                If BA_File_Exists(defaultSettings.dem30, wType, esriDatasetType.esriDTRasterDataset) Then
+                    txtDEM30.Text = defaultSettings.dem30
+                    If defaultSettings.preferredDem = BA_Settings_dem30 Then Opt30M.Checked = True
+                End If
             End If
-            Select Case defaultSettings.demElevUnit
-                Case BA_EnumDescription(MeasurementUnit.Meters)
-                    OptMeter.Checked = True
-                    OptFoot.Checked = False
-                Case BA_EnumDescription(MeasurementUnit.Feet)
-                    OptMeter.Checked = False
-                    OptFoot.Checked = True
-                Case Else
-                    OptMeter.Checked = False
-                    OptFoot.Checked = False
-            End Select
+            If Not String.IsNullOrEmpty(defaultSettings.demElevUnit) Then
+                Select Case defaultSettings.demElevUnit.ToLower
+                    Case BA_EnumDescription(MeasurementUnit.Meters).ToLower
+                        OptMeter.Checked = True
+                        OptFoot.Checked = False
+                    Case BA_EnumDescription(MeasurementUnit.Feet).ToLower
+                        OptMeter.Checked = False
+                        OptFoot.Checked = True
+                    Case Else
+                        OptMeter.Checked = False
+                        OptFoot.Checked = False
+                End Select
+            Else
+                OptMeter.Checked = False
+                OptFoot.Checked = False
+            End If
+            txtGaugeStation.Text = Nothing
+            If Not String.IsNullOrEmpty(defaultSettings.gaugeStation) Then
+                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.gaugeStation)
+                Dim featureClass As IFeatureClass = Nothing
+                If wType = WorkspaceType.Raster Then
+                    Dim filePath As String = "return"
+                    Dim fileName As String = BA_GetBareName(defaultSettings.gaugeStation, filePath)
+                    featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
+                ElseIf wType = WorkspaceType.FeatureServer Then
+                    featureClass = BA_OpenFeatureClassFromService(defaultSettings.gaugeStation, 0)
+                End If
+                If featureClass IsNot Nothing Then
+                    txtGaugeStation.Text = defaultSettings.gaugeStation
+                    'Name field
+                    CmboxStationAtt.Items.Clear()
+                    'get fields
+                    Dim pFields As IFields = featureClass.Fields
+                    Dim nFields As Integer = pFields.FieldCount
+                    Dim aField As IField = Nothing
+                    Dim qType As esriFieldType
+                    For i = 0 To nFields - 1
+                        aField = pFields.Field(i)
+                        qType = aField.Type
+                        If qType <= esriFieldType.esriFieldTypeInteger Or _
+                             qType = esriFieldType.esriFieldTypeString Then
+                            CmboxStationAtt.Items.Add(aField.Name)
+                            If String.Compare(aField.Name, defaultSettings.gaugeStationName, True) = 0 Then
+                                CmboxStationAtt.SelectedItem = aField.Name
+                            End If
+                        End If
+                    Next
+                    'Area field
+                    ComboStationArea.Items.Clear()
+                    ComboStationArea.Items.Add("No data")
+                    ComboStationArea.SelectedItem = "No data"
+                    For i = 0 To nFields - 1
+                        aField = pFields.Field(i)
+                        qType = aField.Type
+                        If qType <= esriFieldType.esriFieldTypeDouble Then 'numeric data types
+                            ComboStationArea.Items.Add(aField.Name)
+                            If String.Compare(aField.Name, defaultSettings.gaugeStationArea, True) = 0 Then
+                                ComboStationArea.SelectedItem = aField.Name
+                            End If
+                        End If
+                    Next
+
+                    'Areal units; The combo box is loaded when the form loads
+                    If Not String.IsNullOrEmpty(defaultSettings.gaugeStationUnits) Then
+                        Select Case defaultSettings.gaugeStationUnits.ToLower
+                            Case BA_EnumDescription(MeasurementUnit.SquareKilometers).ToLower
+                                ComboStation_Value.SelectedIndex = 1
+                            Case BA_EnumDescription(MeasurementUnit.Acres).ToLower
+                                ComboStation_Value.SelectedIndex = 2
+                            Case BA_EnumDescription(MeasurementUnit.SquareMiles).ToLower
+                                ComboStation_Value.SelectedIndex = 3
+                            Case Else
+                                ComboStation_Value.SelectedIndex = 0
+                        End Select
+                    Else
+                        ComboStation_Value.SelectedIndex = 0
+                    End If
+
+                End If
+            End If
         Else
             MessageBox.Show("The default settings could not be loaded", "Default Settings", MessageBoxButtons.OK)
         End If

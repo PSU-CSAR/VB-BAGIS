@@ -2,5 +2,9 @@
   "terrain": "BAGIS_Reference_Maps.lyr",
   "dem30": "http://atlas.geog.pdx.edu/arcgis/services/30_Meters_DEM/westus_30m/ImageServer",
   "preferredDem": "dem30",
-  "demElevUnit" : "Meters"
+  "demElevUnit" : "Meters",
+  "gaugeStation" : "http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_USGS_ALL/FeatureServer/0",
+  "gaugeStationName" : "name",
+  "gaugeStationArea" : "basinarea",
+  "gaugeStationUnits" : "Square Mile"
 }

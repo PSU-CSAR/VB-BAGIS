@@ -234,4 +234,8 @@ Module BAGIS_PublicVariablesModule
 
     'Public BASIN_Folder_Types As BA_SubFolderList
     ''this global variable is to track a folder's BAGIS properties in an effort to speed up the folder navigation task
+
+    'Values for json payload that loads default settings
+    Public Const BA_Settings_dem30 As String = "dem30"
+    Public Const BA_Settings_dem10 As String = "dem10"
 End Module
