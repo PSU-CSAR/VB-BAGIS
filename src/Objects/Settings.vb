@@ -11,5 +11,8 @@
     Public gaugeStationName As String
     Public gaugeStationArea As String
     Public gaugeStationUnits As String
+    Public snotel As String
+    Public snotelElev As String
+    Public snotelName As String
 
 End Class

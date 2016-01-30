@@ -1201,6 +1201,9 @@ Public Class frmSettings
                 OptFoot.Checked = False
             End If
             txtGaugeStation.Text = Nothing
+            CmboxStationAtt.Items.Clear()
+            ComboStationArea.Items.Clear()
+            ComboStation_Value.SelectedIndex = 0
             If Not String.IsNullOrEmpty(defaultSettings.gaugeStation) Then
                 Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.gaugeStation)
                 Dim featureClass As IFeatureClass = Nothing
@@ -1214,7 +1217,6 @@ Public Class frmSettings
                 If featureClass IsNot Nothing Then
                     txtGaugeStation.Text = defaultSettings.gaugeStation
                     'Name field
-                    CmboxStationAtt.Items.Clear()
                     'get fields
                     Dim pFields As IFields = featureClass.Fields
                     Dim nFields As Integer = pFields.FieldCount
@@ -1232,7 +1234,6 @@ Public Class frmSettings
                         End If
                     Next
                     'Area field
-                    ComboStationArea.Items.Clear()
                     ComboStationArea.Items.Add("No data")
                     ComboStationArea.SelectedItem = "No data"
                     For i = 0 To nFields - 1
@@ -1261,7 +1262,53 @@ Public Class frmSettings
                     Else
                         ComboStation_Value.SelectedIndex = 0
                     End If
+                End If
+            End If
+            txtSNOTEL.Text = ""
+            ComboSNOTEL_Elevation.Items.Clear()
+            ComboSNOTEL_Name.Items.Clear()
+            If Not String.IsNullOrEmpty(defaultSettings.snotel) Then
+                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.snotel)
+                Dim featureClass As IFeatureClass = Nothing
+                If wType = WorkspaceType.Raster Then
+                    Dim filePath As String = "return"
+                    Dim fileName As String = BA_GetBareName(defaultSettings.snotel, filePath)
+                    featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
+                ElseIf wType = WorkspaceType.FeatureServer Then
+                    featureClass = BA_OpenFeatureClassFromService(defaultSettings.snotel, 0)
+                End If
+                If featureClass IsNot Nothing Then
+                    txtSNOTEL.Text = defaultSettings.snotel
+                    'Name field
+                    'get fields
+                    Dim pFields As IFields = featureClass.Fields
+                    Dim nFields As Integer = pFields.FieldCount
+                    Dim aField As IField = Nothing
+                    Dim qType As esriFieldType
+                         For i = 0 To nFields - 1
+                        aField = pFields.Field(i)
+                        qType = aField.Type
+                        If qType <= esriFieldType.esriFieldTypeDouble Then
+                            ComboSNOTEL_Elevation.Items.Add(aField.Name)
+                            If String.Compare(aField.Name, defaultSettings.snotelElev, True) = 0 Then
+                                ComboSNOTEL_Elevation.SelectedItem = aField.Name
+                            End If
+                        End If
+                    Next
 
+                    'Name field
+                    ComboSNOTEL_Name.Items.Add("None")
+                    ComboSNOTEL_Name.SelectedItem = "None"
+                    For i = 0 To nFields - 1
+                        aField = pFields.Field(i)
+                        qType = aField.Type
+                        If qType = esriFieldType.esriFieldTypeString Then 'string data types
+                            ComboSNOTEL_Name.Items.Add(aField.Name)
+                            If String.Compare(aField.Name, defaultSettings.snotelName, True) = 0 Then
+                                ComboSNOTEL_Name.SelectedItem = aField.Name
+                            End If
+                        End If
+                    Next
                 End If
             End If
         Else

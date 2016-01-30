@@ -6,5 +6,8 @@
   "gaugeStation" : "http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_USGS_ALL/FeatureServer/0",
   "gaugeStationName" : "name",
   "gaugeStationArea" : "basinarea",
-  "gaugeStationUnits" : "Square Mile"
+  "gaugeStationUnits" : "Square Mile",
+  "snotel": "http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_SNOTEL_ALL/FeatureServer/0",
+  "snotelElev": "elevation",
+  "snotelName": "name"
 }
