@@ -9,5 +9,8 @@
   "gaugeStationUnits" : "Square Mile",
   "snotel": "http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_SNOTEL_ALL/FeatureServer/0",
   "snotelElev": "elevation",
-  "snotelName": "name"
+  "snotelName": "name",
+  "snowCourse": "http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_SNOW_ALL/FeatureServer/0",
+  "snowCourseElev": "elevation",
+  "snowCourseName": "name"
 }

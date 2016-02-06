@@ -14,5 +14,8 @@
     Public snotel As String
     Public snotelElev As String
     Public snotelName As String
+    Public snowCourse As String
+    Public snowCourseElev As String
+    Public snowCourseName As String
 
 End Class

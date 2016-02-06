@@ -1200,6 +1200,7 @@ Public Class frmSettings
                 OptMeter.Checked = False
                 OptFoot.Checked = False
             End If
+            Dim warningSb As StringBuilder = New StringBuilder()
             txtGaugeStation.Text = Nothing
             CmboxStationAtt.Items.Clear()
             ComboStationArea.Items.Clear()
@@ -1222,6 +1223,7 @@ Public Class frmSettings
                     Dim nFields As Integer = pFields.FieldCount
                     Dim aField As IField = Nothing
                     Dim qType As esriFieldType
+                    Dim foundIt As Boolean = False
                     For i = 0 To nFields - 1
                         aField = pFields.Field(i)
                         qType = aField.Type
@@ -1230,9 +1232,14 @@ Public Class frmSettings
                             CmboxStationAtt.Items.Add(aField.Name)
                             If String.Compare(aField.Name, defaultSettings.gaugeStationName, True) = 0 Then
                                 CmboxStationAtt.SelectedItem = aField.Name
+                                foundIt = True
                             End If
                         End If
                     Next
+                    If foundIt = False Then
+                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.gaugeStationName & " is not in gauge station data")
+                    End If
+                    foundIt = False
                     'Area field
                     ComboStationArea.Items.Add("No data")
                     ComboStationArea.SelectedItem = "No data"
@@ -1243,9 +1250,14 @@ Public Class frmSettings
                             ComboStationArea.Items.Add(aField.Name)
                             If String.Compare(aField.Name, defaultSettings.gaugeStationArea, True) = 0 Then
                                 ComboStationArea.SelectedItem = aField.Name
+                                foundIt = True
                             End If
                         End If
                     Next
+                    If foundIt = False Then
+                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.gaugeStationArea & " is not in gauge station data")
+                    End If
+                    foundIt = False
 
                     'Areal units; The combo box is loaded when the form loads
                     If Not String.IsNullOrEmpty(defaultSettings.gaugeStationUnits) Then
@@ -1264,6 +1276,7 @@ Public Class frmSettings
                     End If
                 End If
             End If
+
             txtSNOTEL.Text = ""
             ComboSNOTEL_Elevation.Items.Clear()
             ComboSNOTEL_Name.Items.Clear()
@@ -1279,23 +1292,28 @@ Public Class frmSettings
                 End If
                 If featureClass IsNot Nothing Then
                     txtSNOTEL.Text = defaultSettings.snotel
-                    'Name field
+                    'Elevation field
                     'get fields
                     Dim pFields As IFields = featureClass.Fields
                     Dim nFields As Integer = pFields.FieldCount
                     Dim aField As IField = Nothing
                     Dim qType As esriFieldType
-                         For i = 0 To nFields - 1
+                    Dim foundIt As Boolean = False
+                    For i = 0 To nFields - 1
                         aField = pFields.Field(i)
                         qType = aField.Type
                         If qType <= esriFieldType.esriFieldTypeDouble Then
                             ComboSNOTEL_Elevation.Items.Add(aField.Name)
                             If String.Compare(aField.Name, defaultSettings.snotelElev, True) = 0 Then
                                 ComboSNOTEL_Elevation.SelectedItem = aField.Name
+                                foundIt = True
                             End If
                         End If
                     Next
-
+                    If foundIt = False Then
+                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snotelElev & " is not in SNOTEL data")
+                    End If
+                    foundIt = False
                     'Name field
                     ComboSNOTEL_Name.Items.Add("None")
                     ComboSNOTEL_Name.SelectedItem = "None"
@@ -1306,10 +1324,75 @@ Public Class frmSettings
                             ComboSNOTEL_Name.Items.Add(aField.Name)
                             If String.Compare(aField.Name, defaultSettings.snotelName, True) = 0 Then
                                 ComboSNOTEL_Name.SelectedItem = aField.Name
+                                foundIt = True
                             End If
                         End If
                     Next
+                    If foundIt = False Then
+                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snotelName & " is not in SNOTEL data")
+                    End If
                 End If
+            End If
+
+            txtSnowCourse.Text = ""
+            ComboSC_Elevation.Items.Clear()
+            ComboSC_Name.Items.Clear()
+            If Not String.IsNullOrEmpty(defaultSettings.snowCourse) Then
+                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.snowCourse)
+                Dim featureClass As IFeatureClass = Nothing
+                If wType = WorkspaceType.Raster Then
+                    Dim filePath As String = "return"
+                    Dim fileName As String = BA_GetBareName(defaultSettings.snowCourse, filePath)
+                    featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
+                ElseIf wType = WorkspaceType.FeatureServer Then
+                    featureClass = BA_OpenFeatureClassFromService(defaultSettings.snowCourse, 0)
+                End If
+                If featureClass IsNot Nothing Then
+                    txtSnowCourse.Text = defaultSettings.snowCourse
+                    'Elevation field
+                    'get fields
+                    Dim pFields As IFields = featureClass.Fields
+                    Dim nFields As Integer = pFields.FieldCount
+                    Dim aField As IField = Nothing
+                    Dim qType As esriFieldType
+                    Dim foundIt As Boolean = False
+                    For i = 0 To nFields - 1
+                        aField = pFields.Field(i)
+                        qType = aField.Type
+                        If qType <= esriFieldType.esriFieldTypeDouble Then
+                            ComboSC_Elevation.Items.Add(aField.Name)
+                            If String.Compare(aField.Name, defaultSettings.snowCourseElev, True) = 0 Then
+                                ComboSC_Elevation.SelectedItem = aField.Name
+                                foundIt = True
+                            End If
+                        End If
+                    Next
+                    If foundIt = False Then
+                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snowCourseElev & " is not in Snow Course data")
+                    End If
+                    foundIt = False
+                    'Name field
+                    ComboSC_Name.Items.Add("None")
+                    ComboSC_Name.SelectedItem = "None"
+                    For i = 0 To nFields - 1
+                        aField = pFields.Field(i)
+                        qType = aField.Type
+                        If qType = esriFieldType.esriFieldTypeString Then 'string data types
+                            ComboSC_Name.Items.Add(aField.Name)
+                            If String.Compare(aField.Name, defaultSettings.snowCourseName, True) = 0 Then
+                                ComboSC_Name.SelectedItem = aField.Name
+                                foundIt = True
+                            End If
+                        End If
+                    Next
+                    If foundIt = False Then
+                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snowCourseName & " is not in Snow Course data")
+                    End If
+                End If
+            End If
+
+            If warningSb.Length > 0 Then
+                MessageBox.Show(warningSb.ToString, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             End If
         Else
             MessageBox.Show("The default settings could not be loaded", "Default Settings", MessageBoxButtons.OK)
