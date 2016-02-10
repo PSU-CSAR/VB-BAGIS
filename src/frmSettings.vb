@@ -755,8 +755,7 @@ Public Class frmSettings
         Dim Data_Path As String, Data_Name As String, data_type As Object, data_type_name As String
         Dim data_fullname As String
 
-        Dim pFilter As IGxObjectFilter
-        pFilter = New GxFilterDatasets
+        Dim pFilter As IGxObjectFilter = New GxFilterDatasets
 
         'initialize and open mini browser
         With pGxDialog
@@ -769,11 +768,17 @@ Public Class frmSettings
 
         If bObjectSelected = False Then Exit Sub
 
+        Dim pGxObj As IGxObject = pGxObject.Next
+        If pGxObj.Category = BA_EnumDescription(GxFilterCategory.FeatureService) Or _
+            pGxObj.Category = BA_EnumDescription(GxFilterCategory.ImageService) Or _
+            pGxObj.Category = BA_EnumDescription(GxFilterCategory.MapService) Then
+            MessageBox.Show("Web services cannot be used in the participating layers section.", "Invalid layers", MessageBoxButtons.OK)
+            Exit Sub
+        End If
+
         'get the name of the selected folder
-        Dim pGxDataset As IGxDataset
-        pGxDataset = pGxObject.Next
-        Dim pDatasetName As IDatasetName
-        pDatasetName = pGxDataset.DatasetName
+        Dim pGxDataset As IGxDataset = CType(pGxObj, IGxDataset)
+        Dim pDatasetName As IDatasetName = pGxDataset.DatasetName
         Data_Path = pDatasetName.WorkspaceName.PathName
         Data_Name = pDatasetName.Name
         data_type = pDatasetName.Type
