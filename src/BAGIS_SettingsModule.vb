@@ -109,6 +109,10 @@ Module BAGIS_SettingsModule
                 End If
 
                 return_message = "WARNING!"
+                'check for network connectivity
+                If Not BA_IsNetworkAvailable(0) Then
+                    return_message = return_message & vbCrLf & "Your computer is not connected to the network. You may be unable to access some of the data layers."
+                End If
                 linestring = sr.ReadLine() 'read the terrain reference layer name                                                                   '2
 
                 TempPathName = Trim(linestring)
@@ -282,7 +286,7 @@ Module BAGIS_SettingsModule
                         'Ver1E Update - check awdb_id field in the forecast point layer
                         '@ToDo: How to handle this for feature service layer. Different field name? usgs_id  
                         idxFieldId = pFields.FindField(aoiIdField)
-                     ElseIf wType = WorkspaceType.FeatureServer Then
+                    ElseIf wType = WorkspaceType.FeatureServer Then
                         'Populate the area dropdown
                         For Each fField As FeatureServiceField In allFields
                             If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
@@ -325,7 +329,7 @@ Module BAGIS_SettingsModule
                 Else
                     return_message = return_message & vbCrLf & "Gauge station data Missing: " & TempPathName
                 End If
- 
+
                 'Read Area Unit
                 linestring = sr.ReadLine() 'Reads Area Unit Index from Def File                                                                             '12
 
@@ -365,10 +369,10 @@ Module BAGIS_SettingsModule
                     End If
                 End If
 
-                    'set snotel field
-                    linestring = sr.ReadLine()  'elevation field                                                                                                '14
-                    linestring1 = sr.ReadLine() 'name field                                                                                                     '15
-                    linestring2 = sr.ReadLine() 'elevation unit                                                                                                 '16
+                'set snotel field
+                linestring = sr.ReadLine()  'elevation field                                                                                                '14
+                linestring1 = sr.ReadLine() 'name field                                                                                                     '15
+                linestring2 = sr.ReadLine() 'elevation unit                                                                                                 '16
 
                 If FileExists Then  'text exists for the setting of this layer
 
@@ -466,37 +470,37 @@ Module BAGIS_SettingsModule
                     return_message = return_message & vbCrLf & "SNOTEL data Missing: " & TempPathName
                 End If
 
-                    'read snow course
-                    linestring = sr.ReadLine()                                                                                                                  '13
-                    SettingsForm.txtSnowCourse.Text = Trim(linestring)
+                'read snow course
+                linestring = sr.ReadLine()                                                                                                                  '13
+                SettingsForm.txtSnowCourse.Text = Trim(linestring)
 
-                    wType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtSnowCourse.Text)
-                    If Trim(linestring) = "" Then
-                        TempPathName = "Snow Course"
-                        FileExists = False
-                    Else
-                        If wType = WorkspaceType.Raster Then
-                            File_Name = BA_GetBareNameAndExtension(SettingsForm.txtSnowCourse.Text, File_Path, layertype)
-                            TempPathName = File_Path & File_Name
-                            FileExists = BA_Shapefile_Exists(TempPathName)
-                        ElseIf wType = WorkspaceType.FeatureServer Then
-                            FileExists = BA_File_Exists(SettingsForm.txtSnowCourse.Text, wType, esriDatasetType.esriDTFeatureClass)
-                        End If
+                wType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtSnowCourse.Text)
+                If Trim(linestring) = "" Then
+                    TempPathName = "Snow Course"
+                    FileExists = False
+                Else
+                    If wType = WorkspaceType.Raster Then
+                        File_Name = BA_GetBareNameAndExtension(SettingsForm.txtSnowCourse.Text, File_Path, layertype)
+                        TempPathName = File_Path & File_Name
+                        FileExists = BA_Shapefile_Exists(TempPathName)
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        FileExists = BA_File_Exists(SettingsForm.txtSnowCourse.Text, wType, esriDatasetType.esriDTFeatureClass)
                     End If
+                End If
 
-                    'set snow course field
-                    linestring = sr.ReadLine()  'elevation field                                                                                                '14
-                    linestring1 = sr.ReadLine() 'name field                                                                                                     '15
-                    linestring2 = sr.ReadLine() 'elevation unit                                                                                                 '16
+                'set snow course field
+                linestring = sr.ReadLine()  'elevation field                                                                                                '14
+                linestring1 = sr.ReadLine() 'name field                                                                                                     '15
+                linestring2 = sr.ReadLine() 'elevation unit                                                                                                 '16
 
-                    If FileExists Then  'text exists for the setting of this layer
+                If FileExists Then  'text exists for the setting of this layer
 
-                        'set elevation field
-                        SettingsForm.ComboSC_Elevation.Items.Clear()
-                        FieldIndex = -1
-                        icount = 0
-                        'Object for feature service fields
-                        Dim allFields As IList(Of FeatureServiceField) = New List(Of FeatureServiceField)
+                    'set elevation field
+                    SettingsForm.ComboSC_Elevation.Items.Clear()
+                    FieldIndex = -1
+                    iCount = 0
+                    'Object for feature service fields
+                    Dim allFields As IList(Of FeatureServiceField) = New List(Of FeatureServiceField)
 
                     If wType = WorkspaceType.Raster Then
                         pFeatClass = BA_OpenFeatureClassFromFile(File_Path, File_Name)
@@ -525,19 +529,19 @@ Module BAGIS_SettingsModule
                         Next
                     End If
 
-                        If FieldIndex < 0 Then
-                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring & " is not in " & TempPathName
-                            SettingsForm.ComboSC_Elevation.SelectedIndex = 0
-                        Else
-                            SettingsForm.ComboSC_Elevation.SelectedItem = linestring
-                        End If
+                    If FieldIndex < 0 Then
+                        return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring & " is not in " & TempPathName
+                        SettingsForm.ComboSC_Elevation.SelectedIndex = 0
+                    Else
+                        SettingsForm.ComboSC_Elevation.SelectedItem = linestring
+                    End If
 
-                        'set name field
-                        SettingsForm.ComboSC_Name.Items.Clear()
-                        SettingsForm.ComboSC_Name.Items.Add("None")
+                    'set name field
+                    SettingsForm.ComboSC_Name.Items.Clear()
+                    SettingsForm.ComboSC_Name.Items.Add("None")
 
-                        FieldIndex = -1
-                        icount = 0
+                    FieldIndex = -1
+                    iCount = 0
 
                     If wType = WorkspaceType.Raster Then
                         For i = 0 To nFields - 1
@@ -613,48 +617,48 @@ Module BAGIS_SettingsModule
 
                 SettingsForm.lstLayers.Items.Clear()
 
-                    'omitted?
-                    'Just Read the line specified to the lstLayers list count and do nothing. 
-                    'This Line is only because there is one line in the .def file which only shows the number of items in the list
-                    ' linestring = sr.ReadLine()
-                    BA_SystemSettings.listCount = 0
-                    TempPathName = ""
+                'omitted?
+                'Just Read the line specified to the lstLayers list count and do nothing. 
+                'This Line is only because there is one line in the .def file which only shows the number of items in the list
+                ' linestring = sr.ReadLine()
+                BA_SystemSettings.listCount = 0
+                TempPathName = ""
 
-                    Do While sr.Peek() >= 0
-                        linestring = Trim(sr.ReadLine()) 'read a line to the lineString variable                                                                          '22 to (21+listcount)
-                        If Len(linestring) > 0 Then
-                            SettingsForm.lstLayers.Items.Add(linestring)
-                            'If (Len(Trim(linestring)) <> 0) Then SettingsForm.lstLayers.Items.Add(Trim(linestring))
-                            File_Name = BA_GetBareNameAndExtension(linestring, File_Path, layertype)
-                            TempPathName = File_Path & File_Name
-                            wType = BA_GetWorkspaceTypeFromPath(TempPathName)
-                            Select Case layertype
-                                Case "(Shapefile)" 'shapefile
-                                    If wType = WorkspaceType.Raster Then
-                                        FileExists = BA_Shapefile_Exists(TempPathName)
-                                    Else
-                                        FileExists = BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTFeatureClass)
-                                    End If
-                                Case "(Raster)" 'raster
-                                    FileExists = BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTRasterDataset)
-                                Case Else
-                                    return_message = return_message & vbCrLf & "Participating Data Unknown Type: " & TempPathName & " " & layertype
-                            End Select
-                            If Not FileExists Then 'text exists for the setting of this layer
-                                return_message = return_message & vbCrLf & "Participating Data Missing: " & TempPathName
-                            End If
-                            BA_SystemSettings.listCount = BA_SystemSettings.listCount + 1
+                Do While sr.Peek() >= 0
+                    linestring = Trim(sr.ReadLine()) 'read a line to the lineString variable                                                                          '22 to (21+listcount)
+                    If Len(linestring) > 0 Then
+                        SettingsForm.lstLayers.Items.Add(linestring)
+                        'If (Len(Trim(linestring)) <> 0) Then SettingsForm.lstLayers.Items.Add(Trim(linestring))
+                        File_Name = BA_GetBareNameAndExtension(linestring, File_Path, layertype)
+                        TempPathName = File_Path & File_Name
+                        wType = BA_GetWorkspaceTypeFromPath(TempPathName)
+                        Select Case layertype
+                            Case "(Shapefile)" 'shapefile
+                                If wType = WorkspaceType.Raster Then
+                                    FileExists = BA_Shapefile_Exists(TempPathName)
+                                Else
+                                    FileExists = BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTFeatureClass)
+                                End If
+                            Case "(Raster)" 'raster
+                                FileExists = BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTRasterDataset)
+                            Case Else
+                                return_message = return_message & vbCrLf & "Participating Data Unknown Type: " & TempPathName & " " & layertype
+                        End Select
+                        If Not FileExists Then 'text exists for the setting of this layer
+                            return_message = return_message & vbCrLf & "Participating Data Missing: " & TempPathName
                         End If
-                    Loop
+                        BA_SystemSettings.listCount = BA_SystemSettings.listCount + 1
+                    End If
+                Loop
 
-                    If SettingsForm.lstLayers.Items.Count > 0 Then SettingsForm.lstLayers.SelectedIndex = SettingsForm.lstLayers.Items.Count - 1
-                    sr.Close()
-                    'reset object variables
-                    aField = Nothing
-                    pFields = Nothing
-                    pFeatClass = Nothing
-                    pFeatWorkspace = Nothing
-                    pWksFactory = Nothing
+                If SettingsForm.lstLayers.Items.Count > 0 Then SettingsForm.lstLayers.SelectedIndex = SettingsForm.lstLayers.Items.Count - 1
+                sr.Close()
+                'reset object variables
+                aField = Nothing
+                pFields = Nothing
+                pFeatClass = Nothing
+                pFeatWorkspace = Nothing
+                pWksFactory = Nothing
             End Using
 
             If SNOTELDataExist And SnowCourseDataExist And PRISMDataExist Then
@@ -727,6 +731,11 @@ Module BAGIS_SettingsModule
                     MsgBox("The version of setting file is different from BAGIS version!" & vbCrLf & _
                            "Please save setting using settings form to update the version.", vbOKOnly, "BAGIS Settings Version Error")
                     Return -1
+                End If
+
+                'Check for network connectivity
+                If Not BA_IsNetworkAvailable(0) Then
+                    MessageBox.Show("Your computer is not connected to the network. You may be unable to access some of the data layers.")
                 End If
 
                 linestring = sr.ReadLine() 'three lines for reference layers                            '2

@@ -1032,6 +1032,7 @@ Public Class frmSettings
     'End Sub
 
     Private Sub CmdUndo_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdUndo.Click
+        'check for network connectivity
         BA_Read_Settings(Me)
         CmdUndo.Enabled = False
     End Sub
@@ -1054,6 +1055,9 @@ Public Class frmSettings
         Me.ComboSC_Name.Items.Clear()
         Me.ComboSC_Name.Items.Add("none")
         Me.ComboSC_Name.SelectedIndex = 0
+
+        'check for network connectivity
+        Dim connectedToNetwork As Boolean = BA_IsNetworkAvailable(0)
 
         'set settings
         settings_message = BA_Read_Settings(Me)
@@ -1160,6 +1164,13 @@ Public Class frmSettings
         Dim settingsPath As String = BA_GetAddInDirectory() & "\defaultSettings.json"
         Dim defaultSettings As Settings = BA_ReadDefaultSettingsFromJson(settingsPath)
         If defaultSettings IsNot Nothing Then
+            Dim warningSb As StringBuilder = New StringBuilder()
+            warningSb.Append("WARNING!")
+            'check for network connectivity
+            If Not BA_IsNetworkAvailable(0) Then
+                warningSb.Append(vbCrLf & "Your computer is not connected to the network. You may be unable to access some of the data layers.")
+            End If
+
             txtTerrain.Text = Nothing
             If Not String.IsNullOrEmpty(defaultSettings.terrain) Then txtTerrain.Text = _
                 BA_Settings_Filepath & "\" & defaultSettings.terrain
@@ -1205,7 +1216,6 @@ Public Class frmSettings
                 OptMeter.Checked = False
                 OptFoot.Checked = False
             End If
-            Dim warningSb As StringBuilder = New StringBuilder()
             txtGaugeStation.Text = Nothing
             CmboxStationAtt.Items.Clear()
             ComboStationArea.Items.Clear()
@@ -1396,7 +1406,7 @@ Public Class frmSettings
                 End If
             End If
 
-            If warningSb.Length > 0 Then
+            If Not String.Compare(warningSb.ToString, "WARNING!", False) = 0 Then
                 MessageBox.Show(warningSb.ToString, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             End If
         Else
