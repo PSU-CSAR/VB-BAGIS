@@ -148,7 +148,7 @@ Partial Class frmSettings
         '
         'txtDEM10
         '
-        Me.txtDEM10.BackColor = System.Drawing.Color.FromArgb(CType(CType(192, Byte), Integer), CType(CType(255, Byte), Integer), CType(CType(255, Byte), Integer))
+        Me.txtDEM10.BackColor = System.Drawing.SystemColors.ButtonFace
         Me.txtDEM10.ForeColor = System.Drawing.Color.Navy
         resources.ApplyResources(Me.txtDEM10, "txtDEM10")
         Me.txtDEM10.Name = "txtDEM10"

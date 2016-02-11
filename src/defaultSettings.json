@@ -12,5 +12,6 @@
   "snotelName": "name",
   "snowCourse": "http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_SNOW_ALL/FeatureServer/0",
   "snowCourseElev": "elevation",
-  "snowCourseName": "name"
+  "snowCourseName": "name",
+  "prism": "http://atlas.geog.pdx.edu/arcgis/services/PRISM"
 }

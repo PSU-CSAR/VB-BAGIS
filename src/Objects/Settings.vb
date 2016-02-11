@@ -17,5 +17,6 @@
     Public snowCourse As String
     Public snowCourseElev As String
     Public snowCourseName As String
+    Public prism As String
 
 End Class

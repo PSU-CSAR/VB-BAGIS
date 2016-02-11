@@ -1406,6 +1406,21 @@ Public Class frmSettings
                 End If
             End If
 
+            txtPRISM.Text = ""
+            If Not String.IsNullOrEmpty(defaultSettings.prism) Then
+                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.prism)
+                Dim FileExists As Boolean = False
+                If wType = WorkspaceType.ImageServer Then
+                    Dim TempPathName As String = defaultSettings.prism & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString & _
+                     "/" & BA_Url_ImageServer
+                    FileExists = BA_File_ExistsImageServer(TempPathName)
+                Else
+                    Dim TempPathName As String = defaultSettings.prism & "\Q4\grid"
+                    FileExists = BA_Workspace_Exists(TempPathName)
+                End If
+                If FileExists Then txtPRISM.Text = defaultSettings.prism
+            End If
+
             If Not String.Compare(warningSb.ToString, "WARNING!", False) = 0 Then
                 MessageBox.Show(warningSb.ToString, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             End If
