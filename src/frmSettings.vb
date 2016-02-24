@@ -1172,8 +1172,28 @@ Public Class frmSettings
             End If
 
             txtTerrain.Text = Nothing
-            If Not String.IsNullOrEmpty(defaultSettings.terrain) Then txtTerrain.Text = _
-                BA_Settings_Filepath & "\" & defaultSettings.terrain
+            'Check to see if settings file exists at default location
+            If Not String.IsNullOrEmpty(defaultSettings.terrain) Then
+                Dim terrainPath As String = BA_Settings_Filepath & "\" & defaultSettings.terrain
+                If BA_File_ExistsWindowsIO(terrainPath) Then
+                    Dim result As DialogResult = MessageBox.Show("The terrain reference layer already exists at " & terrainPath & _
+                                                                 " Do you wish to overwrite it with the default layer ?", "Terrain layer", _
+                                                                 MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                    If result <> Windows.Forms.DialogResult.Yes Then
+                        'Set the path to the file the user wants to keep
+                        txtTerrain.Text = BA_Settings_Filepath & "\" & defaultSettings.terrain
+                    Else
+                        If BA_File_ExistsWindowsIO(BA_GetAddInDirectory() & "\" & defaultSettings.terrain) Then
+                            IO.File.Copy(BA_GetAddInDirectory() & "\" & defaultSettings.terrain, BA_Settings_Filepath & "\" & defaultSettings.terrain)
+                            txtTerrain.Text = BA_Settings_Filepath & "\" & defaultSettings.terrain
+                        Else
+                            MessageBox.Show("The default terrain reference layer could not be found. It will not be copied to " & _
+                                            BA_Settings_Filepath & ".", "Missing terrain layer", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                        End If
+                    End If
+                End If
+            End If
+
             'As of 28-JAN-2016, all 3 terrain layers are included in txtTerrain the others are likely null
             txtDrainage.Text = defaultSettings.drainage
             txtWatershed.Text = defaultSettings.watershed
