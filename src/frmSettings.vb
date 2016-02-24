@@ -1173,26 +1173,30 @@ Public Class frmSettings
 
             txtTerrain.Text = Nothing
             'Check to see if settings file exists at default location
-            If Not String.IsNullOrEmpty(defaultSettings.terrain) Then
-                Dim terrainPath As String = BA_Settings_Filepath & "\" & defaultSettings.terrain
-                If BA_File_ExistsWindowsIO(terrainPath) Then
-                    Dim result As DialogResult = MessageBox.Show("The terrain reference layer already exists at " & terrainPath & _
-                                                                 " Do you wish to overwrite it with the default layer ?", "Terrain layer", _
-                                                                 MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-                    If result <> Windows.Forms.DialogResult.Yes Then
-                        'Set the path to the file the user wants to keep
-                        txtTerrain.Text = BA_Settings_Filepath & "\" & defaultSettings.terrain
-                    Else
-                        If BA_File_ExistsWindowsIO(BA_GetAddInDirectory() & "\" & defaultSettings.terrain) Then
-                            IO.File.Copy(BA_GetAddInDirectory() & "\" & defaultSettings.terrain, BA_Settings_Filepath & "\" & defaultSettings.terrain)
-                            txtTerrain.Text = BA_Settings_Filepath & "\" & defaultSettings.terrain
-                        Else
-                            MessageBox.Show("The default terrain reference layer could not be found. It will not be copied to " & _
-                                            BA_Settings_Filepath & ".", "Missing terrain layer", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                        End If
-                    End If
+            'If Not String.IsNullOrEmpty(defaultSettings.terrain) Then
+            Dim terrainPath As String = BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer)
+            Dim copyFile As Boolean = True
+            If BA_File_ExistsWindowsIO(terrainPath) Then
+                Dim result As DialogResult = MessageBox.Show("The terrain reference layer already exists at " & terrainPath & _
+                                                             " Do you wish to overwrite it with the default layer ?", "Terrain layer", _
+                                                             MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                If result <> Windows.Forms.DialogResult.Yes Then
+                    'Set the path to the file the user wants to keep
+                    txtTerrain.Text = terrainPath
+                    copyFile = False
                 End If
             End If
+            If copyFile = True Then
+                If BA_File_ExistsWindowsIO(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer)) Then
+
+                    IO.File.Copy(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer), BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer), True)
+                    txtTerrain.Text = BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer)
+                Else
+                    MessageBox.Show("The default terrain reference layer could not be found. It will not be copied to " & _
+                                    BA_Settings_Filepath & ".", "Missing terrain layer", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                End If
+            End If
+            'End If
 
             'As of 28-JAN-2016, all 3 terrain layers are included in txtTerrain the others are likely null
             txtDrainage.Text = defaultSettings.drainage
@@ -1440,6 +1444,9 @@ Public Class frmSettings
                 End If
                 If FileExists Then txtPRISM.Text = defaultSettings.prism
             End If
+
+            'Remove all items from participating layers as there are none in the default settings
+            lstLayers.Items.Clear()
 
             If Not String.Compare(warningSb.ToString, "WARNING!", False) = 0 Then
                 MessageBox.Show(warningSb.ToString, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)

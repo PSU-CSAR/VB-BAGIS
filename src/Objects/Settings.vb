@@ -1,6 +1,10 @@
 ﻿Public Class Settings
 
-    Public terrain As String
+    ' The terrain path is currently stored stored in the PublicPath enum. The .lyr file name
+    ' may be updated and the Add-In would need to be recompiled. This keeps the .lyr file name
+    ' in sync with the AddIn. If we can make the .lyr file available via webservice, the path
+    ' should be put back into the JSON.
+    'Public terrain As String
     Public drainage As String
     Public watershed As String
     Public dem10 As String
