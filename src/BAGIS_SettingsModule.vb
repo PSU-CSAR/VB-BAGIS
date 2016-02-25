@@ -5,6 +5,8 @@ Imports ESRI.ArcGIS.DataSourcesFile
 Imports ESRI.ArcGIS.Catalog
 Imports ESRI.ArcGIS.CatalogUI
 Imports System.Windows.Forms
+Imports ESRI.ArcGIS.Server
+Imports ESRI.ArcGIS.GISClient
 
 
 Module BAGIS_SettingsModule
@@ -164,6 +166,16 @@ Module BAGIS_SettingsModule
                 SettingsForm.txtDEM30.Text = BA_SystemSettings.DEM30M
                 'check if file exists
                 wType = BA_GetWorkspaceTypeFromPath(TempPathName)
+                If wType = WorkspaceType.ImageServer Then
+                    Dim idxServices As Integer = TempPathName.IndexOf(BA_Url_Services)
+                    Dim url As String = TempPathName.Substring(0, idxServices + BA_Url_Services.Length)
+                    Dim AGSConnectionFactory As IAGSServerConnectionFactory = New AGSServerConnectionFactory
+                    Dim connectionProps As ESRI.ArcGIS.esriSystem.IPropertySet = New ESRI.ArcGIS.esriSystem.PropertySet
+                    connectionProps.SetProperty("URL", url)
+
+                    Dim AGSConnection As IAGSServerConnection = AGSConnectionFactory.Open(connectionProps, 0)
+                    Dim sName As ESRI.ArcGIS.esriSystem.IName = AGSConnection.FullName
+                End If
                 If Not BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTRasterDataset) Then
                     return_message = return_message & vbCrLf & "DEM Data Missing: " & TempPathName
                 End If
@@ -990,7 +1002,7 @@ Module BAGIS_SettingsModule
     End Function
 
     Public Function BA_ReadDefaultSettingsFromJson(ByVal filePath As String) As Settings
- 
+
         Try
             Dim bytes() As Byte = New Byte(0) {}
             Dim settings As Settings = Nothing
