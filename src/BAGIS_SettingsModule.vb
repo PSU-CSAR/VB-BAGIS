@@ -5,8 +5,7 @@ Imports ESRI.ArcGIS.DataSourcesFile
 Imports ESRI.ArcGIS.Catalog
 Imports ESRI.ArcGIS.CatalogUI
 Imports System.Windows.Forms
-Imports ESRI.ArcGIS.Server
-Imports ESRI.ArcGIS.GISClient
+
 
 
 Module BAGIS_SettingsModule
@@ -164,20 +163,17 @@ Module BAGIS_SettingsModule
                 TempPathName = Trim(linestring)
                 BA_SystemSettings.DEM30M = TempPathName
                 SettingsForm.txtDEM30.Text = BA_SystemSettings.DEM30M
-                'check if file exists
-                wType = BA_GetWorkspaceTypeFromPath(TempPathName)
-                If wType = WorkspaceType.ImageServer Then
-                    Dim idxServices As Integer = TempPathName.IndexOf(BA_Url_Services)
-                    Dim url As String = TempPathName.Substring(0, idxServices + BA_Url_Services.Length)
-                    Dim AGSConnectionFactory As IAGSServerConnectionFactory = New AGSServerConnectionFactory
-                    Dim connectionProps As ESRI.ArcGIS.esriSystem.IPropertySet = New ESRI.ArcGIS.esriSystem.PropertySet
-                    connectionProps.SetProperty("URL", url)
-
-                    Dim AGSConnection As IAGSServerConnection = AGSConnectionFactory.Open(connectionProps, 0)
-                    Dim sName As ESRI.ArcGIS.esriSystem.IName = AGSConnection.FullName
-                End If
-                If Not BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTRasterDataset) Then
-                    return_message = return_message & vbCrLf & "DEM Data Missing: " & TempPathName
+                ' This Dictionary keeps track of all the checked urls so that BAGIS doesn't hang
+                ' trying to connect to the same server for each textbox if the server is down. Currently we
+                ' only have one server but this could change.
+                Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)
+                Dim valid1 As Boolean = BA_VerifyUrl(TempPathName, checkedUrls)
+                If valid1 = True Then
+                    'check if file exists
+                    wType = BA_GetWorkspaceTypeFromPath(TempPathName)
+                    If Not BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTRasterDataset) Then
+                        return_message = return_message & vbCrLf & "DEM Data Missing: " & TempPathName
+                    End If
                 End If
 
                 linestring = sr.ReadLine() 'read preferred DEM setting                                                                              '7
@@ -203,6 +199,8 @@ Module BAGIS_SettingsModule
                 linestring = sr.ReadLine() 'the linestring contains the selected field name                                                         '10
                 linestring1 = sr.ReadLine() 'Reads Area Field Index from Def File                                                                   '11
 
+                valid1 = BA_VerifyUrl(TempPathName, checkedUrls)
+
                 wType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtGaugeStation.Text)
                 Dim File_Path As String = ""
                 Dim File_Name As String = ""
@@ -217,111 +215,112 @@ Module BAGIS_SettingsModule
                 Dim FieldIndex As Integer
                 Dim aoiIdField As String = BA_AOI_IDField
 
-                If Not String.IsNullOrEmpty(linestring) Then
-                    If wType = WorkspaceType.Raster Then
-                        File_Name = BA_GetBareNameAndExtension(SettingsForm.txtGaugeStation.Text, File_Path, layertype)
-                        TempPathName = File_Path & File_Name
-                        FileExists = BA_Shapefile_Exists(TempPathName)
-                    ElseIf wType = WorkspaceType.FeatureServer Then
-                        FileExists = BA_File_Exists(SettingsForm.txtGaugeStation.Text, wType, esriDatasetType.esriDTFeatureClass)
-                        aoiIdField = BA_AOI_IDFieldFeatService
-                    End If
-                End If
-
-                If FileExists Then  'text exists for the setting of this layer
-
-                    'set name field
-                    SettingsForm.CmboxStationAtt.Items.Clear()
-                    FieldIndex = -1
-                    iCount = 0
-                    Dim idxFieldId = -1
-                    'Object for feature service fields
-                    Dim allFields As IList(Of FeatureServiceField) = New List(Of FeatureServiceField)
-
-                    If wType = WorkspaceType.Raster Then
-                        pFeatClass = BA_OpenFeatureClassFromFile(File_Path, File_Name)
-
-                        'get fields
-                        pFields = pFeatClass.Fields
-                        nFields = pFields.FieldCount
-
-                        For i = 0 To nFields - 1
-                            aField = pFields.Field(i)
-                            qType = aField.Type
-                            If qType <= esriFieldType.esriFieldTypeInteger Or _
-                                 qType = esriFieldType.esriFieldTypeString Then
-                                SettingsForm.CmboxStationAtt.Items.Add(aField.Name)
-                                If aField.Name = linestring Then FieldIndex = iCount
-                                iCount = iCount + 1
-                            End If
-                        Next
-                    ElseIf wType = WorkspaceType.FeatureServer Then
-                        allFields = BA_QueryAllFeatureServiceFieldNames(SettingsForm.txtGaugeStation.Text)
-                        For Each fField As FeatureServiceField In allFields
-                            If fField.fieldType <= esriFieldType.esriFieldTypeInteger Or _
-                                fField.fieldType = esriFieldType.esriFieldTypeString Then
-                                SettingsForm.CmboxStationAtt.Items.Add(fField.alias)
-                                If String.Compare(fField.alias, linestring, True) = 0 Then FieldIndex = iCount
-                                'Check for the index field; It is a String
-                                'Raster datasets use findField method down below
-                                If String.Compare(fField.alias, aoiIdField, True) = 0 Then idxFieldId = iCount
-                                iCount = iCount + 1
-                            End If
-                        Next
-                    End If
-
-                    If FieldIndex < 0 Then
-                        return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring & " is not in " & TempPathName
-                        SettingsForm.CmboxStationAtt.SelectedIndex = 0
-                    Else
-                        SettingsForm.CmboxStationAtt.SelectedIndex = FieldIndex
-                    End If
-
-                    'set area field
-                    SettingsForm.ComboStationArea.Items.Clear()
-                    SettingsForm.ComboStationArea.Items.Add("No data")
-
-                    FieldIndex = -1
-                    iCount = 0
-
-                    If wType = WorkspaceType.Raster Then
-                        For i = 0 To nFields - 1
-                            aField = pFields.Field(i)
-                            qType = aField.Type
-                            If qType <= esriFieldType.esriFieldTypeDouble Then 'numeric data types
-                                SettingsForm.ComboStationArea.Items.Add(aField.Name)
-                                If aField.Name = linestring1 Then FieldIndex = iCount + 1
-                                iCount = iCount + 1
-                            End If
-                        Next
-
-                        'Ver1E Update - check awdb_id field in the forecast point layer
-                        '@ToDo: How to handle this for feature service layer. Different field name? usgs_id  
-                        idxFieldId = pFields.FindField(aoiIdField)
-                    ElseIf wType = WorkspaceType.FeatureServer Then
-                        'Populate the area dropdown
-                        For Each fField As FeatureServiceField In allFields
-                            If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
-                                SettingsForm.ComboStationArea.Items.Add(fField.alias)
-                                If String.Compare(fField.alias, linestring1, True) = 0 Then FieldIndex = iCount + 1
-                                iCount = iCount + 1
-                            End If
-                        Next
-                    End If
-
-                    If linestring1 = "No data" Then
-                        SettingsForm.ComboStationArea.SelectedIndex = 0
-                    Else
-                        If FieldIndex <= 0 Then
-                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring1 & " is not in " & TempPathName
-                            SettingsForm.ComboStationArea.SelectedIndex = 0
-                        Else
-                            SettingsForm.ComboStationArea.SelectedIndex = FieldIndex
+                If valid1 = True Then
+                    If Not String.IsNullOrEmpty(linestring) Then
+                        If wType = WorkspaceType.Raster Then
+                            File_Name = BA_GetBareNameAndExtension(SettingsForm.txtGaugeStation.Text, File_Path, layertype)
+                            TempPathName = File_Path & File_Name
+                            FileExists = BA_Shapefile_Exists(TempPathName)
+                        ElseIf wType = WorkspaceType.FeatureServer Then
+                            FileExists = BA_File_Exists(SettingsForm.txtGaugeStation.Text, wType, esriDatasetType.esriDTFeatureClass)
+                            aoiIdField = BA_AOI_IDFieldFeatService
                         End If
                     End If
 
-                    If idxFieldId <= 0 Then
-                        return_message = return_message & vbCrLf & "Attribute Field Missing: " & aoiIdField & " is not in " & TempPathName
+                    If FileExists Then  'text exists for the setting of this layer
+                        'set name field
+                        SettingsForm.CmboxStationAtt.Items.Clear()
+                        FieldIndex = -1
+                        iCount = 0
+                        Dim idxFieldId = -1
+                        'Object for feature service fields
+                        Dim allFields As IList(Of FeatureServiceField) = New List(Of FeatureServiceField)
+
+                        If wType = WorkspaceType.Raster Then
+                            pFeatClass = BA_OpenFeatureClassFromFile(File_Path, File_Name)
+
+                            'get fields
+                            pFields = pFeatClass.Fields
+                            nFields = pFields.FieldCount
+
+                            For i = 0 To nFields - 1
+                                aField = pFields.Field(i)
+                                qType = aField.Type
+                                If qType <= esriFieldType.esriFieldTypeInteger Or _
+                                     qType = esriFieldType.esriFieldTypeString Then
+                                    SettingsForm.CmboxStationAtt.Items.Add(aField.Name)
+                                    If aField.Name = linestring Then FieldIndex = iCount
+                                    iCount = iCount + 1
+                                End If
+                            Next
+                        ElseIf wType = WorkspaceType.FeatureServer Then
+                            allFields = BA_QueryAllFeatureServiceFieldNames(SettingsForm.txtGaugeStation.Text)
+                            For Each fField As FeatureServiceField In allFields
+                                If fField.fieldType <= esriFieldType.esriFieldTypeInteger Or _
+                                    fField.fieldType = esriFieldType.esriFieldTypeString Then
+                                    SettingsForm.CmboxStationAtt.Items.Add(fField.alias)
+                                    If String.Compare(fField.alias, linestring, True) = 0 Then FieldIndex = iCount
+                                    'Check for the index field; It is a String
+                                    'Raster datasets use findField method down below
+                                    If String.Compare(fField.alias, aoiIdField, True) = 0 Then idxFieldId = iCount
+                                    iCount = iCount + 1
+                                End If
+                            Next
+                        End If
+
+                        If FieldIndex < 0 Then
+                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring & " is not in " & TempPathName
+                            SettingsForm.CmboxStationAtt.SelectedIndex = 0
+                        Else
+                            SettingsForm.CmboxStationAtt.SelectedIndex = FieldIndex
+                        End If
+
+                        'set area field
+                        SettingsForm.ComboStationArea.Items.Clear()
+                        SettingsForm.ComboStationArea.Items.Add("No data")
+
+                        FieldIndex = -1
+                        iCount = 0
+
+                        If wType = WorkspaceType.Raster Then
+                            For i = 0 To nFields - 1
+                                aField = pFields.Field(i)
+                                qType = aField.Type
+                                If qType <= esriFieldType.esriFieldTypeDouble Then 'numeric data types
+                                    SettingsForm.ComboStationArea.Items.Add(aField.Name)
+                                    If aField.Name = linestring1 Then FieldIndex = iCount + 1
+                                    iCount = iCount + 1
+                                End If
+                            Next
+
+                            'Ver1E Update - check awdb_id field in the forecast point layer
+                            '@ToDo: How to handle this for feature service layer. Different field name? usgs_id  
+                            idxFieldId = pFields.FindField(aoiIdField)
+                        ElseIf wType = WorkspaceType.FeatureServer Then
+                            'Populate the area dropdown
+                            For Each fField As FeatureServiceField In allFields
+                                If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
+                                    SettingsForm.ComboStationArea.Items.Add(fField.alias)
+                                    If String.Compare(fField.alias, linestring1, True) = 0 Then FieldIndex = iCount + 1
+                                    iCount = iCount + 1
+                                End If
+                            Next
+                        End If
+
+                        If linestring1 = "No data" Then
+                            SettingsForm.ComboStationArea.SelectedIndex = 0
+                        Else
+                            If FieldIndex <= 0 Then
+                                return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring1 & " is not in " & TempPathName
+                                SettingsForm.ComboStationArea.SelectedIndex = 0
+                            Else
+                                SettingsForm.ComboStationArea.SelectedIndex = FieldIndex
+                            End If
+                        End If
+
+                        If idxFieldId <= 0 Then
+                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & aoiIdField & " is not in " & TempPathName
+                        End If
                     End If
 
 
