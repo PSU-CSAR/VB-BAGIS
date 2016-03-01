@@ -1178,7 +1178,7 @@ Public Class frmSettings
             Dim copyFile As Boolean = True
             If BA_File_ExistsWindowsIO(terrainPath) Then
                 Dim result As DialogResult = MessageBox.Show("The terrain reference layer already exists at " & terrainPath & _
-                                                             " Do you wish to overwrite it with the default layer ?", "Terrain layer", _
+                                                             ". Do you wish to overwrite it with the default layer ?", "Terrain layer", _
                                                              MessageBoxButtons.YesNo, MessageBoxIcon.Question)
                 If result <> Windows.Forms.DialogResult.Yes Then
                     'Set the path to the file the user wants to keep
@@ -1207,21 +1207,35 @@ Public Class frmSettings
             Opt10M.Checked = False
             Opt30M.Checked = False
             txtDEM10.Text = Nothing
+
+            ' This Dictionary keeps track of all the checked urls so that BAGIS doesn't hang
+            ' trying to connect to the same server for each textbox if the server is down. Currently we
+            ' only have one server but this could change.
+            Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)
+            Dim valid1 As Boolean = False
+
             'check if file exists
             If Not String.IsNullOrEmpty(defaultSettings.dem10) Then
                 Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.dem10)
-                If BA_File_Exists(defaultSettings.dem10, wType, esriDatasetType.esriDTRasterDataset) Then
-                    txtDEM10.Text = defaultSettings.dem10
-                    If defaultSettings.preferredDem = BA_Settings_dem10 Then Opt10M.Checked = True
+                valid1 = BA_VerifyUrl(defaultSettings.dem10, checkedUrls)
+                If valid1 Then
+                    If BA_File_Exists(defaultSettings.dem10, wType, esriDatasetType.esriDTRasterDataset) Then
+                        txtDEM10.Text = defaultSettings.dem10
+                        If defaultSettings.preferredDem = BA_Settings_dem10 Then Opt10M.Checked = True
+                    End If
                 End If
             End If
+
             txtDEM30.Text = Nothing
             'check if file exists
             If Not String.IsNullOrEmpty(defaultSettings.dem30) Then
                 Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.dem30)
-                If BA_File_Exists(defaultSettings.dem30, wType, esriDatasetType.esriDTRasterDataset) Then
-                    txtDEM30.Text = defaultSettings.dem30
-                    If defaultSettings.preferredDem = BA_Settings_dem30 Then Opt30M.Checked = True
+                valid1 = BA_VerifyUrl(defaultSettings.dem30, checkedUrls)
+                If valid1 Then
+                    If BA_File_Exists(defaultSettings.dem30, wType, esriDatasetType.esriDTRasterDataset) Then
+                        txtDEM30.Text = defaultSettings.dem30
+                        If defaultSettings.preferredDem = BA_Settings_dem30 Then Opt30M.Checked = True
+                    End If
                 End If
             End If
             If Not String.IsNullOrEmpty(defaultSettings.demElevUnit) Then
@@ -1240,19 +1254,23 @@ Public Class frmSettings
                 OptMeter.Checked = False
                 OptFoot.Checked = False
             End If
+
             txtGaugeStation.Text = Nothing
             CmboxStationAtt.Items.Clear()
             ComboStationArea.Items.Clear()
             ComboStation_Value.SelectedIndex = 0
             If Not String.IsNullOrEmpty(defaultSettings.gaugeStation) Then
                 Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.gaugeStation)
+                valid1 = BA_VerifyUrl(defaultSettings.gaugeStation, checkedUrls)
                 Dim featureClass As IFeatureClass = Nothing
-                If wType = WorkspaceType.Raster Then
-                    Dim filePath As String = "return"
-                    Dim fileName As String = BA_GetBareName(defaultSettings.gaugeStation, filePath)
-                    featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
-                ElseIf wType = WorkspaceType.FeatureServer Then
-                    featureClass = BA_OpenFeatureClassFromService(defaultSettings.gaugeStation, 0)
+                If valid1 Then
+                    If wType = WorkspaceType.Raster Then
+                        Dim filePath As String = "return"
+                        Dim fileName As String = BA_GetBareName(defaultSettings.gaugeStation, filePath)
+                        featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        featureClass = BA_OpenFeatureClassFromService(defaultSettings.gaugeStation, 0)
+                    End If
                 End If
                 If featureClass IsNot Nothing Then
                     txtGaugeStation.Text = defaultSettings.gaugeStation
@@ -1321,13 +1339,16 @@ Public Class frmSettings
             ComboSNOTEL_Name.Items.Clear()
             If Not String.IsNullOrEmpty(defaultSettings.snotel) Then
                 Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.snotel)
+                valid1 = BA_VerifyUrl(defaultSettings.snotel, checkedUrls)
                 Dim featureClass As IFeatureClass = Nothing
-                If wType = WorkspaceType.Raster Then
-                    Dim filePath As String = "return"
-                    Dim fileName As String = BA_GetBareName(defaultSettings.snotel, filePath)
-                    featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
-                ElseIf wType = WorkspaceType.FeatureServer Then
-                    featureClass = BA_OpenFeatureClassFromService(defaultSettings.snotel, 0)
+                If valid1 Then
+                    If wType = WorkspaceType.Raster Then
+                        Dim filePath As String = "return"
+                        Dim fileName As String = BA_GetBareName(defaultSettings.snotel, filePath)
+                        featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        featureClass = BA_OpenFeatureClassFromService(defaultSettings.snotel, 0)
+                    End If
                 End If
                 If featureClass IsNot Nothing Then
                     txtSNOTEL.Text = defaultSettings.snotel
@@ -1378,13 +1399,16 @@ Public Class frmSettings
             ComboSC_Name.Items.Clear()
             If Not String.IsNullOrEmpty(defaultSettings.snowCourse) Then
                 Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.snowCourse)
+                valid1 = BA_VerifyUrl(defaultSettings.snowCourse, checkedUrls)
                 Dim featureClass As IFeatureClass = Nothing
-                If wType = WorkspaceType.Raster Then
-                    Dim filePath As String = "return"
-                    Dim fileName As String = BA_GetBareName(defaultSettings.snowCourse, filePath)
-                    featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
-                ElseIf wType = WorkspaceType.FeatureServer Then
-                    featureClass = BA_OpenFeatureClassFromService(defaultSettings.snowCourse, 0)
+                If valid1 Then
+                    If wType = WorkspaceType.Raster Then
+                        Dim filePath As String = "return"
+                        Dim fileName As String = BA_GetBareName(defaultSettings.snowCourse, filePath)
+                        featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        featureClass = BA_OpenFeatureClassFromService(defaultSettings.snowCourse, 0)
+                    End If
                 End If
                 If featureClass IsNot Nothing Then
                     txtSnowCourse.Text = defaultSettings.snowCourse
@@ -1433,20 +1457,32 @@ Public Class frmSettings
             txtPRISM.Text = ""
             If Not String.IsNullOrEmpty(defaultSettings.prism) Then
                 Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.prism)
+                valid1 = BA_VerifyUrl(defaultSettings.prism, checkedUrls)
                 Dim FileExists As Boolean = False
-                If wType = WorkspaceType.ImageServer Then
-                    Dim TempPathName As String = defaultSettings.prism & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString & _
-                     "/" & BA_Url_ImageServer
-                    FileExists = BA_File_ExistsImageServer(TempPathName)
+                If valid1 Then
+                    If wType = WorkspaceType.ImageServer Then
+                        Dim TempPathName As String = defaultSettings.prism & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString & _
+                         "/" & BA_Url_ImageServer
+                        FileExists = BA_File_ExistsImageServer(TempPathName)
+                    Else
+                        Dim TempPathName As String = defaultSettings.prism & "\Q4\grid"
+                        FileExists = BA_Workspace_Exists(TempPathName)
+                    End If
                 Else
-                    Dim TempPathName As String = defaultSettings.prism & "\Q4\grid"
-                    FileExists = BA_Workspace_Exists(TempPathName)
+                    FileExists = False
                 End If
                 If FileExists Then txtPRISM.Text = defaultSettings.prism
             End If
 
             'Remove all items from participating layers as there are none in the default settings
             lstLayers.Items.Clear()
+
+            'Append any server connection errors to the warningsb
+            For Each key As String In checkedUrls.Keys
+                If checkedUrls(key) = False Then
+                    warningSb.Append(vbCrLf & "BAGIS was unable to connect to " & key & ". Data cannot currently be used from this server")
+                End If
+            Next
 
             If Not String.Compare(warningSb.ToString, "WARNING!", False) = 0 Then
                 MessageBox.Show(warningSb.ToString, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)

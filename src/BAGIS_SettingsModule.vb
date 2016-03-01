@@ -99,8 +99,13 @@ Module BAGIS_SettingsModule
         End If
 
         Try
-            Using sr As StreamReader = File.OpenText(FileName)
 
+            ' This Dictionary keeps track of all the checked urls so that BAGIS doesn't hang
+            ' trying to connect to the same server for each textbox if the server is down. Currently we
+            ' only have one server but this could change.
+            Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)
+
+            Using sr As StreamReader = File.OpenText(FileName)
                 linestring = sr.ReadLine() 'read the keyword line                                                                                   '1
 
                 'check version and compatible version text
@@ -155,25 +160,28 @@ Module BAGIS_SettingsModule
                 SettingsForm.txtDEM10.Text = BA_SystemSettings.DEM10M
                 'check if file exists
                 Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(TempPathName)
-                If Not BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTRasterDataset) Then
-                    return_message = return_message & vbCrLf & "DEM Data Missing: " & TempPathName
+                Dim valid1 As Boolean = BA_VerifyUrl(SettingsForm.txtDEM10.Text, checkedUrls)
+                If valid1 Then
+                    If Not BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTRasterDataset) Then
+                        return_message = return_message & vbCrLf & "10 Meters DEM Data Missing: " & TempPathName
+                    End If
+                Else
+                    return_message = return_message & vbCrLf & "10 Meters DEM Data Missing: " & TempPathName
                 End If
 
                 linestring = sr.ReadLine() 'read the 30 meter DEM layer name                                                                        '6
                 TempPathName = Trim(linestring)
                 BA_SystemSettings.DEM30M = TempPathName
                 SettingsForm.txtDEM30.Text = BA_SystemSettings.DEM30M
-                ' This Dictionary keeps track of all the checked urls so that BAGIS doesn't hang
-                ' trying to connect to the same server for each textbox if the server is down. Currently we
-                ' only have one server but this could change.
-                Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)
-                Dim valid1 As Boolean = BA_VerifyUrl(TempPathName, checkedUrls)
-                If valid1 = True Then
+                valid1 = BA_VerifyUrl(SettingsForm.txtDEM30.Text, checkedUrls)
+                If valid1 Then
                     'check if file exists
                     wType = BA_GetWorkspaceTypeFromPath(TempPathName)
                     If Not BA_File_Exists(TempPathName, wType, esriDatasetType.esriDTRasterDataset) Then
-                        return_message = return_message & vbCrLf & "DEM Data Missing: " & TempPathName
+                        return_message = return_message & vbCrLf & "30 Meters DEM Data Missing: " & TempPathName
                     End If
+                Else
+                    return_message = return_message & vbCrLf & "30 Meters DEM Data Missing: " & TempPathName
                 End If
 
                 linestring = sr.ReadLine() 'read preferred DEM setting                                                                              '7
@@ -199,9 +207,6 @@ Module BAGIS_SettingsModule
                 linestring = sr.ReadLine() 'the linestring contains the selected field name                                                         '10
                 linestring1 = sr.ReadLine() 'Reads Area Field Index from Def File                                                                   '11
 
-                valid1 = BA_VerifyUrl(TempPathName, checkedUrls)
-
-                wType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtGaugeStation.Text)
                 Dim File_Path As String = ""
                 Dim File_Name As String = ""
                 Dim qType As esriFieldType
@@ -215,8 +220,11 @@ Module BAGIS_SettingsModule
                 Dim FieldIndex As Integer
                 Dim aoiIdField As String = BA_AOI_IDField
 
-                If valid1 = True Then
-                    If Not String.IsNullOrEmpty(linestring) Then
+                wType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtGaugeStation.Text)
+                valid1 = BA_VerifyUrl(SettingsForm.txtGaugeStation.Text, checkedUrls)
+                If valid1 Then
+                    'Test to see if TempPathName is empty because BA_VerifyUrl only tests web services
+                    If Not String.IsNullOrEmpty(SettingsForm.txtGaugeStation.Text) Then
                         If wType = WorkspaceType.Raster Then
                             File_Name = BA_GetBareNameAndExtension(SettingsForm.txtGaugeStation.Text, File_Path, layertype)
                             TempPathName = File_Path & File_Name
@@ -226,111 +234,104 @@ Module BAGIS_SettingsModule
                             aoiIdField = BA_AOI_IDFieldFeatService
                         End If
                     End If
+                Else
+                    FileExists = False
+                End If
 
-                    If FileExists Then  'text exists for the setting of this layer
-                        'set name field
-                        SettingsForm.CmboxStationAtt.Items.Clear()
-                        FieldIndex = -1
-                        iCount = 0
-                        Dim idxFieldId = -1
-                        'Object for feature service fields
-                        Dim allFields As IList(Of FeatureServiceField) = New List(Of FeatureServiceField)
+                If FileExists Then  'text exists for the setting of this layer
+                    'set name field
+                    SettingsForm.CmboxStationAtt.Items.Clear()
+                    FieldIndex = -1
+                    iCount = 0
+                    Dim idxFieldId = -1
+                    'Object for feature service fields
+                    Dim allFields As IList(Of FeatureServiceField) = New List(Of FeatureServiceField)
 
-                        If wType = WorkspaceType.Raster Then
-                            pFeatClass = BA_OpenFeatureClassFromFile(File_Path, File_Name)
+                    If wType = WorkspaceType.Raster Then
+                        pFeatClass = BA_OpenFeatureClassFromFile(File_Path, File_Name)
 
-                            'get fields
-                            pFields = pFeatClass.Fields
-                            nFields = pFields.FieldCount
+                        'get fields
+                        pFields = pFeatClass.Fields
+                        nFields = pFields.FieldCount
 
-                            For i = 0 To nFields - 1
-                                aField = pFields.Field(i)
-                                qType = aField.Type
-                                If qType <= esriFieldType.esriFieldTypeInteger Or _
-                                     qType = esriFieldType.esriFieldTypeString Then
-                                    SettingsForm.CmboxStationAtt.Items.Add(aField.Name)
-                                    If aField.Name = linestring Then FieldIndex = iCount
-                                    iCount = iCount + 1
-                                End If
-                            Next
-                        ElseIf wType = WorkspaceType.FeatureServer Then
-                            allFields = BA_QueryAllFeatureServiceFieldNames(SettingsForm.txtGaugeStation.Text)
-                            For Each fField As FeatureServiceField In allFields
-                                If fField.fieldType <= esriFieldType.esriFieldTypeInteger Or _
-                                    fField.fieldType = esriFieldType.esriFieldTypeString Then
-                                    SettingsForm.CmboxStationAtt.Items.Add(fField.alias)
-                                    If String.Compare(fField.alias, linestring, True) = 0 Then FieldIndex = iCount
-                                    'Check for the index field; It is a String
-                                    'Raster datasets use findField method down below
-                                    If String.Compare(fField.alias, aoiIdField, True) = 0 Then idxFieldId = iCount
-                                    iCount = iCount + 1
-                                End If
-                            Next
-                        End If
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType <= esriFieldType.esriFieldTypeInteger Or _
+                                 qType = esriFieldType.esriFieldTypeString Then
+                                SettingsForm.CmboxStationAtt.Items.Add(aField.Name)
+                                If aField.Name = linestring Then FieldIndex = iCount
+                                iCount = iCount + 1
+                            End If
+                        Next
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        allFields = BA_QueryAllFeatureServiceFieldNames(SettingsForm.txtGaugeStation.Text)
+                        For Each fField As FeatureServiceField In allFields
+                            If fField.fieldType <= esriFieldType.esriFieldTypeInteger Or _
+                                fField.fieldType = esriFieldType.esriFieldTypeString Then
+                                SettingsForm.CmboxStationAtt.Items.Add(fField.alias)
+                                If String.Compare(fField.alias, linestring, True) = 0 Then FieldIndex = iCount
+                                'Check for the index field; It is a String
+                                'Raster datasets use findField method down below
+                                If String.Compare(fField.alias, aoiIdField, True) = 0 Then idxFieldId = iCount
+                                iCount = iCount + 1
+                            End If
+                        Next
+                    End If
 
-                        If FieldIndex < 0 Then
-                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring & " is not in " & TempPathName
-                            SettingsForm.CmboxStationAtt.SelectedIndex = 0
-                        Else
-                            SettingsForm.CmboxStationAtt.SelectedIndex = FieldIndex
-                        End If
+                    If FieldIndex < 0 Then
+                        return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring & " is not in " & TempPathName
+                        SettingsForm.CmboxStationAtt.SelectedIndex = 0
+                    Else
+                        SettingsForm.CmboxStationAtt.SelectedIndex = FieldIndex
+                    End If
 
-                        'set area field
-                        SettingsForm.ComboStationArea.Items.Clear()
-                        SettingsForm.ComboStationArea.Items.Add("No data")
+                    'set area field
+                    SettingsForm.ComboStationArea.Items.Clear()
+                    SettingsForm.ComboStationArea.Items.Add("No data")
 
-                        FieldIndex = -1
-                        iCount = 0
+                    FieldIndex = -1
+                    iCount = 0
 
-                        If wType = WorkspaceType.Raster Then
-                            For i = 0 To nFields - 1
-                                aField = pFields.Field(i)
-                                qType = aField.Type
-                                If qType <= esriFieldType.esriFieldTypeDouble Then 'numeric data types
-                                    SettingsForm.ComboStationArea.Items.Add(aField.Name)
-                                    If aField.Name = linestring1 Then FieldIndex = iCount + 1
-                                    iCount = iCount + 1
-                                End If
-                            Next
+                    If wType = WorkspaceType.Raster Then
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType <= esriFieldType.esriFieldTypeDouble Then 'numeric data types
+                                SettingsForm.ComboStationArea.Items.Add(aField.Name)
+                                If aField.Name = linestring1 Then FieldIndex = iCount + 1
+                                iCount = iCount + 1
+                            End If
+                        Next
 
-                            'Ver1E Update - check awdb_id field in the forecast point layer
-                            '@ToDo: How to handle this for feature service layer. Different field name? usgs_id  
-                            idxFieldId = pFields.FindField(aoiIdField)
-                        ElseIf wType = WorkspaceType.FeatureServer Then
-                            'Populate the area dropdown
-                            For Each fField As FeatureServiceField In allFields
-                                If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
-                                    SettingsForm.ComboStationArea.Items.Add(fField.alias)
-                                    If String.Compare(fField.alias, linestring1, True) = 0 Then FieldIndex = iCount + 1
-                                    iCount = iCount + 1
-                                End If
-                            Next
-                        End If
+                        'Ver1E Update - check awdb_id field in the forecast point layer
+                        '@ToDo: How to handle this for feature service layer. Different field name? usgs_id  
+                        idxFieldId = pFields.FindField(aoiIdField)
+                    ElseIf wType = WorkspaceType.FeatureServer Then
+                        'Populate the area dropdown
+                        For Each fField As FeatureServiceField In allFields
+                            If fField.fieldType <= esriFieldType.esriFieldTypeDouble Then
+                                SettingsForm.ComboStationArea.Items.Add(fField.alias)
+                                If String.Compare(fField.alias, linestring1, True) = 0 Then FieldIndex = iCount + 1
+                                iCount = iCount + 1
+                            End If
+                        Next
+                    End If
 
-                        If linestring1 = "No data" Then
+                    If linestring1 = "No data" Then
+                        SettingsForm.ComboStationArea.SelectedIndex = 0
+                    Else
+                        If FieldIndex <= 0 Then
+                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring1 & " is not in " & TempPathName
                             SettingsForm.ComboStationArea.SelectedIndex = 0
                         Else
-                            If FieldIndex <= 0 Then
-                                return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring1 & " is not in " & TempPathName
-                                SettingsForm.ComboStationArea.SelectedIndex = 0
-                            Else
-                                SettingsForm.ComboStationArea.SelectedIndex = FieldIndex
-                            End If
-                        End If
-
-                        If idxFieldId <= 0 Then
-                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & aoiIdField & " is not in " & TempPathName
+                            SettingsForm.ComboStationArea.SelectedIndex = FieldIndex
                         End If
                     End If
 
-
-                    If UCase(Trim(linestring2)) = "TRUE" Then 'meter is the Z unit
-                        SettingsForm.OptSTMeter.Checked = "True"
-                    Else
-                        SettingsForm.OptSTFoot.Checked = "True"
+                    If idxFieldId <= 0 Then
+                        return_message = return_message & vbCrLf & "Attribute Field Missing: " & aoiIdField & " is not in " & TempPathName
                     End If
-
-                    SNOTELDataExist = True
 
                     aField = Nothing
                     pFields = Nothing
@@ -371,12 +372,17 @@ Module BAGIS_SettingsModule
                     TempPathName = "SNOTEL"
                     FileExists = False
                 Else
-                    If wType = WorkspaceType.Raster Then
-                        File_Name = BA_GetBareNameAndExtension(SettingsForm.txtSNOTEL.Text, File_Path, layertype)
-                        TempPathName = File_Path & File_Name
-                        FileExists = BA_Shapefile_Exists(TempPathName)
-                    ElseIf wType = WorkspaceType.FeatureServer Then
-                        FileExists = BA_File_Exists(SettingsForm.txtSNOTEL.Text, wType, esriDatasetType.esriDTFeatureClass)
+                    valid1 = BA_VerifyUrl(SettingsForm.txtSNOTEL.Text, checkedUrls)
+                    If valid1 Then
+                        If wType = WorkspaceType.Raster Then
+                            File_Name = BA_GetBareNameAndExtension(SettingsForm.txtSNOTEL.Text, File_Path, layertype)
+                            TempPathName = File_Path & File_Name
+                            FileExists = BA_Shapefile_Exists(TempPathName)
+                        ElseIf wType = WorkspaceType.FeatureServer Then
+                            FileExists = BA_File_Exists(SettingsForm.txtSNOTEL.Text, wType, esriDatasetType.esriDTFeatureClass)
+                        End If
+                    Else
+                        FileExists = valid1
                     End If
                 End If
 
@@ -490,12 +496,17 @@ Module BAGIS_SettingsModule
                     TempPathName = "Snow Course"
                     FileExists = False
                 Else
-                    If wType = WorkspaceType.Raster Then
-                        File_Name = BA_GetBareNameAndExtension(SettingsForm.txtSnowCourse.Text, File_Path, layertype)
-                        TempPathName = File_Path & File_Name
-                        FileExists = BA_Shapefile_Exists(TempPathName)
-                    ElseIf wType = WorkspaceType.FeatureServer Then
-                        FileExists = BA_File_Exists(SettingsForm.txtSnowCourse.Text, wType, esriDatasetType.esriDTFeatureClass)
+                    valid1 = BA_VerifyUrl(SettingsForm.txtSnowCourse.Text, checkedUrls)
+                    If valid1 Then
+                        If wType = WorkspaceType.Raster Then
+                            File_Name = BA_GetBareNameAndExtension(SettingsForm.txtSnowCourse.Text, File_Path, layertype)
+                            TempPathName = File_Path & File_Name
+                            FileExists = BA_Shapefile_Exists(TempPathName)
+                        ElseIf wType = WorkspaceType.FeatureServer Then
+                            FileExists = BA_File_Exists(SettingsForm.txtSnowCourse.Text, wType, esriDatasetType.esriDTFeatureClass)
+                        End If
+                    Else
+                        FileExists = False
                     End If
                 End If
 
@@ -608,14 +619,19 @@ Module BAGIS_SettingsModule
                     TempPathName = "PRISM folder"
                     FileExists = False
                 Else
-                    wType = BA_GetWorkspaceTypeFromPath(linestring)
-                    If wType = WorkspaceType.ImageServer Then
-                        TempPathName = linestring & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString & _
-                         "/" & BA_Url_ImageServer
-                        FileExists = BA_File_ExistsImageServer(TempPathName)
+                    valid1 = BA_VerifyUrl(SettingsForm.txtPRISM.Text, checkedUrls)
+                    If valid1 Then
+                        wType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtPRISM.Text)
+                        If wType = WorkspaceType.ImageServer Then
+                            TempPathName = linestring & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString & _
+                             "/" & BA_Url_ImageServer
+                            FileExists = BA_File_ExistsImageServer(TempPathName)
+                        Else
+                            TempPathName = linestring & "\Q4\grid"
+                            FileExists = BA_Workspace_Exists(TempPathName)
+                        End If
                     Else
-                        TempPathName = linestring & "\Q4\grid"
-                        FileExists = BA_Workspace_Exists(TempPathName)
+                        FileExists = valid1
                     End If
                 End If
 
@@ -666,10 +682,10 @@ Module BAGIS_SettingsModule
                 sr.Close()
                 'reset object variables
                 aField = Nothing
-                pFields = Nothing
-                pFeatClass = Nothing
-                pFeatWorkspace = Nothing
-                pWksFactory = Nothing
+                    pFields = Nothing
+                    pFeatClass = Nothing
+                    pFeatWorkspace = Nothing
+                    pWksFactory = Nothing
             End Using
 
             If SNOTELDataExist And SnowCourseDataExist And PRISMDataExist Then
@@ -680,6 +696,13 @@ Module BAGIS_SettingsModule
                 BA_SystemSettings.GenerateAOIOnly = True
                 MsgBox("Missing required data for performing basin analysis!" & vbCrLf & "The Generate AOI Only option is turned on automatically for BAGIS.")
             End If
+
+            'Append any server connection errors to the return_message
+            For Each key As String In checkedUrls.Keys
+                If checkedUrls(key) = False Then
+                    return_message = return_message & vbCrLf & "BAGIS was unable to connect to " & key & ". Data cannot currently be used from this server"
+                End If
+            Next
 
             If return_message = "WARNING!" Then return_message = "" 'i.e., no issue found in the definition file
         Catch ex As Exception
