@@ -1177,8 +1177,8 @@ Public Class frmSettings
             Dim terrainPath As String = BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer)
             Dim copyFile As Boolean = True
             If BA_File_ExistsWindowsIO(terrainPath) Then
-                Dim result As DialogResult = MessageBox.Show("The terrain reference layer already exists at " & terrainPath & _
-                                                             ". Do you wish to overwrite it with the default layer ?", "Terrain layer", _
+                Dim result As DialogResult = MessageBox.Show("The terrain reference layer already exists at " & terrainPath & "." & _
+                                                             vbCrLf & "Do you wish to overwrite it with the default layer ?", "Terrain layer", _
                                                              MessageBoxButtons.YesNo, MessageBoxIcon.Question)
                 If result <> Windows.Forms.DialogResult.Yes Then
                     'Set the path to the file the user wants to keep
