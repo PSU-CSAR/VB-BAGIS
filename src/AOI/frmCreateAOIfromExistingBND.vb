@@ -233,6 +233,16 @@ Public Class frmCreateAOIfromExistingBND
             BA_GetRasterStats(sourceDEMPath & "\" & sourceDEMName, DEMCellSize)
         End If
 
+        'If DEMCellSize could not be calculated, the DEM is likely invalid
+        If DEMCellSize <= 0 Then
+            MessageBox.Show(strDEMDataSet & " is invalid and cannot be used as the DEM layer. Check your BAGIS settings.")
+            pStepProg.Hide()
+            progressDialog2.HideDialog()
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pStepProg)
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(progressDialog2)
+            Exit Sub
+        End If
+
         Try
             ''create a raster version of the AOI boundary
             'BA_EnumDescription(PublicPath.AoiGrid)
@@ -689,8 +699,13 @@ Public Class frmCreateAOIfromExistingBND
             If BA_Workspace_Exists(destSurfGDB) Or BA_Workspace_Exists(destAOIGDB) Then
                 MsgBox("Unable to clear BASIN's internal file geodatabase. Please restart ArcMap and try again.")
             End If
-            Exit Sub
 
+            pStepProg.Hide()
+            progressDialog2.HideDialog()
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pStepProg)
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(progressDialog2)
+
+            Exit Sub
         End Try
 
         ''get AOI area and prompt if the user wants to continue
@@ -899,18 +914,17 @@ Public Class frmCreateAOIfromExistingBND
                             response = BA_ClipAOIVector(UserAOIFolderBase, strParentName & strInLayerBareName, strInLayerBareName, _
                                                         destLayersGDB, True) 'always use buffered aoi to clip the layers
                         Else
-                            MsgBox(strInLayerBareName & " does not exist", "Missing input")
+                            MessageBox.Show(strInLayerBareName & " does not exist", "Missing input")
                         End If
 
                     ElseIf strExtension = "(Raster)" Then
-                        'If BA_File_ExistsRaster(strParentName, strInLayerBareName) Then
                         If BA_File_Exists(strParentName & strInLayerBareName, workspaceType, esriDatasetType.esriDTRasterDataset) Then
                             response = BA_ClipAOIRaster(UserAOIFolderBase, strParentName & strInLayerBareName, strInLayerBareName, destLayersGDB, AOIClipFile.BufferedAOIExtentCoverage)
                             If response <= 0 Then
                                 MsgBox("Clipping " & strInLayerBareName & " failed! Return value = " & response & ".")
                             End If
                         Else
-                            MsgBox(strInLayerBareName & " does not exist", "Missing input")
+                            MessageBox.Show(strInLayerBareName & " does not exist", "Missing input")
                         End If
                     Else
                         MsgBox(strInLayerBareName & " cannot be clipped.")
@@ -919,8 +933,7 @@ Public Class frmCreateAOIfromExistingBND
             End If
 
         Catch ex As Exception
-            MsgBox("Create AOI Exception: ", ex.Message)
-
+            MsgBox("Create AOI Exception: " & ex.Message)
         End Try
 
         pStepProg.Hide()
