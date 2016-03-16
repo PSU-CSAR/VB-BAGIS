@@ -90,7 +90,8 @@ Module BAGIS_PublicModule
         If Not String.IsNullOrEmpty(pourpointString) And pourpointLayerNotExist Then  'load drainage reference layer
             'Dim pMarkercolor As IRgbColor = New RgbColor
             'pMarkercolor.RGB = RGB(255, 0, 0) 'red
-            Dim success As BA_ReturnCode = AddShapefile(pourpointString, PourPointLayerName)
+            Dim success As BA_ReturnCode = AddPourpointLayer(pourpointString, PourPointLayerName)
+
             'Dim success As BA_ReturnCode = BA_MapDisplayPointMarkers(My.ArcMap.Application, pourpointString, MapsLayerName.Pourpoint, pMarkercolor, MapsMarkerType.Pourpoint)
             If success <> BA_ReturnCode.Success Then MsgBox("Cannot load the pourpoint layer! Please check settings.")
         End If
@@ -101,29 +102,29 @@ Module BAGIS_PublicModule
         Exit Sub
     End Sub
 
-    Private Function AddShapefile(ByVal pourpointpath As String, ByVal displayename As String) As BA_ReturnCode
+    Private Function AddPourpointLayer(ByVal pourpointpath As String, ByVal displayname As String) As BA_ReturnCode
         Dim mypath As String = ""
-        Dim pourpointlayer As String = BA_GetBareName(pourpointpath, mypath)
         Dim pMxDoc As IMxDocument = My.ArcMap.Document
         Dim pMap As IMap = pMxDoc.FocusMap
-        Dim pWksFactory As IWorkspaceFactory
-        Dim pFeatWorkspace As IFeatureWorkspace
         Dim pFeatClass As IFeatureClass
-        Dim pFLayer As IFeatureLayer
+        Dim pFLayer As IFeatureLayer = New FeatureLayer()
         Dim Markercolor As IRgbColor
 
         Try
-            'open file from the containing folder
-            pWksFactory = New ShapefileWorkspaceFactory
-            pFeatWorkspace = pWksFactory.OpenFromFile(mypath, 0)
-            pFeatClass = pFeatWorkspace.OpenFeatureClass(pourpointlayer)
+            Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(pourpointpath)
+            If wType = WorkspaceType.Raster Then
+                Dim pourpointlayer As String = BA_GetBareName(pourpointpath, mypath)
+                'open the gauge station layer
+                pFeatClass = BA_OpenFeatureClassFromFile(mypath, pourpointlayer)
+            Else
+                'Currently we assume there is only one layer (0) in the feature service
+                pFeatClass = BA_OpenFeatureClassFromService(pourpointpath, 0)
+            End If
 
             'add featureclass to current data frame
             pFLayer = New FeatureLayer
             pFLayer.FeatureClass = pFeatClass
-            pFLayer = New FeatureLayer
-            pFLayer.FeatureClass = pFeatClass
-            pFLayer.Name = displayename
+            pFLayer.Name = displayname
 
             'set layer symbology - hollow with red outline
             'Set marker symbol
@@ -165,14 +166,9 @@ Module BAGIS_PublicModule
 
         Catch ex As Exception
             Return BA_ReturnCode.UnknownError
-
         Finally
-            pWksFactory = Nothing
-            pFeatWorkspace = Nothing
             pFLayer = Nothing
             pFeatClass = Nothing
-            pFeatWorkspace = Nothing
-            pWksFactory = Nothing
 
             GC.Collect()
             GC.WaitForPendingFinalizers()

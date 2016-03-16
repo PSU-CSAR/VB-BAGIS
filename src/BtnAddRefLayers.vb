@@ -31,14 +31,31 @@ Public Class BtnAddRefLayers
         'check if pourpoint file exists
         Dim ppointpath As String = "Please Return"
         Dim layertype As String = ""
-        Dim pplayername As String = BA_GetBareNameAndExtension(pourpointRef, ppointpath, layertype)
-        pourpointRef = ppointpath & pplayername
-        If Len(pourpointRef) > 0 Then 'it's OK to not have a specified reference layer
-            If Not BA_Shapefile_Exists(pourpointRef) Then
+
+        Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(pourpointRef)
+        Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)
+        Dim valid1 As Boolean = BA_VerifyUrl(settingsform.txtGaugeStation.Text, checkedUrls)
+        Dim FileExists As Boolean = False
+        If valid1 Then
+            If Not String.IsNullOrEmpty(settingsform.txtGaugeStation.Text) Then 'it's OK to not have a specified reference layer
+                If wType = WorkspaceType.Raster Then
+                    Dim File_Path As String = "PleaseReturn"
+                    Dim File_Name As String = BA_GetBareNameAndExtension(settingsform.txtGaugeStation.Text, File_Path, layertype)
+                    Dim TempPathName As String = File_Path & File_Name
+                    FileExists = BA_Shapefile_Exists(TempPathName)
+                ElseIf wType = WorkspaceType.FeatureServer Then
+                    FileExists = BA_File_Exists(settingsform.txtGaugeStation.Text, wType, esriDatasetType.esriDTFeatureClass)
+                End If
+            End If
+            If Not FileExists Then
                 MsgBox("Pourpoint layer does not exist: " & pourpointRef)
                 pourpointRef = ""
             End If
+        Else
+            MsgBox("Pourpoint layer does not exist: " & pourpointRef)
+            pourpointRef = ""
         End If
+
         BA_LoadReferenceLayers(terrainRef, DrainageRef, watershedRef, pourpointRef)
         If String.IsNullOrEmpty(DrainageRef) And Not String.IsNullOrEmpty(watershedRef) And Not String.IsNullOrEmpty(terrainRef) Then
             MsgBox("No reference layer is specified in the settings")

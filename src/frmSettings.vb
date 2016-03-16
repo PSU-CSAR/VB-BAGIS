@@ -828,7 +828,8 @@ Public Class frmSettings
         Dim notForBasinAnalysis As Boolean = Me.ChkboxAOIOnly.Checked
 
         'check for required fields
-        If Len(Me.txtDEM10.Text) = 0 Then missingdata = True
+        'DEM10 no longer required
+        'If Len(Me.txtDEM10.Text) = 0 Then missingdata = True
         If Len(Me.txtDEM30.Text) = 0 Then missingdata = True
         If Len(Me.txtGaugeStation.Text) = 0 Then missingdata = True
 
@@ -1213,6 +1214,9 @@ Public Class frmSettings
             ' only have one server but this could change.
             Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)
             Dim valid1 As Boolean = False
+
+            'Uncheck AOIOnly; Assume defaults will include correct layers
+            ChkboxAOIOnly.Checked = False
 
             'check if file exists
             If Not String.IsNullOrEmpty(defaultSettings.dem10) Then

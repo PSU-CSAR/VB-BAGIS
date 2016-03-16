@@ -21,7 +21,7 @@
             <Button refID="Microsoft_BAGIS_BtnAOIUtilities" />
             <Button refID="Microsoft_BAGIS_BtnAOIfromShapefile" />
             <Button refID="Microsoft_BAGIS_BtnOptions" separator="true" />
-            <Button refID="Portland_State_University_BAGIS_BtnWebServices" />
+            <!--<Button refID="Portland_State_University_BAGIS_BtnWebServices" /> -->
             <Button refID="Microsoft_BAGIS_BtnAbout" separator="true" />
           </Items>
         </Menu>
