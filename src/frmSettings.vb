@@ -9,6 +9,7 @@ Imports ESRI.ArcGIS.Desktop.AddIns
 Imports ESRI.ArcGIS.esriSystem
 Imports ESRI.ArcGIS.Framework
 Imports ESRI.ArcGIS.GISClient
+Imports System.Net
 
 Public Class frmSettings
 
@@ -647,7 +648,7 @@ Public Class frmSettings
                 Else
                     txtPRISM.Text = Data_Path
                 End If
-            End If            
+            End If
 
             If String.IsNullOrEmpty(txtPRISM.Text) Then
                 MsgBox(Data_Path & " is not a valid PRISM data folder!")
@@ -1162,8 +1163,9 @@ Public Class frmSettings
     End Sub
 
     Private Sub BtnDefault_Click(sender As System.Object, e As System.EventArgs) Handles BtnDefault.Click
-        Dim settingsPath As String = BA_GetAddInDirectory() & "\defaultSettings.json"
-        Dim defaultSettings As Settings = BA_ReadDefaultSettingsFromJson(settingsPath)
+        'Dim settingsPath As String = BA_GetAddInDirectory() & "\defaultSettings.json"
+        'Dim defaultSettings As Settings = BA_ReadDefaultSettingsFromJson(settingsPath)
+        Dim defaultSettings As Settings = BA_QueryDefaultSettings(BA_WebServerName)
         If defaultSettings IsNot Nothing Then
             Dim warningSb As StringBuilder = New StringBuilder()
             warningSb.Append("WARNING!")
@@ -1174,13 +1176,12 @@ Public Class frmSettings
 
             txtTerrain.Text = Nothing
             'Check to see if settings file exists at default location
-            'If Not String.IsNullOrEmpty(defaultSettings.terrain) Then
-            Dim terrainPath As String = BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer)
+            Dim terrainPath As String = BA_Settings_Filepath & "\" & defaultSettings.terrain
             Dim copyFile As Boolean = True
             If BA_File_ExistsWindowsIO(terrainPath) Then
                 Dim result As DialogResult = MessageBox.Show("The terrain reference layer already exists at " & terrainPath & "." & _
-                                                             vbCrLf & "Do you wish to overwrite it with the default layer ?", "Terrain layer", _
-                                                             MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                                                             vbCrLf & "Do you wish to download the default layer and overwrite the existing layer definition?", _
+                                                             "Terrain layer", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
                 If result <> Windows.Forms.DialogResult.Yes Then
                     'Set the path to the file the user wants to keep
                     txtTerrain.Text = terrainPath
@@ -1188,16 +1189,16 @@ Public Class frmSettings
                 End If
             End If
             If copyFile = True Then
-                If BA_File_ExistsWindowsIO(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer)) Then
+                Dim success As BA_ReturnCode = DownloadLyrFile(BA_WebServerName, terrainPath)
+                'If BA_File_ExistsWindowsIO(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer)) Then
 
-                    IO.File.Copy(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer), BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer), True)
-                    txtTerrain.Text = BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer)
-                Else
-                    MessageBox.Show("The default terrain reference layer could not be found. It will not be copied to " & _
-                                    BA_Settings_Filepath & ".", "Missing terrain layer", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                End If
+                '    IO.File.Copy(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer), BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer), True)
+                '    txtTerrain.Text = BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer)
+                'Else
+                '    MessageBox.Show("The default terrain reference layer could not be found. It will not be copied to " & _
+                '                    BA_Settings_Filepath & ".", "Missing terrain layer", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                'End If
             End If
-            'End If
 
             'As of 28-JAN-2016, all 3 terrain layers are included in txtTerrain the others are likely null
             txtDrainage.Text = defaultSettings.drainage
@@ -1494,5 +1495,50 @@ Public Class frmSettings
         Else
             MessageBox.Show("The default settings could not be loaded", "Default Settings", MessageBoxButtons.OK)
         End If
+    End Sub
+
+    Private Function DownloadLyrFile(ByVal webserviceUrl As String, ByVal outputFilePath As String) As BA_ReturnCode
+        Try
+            Dim downloadUri As Uri = New Uri(webserviceUrl & "/api/rest/desktop/lyr/")
+            Dim lyrDownload As New LayerDownload()
+            lyrDownload.downLoadUrl = downloadUri.AbsoluteUri
+            lyrDownload.downloadFolder = outputFilePath
+            ' Using WebClient for built-in file download functionality
+            Using myWebClient As New WebClient()
+                'Put token in header
+                AddHandler myWebClient.DownloadFileCompleted, AddressOf DownloadLyrFileCompleted
+                myWebClient.DownloadFileAsync(downloadUri, outputFilePath, lyrDownload)
+            End Using
+            Return BA_ReturnCode.Success
+        Catch ex As Exception
+            Debug.Print("DownloadLyrFile: " & ex.Message)
+            Return BA_ReturnCode.UnknownError
+        End Try
+    End Function
+
+    Private Sub DownloadLyrFileCompleted(ByVal sender As Object, ByVal e As System.ComponentModel.AsyncCompletedEventArgs)
+        Try
+            Dim lyrDownload As LayerDownload = CType(e.UserState, LayerDownload)
+            ' File download completed
+            If e.Cancelled = True Then
+                txtTerrain.Text = Nothing
+                MessageBox.Show("Download of Terrain Ref. .lyr file was cancelled. The file will not be saved.", "Download cancelled", _
+                                MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Exit Sub
+            End If
+            If e.Error IsNot Nothing Then
+                MessageBox.Show("An error occurred while downloading the Terrain Ref. .lyr file from " & lyrDownload.downLoadUrl & ". The file will not be saved.", "Download error", _
+                                MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+                Debug.Print("DownloadLyrFileCompleted error: " & e.Error.Message)
+                Exit Sub
+            End If
+            ' The download succeeded !!
+            If e.Cancelled = False And e.Error Is Nothing Then
+                txtTerrain.Text = lyrDownload.downloadFolder
+            End If
+        Catch ex As Exception
+            Debug.Print("DownloadFileCompleted: " & ex.Message)
+        End Try
     End Sub
 End Class

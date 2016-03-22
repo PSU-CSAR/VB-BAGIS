@@ -1061,4 +1061,21 @@ Module BAGIS_SettingsModule
             Return Nothing
         End Try
     End Function
+
+    Public Function BA_QueryDefaultSettings(ByVal webserviceUrl As String) As Settings
+        webserviceUrl = webserviceUrl & "/api/rest/desktop/settings/"
+        Dim req As System.Net.WebRequest = System.Net.WebRequest.Create(webserviceUrl & "?f=pjson")
+        Try
+            Dim settings = New Settings()
+            Using resp As System.Net.WebResponse = req.GetResponse()
+                Dim ser As System.Runtime.Serialization.Json.DataContractJsonSerializer = New System.Runtime.Serialization.Json.DataContractJsonSerializer(settings.[GetType]())
+                settings = CType(ser.ReadObject(resp.GetResponseStream), Settings)
+            End Using
+            Return settings
+        Catch ex As Exception
+            Debug.Print("BA_ReadDefaultSettingsFromJson Exception: " & ex.Message)
+            Return Nothing
+        End Try
+    End Function
+
 End Module
