@@ -392,7 +392,7 @@ Public Class frmAOIInfo
                 Dim prismServices As System.Array = Nothing
                 Dim prismExists As Boolean = False
                 If wType = WorkspaceType.ImageServer Then
-                    Dim tempPathName As String = InPRISMPath & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString & _
+                    Dim tempPathName As String = InPRISMPath & "/" & PrismServiceNames.PRISM_Precipitation_Q4.ToString & _
                         "/" & BA_Url_ImageServer
                     prismExists = BA_File_ExistsImageServer(tempPathName)
                     prismServices = System.Enum.GetValues(GetType(PrismServiceNames))

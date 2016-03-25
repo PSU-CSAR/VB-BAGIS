@@ -626,7 +626,7 @@ Public Class frmSettings
                 sb.Append(propertySet.GetProperty(BA_Property_SoapUrl)) 'Image services use the SOAP url
                 sb.Append("/" & pGxObj.BaseName)    'PRISM
                 Data_Path = sb.ToString
-                Dim TempPathName As String = sb.ToString & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString
+                Dim TempPathName As String = sb.ToString & "/" & PrismServiceNames.PRISM_Precipitation_Q4.ToString
                 TempPathName = TempPathName & "/" & BA_Url_ImageServer
                 If Not BA_File_ExistsImageServer(TempPathName) Then
                     txtPRISM.Text = ""
@@ -1466,7 +1466,7 @@ Public Class frmSettings
                 Dim FileExists As Boolean = False
                 If valid1 Then
                     If wType = WorkspaceType.ImageServer Then
-                        Dim TempPathName As String = defaultSettings.prism & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString & _
+                        Dim TempPathName As String = defaultSettings.prism & "/" & PrismServiceNames.PRISM_Precipitation_Q4.ToString & _
                          "/" & BA_Url_ImageServer
                         FileExists = BA_File_ExistsImageServer(TempPathName)
                     Else

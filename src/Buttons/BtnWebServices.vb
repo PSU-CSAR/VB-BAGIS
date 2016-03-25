@@ -7,6 +7,7 @@ Imports System.Web
 Imports ESRI.ArcGIS.esriSystem
 Imports ESRI.ArcGIS.DataSourcesGDB
 Imports System.Text
+Imports ESRI.ArcGIS.GISClient
 
 Public Class BtnWebServices
     Inherits ESRI.ArcGIS.Desktop.AddIns.Button
@@ -16,11 +17,12 @@ Public Class BtnWebServices
     End Sub
 
     Protected Overrides Sub OnClick()
-        Dim wForm As FrmWebservices = New FrmWebservices
-        wForm.ShowDialog()
+        'Dim wForm As FrmWebservices = New FrmWebservices
+        'wForm.ShowDialog()
         'AccessImageServerLayer()
         'AccessFeatureLayer()
-        'MsgBox("Finish!")
+        TestImageServices()
+        MsgBox("Finish!")
     End Sub
 
     Protected Overrides Sub OnUpdate()
@@ -45,6 +47,18 @@ Public Class BtnWebServices
     Protected Sub QueryFields()
         Dim webServiceUrl As String = "http://atlas.geog.pdx.edu/arcgis/rest/services/AWDB_ALL/AWDB_SNOTEL_ALL/FeatureServer/0"
         Dim fieldNames As IList(Of String) = BA_QueryFeatureServiceFieldNames(webServiceUrl, esriFieldType.esriFieldTypeString)
+    End Sub
+
+    Protected Sub TestImageServices()
+        Dim AGSConnectionFactory As IAGSServerConnectionFactory = New AGSServerConnectionFactory
+        Dim connectionProps As IPropertySet = New PropertySet
+        Dim AGSConnection As IAGSServerConnection = Nothing
+        Dim fullPath As String = "http://basins.geog.pdx.edu/arcgis/services/BAGIS_GISLayers/DEM_westus_bc_30m/ImageServer"
+        Dim layerExists As Boolean = BA_File_ExistsImageServer(fullPath)
+        fullPath = "http://basins.geog.pdx.edu/arcgis/services/BAGIS_PRISM/Prism_Precipitation_01/ImageServer"
+        layerExists = BA_File_ExistsImageServer(fullPath)
+        fullPath = "http://webservices.geog.pdx.edu/arcgis/services/BAGIS_GISLayers/DEM_westus_bc_30m/ImageServer"
+        layerExists = BA_File_ExistsImageServer(fullPath)
     End Sub
 
 End Class

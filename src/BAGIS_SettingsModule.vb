@@ -623,7 +623,7 @@ Module BAGIS_SettingsModule
                     If valid1 Then
                         wType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtPRISM.Text)
                         If wType = WorkspaceType.ImageServer Then
-                            TempPathName = linestring & "/" & PrismServiceNames.PRISM_Precipitation_Q4th.ToString & _
+                            TempPathName = linestring & "/" & PrismServiceNames.PRISM_Precipitation_Q4.ToString & _
                              "/" & BA_Url_ImageServer
                             FileExists = BA_File_ExistsImageServer(TempPathName)
                         Else
