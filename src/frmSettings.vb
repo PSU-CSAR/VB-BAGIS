@@ -1058,35 +1058,52 @@ Public Class frmSettings
         Me.ComboSC_Name.Items.Add("none")
         Me.ComboSC_Name.SelectedIndex = 0
 
-        'check for network connectivity
-        Dim connectedToNetwork As Boolean = BA_IsNetworkAvailable(0)
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 5)
+        Dim progressDialog2 As IProgressDialog2 = Nothing
 
-        'set settings
-        settings_message = BA_Read_Settings(Me)
-        Dim cboSelectBasin = AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
-        If Len(settings_message) > 0 Then
-            MsgBox(settings_message)
-            'SelectBasin_Flag = False                                      
-            cboSelectBasin.selectedProperty = False
+        Try
+            progressDialog2 = BA_GetProgressDialog(pStepProg, "Loading and validating BAGIS data settings", "Loading settings")
+            progressDialog2.Animation = esriProgressAnimationTypes.esriProgressSpiral
+            pStepProg.Hide()    'Don't use step progressor
+            progressDialog2.ShowDialog()
 
-            If settings_message.Substring(0, 7) = "Version" Then
-                MsgBox("Please update Settings file using save settings in Settings form.", vbOKOnly, "BAGIS Settings Version Error")
+            'check for network connectivity
+            Dim connectedToNetwork As Boolean = BA_IsNetworkAvailable(0)
+
+            'set settings
+            settings_message = BA_Read_Settings(Me)
+            Dim cboSelectBasin = AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
+            If Len(settings_message) > 0 Then
+                MsgBox(settings_message)
+                'SelectBasin_Flag = False                                      
+                cboSelectBasin.selectedProperty = False
+
+                If settings_message.Substring(0, 7) = "Version" Then
+                    MsgBox("Please update Settings file using save settings in Settings form.", vbOKOnly, "BAGIS Settings Version Error")
+                End If
+                If settings_message.Substring(0, 6) = "ERROR!" Then
+                    MsgBox("Please set and save the data layer settings first!")
+                End If
             End If
-            If settings_message.Substring(0, 6) = "ERROR!" Then
-                MsgBox("Please set and save the data layer settings first!")
-            End If
-        End If
 
-        CmdUndo.Enabled = False
-        Me.Text = Me.Text & " " & BA_Settings_Filepath & "\" & BA_Settings_Filename
+            CmdUndo.Enabled = False
+            Me.Text = Me.Text & " " & BA_Settings_Filepath & "\" & BA_Settings_Filename
 
-        'enable btnAddreferencelayers 
-        'Dim AddRefLayersButton = AddIn.FromID(Of BtnAddRefLayers)(My.ThisAddIn.IDs.BtnAddRefLayers)
-        'If Not String.IsNullOrEmpty(BA_SystemSettings.Ref_Drainage) And _
-        '    Not String.IsNullOrEmpty(BA_SystemSettings.Ref_Watershed) And _
-        '    Not String.IsNullOrEmpty(BA_SystemSettings.Ref_Terrain) Then
-        '    AddRefLayersButton.selectedProperty = True
-        'End If
+            'enable btnAddreferencelayers 
+            'Dim AddRefLayersButton = AddIn.FromID(Of BtnAddRefLayers)(My.ThisAddIn.IDs.BtnAddRefLayers)
+            'If Not String.IsNullOrEmpty(BA_SystemSettings.Ref_Drainage) And _
+            '    Not String.IsNullOrEmpty(BA_SystemSettings.Ref_Watershed) And _
+            '    Not String.IsNullOrEmpty(BA_SystemSettings.Ref_Terrain) Then
+            '    AddRefLayersButton.selectedProperty = True
+            'End If
+
+        Catch ex As Exception
+            Debug.Print("frmSettings_Load Exception: " & ex.Message)
+        Finally
+            pStepProg = Nothing
+            progressDialog2.HideDialog()
+            progressDialog2 = Nothing
+        End Try
 
     End Sub
 
@@ -1165,336 +1182,346 @@ Public Class frmSettings
     Private Sub BtnDefault_Click(sender As System.Object, e As System.EventArgs) Handles BtnDefault.Click
         'Dim settingsPath As String = BA_GetAddInDirectory() & "\defaultSettings.json"
         'Dim defaultSettings As Settings = BA_ReadDefaultSettingsFromJson(settingsPath)
-        Dim defaultSettings As Settings = BA_QueryDefaultSettings(BA_WebServerName)
-        If defaultSettings IsNot Nothing Then
-            Dim warningSb As StringBuilder = New StringBuilder()
-            warningSb.Append("WARNING!")
-            'check for network connectivity
-            If Not BA_IsNetworkAvailable(0) Then
-                warningSb.Append(vbCrLf & "Your computer is not connected to the network. You may be unable to access some of the data layers.")
-            End If
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 5)
+        Dim progressDialog2 As IProgressDialog2 = Nothing
+        Try
+            progressDialog2 = BA_GetProgressDialog(pStepProg, "Loading and validating default BAGIS settings", "Loading default settings")
+            progressDialog2.Animation = esriProgressAnimationTypes.esriProgressSpiral
+            pStepProg.Hide()    'Don't use step progressor
+            progressDialog2.ShowDialog()
+            Dim defaultSettings As Settings = BA_QueryDefaultSettings(BA_WebServerName)
+            If defaultSettings IsNot Nothing Then
+                Dim warningSb As StringBuilder = New StringBuilder()
+                warningSb.Append("WARNING!")
 
-            txtTerrain.Text = Nothing
-            'Check to see if settings file exists at default location
-            Dim terrainPath As String = BA_Settings_Filepath & "\" & defaultSettings.terrain
-            Dim copyFile As Boolean = True
-            If BA_File_ExistsWindowsIO(terrainPath) Then
-                Dim result As DialogResult = MessageBox.Show("The terrain reference layer already exists at " & terrainPath & "." & _
-                                                             vbCrLf & "Do you wish to download the default layer and overwrite the existing layer definition?", _
-                                                             "Terrain layer", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-                If result <> Windows.Forms.DialogResult.Yes Then
-                    'Set the path to the file the user wants to keep
-                    txtTerrain.Text = terrainPath
-                    copyFile = False
-                End If
-            End If
-            If copyFile = True Then
-                Dim success As BA_ReturnCode = DownloadLyrFile(BA_WebServerName, terrainPath)
-                'If BA_File_ExistsWindowsIO(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer)) Then
-
-                '    IO.File.Copy(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer), BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer), True)
-                '    txtTerrain.Text = BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer)
-                'Else
-                '    MessageBox.Show("The default terrain reference layer could not be found. It will not be copied to " & _
-                '                    BA_Settings_Filepath & ".", "Missing terrain layer", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                'End If
-            End If
-
-            'As of 28-JAN-2016, all 3 terrain layers are included in txtTerrain the others are likely null
-            txtDrainage.Text = defaultSettings.drainage
-            txtWatershed.Text = defaultSettings.watershed
-            'As of 28-JAN-2016, there is no 10m DEM so we set it to nothing
-            txtDEM10.Text = defaultSettings.dem10
-            'No default DEM until we know one exists
-            Opt10M.Checked = False
-            Opt30M.Checked = False
-            txtDEM10.Text = Nothing
-
-            ' This Dictionary keeps track of all the checked urls so that BAGIS doesn't hang
-            ' trying to connect to the same server for each textbox if the server is down. Currently we
-            ' only have one server but this could change.
-            Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)
-            Dim valid1 As Boolean = False
-
-            'Uncheck AOIOnly; Assume defaults will include correct layers
-            ChkboxAOIOnly.Checked = False
-
-            'check if file exists
-            If Not String.IsNullOrEmpty(defaultSettings.dem10) Then
-                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.dem10)
-                valid1 = BA_VerifyUrl(defaultSettings.dem10, checkedUrls)
-                If valid1 Then
-                    If BA_File_Exists(defaultSettings.dem10, wType, esriDatasetType.esriDTRasterDataset) Then
-                        txtDEM10.Text = defaultSettings.dem10
-                        If defaultSettings.preferredDem = BA_Settings_dem10 Then Opt10M.Checked = True
+                txtTerrain.Text = Nothing
+                'Check to see if settings file exists at default location
+                Dim terrainPath As String = BA_Settings_Filepath & "\" & defaultSettings.terrain
+                Dim copyFile As Boolean = True
+                If BA_File_ExistsWindowsIO(terrainPath) Then
+                    Dim result As DialogResult = MessageBox.Show("The terrain reference layer already exists at " & terrainPath & "." & _
+                                                                 vbCrLf & "Do you wish to download the default layer and overwrite the existing layer definition?", _
+                                                                 "Terrain layer", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                    If result <> Windows.Forms.DialogResult.Yes Then
+                        'Set the path to the file the user wants to keep
+                        txtTerrain.Text = terrainPath
+                        copyFile = False
                     End If
                 End If
-            End If
+                If copyFile = True Then
+                    Dim success As BA_ReturnCode = DownloadLyrFile(BA_WebServerName, terrainPath)
+                    'If BA_File_ExistsWindowsIO(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer)) Then
 
-            txtDEM30.Text = Nothing
-            'check if file exists
-            If Not String.IsNullOrEmpty(defaultSettings.dem30) Then
-                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.dem30)
-                valid1 = BA_VerifyUrl(defaultSettings.dem30, checkedUrls)
-                If valid1 Then
-                    If BA_File_Exists(defaultSettings.dem30, wType, esriDatasetType.esriDTRasterDataset) Then
-                        txtDEM30.Text = defaultSettings.dem30
-                        If defaultSettings.preferredDem = BA_Settings_dem30 Then Opt30M.Checked = True
-                    End If
+                    '    IO.File.Copy(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer), BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer), True)
+                    '    txtTerrain.Text = BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer)
+                    'Else
+                    '    MessageBox.Show("The default terrain reference layer could not be found. It will not be copied to " & _
+                    '                    BA_Settings_Filepath & ".", "Missing terrain layer", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                    'End If
                 End If
-            End If
-            If Not String.IsNullOrEmpty(defaultSettings.demElevUnit) Then
-                Select Case defaultSettings.demElevUnit.ToLower
-                    Case BA_EnumDescription(MeasurementUnit.Meters).ToLower
-                        OptMeter.Checked = True
-                        OptFoot.Checked = False
-                    Case BA_EnumDescription(MeasurementUnit.Feet).ToLower
-                        OptMeter.Checked = False
-                        OptFoot.Checked = True
-                    Case Else
-                        OptMeter.Checked = False
-                        OptFoot.Checked = False
-                End Select
-            Else
-                OptMeter.Checked = False
-                OptFoot.Checked = False
-            End If
 
-            txtGaugeStation.Text = Nothing
-            CmboxStationAtt.Items.Clear()
-            ComboStationArea.Items.Clear()
-            ComboStation_Value.SelectedIndex = 0
-            If Not String.IsNullOrEmpty(defaultSettings.gaugeStation) Then
-                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.gaugeStation)
-                valid1 = BA_VerifyUrl(defaultSettings.gaugeStation, checkedUrls)
-                Dim featureClass As IFeatureClass = Nothing
-                If valid1 Then
-                    If wType = WorkspaceType.Raster Then
-                        Dim filePath As String = "return"
-                        Dim fileName As String = BA_GetBareName(defaultSettings.gaugeStation, filePath)
-                        featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
-                    ElseIf wType = WorkspaceType.FeatureServer Then
-                        featureClass = BA_OpenFeatureClassFromService(defaultSettings.gaugeStation, 0)
-                    End If
-                End If
-                If featureClass IsNot Nothing Then
-                    txtGaugeStation.Text = defaultSettings.gaugeStation
-                    'Name field
-                    'get fields
-                    Dim pFields As IFields = featureClass.Fields
-                    Dim nFields As Integer = pFields.FieldCount
-                    Dim aField As IField = Nothing
-                    Dim qType As esriFieldType
-                    Dim foundIt As Boolean = False
-                    For i = 0 To nFields - 1
-                        aField = pFields.Field(i)
-                        qType = aField.Type
-                        If qType <= esriFieldType.esriFieldTypeInteger Or _
-                             qType = esriFieldType.esriFieldTypeString Then
-                            CmboxStationAtt.Items.Add(aField.Name)
-                            If String.Compare(aField.Name, defaultSettings.gaugeStationName, True) = 0 Then
-                                CmboxStationAtt.SelectedItem = aField.Name
-                                foundIt = True
-                            End If
+                'As of 28-JAN-2016, all 3 terrain layers are included in txtTerrain the others are likely null
+                txtDrainage.Text = defaultSettings.drainage
+                txtWatershed.Text = defaultSettings.watershed
+                'As of 28-JAN-2016, there is no 10m DEM so we set it to nothing
+                txtDEM10.Text = defaultSettings.dem10
+                'No default DEM until we know one exists
+                Opt10M.Checked = False
+                Opt30M.Checked = False
+                txtDEM10.Text = Nothing
+
+                ' This Dictionary keeps track of all the checked urls so that BAGIS doesn't hang
+                ' trying to connect to the same server for each textbox if the server is down. Currently we
+                ' only have one server but this could change.
+                Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)
+                Dim valid1 As Boolean = False
+
+                'Uncheck AOIOnly; Assume defaults will include correct layers
+                ChkboxAOIOnly.Checked = False
+
+                'check if file exists
+                If Not String.IsNullOrEmpty(defaultSettings.dem10) Then
+                    Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.dem10)
+                    valid1 = BA_VerifyUrl(defaultSettings.dem10, checkedUrls)
+                    If valid1 Then
+                        If BA_File_Exists(defaultSettings.dem10, wType, esriDatasetType.esriDTRasterDataset) Then
+                            txtDEM10.Text = defaultSettings.dem10
+                            If defaultSettings.preferredDem = BA_Settings_dem10 Then Opt10M.Checked = True
                         End If
-                    Next
-                    If foundIt = False Then
-                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.gaugeStationName & " is not in gauge station data")
                     End If
-                    foundIt = False
-                    'Area field
-                    ComboStationArea.Items.Add("No data")
-                    ComboStationArea.SelectedItem = "No data"
-                    For i = 0 To nFields - 1
-                        aField = pFields.Field(i)
-                        qType = aField.Type
-                        If qType <= esriFieldType.esriFieldTypeDouble Then 'numeric data types
-                            ComboStationArea.Items.Add(aField.Name)
-                            If String.Compare(aField.Name, defaultSettings.gaugeStationArea, True) = 0 Then
-                                ComboStationArea.SelectedItem = aField.Name
-                                foundIt = True
-                            End If
-                        End If
-                    Next
-                    If foundIt = False Then
-                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.gaugeStationArea & " is not in gauge station data")
-                    End If
-                    foundIt = False
+                End If
 
-                    'Areal units; The combo box is loaded when the form loads
-                    If Not String.IsNullOrEmpty(defaultSettings.gaugeStationUnits) Then
-                        Select Case defaultSettings.gaugeStationUnits.ToLower
-                            Case BA_EnumDescription(MeasurementUnit.SquareKilometers).ToLower
-                                ComboStation_Value.SelectedIndex = 1
-                            Case BA_EnumDescription(MeasurementUnit.Acres).ToLower
-                                ComboStation_Value.SelectedIndex = 2
-                            Case BA_EnumDescription(MeasurementUnit.SquareMiles).ToLower
-                                ComboStation_Value.SelectedIndex = 3
-                            Case Else
-                                ComboStation_Value.SelectedIndex = 0
-                        End Select
-                    Else
-                        ComboStation_Value.SelectedIndex = 0
-                    End If
-                End If
-            End If
-
-            txtSNOTEL.Text = ""
-            ComboSNOTEL_Elevation.Items.Clear()
-            ComboSNOTEL_Name.Items.Clear()
-            If Not String.IsNullOrEmpty(defaultSettings.snotel) Then
-                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.snotel)
-                valid1 = BA_VerifyUrl(defaultSettings.snotel, checkedUrls)
-                Dim featureClass As IFeatureClass = Nothing
-                If valid1 Then
-                    If wType = WorkspaceType.Raster Then
-                        Dim filePath As String = "return"
-                        Dim fileName As String = BA_GetBareName(defaultSettings.snotel, filePath)
-                        featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
-                    ElseIf wType = WorkspaceType.FeatureServer Then
-                        featureClass = BA_OpenFeatureClassFromService(defaultSettings.snotel, 0)
-                    End If
-                End If
-                If featureClass IsNot Nothing Then
-                    txtSNOTEL.Text = defaultSettings.snotel
-                    'Elevation field
-                    'get fields
-                    Dim pFields As IFields = featureClass.Fields
-                    Dim nFields As Integer = pFields.FieldCount
-                    Dim aField As IField = Nothing
-                    Dim qType As esriFieldType
-                    Dim foundIt As Boolean = False
-                    For i = 0 To nFields - 1
-                        aField = pFields.Field(i)
-                        qType = aField.Type
-                        If qType <= esriFieldType.esriFieldTypeDouble Then
-                            ComboSNOTEL_Elevation.Items.Add(aField.Name)
-                            If String.Compare(aField.Name, defaultSettings.snotelElev, True) = 0 Then
-                                ComboSNOTEL_Elevation.SelectedItem = aField.Name
-                                foundIt = True
-                            End If
+                txtDEM30.Text = Nothing
+                'check if file exists
+                If Not String.IsNullOrEmpty(defaultSettings.dem30) Then
+                    Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.dem30)
+                    valid1 = BA_VerifyUrl(defaultSettings.dem30, checkedUrls)
+                    If valid1 Then
+                        If BA_File_Exists(defaultSettings.dem30, wType, esriDatasetType.esriDTRasterDataset) Then
+                            txtDEM30.Text = defaultSettings.dem30
+                            If defaultSettings.preferredDem = BA_Settings_dem30 Then Opt30M.Checked = True
                         End If
-                    Next
-                    If foundIt = False Then
-                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snotelElev & " is not in SNOTEL data")
-                    End If
-                    foundIt = False
-                    'Name field
-                    ComboSNOTEL_Name.Items.Add("None")
-                    ComboSNOTEL_Name.SelectedItem = "None"
-                    For i = 0 To nFields - 1
-                        aField = pFields.Field(i)
-                        qType = aField.Type
-                        If qType = esriFieldType.esriFieldTypeString Then 'string data types
-                            ComboSNOTEL_Name.Items.Add(aField.Name)
-                            If String.Compare(aField.Name, defaultSettings.snotelName, True) = 0 Then
-                                ComboSNOTEL_Name.SelectedItem = aField.Name
-                                foundIt = True
-                            End If
-                        End If
-                    Next
-                    If foundIt = False Then
-                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snotelName & " is not in SNOTEL data")
                     End If
                 End If
-            End If
-
-            txtSnowCourse.Text = ""
-            ComboSC_Elevation.Items.Clear()
-            ComboSC_Name.Items.Clear()
-            If Not String.IsNullOrEmpty(defaultSettings.snowCourse) Then
-                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.snowCourse)
-                valid1 = BA_VerifyUrl(defaultSettings.snowCourse, checkedUrls)
-                Dim featureClass As IFeatureClass = Nothing
-                If valid1 Then
-                    If wType = WorkspaceType.Raster Then
-                        Dim filePath As String = "return"
-                        Dim fileName As String = BA_GetBareName(defaultSettings.snowCourse, filePath)
-                        featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
-                    ElseIf wType = WorkspaceType.FeatureServer Then
-                        featureClass = BA_OpenFeatureClassFromService(defaultSettings.snowCourse, 0)
-                    End If
-                End If
-                If featureClass IsNot Nothing Then
-                    txtSnowCourse.Text = defaultSettings.snowCourse
-                    'Elevation field
-                    'get fields
-                    Dim pFields As IFields = featureClass.Fields
-                    Dim nFields As Integer = pFields.FieldCount
-                    Dim aField As IField = Nothing
-                    Dim qType As esriFieldType
-                    Dim foundIt As Boolean = False
-                    For i = 0 To nFields - 1
-                        aField = pFields.Field(i)
-                        qType = aField.Type
-                        If qType <= esriFieldType.esriFieldTypeDouble Then
-                            ComboSC_Elevation.Items.Add(aField.Name)
-                            If String.Compare(aField.Name, defaultSettings.snowCourseElev, True) = 0 Then
-                                ComboSC_Elevation.SelectedItem = aField.Name
-                                foundIt = True
-                            End If
-                        End If
-                    Next
-                    If foundIt = False Then
-                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snowCourseElev & " is not in Snow Course data")
-                    End If
-                    foundIt = False
-                    'Name field
-                    ComboSC_Name.Items.Add("None")
-                    ComboSC_Name.SelectedItem = "None"
-                    For i = 0 To nFields - 1
-                        aField = pFields.Field(i)
-                        qType = aField.Type
-                        If qType = esriFieldType.esriFieldTypeString Then 'string data types
-                            ComboSC_Name.Items.Add(aField.Name)
-                            If String.Compare(aField.Name, defaultSettings.snowCourseName, True) = 0 Then
-                                ComboSC_Name.SelectedItem = aField.Name
-                                foundIt = True
-                            End If
-                        End If
-                    Next
-                    If foundIt = False Then
-                        warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snowCourseName & " is not in Snow Course data")
-                    End If
-                End If
-            End If
-
-            txtPRISM.Text = ""
-            If Not String.IsNullOrEmpty(defaultSettings.prism) Then
-                Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.prism)
-                valid1 = BA_VerifyUrl(defaultSettings.prism, checkedUrls)
-                Dim FileExists As Boolean = False
-                If valid1 Then
-                    If wType = WorkspaceType.ImageServer Then
-                        Dim TempPathName As String = defaultSettings.prism & "/" & PrismServiceNames.PRISM_Precipitation_Q4.ToString & _
-                         "/" & BA_Url_ImageServer
-                        FileExists = BA_File_ExistsImageServer(TempPathName)
-                    Else
-                        Dim TempPathName As String = defaultSettings.prism & "\Q4\grid"
-                        FileExists = BA_Workspace_Exists(TempPathName)
-                    End If
+                If Not String.IsNullOrEmpty(defaultSettings.demElevUnit) Then
+                    Select Case defaultSettings.demElevUnit.ToLower
+                        Case BA_EnumDescription(MeasurementUnit.Meters).ToLower
+                            OptMeter.Checked = True
+                            OptFoot.Checked = False
+                        Case BA_EnumDescription(MeasurementUnit.Feet).ToLower
+                            OptMeter.Checked = False
+                            OptFoot.Checked = True
+                        Case Else
+                            OptMeter.Checked = False
+                            OptFoot.Checked = False
+                    End Select
                 Else
-                    FileExists = False
+                    OptMeter.Checked = False
+                    OptFoot.Checked = False
                 End If
-                If FileExists Then txtPRISM.Text = defaultSettings.prism
-            End If
 
-            'Remove all items from participating layers as there are none in the default settings
-            lstLayers.Items.Clear()
+                txtGaugeStation.Text = Nothing
+                CmboxStationAtt.Items.Clear()
+                ComboStationArea.Items.Clear()
+                ComboStation_Value.SelectedIndex = 0
+                If Not String.IsNullOrEmpty(defaultSettings.gaugeStation) Then
+                    Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.gaugeStation)
+                    valid1 = BA_VerifyUrl(defaultSettings.gaugeStation, checkedUrls)
+                    Dim featureClass As IFeatureClass = Nothing
+                    If valid1 Then
+                        If wType = WorkspaceType.Raster Then
+                            Dim filePath As String = "return"
+                            Dim fileName As String = BA_GetBareName(defaultSettings.gaugeStation, filePath)
+                            featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
+                        ElseIf wType = WorkspaceType.FeatureServer Then
+                            featureClass = BA_OpenFeatureClassFromService(defaultSettings.gaugeStation, 0)
+                        End If
+                    End If
+                    If featureClass IsNot Nothing Then
+                        txtGaugeStation.Text = defaultSettings.gaugeStation
+                        'Name field
+                        'get fields
+                        Dim pFields As IFields = featureClass.Fields
+                        Dim nFields As Integer = pFields.FieldCount
+                        Dim aField As IField = Nothing
+                        Dim qType As esriFieldType
+                        Dim foundIt As Boolean = False
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType <= esriFieldType.esriFieldTypeInteger Or _
+                                 qType = esriFieldType.esriFieldTypeString Then
+                                CmboxStationAtt.Items.Add(aField.Name)
+                                If String.Compare(aField.Name, defaultSettings.gaugeStationName, True) = 0 Then
+                                    CmboxStationAtt.SelectedItem = aField.Name
+                                    foundIt = True
+                                End If
+                            End If
+                        Next
+                        If foundIt = False Then
+                            warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.gaugeStationName & " is not in gauge station data")
+                        End If
+                        foundIt = False
+                        'Area field
+                        ComboStationArea.Items.Add("No data")
+                        ComboStationArea.SelectedItem = "No data"
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType <= esriFieldType.esriFieldTypeDouble Then 'numeric data types
+                                ComboStationArea.Items.Add(aField.Name)
+                                If String.Compare(aField.Name, defaultSettings.gaugeStationArea, True) = 0 Then
+                                    ComboStationArea.SelectedItem = aField.Name
+                                    foundIt = True
+                                End If
+                            End If
+                        Next
+                        If foundIt = False Then
+                            warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.gaugeStationArea & " is not in gauge station data")
+                        End If
+                        foundIt = False
 
-            'Append any server connection errors to the warningsb
-            For Each key As String In checkedUrls.Keys
-                If checkedUrls(key) = False Then
-                    warningSb.Append(vbCrLf & "BAGIS was unable to connect to " & key & ". Data cannot currently be used from this server")
+                        'Areal units; The combo box is loaded when the form loads
+                        If Not String.IsNullOrEmpty(defaultSettings.gaugeStationUnits) Then
+                            Select Case defaultSettings.gaugeStationUnits.ToLower
+                                Case BA_EnumDescription(MeasurementUnit.SquareKilometers).ToLower
+                                    ComboStation_Value.SelectedIndex = 1
+                                Case BA_EnumDescription(MeasurementUnit.Acres).ToLower
+                                    ComboStation_Value.SelectedIndex = 2
+                                Case BA_EnumDescription(MeasurementUnit.SquareMiles).ToLower
+                                    ComboStation_Value.SelectedIndex = 3
+                                Case Else
+                                    ComboStation_Value.SelectedIndex = 0
+                            End Select
+                        Else
+                            ComboStation_Value.SelectedIndex = 0
+                        End If
+                    End If
                 End If
-            Next
 
-            If Not String.Compare(warningSb.ToString, "WARNING!", False) = 0 Then
-                MessageBox.Show(warningSb.ToString, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                txtSNOTEL.Text = ""
+                ComboSNOTEL_Elevation.Items.Clear()
+                ComboSNOTEL_Name.Items.Clear()
+                If Not String.IsNullOrEmpty(defaultSettings.snotel) Then
+                    Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.snotel)
+                    valid1 = BA_VerifyUrl(defaultSettings.snotel, checkedUrls)
+                    Dim featureClass As IFeatureClass = Nothing
+                    If valid1 Then
+                        If wType = WorkspaceType.Raster Then
+                            Dim filePath As String = "return"
+                            Dim fileName As String = BA_GetBareName(defaultSettings.snotel, filePath)
+                            featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
+                        ElseIf wType = WorkspaceType.FeatureServer Then
+                            featureClass = BA_OpenFeatureClassFromService(defaultSettings.snotel, 0)
+                        End If
+                    End If
+                    If featureClass IsNot Nothing Then
+                        txtSNOTEL.Text = defaultSettings.snotel
+                        'Elevation field
+                        'get fields
+                        Dim pFields As IFields = featureClass.Fields
+                        Dim nFields As Integer = pFields.FieldCount
+                        Dim aField As IField = Nothing
+                        Dim qType As esriFieldType
+                        Dim foundIt As Boolean = False
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType <= esriFieldType.esriFieldTypeDouble Then
+                                ComboSNOTEL_Elevation.Items.Add(aField.Name)
+                                If String.Compare(aField.Name, defaultSettings.snotelElev, True) = 0 Then
+                                    ComboSNOTEL_Elevation.SelectedItem = aField.Name
+                                    foundIt = True
+                                End If
+                            End If
+                        Next
+                        If foundIt = False Then
+                            warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snotelElev & " is not in SNOTEL data")
+                        End If
+                        foundIt = False
+                        'Name field
+                        ComboSNOTEL_Name.Items.Add("None")
+                        ComboSNOTEL_Name.SelectedItem = "None"
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType = esriFieldType.esriFieldTypeString Then 'string data types
+                                ComboSNOTEL_Name.Items.Add(aField.Name)
+                                If String.Compare(aField.Name, defaultSettings.snotelName, True) = 0 Then
+                                    ComboSNOTEL_Name.SelectedItem = aField.Name
+                                    foundIt = True
+                                End If
+                            End If
+                        Next
+                        If foundIt = False Then
+                            warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snotelName & " is not in SNOTEL data")
+                        End If
+                    End If
+                End If
+
+                txtSnowCourse.Text = ""
+                ComboSC_Elevation.Items.Clear()
+                ComboSC_Name.Items.Clear()
+                If Not String.IsNullOrEmpty(defaultSettings.snowCourse) Then
+                    Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.snowCourse)
+                    valid1 = BA_VerifyUrl(defaultSettings.snowCourse, checkedUrls)
+                    Dim featureClass As IFeatureClass = Nothing
+                    If valid1 Then
+                        If wType = WorkspaceType.Raster Then
+                            Dim filePath As String = "return"
+                            Dim fileName As String = BA_GetBareName(defaultSettings.snowCourse, filePath)
+                            featureClass = BA_OpenFeatureClassFromFile(filePath, fileName)
+                        ElseIf wType = WorkspaceType.FeatureServer Then
+                            featureClass = BA_OpenFeatureClassFromService(defaultSettings.snowCourse, 0)
+                        End If
+                    End If
+                    If featureClass IsNot Nothing Then
+                        txtSnowCourse.Text = defaultSettings.snowCourse
+                        'Elevation field
+                        'get fields
+                        Dim pFields As IFields = featureClass.Fields
+                        Dim nFields As Integer = pFields.FieldCount
+                        Dim aField As IField = Nothing
+                        Dim qType As esriFieldType
+                        Dim foundIt As Boolean = False
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType <= esriFieldType.esriFieldTypeDouble Then
+                                ComboSC_Elevation.Items.Add(aField.Name)
+                                If String.Compare(aField.Name, defaultSettings.snowCourseElev, True) = 0 Then
+                                    ComboSC_Elevation.SelectedItem = aField.Name
+                                    foundIt = True
+                                End If
+                            End If
+                        Next
+                        If foundIt = False Then
+                            warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snowCourseElev & " is not in Snow Course data")
+                        End If
+                        foundIt = False
+                        'Name field
+                        ComboSC_Name.Items.Add("None")
+                        ComboSC_Name.SelectedItem = "None"
+                        For i = 0 To nFields - 1
+                            aField = pFields.Field(i)
+                            qType = aField.Type
+                            If qType = esriFieldType.esriFieldTypeString Then 'string data types
+                                ComboSC_Name.Items.Add(aField.Name)
+                                If String.Compare(aField.Name, defaultSettings.snowCourseName, True) = 0 Then
+                                    ComboSC_Name.SelectedItem = aField.Name
+                                    foundIt = True
+                                End If
+                            End If
+                        Next
+                        If foundIt = False Then
+                            warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.snowCourseName & " is not in Snow Course data")
+                        End If
+                    End If
+                End If
+
+                txtPRISM.Text = ""
+                If Not String.IsNullOrEmpty(defaultSettings.prism) Then
+                    Dim wType = BA_GetWorkspaceTypeFromPath(defaultSettings.prism)
+                    valid1 = BA_VerifyUrl(defaultSettings.prism, checkedUrls)
+                    Dim FileExists As Boolean = False
+                    If valid1 Then
+                        If wType = WorkspaceType.ImageServer Then
+                            Dim TempPathName As String = defaultSettings.prism & "/" & PrismServiceNames.Prism_Precipitation_q4.ToString & _
+                             "/" & BA_Url_ImageServer
+                            FileExists = BA_File_ExistsImageServer(TempPathName)
+                        Else
+                            Dim TempPathName As String = defaultSettings.prism & "\Q4\grid"
+                            FileExists = BA_Workspace_Exists(TempPathName)
+                        End If
+                    Else
+                        FileExists = False
+                    End If
+                    If FileExists Then txtPRISM.Text = defaultSettings.prism
+                End If
+
+                'Remove all items from participating layers as there are none in the default settings
+                lstLayers.Items.Clear()
+
+                'Append any server connection errors to the warningsb
+                For Each key As String In checkedUrls.Keys
+                    If checkedUrls(key) = False Then
+                        warningSb.Append(vbCrLf & "BAGIS was unable to connect to " & key & ". Data cannot currently be used from this server")
+                    End If
+                Next
+
+                If Not String.Compare(warningSb.ToString, "WARNING!", False) = 0 Then
+                    MessageBox.Show(warningSb.ToString, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                End If
+            Else
+                MessageBox.Show("The default settings could not be loaded", "Default Settings", MessageBoxButtons.OK)
             End If
-        Else
-            MessageBox.Show("The default settings could not be loaded", "Default Settings", MessageBoxButtons.OK)
-        End If
+        Catch ex As Exception
+            Debug.Print("BtnDefault_Click: " & ex.Message)
+        Finally
+            pStepProg = Nothing
+            progressDialog2.HideDialog()
+            progressDialog2 = Nothing
+        End Try
     End Sub
 
     Private Function DownloadLyrFile(ByVal webserviceUrl As String, ByVal outputFilePath As String) As BA_ReturnCode
