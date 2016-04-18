@@ -311,7 +311,7 @@ Public Class frmAOIInfo
         LoadLstLayers()
     End Sub
 
-    Private Sub CmdReClip_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdReClip.Click
+    Private Sub CmdReClip_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
         Me.Hide()
 
         'read the basinanalyst.def file to get the path/name of the required input layers
@@ -392,7 +392,7 @@ Public Class frmAOIInfo
                 Dim prismServices As System.Array = Nothing
                 Dim prismExists As Boolean = False
                 If wType = WorkspaceType.ImageServer Then
-                    Dim tempPathName As String = InPRISMPath & "/" & PrismServiceNames.PRISM_Precipitation_Q4.ToString & _
+                    Dim tempPathName As String = InPRISMPath & "/" & PrismServiceNames.Prism_Precipitation_q4.ToString & _
                         "/" & BA_Url_ImageServer
                     prismExists = BA_File_ExistsImageServer(tempPathName)
                     prismServices = System.Enum.GetValues(GetType(PrismServiceNames))

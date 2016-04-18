@@ -738,6 +738,7 @@ Module BAGIS_SettingsModule
     End Sub
 
     'read the basinanalysis.def file into the BA_SystemSettings variable
+    'This version reads but does not validate the data sources
     Public Function BA_ReadBAGISSettings(ByVal AOI_Folderpath As String) As Integer
         Dim fileno As Integer = 0
         Dim return_value As Integer = -1

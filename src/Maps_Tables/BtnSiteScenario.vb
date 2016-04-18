@@ -34,8 +34,8 @@ Public Class BtnSiteScenario
         dockWindow.Show((Not dockWindow.IsVisible()))
         ' Set dimensions of dockable window
         Dim windowPos As ESRI.ArcGIS.Framework.IWindowPosition = CType(dockWindow, ESRI.ArcGIS.Framework.IWindowPosition)
-        windowPos.Height = 762
-        windowPos.Width = 635
+        windowPos.Height = 790
+        windowPos.Width = 710
 
         Dim comboBox = AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
         Dim aoiName As String = comboBox.getValue()
