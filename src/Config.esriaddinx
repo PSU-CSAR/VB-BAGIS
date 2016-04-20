@@ -2,11 +2,12 @@
   <Name>BAGIS</Name>
   <AddInID>{6efa6a44-8e41-41ea-b59f-6dee2a5453ba}</AddInID>
   <Description>Basin Analysis GIS</Description>
-  <Version>3.0 A</Version>
+  <!-- Don't forget to update BA_VersionText, BA_CompatibleVersion1Text, BA_SubVersionText-->
+  <Version>3.0-b1</Version>
   <Image>Images\BAGIS.png</Image>
   <Author>Lesley Bross, Masoud Momeni, and Geoffrey Duh</Author>
   <Company>Portland State University</Company>
-  <Date>3/15/2016</Date>
+  <Date>4/20/2016</Date>
   <Targets>
     <Target name="Desktop" version="10.2" />
   </Targets>
