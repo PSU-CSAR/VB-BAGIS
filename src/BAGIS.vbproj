@@ -419,6 +419,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Maps_Tables\frmSiteScenario.resx">
       <DependentUpon>frmSiteScenario.vb</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
