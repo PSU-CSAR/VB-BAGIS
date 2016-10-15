@@ -28,9 +28,10 @@ Public Class BtnAddRefLayers
         Dim DrainageRef As String = BA_SystemSettings.Ref_Drainage
         Dim watershedRef As String = BA_SystemSettings.Ref_Watershed
         Dim pourpointRef As String = BA_SystemSettings.PourPointLayer
-        'check if pourpoint file exists
         Dim ppointpath As String = "Please Return"
         Dim layertype As String = ""
+        Dim pplayername As String = BA_GetBareNameAndExtension(pourpointRef, ppointpath, layertype)
+        pourpointRef = ppointpath & pplayername
 
         Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(pourpointRef)
         Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)

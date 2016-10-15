@@ -595,9 +595,9 @@ Module BAGIS_SettingsModule
                     End If
 
                     If UCase(Trim(linestring2)) = "TRUE" Then 'meter is the Z unit
-                        SettingsForm.OptSTMeter.Checked = "True"
+                        SettingsForm.OptSCMeter.Checked = "True"
                     Else
-                        SettingsForm.OptSTFoot.Checked = "True"
+                        SettingsForm.OptSCFoot.Checked = "True"
                     End If
 
                     SnowCourseDataExist = True
