@@ -127,15 +127,23 @@ Public Class frmPourPoint
             If UCase(BA_SystemSettings.PourAreaField) = "NO DATA" Then
                 AOI_ReferenceArea = 0
             Else
+                Dim pourpointRef As String = BA_SystemSettings.PourPointLayer
+                If Not BA_GetWorkspaceTypeFromPath(BA_SystemSettings.PourPointLayer) = WorkspaceType.FeatureServer Then
+                    ' We need to manipulate the file path so we can access the file
+                    Dim ppointpath As String = "Please Return"
+                    Dim layertype As String = ""
+                    Dim pplayername As String = BA_GetBareNameAndExtension(pourpointRef, ppointpath, layertype)
+                    pourpointRef = ppointpath & pplayername
+                End If
                 'get the reference area from the attribute table
-                AOI_ReferenceArea = CDbl(BA_QueryAttributeTable(BA_SystemSettings.PourPointLayer, _
+                AOI_ReferenceArea = CDbl(BA_QueryAttributeTable(pourpointRef, _
                                                                 BA_SystemSettings.PourPointField, _
                                                                 AOIName, BA_STRING_ATTRIBUTE, BA_SystemSettings.PourAreaField))
                 Dim aoiIdField As String = BA_AOI_IDField
                 If BA_GetWorkspaceTypeFromPath(BA_SystemSettings.PourPointLayer) = WorkspaceType.FeatureServer Then
                     aoiIdField = BA_AOI_IDFieldFeatService
                 End If
-                BA_AOI_Forecast_ID = CStr(BA_QueryAttributeTable(BA_SystemSettings.PourPointLayer, _
+                BA_AOI_Forecast_ID = CStr(BA_QueryAttributeTable(pourpointRef, _
                                                                  BA_SystemSettings.PourPointField, _
                                                                  AOIName, BA_STRING_ATTRIBUTE, aoiIdField))
                 If BA_AOI_Forecast_ID = "0" Or BA_AOI_Forecast_ID = "" Then 'invalid id

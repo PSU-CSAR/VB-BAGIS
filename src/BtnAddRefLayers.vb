@@ -28,22 +28,24 @@ Public Class BtnAddRefLayers
         Dim DrainageRef As String = BA_SystemSettings.Ref_Drainage
         Dim watershedRef As String = BA_SystemSettings.Ref_Watershed
         Dim pourpointRef As String = BA_SystemSettings.PourPointLayer
-        Dim ppointpath As String = "Please Return"
-        Dim layertype As String = ""
-        Dim pplayername As String = BA_GetBareNameAndExtension(pourpointRef, ppointpath, layertype)
-        pourpointRef = ppointpath & pplayername
 
         Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(pourpointRef)
-        Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)
-        Dim valid1 As Boolean = BA_VerifyUrl(settingsform.txtGaugeStation.Text, checkedUrls)
+        Dim layertype As String = ""
+        Dim valid1 As Boolean = True
+        If Not BA_GetWorkspaceTypeFromPath(BA_SystemSettings.PourPointLayer) = WorkspaceType.FeatureServer Then
+            Dim ppointpath As String = "Please Return"
+            Dim pplayername As String = BA_GetBareNameAndExtension(pourpointRef, ppointpath, layertype)
+            pourpointRef = ppointpath & pplayername
+        Else
+            Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)
+            valid1 = BA_VerifyUrl(settingsform.txtGaugeStation.Text, checkedUrls)
+        End If
+
         Dim FileExists As Boolean = False
         If valid1 Then
             If Not String.IsNullOrEmpty(settingsform.txtGaugeStation.Text) Then 'it's OK to not have a specified reference layer
                 If wType = WorkspaceType.Raster Then
-                    Dim File_Path As String = "PleaseReturn"
-                    Dim File_Name As String = BA_GetBareNameAndExtension(settingsform.txtGaugeStation.Text, File_Path, layertype)
-                    Dim TempPathName As String = File_Path & File_Name
-                    FileExists = BA_Shapefile_Exists(TempPathName)
+                    FileExists = BA_Shapefile_Exists(pourpointRef)
                 ElseIf wType = WorkspaceType.FeatureServer Then
                     FileExists = BA_File_Exists(settingsform.txtGaugeStation.Text, wType, esriDatasetType.esriDTFeatureClass)
                 End If

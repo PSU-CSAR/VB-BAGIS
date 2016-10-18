@@ -665,15 +665,17 @@ Public Class frmSettings
 
     Private Sub CmdDisplayReferenceLayers_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdDisplayReferenceLayers.Click
         'check if pourpoint file exists
-        Dim ppointpath As String = "Please Return"
-        Dim layertype As String = ""
         Dim pourpointRef As String = BA_SystemSettings.PourPointLayer
-        Dim pplayername As String = BA_GetBareNameAndExtension(pourpointRef, ppointpath, layertype)
-        pourpointRef = ppointpath & pplayername
-        If Len(pourpointRef) > 0 Then 'it's OK to not have a specified reference layer
-            If Not BA_Shapefile_Exists(pourpointRef) Then
-                MsgBox("Pourpoint layer does not exist: " & pourpointRef)
-                pourpointRef = ""
+        If Not BA_GetWorkspaceTypeFromPath(BA_SystemSettings.PourPointLayer) = WorkspaceType.FeatureServer Then
+            Dim ppointpath As String = "Please Return"
+            Dim layertype As String = ""
+            Dim pplayername As String = BA_GetBareNameAndExtension(pourpointRef, ppointpath, layertype)
+            pourpointRef = ppointpath & pplayername
+            If Len(pourpointRef) > 0 Then 'it's OK to not have a specified reference layer
+                If Not BA_Shapefile_Exists(pourpointRef) Then
+                    MsgBox("Pourpoint layer does not exist: " & pourpointRef)
+                    pourpointRef = ""
+                End If
             End If
         End If
 
