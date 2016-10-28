@@ -483,8 +483,6 @@ Module BAGIS_SettingsModule
                     pFeatClass = Nothing
                     pFeatWorkspace = Nothing
                     pWksFactory = Nothing
-                Else
-                    return_message = return_message & vbCrLf & "SNOTEL data Missing: " & TempPathName
                 End If
 
                 'read snow course
@@ -607,8 +605,6 @@ Module BAGIS_SettingsModule
                     pFeatClass = Nothing
                     pFeatWorkspace = Nothing
                     pWksFactory = Nothing
-                Else
-                    return_message = return_message & vbCrLf & "Snow course data Missing: " & TempPathName
                 End If
 
 
@@ -636,9 +632,7 @@ Module BAGIS_SettingsModule
                 End If
 
                 'check if file exists
-                If Not FileExists Then
-                    return_message = return_message & vbCrLf & "PRISM Data Missing: " & TempPathName
-                Else
+                If FileExists Then
                     PRISMDataExist = True
                 End If
 

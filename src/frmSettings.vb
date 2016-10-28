@@ -855,20 +855,22 @@ Public Class frmSettings
         Dim mismatchList As New SortedList
         For Each key As String In projectionsToCheck.Keys
             Dim projPath As String = projectionsToCheck(key)
-            Dim layerType As WorkspaceType = BA_GetWorkspaceTypeFromPath(projPath)
-            If layerType <> WorkspaceType.FeatureServer Then
-                Dim parentPath As String = "Please Return"
-                'Although this is an optional argument, it's the only to strip the file type from the text field
-                Dim tempExt As String = "tempExt"
-                Dim fileName As String = BA_GetBareNameAndExtension(projPath, parentPath, tempExt)
-                If layerType = WorkspaceType.Raster And tempExt = "(Shapefile)" Then
-                    fileName = BA_StandardizeShapefileName(fileName, True)
+            If Not String.IsNullOrEmpty(projPath) Then
+                Dim layerType As WorkspaceType = BA_GetWorkspaceTypeFromPath(projPath)
+                If layerType <> WorkspaceType.FeatureServer Then
+                    Dim parentPath As String = "Please Return"
+                    'Although this is an optional argument, it's the only to strip the file type from the text field
+                    Dim tempExt As String = "tempExt"
+                    Dim fileName As String = BA_GetBareNameAndExtension(projPath, parentPath, tempExt)
+                    If layerType = WorkspaceType.Raster And tempExt = "(Shapefile)" Then
+                        fileName = BA_StandardizeShapefileName(fileName, True)
+                    End If
+                    projPath = parentPath & fileName
                 End If
-                projPath = parentPath & fileName
-            End If
-            Dim projString As String = BA_GetProjectionString(projPath)
-            If demProjText <> projString Then
-                mismatchList.Add(key, projString)
+                Dim projString As String = BA_GetProjectionString(projPath)
+                If demProjText <> projString Then
+                    mismatchList.Add(key, projString)
+                End If
             End If
         Next
         ' One or more of the projections didn't match
@@ -945,18 +947,18 @@ Public Class frmSettings
             .DEM_ZUnit_IsMeter = Me.OptMeter.Checked
 
             .PourPointLayer = Trim(Me.txtGaugeStation.Text)
-            .PourPointField = Me.CmboxStationAtt.SelectedItem.ToString
-            .PourAreaField = Me.ComboStationArea.SelectedItem.ToString
-            .PourAreaUnit = Me.ComboStation_Value.SelectedItem.ToString
+            .PourPointField = Convert.ToString(Me.CmboxStationAtt.SelectedItem)
+            .PourAreaField = Convert.ToString(Me.ComboStationArea.SelectedItem)
+            .PourAreaUnit = Convert.ToString(Me.ComboStation_Value.SelectedItem)
 
             .SNOTELLayer = Trim(Me.txtSNOTEL.Text)
-            .SNOTEL_ElevationField = Me.ComboSNOTEL_Elevation.SelectedItem.ToString
-            .SNOTEL_NameField = Me.ComboSNOTEL_Name.SelectedItem.ToString
+            .SNOTEL_ElevationField = Convert.ToString(Me.ComboSNOTEL_Elevation.SelectedItem)
+            .SNOTEL_NameField = Convert.ToString(Me.ComboSNOTEL_Name.SelectedItem)
             .SNOTEL_ZUnit_IsMeter = Me.OptSTMeter.Checked
 
             .SCourseLayer = Trim(Me.txtSnowCourse.Text)
-            .SCourse_ElevationField = Me.ComboSC_Elevation.SelectedItem.ToString
-            .SCourse_NameField = Me.ComboSC_Name.SelectedItem.ToString
+            .SCourse_ElevationField = Convert.ToString(Me.ComboSC_Elevation.SelectedItem)
+            .SCourse_NameField = Convert.ToString(Me.ComboSC_Name.SelectedItem)
             .SCourse_ZUnit_IsMeter = Me.OptSCMeter.Checked
 
             .PRISMFolder = Trim(Me.txtPRISM.Text)
