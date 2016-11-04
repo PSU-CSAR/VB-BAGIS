@@ -86,7 +86,6 @@ Public Class frmAOIInfo
 
         FrameBAGISLayers.Enabled = True
         CmdAddLayer.Enabled = True
-        CmdUpdateWeasel.Enabled = True
         FrameUserLayers.Enabled = True
 
         'check Snotel, snow course, and PRISM data and determine the value for BA_SystemSettings.GenerateAOIOnly value
@@ -205,7 +204,7 @@ Public Class frmAOIInfo
             'MsgBox "Please set an AOI first!"
             FrameBAGISLayers.Enabled = False
             CmdAddLayer.Enabled = False
-            CmdUpdateWeasel.Enabled = False
+            CmdReClip.Enabled = False
             FrameUserLayers.Enabled = False
             Exit Sub
         End If
@@ -221,7 +220,6 @@ Public Class frmAOIInfo
 
         FrameBAGISLayers.Enabled = True
         CmdAddLayer.Enabled = True
-        CmdUpdateWeasel.Enabled = True
         FrameUserLayers.Enabled = True
 
         'display folder paths
@@ -311,9 +309,7 @@ Public Class frmAOIInfo
         LoadLstLayers()
     End Sub
 
-    Private Sub CmdReClip_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
-        Me.Hide()
-
+    Private Sub CmdReClip_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdReClip.Click
         'read the basinanalyst.def file to get the path/name of the required input layers
         'the value should be available in BA_SystemSettings
 
@@ -325,7 +321,6 @@ Public Class frmAOIInfo
         BA_SetSettingPath()
         BA_ReadBAGISSettings(BA_Settings_Filepath)
         response = BA_RemoveLayersInFolder(My.ArcMap.Document, AOIFolderBase)
-        System.Windows.Forms.Application.DoEvents()
 
         Dim nstep As Integer = 0
         'delete the files/folders that need to be re-created
@@ -338,7 +333,7 @@ Public Class frmAOIInfo
                     MessageBox.Show("Unable to delete Geodatabase '" & prismgdbpath & "'. Please restart ArcMap and try again", "Unable to delete Geodatabase", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                     Exit Sub
                 End If
-                nstep = nstep + 17
+                nstep = nstep + 1
             End If
         End If
 
@@ -561,7 +556,6 @@ Public Class frmAOIInfo
         ChkSnowCourseSelected.Checked = False
         ChkSNOTELSelected.Checked = False
         ChkPRISMSelected.Checked = False
-        Me.Show()
     End Sub
 
     Private Sub LstRasters_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles LstRasters.SelectedIndexChanged
@@ -806,77 +800,6 @@ Public Class frmAOIInfo
     '        If BA_File_Exists(OutputName, workspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
     '            Return -2
     '        End If
-
-    Private Sub CmdUpdateWeasel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdUpdateWeasel.Click
-        If Len(AOIFolderBase) = 0 Then
-            MsgBox("Please set an AOI first!")
-            Exit Sub
-        End If
-        Dim sweaselfilepath As String = m_aoi.FilePath & "\" & BA_AOI_Type
-        Dim wweaselfilepath As String = m_aoi.FilePath & "\" & BA_AOIWindow_Type
-
-        'Check if both source weasel and window weasel files exit 
-        If Not File.Exists(sweaselfilepath) And Not File.Exists(wweaselfilepath) Then
-            MessageBox.Show("The AOI folder does not contain weasel files!", "Missing Data", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            Exit Sub
-        End If
-        'check the length of the flow_accumulation path. If the length exceeds 115 char,
-        'then Arcinfo (i.e., weasel) cannot use the folder as a workspace.
-        'flow_acc path = AOIFolderbase & "\output\surfaces\dem\filled\flow-direction\flow-accumulation"
-        'i.e., len(AOIFolderbase) + 60 <= 115 (len(AOIFolderbase) should be shorter than 55
-        If Len(m_aoi.FilePath) >= 55 Then 'the aoi folder base name is too long for ArcInfo
-            MsgBox("ERROR!" & vbCrLf & _
-            "The AOI path name is too long (" & Len(m_aoi.FilePath) - 54 & " character(s) more than the allowed length)!" & vbCrLf & _
-            "The AOI cannot be processed in Weasel GIS." & vbCrLf & _
-            "ArcInfo doesn't allow the path string to exceed 128 char and a workspace path to exceed 115 char.")
-            Exit Sub
-        End If
-
-        Dim response As Integer
-        Dim update_message As String
-        update_message = "Do you want to update the Weasel GIS files in the AOI?" & vbCrLf & "AOI Folder:" & vbCrLf & AOIFolderBase
-
-        response = MsgBox(update_message, vbYesNo, "Update Weasel Info in AOI")
-
-        If response = vbNo Then Exit Sub
-
-        Dim filepath As String
-
-        'save the dem definition file, dem extent file, and the dem info file
-        Dim aoiTypSuccess As BA_ReturnCode = BA_Create_FolderType_File(AOIFolderBase, BA_AOI_Type, BA_GetPath(AOIFolderBase, PublicPath.SourceDEM) & "/grid")
-        If aoiTypSuccess <> BA_ReturnCode.Success Then
-            ' response = BA_Create_FolderType_File(AOIFolderBase, BA_AOI_Type, BA_GetPath(AOIFolderBase, "SOURCEDEM") & "\grid")
-            'If response <> 1 Then
-            filepath = AOIFolderBase & "\" & BA_AOI_Type
-            MsgBox("Update failed!" & vbCrLf & "Cannot write to " & filepath & vbCrLf & "Please check if the path exists.")
-            Exit Sub
-        End If
-
-        Dim WTypeSuccess As BA_ReturnCode = BA_Create_FolderType_File(AOIFolderBase, BA_AOIWindow_Type, BA_GetPath(AOIFolderBase, PublicPath.SourceDEM) & "/grid")
-        If WTypeSuccess <> BA_ReturnCode.Success Then
-            filepath = AOIFolderBase & BA_AOIWindow_Type
-            MsgBox("Update failed!" & vbCrLf & "Cannot write to " & filepath & vbCrLf & "Please check if the path exists.")
-            Exit Sub
-        End If
-
-        'create source.weasel file for flow_direction
-        Dim FDirSuccess As BA_ReturnCode = BA_Create_SourceWeasel_File(AOIFolderBase & BA_EnumDescription(PublicPath.FlowDirection), "source.weasel", AOIFolderBase & BA_EnumDescription(PublicPath.FlowDirection) & "\grid")
-        If FDirSuccess <> BA_ReturnCode.Success Then
-            filepath = AOIFolderBase & PublicPath.FlowDirection
-            MsgBox("Update failed!" & vbCrLf & "Cannot write to " & filepath & vbCrLf & "Please check if the path exists.")
-            Exit Sub
-        End If
-
-        'create source.weasel file for flow_accumulation
-        Dim FAccSucces As BA_ReturnCode = BA_Create_SourceWeasel_File(AOIFolderBase & BA_EnumDescription(PublicPath.FlowAccumulation), "source.weasel", AOIFolderBase & BA_EnumDescription(PublicPath.FlowAccumulation) & "\grid")
-        If FAccSucces <> BA_ReturnCode.Success Then
-            filepath = AOIFolderBase & PublicPath.FlowAccumulation
-            MsgBox("Update failed!" & vbCrLf & "Cannot write to " & filepath & vbCrLf & "Please check if the path exists.")
-            Exit Sub
-        End If
-
-        MsgBox("The Weasel GIS files in the AOI are updated for the current AOI workspace!")
-    End Sub
 
     Private Sub CmdAddLayer_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdAddLayer.Click
         'MsgBox("Test")
@@ -1193,4 +1116,5 @@ Public Class frmAOIInfo
         '        GC.Collect()
         '    End Try
     End Sub
+
 End Class

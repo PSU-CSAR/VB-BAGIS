@@ -68,7 +68,6 @@ Partial Class frmAOIInfo
         Me.ChkSNOTELExist = New System.Windows.Forms.CheckBox()
         Me.ChkPRISMExist = New System.Windows.Forms.CheckBox()
         Me.CmdAddLayer = New System.Windows.Forms.Button()
-        Me.CmdUpdateWeasel = New System.Windows.Forms.Button()
         Me.cmdOK = New System.Windows.Forms.Button()
         Me.CmdReClip = New System.Windows.Forms.Button()
         Me.FrameUserLayers.SuspendLayout()
@@ -83,7 +82,7 @@ Partial Class frmAOIInfo
         Me.Label17.Location = New System.Drawing.Point(37, 15)
         Me.Label17.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label17.Name = "Label17"
-        Me.Label17.Size = New System.Drawing.Size(107, 25)
+        Me.Label17.Size = New System.Drawing.Size(71, 16)
         Me.Label17.TabIndex = 0
         Me.Label17.Text = "DEM Path:"
         '
@@ -94,7 +93,7 @@ Partial Class frmAOIInfo
         Me.Label18.Location = New System.Drawing.Point(25, 51)
         Me.Label18.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label18.Name = "Label18"
-        Me.Label18.Size = New System.Drawing.Size(125, 25)
+        Me.Label18.Size = New System.Drawing.Size(83, 16)
         Me.Label18.TabIndex = 0
         Me.Label18.Text = "PRISM Path:"
         '
@@ -105,7 +104,7 @@ Partial Class frmAOIInfo
         Me.Label19.Location = New System.Drawing.Point(26, 90)
         Me.Label19.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label19.Name = "Label19"
-        Me.Label19.Size = New System.Drawing.Size(122, 25)
+        Me.Label19.Size = New System.Drawing.Size(82, 16)
         Me.Label19.TabIndex = 0
         Me.Label19.Text = "Layers Path:"
         '
@@ -114,7 +113,7 @@ Partial Class frmAOIInfo
         Me.txtDEMFolder.Location = New System.Drawing.Point(148, 12)
         Me.txtDEMFolder.Name = "txtDEMFolder"
         Me.txtDEMFolder.ReadOnly = True
-        Me.txtDEMFolder.Size = New System.Drawing.Size(589, 30)
+        Me.txtDEMFolder.Size = New System.Drawing.Size(589, 22)
         Me.txtDEMFolder.TabIndex = 1
         '
         'txtPRISMFolder
@@ -122,7 +121,7 @@ Partial Class frmAOIInfo
         Me.txtPRISMFolder.Location = New System.Drawing.Point(148, 49)
         Me.txtPRISMFolder.Name = "txtPRISMFolder"
         Me.txtPRISMFolder.ReadOnly = True
-        Me.txtPRISMFolder.Size = New System.Drawing.Size(589, 30)
+        Me.txtPRISMFolder.Size = New System.Drawing.Size(589, 22)
         Me.txtPRISMFolder.TabIndex = 1
         '
         'txtLayersFolder
@@ -130,7 +129,7 @@ Partial Class frmAOIInfo
         Me.txtLayersFolder.Location = New System.Drawing.Point(148, 87)
         Me.txtLayersFolder.Name = "txtLayersFolder"
         Me.txtLayersFolder.ReadOnly = True
-        Me.txtLayersFolder.Size = New System.Drawing.Size(589, 30)
+        Me.txtLayersFolder.Size = New System.Drawing.Size(589, 22)
         Me.txtLayersFolder.TabIndex = 1
         '
         'txtMinElev
@@ -140,7 +139,7 @@ Partial Class frmAOIInfo
         Me.txtMinElev.Location = New System.Drawing.Point(75, 163)
         Me.txtMinElev.Name = "txtMinElev"
         Me.txtMinElev.ReadOnly = True
-        Me.txtMinElev.Size = New System.Drawing.Size(149, 30)
+        Me.txtMinElev.Size = New System.Drawing.Size(149, 22)
         Me.txtMinElev.TabIndex = 2
         Me.txtMinElev.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -151,7 +150,7 @@ Partial Class frmAOIInfo
         Me.Label1.Location = New System.Drawing.Point(26, 167)
         Me.Label1.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(50, 25)
+        Me.Label1.Size = New System.Drawing.Size(32, 16)
         Me.Label1.TabIndex = 0
         Me.Label1.Text = "Min:"
         '
@@ -162,7 +161,7 @@ Partial Class frmAOIInfo
         Me.Label2.Location = New System.Drawing.Point(9, 230)
         Me.Label2.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(75, 25)
+        Me.Label2.Size = New System.Drawing.Size(52, 16)
         Me.Label2.TabIndex = 0
         Me.Label2.Text = "Range:"
         '
@@ -173,7 +172,7 @@ Partial Class frmAOIInfo
         Me.Label7.Location = New System.Drawing.Point(23, 202)
         Me.Label7.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label7.Name = "Label7"
-        Me.Label7.Size = New System.Drawing.Size(56, 25)
+        Me.Label7.Size = New System.Drawing.Size(36, 16)
         Me.Label7.TabIndex = 0
         Me.Label7.Text = "Max:"
         '
@@ -184,7 +183,7 @@ Partial Class frmAOIInfo
         Me.txtMaxElev.Location = New System.Drawing.Point(75, 199)
         Me.txtMaxElev.Name = "txtMaxElev"
         Me.txtMaxElev.ReadOnly = True
-        Me.txtMaxElev.Size = New System.Drawing.Size(149, 30)
+        Me.txtMaxElev.Size = New System.Drawing.Size(149, 22)
         Me.txtMaxElev.TabIndex = 2
         Me.txtMaxElev.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -195,7 +194,7 @@ Partial Class frmAOIInfo
         Me.txtRangeElev.Location = New System.Drawing.Point(75, 231)
         Me.txtRangeElev.Name = "txtRangeElev"
         Me.txtRangeElev.ReadOnly = True
-        Me.txtRangeElev.Size = New System.Drawing.Size(149, 30)
+        Me.txtRangeElev.Size = New System.Drawing.Size(149, 22)
         Me.txtRangeElev.TabIndex = 2
         Me.txtRangeElev.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -206,7 +205,7 @@ Partial Class frmAOIInfo
         Me.Label14.Location = New System.Drawing.Point(58, 138)
         Me.Label14.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label14.Name = "Label14"
-        Me.Label14.Size = New System.Drawing.Size(148, 25)
+        Me.Label14.Size = New System.Drawing.Size(100, 16)
         Me.Label14.TabIndex = 0
         Me.Label14.Text = "Elevation Stats:"
         '
@@ -217,7 +216,7 @@ Partial Class frmAOIInfo
         Me.Label9.Location = New System.Drawing.Point(234, 170)
         Me.Label9.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label9.Name = "Label9"
-        Me.Label9.Size = New System.Drawing.Size(72, 25)
+        Me.Label9.Size = New System.Drawing.Size(49, 16)
         Me.Label9.TabIndex = 0
         Me.Label9.Text = "Meters"
         '
@@ -228,7 +227,7 @@ Partial Class frmAOIInfo
         Me.Label10.Location = New System.Drawing.Point(234, 200)
         Me.Label10.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label10.Name = "Label10"
-        Me.Label10.Size = New System.Drawing.Size(72, 25)
+        Me.Label10.Size = New System.Drawing.Size(49, 16)
         Me.Label10.TabIndex = 0
         Me.Label10.Text = "Meters"
         '
@@ -239,7 +238,7 @@ Partial Class frmAOIInfo
         Me.Label11.Location = New System.Drawing.Point(234, 229)
         Me.Label11.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label11.Name = "Label11"
-        Me.Label11.Size = New System.Drawing.Size(72, 25)
+        Me.Label11.Size = New System.Drawing.Size(49, 16)
         Me.Label11.TabIndex = 0
         Me.Label11.Text = "Meters"
         '
@@ -250,7 +249,7 @@ Partial Class frmAOIInfo
         Me.Label6.Location = New System.Drawing.Point(313, 138)
         Me.Label6.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label6.Name = "Label6"
-        Me.Label6.Size = New System.Drawing.Size(123, 25)
+        Me.Label6.Size = New System.Drawing.Size(83, 16)
         Me.Label6.TabIndex = 0
         Me.Label6.Text = "Shape Area:"
         '
@@ -261,7 +260,7 @@ Partial Class frmAOIInfo
         Me.Label4.Location = New System.Drawing.Point(472, 168)
         Me.Label4.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label4.Name = "Label4"
-        Me.Label4.Size = New System.Drawing.Size(111, 25)
+        Me.Label4.Size = New System.Drawing.Size(74, 16)
         Me.Label4.TabIndex = 0
         Me.Label4.Text = "Square Km"
         '
@@ -272,7 +271,7 @@ Partial Class frmAOIInfo
         Me.Label5.Location = New System.Drawing.Point(472, 196)
         Me.Label5.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label5.Name = "Label5"
-        Me.Label5.Size = New System.Drawing.Size(53, 25)
+        Me.Label5.Size = New System.Drawing.Size(36, 16)
         Me.Label5.TabIndex = 0
         Me.Label5.Text = "Acre"
         '
@@ -283,7 +282,7 @@ Partial Class frmAOIInfo
         Me.Label8.Location = New System.Drawing.Point(472, 223)
         Me.Label8.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label8.Name = "Label8"
-        Me.Label8.Size = New System.Drawing.Size(117, 25)
+        Me.Label8.Size = New System.Drawing.Size(80, 16)
         Me.Label8.TabIndex = 0
         Me.Label8.Text = "Square Mile"
         '
@@ -294,7 +293,7 @@ Partial Class frmAOIInfo
         Me.txtArea.Location = New System.Drawing.Point(316, 168)
         Me.txtArea.Name = "txtArea"
         Me.txtArea.ReadOnly = True
-        Me.txtArea.Size = New System.Drawing.Size(149, 30)
+        Me.txtArea.Size = New System.Drawing.Size(149, 22)
         Me.txtArea.TabIndex = 2
         Me.txtArea.Tag = ""
         Me.txtArea.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
@@ -306,7 +305,7 @@ Partial Class frmAOIInfo
         Me.txtAreaAcre.Location = New System.Drawing.Point(316, 196)
         Me.txtAreaAcre.Name = "txtAreaAcre"
         Me.txtAreaAcre.ReadOnly = True
-        Me.txtAreaAcre.Size = New System.Drawing.Size(149, 30)
+        Me.txtAreaAcre.Size = New System.Drawing.Size(149, 22)
         Me.txtAreaAcre.TabIndex = 2
         Me.txtAreaAcre.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -317,7 +316,7 @@ Partial Class frmAOIInfo
         Me.txtAreaSQMile.Location = New System.Drawing.Point(316, 226)
         Me.txtAreaSQMile.Name = "txtAreaSQMile"
         Me.txtAreaSQMile.ReadOnly = True
-        Me.txtAreaSQMile.Size = New System.Drawing.Size(149, 30)
+        Me.txtAreaSQMile.Size = New System.Drawing.Size(149, 22)
         Me.txtAreaSQMile.TabIndex = 2
         Me.txtAreaSQMile.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -328,7 +327,7 @@ Partial Class frmAOIInfo
         Me.Label12.Location = New System.Drawing.Point(574, 138)
         Me.Label12.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.Label12.Name = "Label12"
-        Me.Label12.Size = New System.Drawing.Size(154, 25)
+        Me.Label12.Size = New System.Drawing.Size(106, 16)
         Me.Label12.TabIndex = 0
         Me.Label12.Text = "Reference Area:"
         '
@@ -339,7 +338,7 @@ Partial Class frmAOIInfo
         Me.lblRefUnit.Location = New System.Drawing.Point(738, 166)
         Me.lblRefUnit.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.lblRefUnit.Name = "lblRefUnit"
-        Me.lblRefUnit.Size = New System.Drawing.Size(19, 25)
+        Me.lblRefUnit.Size = New System.Drawing.Size(12, 16)
         Me.lblRefUnit.TabIndex = 0
         Me.lblRefUnit.Text = "-"
         '
@@ -350,7 +349,7 @@ Partial Class frmAOIInfo
         Me.txtRefArea.Location = New System.Drawing.Point(579, 166)
         Me.txtRefArea.Name = "txtRefArea"
         Me.txtRefArea.ReadOnly = True
-        Me.txtRefArea.Size = New System.Drawing.Size(134, 30)
+        Me.txtRefArea.Size = New System.Drawing.Size(134, 22)
         Me.txtRefArea.TabIndex = 2
         Me.txtRefArea.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -383,7 +382,7 @@ Partial Class frmAOIInfo
         Me.Label16.AutoSize = True
         Me.Label16.Location = New System.Drawing.Point(222, 97)
         Me.Label16.Name = "Label16"
-        Me.Label16.Size = New System.Drawing.Size(133, 25)
+        Me.Label16.Size = New System.Drawing.Size(91, 16)
         Me.Label16.TabIndex = 2
         Me.Label16.Text = "Vector Layers"
         '
@@ -392,28 +391,28 @@ Partial Class frmAOIInfo
         Me.Label15.AutoSize = True
         Me.Label15.Location = New System.Drawing.Point(11, 97)
         Me.Label15.Name = "Label15"
-        Me.Label15.Size = New System.Drawing.Size(132, 25)
+        Me.Label15.Size = New System.Drawing.Size(92, 16)
         Me.Label15.TabIndex = 2
         Me.Label15.Text = "Raster Layers"
         '
         'LstVectors
         '
         Me.LstVectors.FormattingEnabled = True
-        Me.LstVectors.ItemHeight = 25
+        Me.LstVectors.ItemHeight = 16
         Me.LstVectors.Location = New System.Drawing.Point(225, 128)
         Me.LstVectors.Name = "LstVectors"
         Me.LstVectors.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended
-        Me.LstVectors.Size = New System.Drawing.Size(197, 154)
+        Me.LstVectors.Size = New System.Drawing.Size(197, 148)
         Me.LstVectors.TabIndex = 1
         '
         'LstRasters
         '
         Me.LstRasters.FormattingEnabled = True
-        Me.LstRasters.ItemHeight = 25
+        Me.LstRasters.ItemHeight = 16
         Me.LstRasters.Location = New System.Drawing.Point(14, 128)
         Me.LstRasters.Name = "LstRasters"
         Me.LstRasters.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended
-        Me.LstRasters.Size = New System.Drawing.Size(197, 154)
+        Me.LstRasters.Size = New System.Drawing.Size(197, 148)
         Me.LstRasters.TabIndex = 1
         '
         'CmbAddSelectionsToMap
@@ -473,7 +472,7 @@ Partial Class frmAOIInfo
         Me.rbtnDepthInch.ForeColor = System.Drawing.Color.Blue
         Me.rbtnDepthInch.Location = New System.Drawing.Point(9, 28)
         Me.rbtnDepthInch.Name = "rbtnDepthInch"
-        Me.rbtnDepthInch.Size = New System.Drawing.Size(95, 29)
+        Me.rbtnDepthInch.Size = New System.Drawing.Size(65, 20)
         Me.rbtnDepthInch.TabIndex = 1
         Me.rbtnDepthInch.Text = "Inches"
         Me.rbtnDepthInch.UseVisualStyleBackColor = True
@@ -485,7 +484,7 @@ Partial Class frmAOIInfo
         Me.rbtnDepthMM.ForeColor = System.Drawing.Color.Blue
         Me.rbtnDepthMM.Location = New System.Drawing.Point(110, 28)
         Me.rbtnDepthMM.Name = "rbtnDepthMM"
-        Me.rbtnDepthMM.Size = New System.Drawing.Size(129, 29)
+        Me.rbtnDepthMM.Size = New System.Drawing.Size(90, 20)
         Me.rbtnDepthMM.TabIndex = 0
         Me.rbtnDepthMM.Text = "Millimeters"
         Me.rbtnDepthMM.UseVisualStyleBackColor = True
@@ -495,7 +494,7 @@ Partial Class frmAOIInfo
         Me.Label3.AutoSize = True
         Me.Label3.Location = New System.Drawing.Point(164, 29)
         Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(89, 25)
+        Me.Label3.Size = New System.Drawing.Size(62, 16)
         Me.Label3.TabIndex = 2
         Me.Label3.Text = "Selected"
         '
@@ -514,7 +513,7 @@ Partial Class frmAOIInfo
         Me.ChkSnowCourseSelected.AutoSize = True
         Me.ChkSnowCourseSelected.Location = New System.Drawing.Point(204, 192)
         Me.ChkSnowCourseSelected.Name = "ChkSnowCourseSelected"
-        Me.ChkSnowCourseSelected.Size = New System.Drawing.Size(22, 21)
+        Me.ChkSnowCourseSelected.Size = New System.Drawing.Size(15, 14)
         Me.ChkSnowCourseSelected.TabIndex = 0
         Me.ChkSnowCourseSelected.UseVisualStyleBackColor = True
         '
@@ -523,7 +522,7 @@ Partial Class frmAOIInfo
         Me.ChkSNOTELSelected.AutoSize = True
         Me.ChkSNOTELSelected.Location = New System.Drawing.Point(204, 159)
         Me.ChkSNOTELSelected.Name = "ChkSNOTELSelected"
-        Me.ChkSNOTELSelected.Size = New System.Drawing.Size(22, 21)
+        Me.ChkSNOTELSelected.Size = New System.Drawing.Size(15, 14)
         Me.ChkSNOTELSelected.TabIndex = 0
         Me.ChkSNOTELSelected.UseVisualStyleBackColor = True
         '
@@ -532,7 +531,7 @@ Partial Class frmAOIInfo
         Me.ChkPRISMSelected.AutoSize = True
         Me.ChkPRISMSelected.Location = New System.Drawing.Point(202, 62)
         Me.ChkPRISMSelected.Name = "ChkPRISMSelected"
-        Me.ChkPRISMSelected.Size = New System.Drawing.Size(22, 21)
+        Me.ChkPRISMSelected.Size = New System.Drawing.Size(15, 14)
         Me.ChkPRISMSelected.TabIndex = 0
         Me.ChkPRISMSelected.UseVisualStyleBackColor = True
         '
@@ -566,18 +565,9 @@ Partial Class frmAOIInfo
         Me.CmdAddLayer.Text = "Add A New Layer"
         Me.CmdAddLayer.UseVisualStyleBackColor = True
         '
-        'CmdUpdateWeasel
-        '
-        Me.CmdUpdateWeasel.Location = New System.Drawing.Point(519, 572)
-        Me.CmdUpdateWeasel.Name = "CmdUpdateWeasel"
-        Me.CmdUpdateWeasel.Size = New System.Drawing.Size(233, 33)
-        Me.CmdUpdateWeasel.TabIndex = 3
-        Me.CmdUpdateWeasel.Text = "Update Weasel Info"
-        Me.CmdUpdateWeasel.UseVisualStyleBackColor = True
-        '
         'cmdOK
         '
-        Me.cmdOK.Location = New System.Drawing.Point(547, 613)
+        Me.cmdOK.Location = New System.Drawing.Point(553, 572)
         Me.cmdOK.Name = "cmdOK"
         Me.cmdOK.Size = New System.Drawing.Size(160, 33)
         Me.cmdOK.TabIndex = 3
@@ -596,12 +586,11 @@ Partial Class frmAOIInfo
         '
         'frmAOIInfo
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(12.0!, 25.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(834, 652)
+        Me.ClientSize = New System.Drawing.Size(834, 616)
         Me.Controls.Add(Me.CmdReClip)
         Me.Controls.Add(Me.cmdOK)
-        Me.Controls.Add(Me.CmdUpdateWeasel)
         Me.Controls.Add(Me.CmdAddLayer)
         Me.Controls.Add(Me.FrameBAGISLayers)
         Me.Controls.Add(Me.FrameUserLayers)
@@ -690,7 +679,6 @@ Partial Class frmAOIInfo
     Friend WithEvents ChkSNOTELSelected As System.Windows.Forms.CheckBox
     Friend WithEvents ChkPRISMSelected As System.Windows.Forms.CheckBox
     Friend WithEvents CmdAddLayer As System.Windows.Forms.Button
-    Friend WithEvents CmdUpdateWeasel As System.Windows.Forms.Button
     Friend WithEvents cmdOK As System.Windows.Forms.Button
     Friend WithEvents grpboxPRISMUnit As System.Windows.Forms.GroupBox
     Friend WithEvents rbtnDepthInch As System.Windows.Forms.RadioButton
