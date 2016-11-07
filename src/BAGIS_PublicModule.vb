@@ -88,18 +88,13 @@ Module BAGIS_PublicModule
 
         'append pourpoint layer to the map
         If Not String.IsNullOrEmpty(pourpointString) And pourpointLayerNotExist Then  'load drainage reference layer
-            'Dim pMarkercolor As IRgbColor = New RgbColor
-            'pMarkercolor.RGB = RGB(255, 0, 0) 'red
             Dim success As BA_ReturnCode = AddPourpointLayer(pourpointString, PourPointLayerName)
-
-            'Dim success As BA_ReturnCode = BA_MapDisplayPointMarkers(My.ArcMap.Application, pourpointString, MapsLayerName.Pourpoint, pMarkercolor, MapsMarkerType.Pourpoint)
             If success <> BA_ReturnCode.Success Then MsgBox("Cannot load the pourpoint layer! Please check settings.")
         End If
 
         'refresh the active view
-        pMxDoc.UpdateContents()
-        pMxDoc.ActiveView.PartialRefresh(2, Nothing, Nothing) 'esriViewGeography
-        Exit Sub
+        'pMxDoc.UpdateContents()
+        'pMxDoc.ActiveView.PartialRefresh(2, Nothing, Nothing) 'esriViewGeography
     End Sub
 
     Private Function AddPourpointLayer(ByVal pourpointpath As String, ByVal displayname As String) As BA_ReturnCode
@@ -158,10 +153,10 @@ Module BAGIS_PublicModule
             pGFLayer.Renderer = pRenderer
 
             'Add the Layer to the focus map
-            'refresh the active view
             pMxDoc.AddLayer(pFLayer)
-            pMxDoc.UpdateContents()
-            pMxDoc.ActivatedView.Refresh()
+            'Don't refresh the active view; We do it later in the calling function
+            'pMxDoc.UpdateContents()
+            'pMxDoc.ActivatedView.Refresh()
             Return BA_ReturnCode.Success
 
         Catch ex As Exception
