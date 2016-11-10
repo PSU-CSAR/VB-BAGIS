@@ -760,7 +760,6 @@ Function_Exit:
         Dim nSubFolder As Long
         Dim subfoldername As String
         Dim FolderPath As String = Nothing
-        Dim return_string As String
         HasAOIinFolder = False 'reset the value
 
         If String.IsNullOrEmpty(target_folder) Then
@@ -822,22 +821,6 @@ Function_Exit:
                     End If
                 End If
 
-                'check weasel dem status
-                return_string = BA_Check_Folder_Type(FolderPath, BA_Basin_Type)
-                If Not String.IsNullOrEmpty(return_string) Then 'the folder has DEM
-                    return_list(nSubFolder).weaseldem = return_string
-                Else
-                    return_list(nSubFolder).weaseldem = "No"
-                End If
-
-                'check weasel AOI status
-                return_string = BA_Check_Folder_Type(FolderPath, BA_AOI_Type)
-                If Not String.IsNullOrEmpty(return_string) Then 'the folder is an AOI
-                    return_list(nSubFolder).weaselAOI = True
-                    HasAOIinFolder = True
-                Else
-                    return_list(nSubFolder).weaselAOI = False
-                End If
                 nSubFolder = nSubFolder + 1
 
             End If

@@ -227,8 +227,6 @@ Module BAGIS_PublicVariablesModule
         Public Name As String 'name of the folder
         Public gdbdem As String 'the folder is a BASIN
         Public gdbAOI As Boolean 'the folder is an AOI
-        Public weaseldem As String 'the folder is a weasel BASIN
-        Public weaselAOI As Boolean 'the folder is a weasel AOI
         Public hasAOI As Boolean 'the folder has at least one AOI (either FGDB or weasel)
     End Structure
 

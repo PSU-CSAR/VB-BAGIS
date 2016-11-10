@@ -17,8 +17,6 @@ Imports System.ComponentModel
 Public Class frmBasin_Tool
     Private ParentFolderFGDBBasinStatus As String = "-"
     Private ParentFolderFGDBAOIStatus As String = "-"
-    Private ParentFolderWeaselBasinStatus As String = "-"
-    Private ParentFolderWeaselAOIStatus As String = "-"
 
     Private Sub frmBasin_Tool_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         Dim response As Integer = 0
@@ -171,31 +169,6 @@ Public Class frmBasin_Tool
             CmdViewDEMExtent.Enabled = True
         End If
 
-        'check weasel dem status
-        Dim return_string As String
-        return_string = BA_Check_Folder_Type(folderPath, BA_Basin_Type)
-        If Not String.IsNullOrEmpty(return_string) Then 'the folder has DEM
-            lblWeaselDEMStatus.Text = "Yes"
-        Else
-            lblWeaselDEMStatus.Text = "No"
-        End If
-
-        'check weasel AOI status
-        return_string = BA_Check_Folder_Type(folderPath, BA_AOI_Type)
-        If Not String.IsNullOrEmpty(return_string) Then 'the folder is an AOI
-            lblWeaselAOIStatus.Text = "Yes"
-        Else
-            lblWeaselAOIStatus.Text = "No"
-        End If
-
-        ''set global variable
-        'With BASIN_Folder_Types
-        '    .Name = folderPath
-        '    .gdbAOI = lblAOIStatus.Text
-        '    .gdbdem = lblDEMStatus.Text
-        '    .weaselAOI = lblWeaselAOIStatus.Text
-        '    .weaseldem = lblWeaselDEMStatus.Text
-        'End With
     End Sub
 
     ''set the DEM and AOI status of the current folder listed in the textbox
@@ -305,24 +278,6 @@ Public Class frmBasin_Tool
                     End If
                     folderitem.SubItems.Add(gdbaoiString)
 
-                    'weasel DEM/AOI status
-                    'folderitem.SubItems.Add(sublist(i).weaseldem)
-                    Dim weaselDEMstring As String
-                    'intentionally not displaying the DEM resolution here
-                    If UCase(sublist(i).weaseldem) <> "NO" Then
-                        weaselDEMstring = "Yes"
-                    Else
-                        weaselDEMstring = "No"
-                    End If
-                    folderitem.SubItems.Add(weaselDEMstring)
-
-                    Dim weaselaoistring As String
-                    If sublist(i).weaselAOI Then
-                        weaselaoistring = "Yes"
-                    Else
-                        weaselaoistring = "No"
-                    End If
-                    folderitem.SubItems.Add(weaselaoistring)
                     lstvBasinDEM.Items.Add(folderitem)
                 Next
             End If
@@ -358,94 +313,10 @@ Public Class frmBasin_Tool
         Dim basinInfoButton = AddIn.FromID(Of BtnBasinInfo)(My.ThisAddIn.IDs.BtnBasinInfo)
         Me.Hide()
 
-        Dim weaselDemStatus As String = lblWeaselDEMStatus.Text
-        Dim weaselAOIStatus As String = lblWeaselAOIStatus.Text
-
         Dim result As DialogResult = Windows.Forms.DialogResult.No
         Dim sb As New StringBuilder()
 
-        If UCase(lblDEMStatus.Text) = "NO" Then 'FGDB doesn't exist
-            If Not UCase(weaselDemStatus) = "NO" Then 'weasel DEM exists in the folder
-                result = DialogResult.No
-                If UCase(weaselAOIStatus) = "YES" Then 'the folder is a weasel AOI, users can choose to convert it to gdb aoi, otherwise cannot change it
-                    sb.Remove(0, sb.Length) 'reset the stringbuilder
-                    sb.Append("The selected folder is an AOI. You cannot alter its DEM data." & vbCrLf)
-                    sb.Append("The DEM is in Weasel format. You must convert it to File GDB format first." & vbCrLf)
-                    sb.Append("Do you wish to convert the BASIN?" & vbCrLf)
-                    sb.Append("WARNING!!! The conversion may take several minutes.")
-                    result = MessageBox.Show(sb.ToString, "Basin Tool", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-
-                ElseIf hasAOIinFolder Then
-                    sb.Remove(0, sb.Length) 'reset the stringbuilder
-                    sb.Append("The selected folder contains AOIs. You cannot alter its DEM data." & vbCrLf)
-                    sb.Append("The DEM is in Weasel format. You must convert it to File GDB format first." & vbCrLf)
-                    sb.Append("Do you wish to convert the BASIN?" & vbCrLf)
-                    sb.Append("WARNING!!! The conversion may take several minutes.")
-                    result = MessageBox.Show(sb.ToString, "Basin Tool", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-
-                Else 'weasel DEM exists and can be used for further analysis
-                    'the folder is a weasel basin folder. User can select to convert it to a gdb basin folder and then continue the process
-                    sb.Remove(0, sb.Length) 'reset the stringbuilder
-                    sb.Append("The selected folder is a Weasel basin folder. Do you want to reuse its DEM data?" & vbCrLf)
-                    sb.Append("Select YES to convert the Weasel basin to a File GDB basin." & vbCrLf)
-                    sb.Append("Select NO to delete the existing DEM." & vbCrLf)
-                    sb.Append("Select CANCEL to abort the process." & vbCrLf)
-                    sb.Append("WARNING!!! If YES is selected, the conversion may take a few minutes. " & vbCrLf)
-
-                    result = MessageBox.Show(sb.ToString, "Weasel Basin", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question)
-
-                    If result = DialogResult.No Then
-                        'remove layers in the DEM folder from the active map
-                        response = BA_RemoveLayersInFolder(My.ArcMap.Document, txtBasinFolder.Text)
-                        'delete the output folder
-                        response = BA_Remove_Folder(txtBasinFolder.Text & "\output")
-                        'delete the "aoi_v" shapefile
-                        response = BA_Remove_Shapefile(txtBasinFolder.Text, BA_DEMExtentShapefile)
-                        NeedtoClipDEM = True
-                    ElseIf result = DialogResult.Cancel Then 'user selected cancel
-                        Exit Sub
-                    Else
-                        NeedtoClipDEM = False 'user selected to reuse the dem, a weseal to FGDB conversion is needed
-                    End If
-                End If
-
-                If result = DialogResult.Yes Then 'user choose to convert the weasel DEM to FGDB DEM
-                    Dim success As BA_ReturnCode = BA_ExportToFileGdb(My.ArcMap.Application.hWnd, txtBasinFolder.Text, My.ArcMap.Document)
-                    If success <> BA_ReturnCode.Success Then
-                        sb.Remove(0, sb.Length) 'reset the stringbuilder
-                        sb.Append("Unable to convert files to File Geodatabase format." & vbCrLf)
-                        sb.Append("Please select a different folder.")
-                        MessageBox.Show(sb.ToString, "Conversion error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                        Exit Sub
-                    End If
-                    MsgBox("The BASIN is converted to File Geodatabase format!")
-                    NeedtoClipDEM = False
-
-                ElseIf result = DialogResult.Cancel Then
-                    MessageBox.Show("Please select another valid BASIN folder.", "Weasel AOI", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                    Exit Sub
-
-                Else 'user select NO to abort the process
-                    If Not NeedtoClipDEM Then 'the NO was to abort the process
-                        MessageBox.Show("Please select another valid BASIN folder.", "Weasel AOI", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                        Exit Sub
-                    Else
-                        'do nothing, the NO was to not reuse the DEM
-                    End If
-                End If
-
-            ElseIf hasAOIinFolder Then 'dem doesn't exist but the folder contains AOIs
-                sb.Remove(0, sb.Length) 'reset the stringbuilder
-                sb.Append("The selected folder contains AOIs but doesn't have a valid DEM." & vbCrLf)
-                sb.Append("You cannot add new DEM to it. Please select a different folder.")
-                MessageBox.Show(sb.ToString, "Weasel AOI", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                Exit Sub
-
-            Else 'dem doesn't exist, a new DEM must be created
-                NeedtoClipDEM = True
-            End If
-
-        Else 'the basin already has a FGDB dem
+        If UCase(lblDEMStatus.Text) = "YES" Then 'FGDB exists
             If UCase(lblAOIStatus.Text) = "YES" Or hasAOIinFolder Then 'the folder is also an AOI or contains AOIs, users cannot change its DEM
                 NeedtoClipDEM = False
                 MsgBox("The selected folder is an AOI or contains AOIs. You cannot alter its DEM data.")
@@ -663,15 +534,11 @@ Public Class frmBasin_Tool
 
                 lblDEMStatus.Text = ParentFolderFGDBBasinStatus
                 lblAOIStatus.Text = ParentFolderFGDBAOIStatus
-                lblWeaselDEMStatus.Text = ParentFolderWeaselBasinStatus
-                lblWeaselAOIStatus.Text = ParentFolderWeaselAOIStatus
             Else
                 txtBasinFolder.Text = txtBasinFolder.Tag & "\" & tempname
                 CmdSelectBasin.Enabled = True
                 lblDEMStatus.Text = lVItem.SubItems(1).Text
                 lblAOIStatus.Text = lVItem.SubItems(2).Text
-                lblWeaselDEMStatus.Text = lVItem.SubItems(3).Text
-                lblWeaselAOIStatus.Text = lVItem.SubItems(4).Text
             End If
 
             If UCase(lblDEMStatus.Text) <> "NO" Then
@@ -714,8 +581,6 @@ Public Class frmBasin_Tool
                 'reset the parentfolder's status data when navigate upward
                 ParentFolderFGDBAOIStatus = "-"
                 ParentFolderFGDBBasinStatus = "-"
-                ParentFolderWeaselAOIStatus = "-"
-                ParentFolderWeaselBasinStatus = "-"
 
                 txtBasinFolder.Text = newpath
                 txtBasinFolder.Tag = txtBasinFolder.Text
@@ -726,8 +591,6 @@ Public Class frmBasin_Tool
                 'remember the parentfolder's status data when navigate downward
                 ParentFolderFGDBAOIStatus = lblAOIStatus.Text
                 ParentFolderFGDBBasinStatus = lblDEMStatus.Text
-                ParentFolderWeaselAOIStatus = lblWeaselAOIStatus.Text
-                ParentFolderWeaselBasinStatus = lblWeaselDEMStatus.Text
 
                 txtBasinFolder.Text = newpath
                 txtBasinFolder.Tag = txtBasinFolder.Text

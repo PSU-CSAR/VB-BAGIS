@@ -37,12 +37,6 @@ Partial Class frmBasin_Tool
         Me.Subfolders = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.gdbDEMStatus = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.gdbAOIStatus = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.weaselDEMStatus = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.weaselAOIStatus = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Label3 = New System.Windows.Forms.Label()
-        Me.lblWeaselDEMStatus = New System.Windows.Forms.TextBox()
-        Me.Label4 = New System.Windows.Forms.Label()
-        Me.lblWeaselAOIStatus = New System.Windows.Forms.TextBox()
         Me.SuspendLayout()
         '
         'CmdSelectBasinFolder
@@ -162,7 +156,7 @@ Partial Class frmBasin_Tool
         'lstvBasinDEM
         '
         Me.lstvBasinDEM.BackColor = System.Drawing.Color.White
-        Me.lstvBasinDEM.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Subfolders, Me.gdbDEMStatus, Me.gdbAOIStatus, Me.weaselDEMStatus, Me.weaselAOIStatus})
+        Me.lstvBasinDEM.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Subfolders, Me.gdbDEMStatus, Me.gdbAOIStatus})
         Me.lstvBasinDEM.ForeColor = System.Drawing.SystemColors.WindowText
         Me.lstvBasinDEM.FullRowSelect = True
         Me.lstvBasinDEM.Location = New System.Drawing.Point(24, 116)
@@ -180,78 +174,20 @@ Partial Class frmBasin_Tool
         '
         'gdbDEMStatus
         '
-        Me.gdbDEMStatus.Text = "FGDB BASIN Status"
+        Me.gdbDEMStatus.Text = "BASIN Status"
         Me.gdbDEMStatus.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
-        Me.gdbDEMStatus.Width = 157
+        Me.gdbDEMStatus.Width = 200
         '
         'gdbAOIStatus
         '
-        Me.gdbAOIStatus.Text = "FGDB AOI Status"
-        Me.gdbAOIStatus.Width = 110
-        '
-        'weaselDEMStatus
-        '
-        Me.weaselDEMStatus.Text = "Weasel BASIN Status"
-        Me.weaselDEMStatus.Width = 127
-        '
-        'weaselAOIStatus
-        '
-        Me.weaselAOIStatus.Text = "Weasel AOI Status"
-        Me.weaselAOIStatus.Width = 108
-        '
-        'Label3
-        '
-        Me.Label3.AutoSize = True
-        Me.Label3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label3.Location = New System.Drawing.Point(26, 81)
-        Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(101, 16)
-        Me.Label3.TabIndex = 7
-        Me.Label3.Text = "Weasel BASIN:"
-        '
-        'lblWeaselDEMStatus
-        '
-        Me.lblWeaselDEMStatus.BackColor = System.Drawing.SystemColors.Menu
-        Me.lblWeaselDEMStatus.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.lblWeaselDEMStatus.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblWeaselDEMStatus.ForeColor = System.Drawing.Color.Blue
-        Me.lblWeaselDEMStatus.Location = New System.Drawing.Point(127, 81)
-        Me.lblWeaselDEMStatus.Name = "lblWeaselDEMStatus"
-        Me.lblWeaselDEMStatus.Size = New System.Drawing.Size(188, 13)
-        Me.lblWeaselDEMStatus.TabIndex = 8
-        Me.lblWeaselDEMStatus.Text = "No"
-        '
-        'Label4
-        '
-        Me.Label4.AutoSize = True
-        Me.Label4.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label4.Location = New System.Drawing.Point(321, 81)
-        Me.Label4.Name = "Label4"
-        Me.Label4.Size = New System.Drawing.Size(33, 16)
-        Me.Label4.TabIndex = 9
-        Me.Label4.Text = "AOI:"
-        '
-        'lblWeaselAOIStatus
-        '
-        Me.lblWeaselAOIStatus.BackColor = System.Drawing.SystemColors.Menu
-        Me.lblWeaselAOIStatus.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.lblWeaselAOIStatus.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblWeaselAOIStatus.ForeColor = System.Drawing.Color.Blue
-        Me.lblWeaselAOIStatus.Location = New System.Drawing.Point(360, 83)
-        Me.lblWeaselAOIStatus.Name = "lblWeaselAOIStatus"
-        Me.lblWeaselAOIStatus.Size = New System.Drawing.Size(69, 13)
-        Me.lblWeaselAOIStatus.TabIndex = 10
-        Me.lblWeaselAOIStatus.Text = "No"
+        Me.gdbAOIStatus.Text = "AOI Status"
+        Me.gdbAOIStatus.Width = 200
         '
         'frmBasin_Tool
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(675, 412)
-        Me.Controls.Add(Me.lblWeaselAOIStatus)
-        Me.Controls.Add(Me.Label4)
-        Me.Controls.Add(Me.lblWeaselDEMStatus)
-        Me.Controls.Add(Me.Label3)
         Me.Controls.Add(Me.lstvBasinDEM)
         Me.Controls.Add(Me.lblDEMStatus)
         Me.Controls.Add(Me.lblAOIStatus)
@@ -286,10 +222,4 @@ Partial Class frmBasin_Tool
     Friend WithEvents Subfolders As System.Windows.Forms.ColumnHeader
     Friend WithEvents gdbDEMStatus As System.Windows.Forms.ColumnHeader
     Friend WithEvents gdbAOIStatus As System.Windows.Forms.ColumnHeader
-    Friend WithEvents weaselDEMStatus As System.Windows.Forms.ColumnHeader
-    Friend WithEvents weaselAOIStatus As System.Windows.Forms.ColumnHeader
-    Friend WithEvents Label3 As System.Windows.Forms.Label
-    Friend WithEvents lblWeaselDEMStatus As System.Windows.Forms.TextBox
-    Friend WithEvents Label4 As System.Windows.Forms.Label
-    Friend WithEvents lblWeaselAOIStatus As System.Windows.Forms.TextBox
 End Class
