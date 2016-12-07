@@ -2419,6 +2419,9 @@ Public Class frmSiteScenario
                                 sb.Append(analysisFolder & "\" & siteRepName)
                                 sb.Append(";")
                                 siteList.Add(aSite)
+                            Else
+                                Dim strMessage As String = "An error occurred while generating the scenario 1 representation for " & aSite.Name & ". It will be excluded from the analysis."
+                                MessageBox.Show(strMessage)
                             End If
                         End If
                     End If
@@ -2518,7 +2521,11 @@ Public Class frmSiteScenario
                                     sb.Append(analysisFolder & "\" & siteRepName)
                                     sb.Append(";")
                                     siteList.Add(aSite)
+                                Else
+                                    Dim strMessage As String = "An error occurred while generating the scenario 2 representation for " & aSite.Name & ". It will be excluded from the analysis."
+                                    MessageBox.Show(strMessage)
                                 End If
+
                             End If
                         Else
                             'The site rep file already exists from actual analysis so we just need to append the name to the sb
