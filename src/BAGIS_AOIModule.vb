@@ -437,7 +437,7 @@ Module BAGIS_AOIModule
         Dim comReleaser As ESRI.ArcGIS.ADF.ComReleaser = New ESRI.ArcGIS.ADF.ComReleaser
         Dim InData_Path As String = "", InData_Name As String
         Dim InputName As String, ClipName As String, ClipShapeFile As String
-        Dim OutputName As String, OutputKey As String
+        Dim OutputName As String = Nothing, OutputKey As String
         Dim return_value As Integer, response As Integer
 
         return_value = -3
@@ -461,14 +461,9 @@ Module BAGIS_AOIModule
             Return -4
         End If
 
-        'set output file name - GP parameter
-        If Is_SNOTEL Then
-            OutputName = AOIFolder & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & BA_SNOTELSites
-            OutputKey = BA_SNOTELSites
-        Else
-            OutputName = AOIFolder & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & BA_SnowCourseSites
-            OutputKey = BA_SnowCourseSites
-        End If
+        'set output file name - BA_UpdateSiteAttributes will change to permanent file name
+        OutputKey = "tmpSnoLayer"
+        OutputName = AOIFolder & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & OutputKey
 
         'If UCase(Right(OutputName, 4)) <> ".SHP" Then OutputName = OutputName & ".shp"
 
@@ -550,7 +545,6 @@ Module BAGIS_AOIModule
                 'update snotel attribute table to contain standard attribute info
                 Dim ElevFieldName As String
                 Dim NameFieldName As String
-                Dim unit_factor As Double
 
                 'read the definition file to get the parameter
                 BA_SetSettingPath()
@@ -563,7 +557,6 @@ Module BAGIS_AOIModule
                     Else
                         NameFieldName = ""
                     End If
-                    unit_factor = BA_SetConversionFactor(True, BA_SystemSettings.SNOTEL_ZUnit_IsMeter)
 
                 Else
                     ElevFieldName = BA_SystemSettings.SCourse_ElevationField
@@ -572,11 +565,10 @@ Module BAGIS_AOIModule
                     Else
                         NameFieldName = ""
                     End If
-                    unit_factor = BA_SetConversionFactor(True, BA_SystemSettings.SCourse_ZUnit_IsMeter)
 
                 End If
 
-                response = BA_UpdateSiteAttributes(AOIFolder & "\" & BA_EnumDescription(GeodatabaseNames.Layers), OutputKey, ElevFieldName, NameFieldName, unit_factor)
+                response = BA_UpdateSiteAttributes(AOIFolder & "\" & BA_EnumDescription(GeodatabaseNames.Layers), OutputKey, ElevFieldName, NameFieldName, Is_SNOTEL)
 
                 return_value = 1
             Else
@@ -620,7 +612,8 @@ Module BAGIS_AOIModule
     ' otherwise, the value indicate the number of records updated
     'the function adds new fields to hold elevation and name data in the clipped snotel and snow course layers
     'the conversion_factor convert elevation unit to meters
-    Public Function BA_UpdateSiteAttributes(ByVal File_Path As String, ByVal File_Name As String, ByVal Elev_Field As String, ByVal Name_Field As String, ByVal Conversion_Factor As Double) As Integer
+    Public Function BA_UpdateSiteAttributes(ByVal File_Path As String, ByVal File_Name As String, ByVal Elev_Field As String, _
+                                            ByVal Name_Field As String, ByVal Is_SNOTEL As Boolean) As Integer
         'fields to be added
         'AOI snotel and snow course elevation and name field
         'Public Const BA_SiteNameField = "BA_SNAME"
@@ -634,7 +627,8 @@ Module BAGIS_AOIModule
         return_value = 0
 
         'check if input file exists
-        If Not BA_File_Exists(File_Path & "\" & File_Name, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+        Dim inPointFeatures As String = File_Path & "\" & File_Name
+        If Not BA_File_Exists(inPointFeatures, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             Return return_value
         End If
 
@@ -699,7 +693,8 @@ Module BAGIS_AOIModule
 
         Try
             Do While Not pFeature Is Nothing
-                pFeature.Value(FI1) = pFeature.Value(FIInput1) * Conversion_Factor 'elevation conversion
+                '2016-12-12: Elevation conversion is superceded by extracting dem values from points below
+                'pFeature.Value(FI1) = pFeature.Value(FIInput1) * Conversion_Factor 'elevation conversion
                 If Len(Name_Field) > 0 Then
                     pFeature.Value(FI2) = pFeature.Value(FIInput2)
                 Else
@@ -709,12 +704,40 @@ Module BAGIS_AOIModule
                 pFeature = pFCursor.NextFeature
                 return_value = return_value + 1
             Loop
+
+            'set output file name - GP parameter
+            Dim outPointFile As String = Nothing
+            If Is_SNOTEL Then
+                outPointFile = BA_SNOTELSites
+            Else
+                outPointFile = BA_SnowCourseSites
+            End If
+            Dim outPointFeatures As String = File_Path & "\" & outPointFile
+
+
+            Dim demRasterPath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Surfaces) & "\" & BA_EnumDescription(MapsFileName.filled_dem_gdb)
+            Dim snapRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi) & BA_EnumDescription(PublicPath.AoiGrid)
+            Dim success As BA_ReturnCode = BA_ExtractValuesToPoints(inPointFeatures, demRasterPath, outPointFeatures, _
+                                                                    snapRasterPath, False)
+            If success = BA_ReturnCode.Success Then
+                Dim expressType As String = "VB"
+                Dim expression As String = "[" + BA_RasterValu + "]"
+                success = BA_CalculateField(outPointFeatures, BA_SiteElevField, expression, expressType)
+                If success = BA_ReturnCode.Success Then
+                    success = BA_DeleteFieldFromFeatureClass(File_Path, outPointFile, BA_RasterValu)
+                    If success = BA_ReturnCode.Success Then
+                        success = BA_Remove_ShapefileFromGDB(File_Path, File_Name)
+                    End If
+                End If
+            End If
+            If success <> BA_ReturnCode.Success Then
+                return_value = -1
+            End If
             Return return_value
 
         Catch ex As Exception
             MsgBox("BA_UpdateSiteAttributes Exception: " & ex.Message)
             Return -1
-
         Finally
             ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFCursor)
             ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFeature)
@@ -763,7 +786,7 @@ Module BAGIS_AOIModule
     '1: clipping is done successfully
     Public Function BA_ClipAOISnoWebServices(ByVal AOIFolder As String, ByVal url As String, ByVal Is_SNOTEL As Boolean) As Integer
         Dim ClipName As String, ClipShapeFile As String
-        Dim OutputName As String, OutputKey As String
+        Dim OutputName As String = Nothing, OutputKey As String
         Dim return_value As Integer, response As Integer
 
         return_value = -3
@@ -772,14 +795,10 @@ Module BAGIS_AOIModule
             Return -3
         End If
 
-        'set output file name - GP parameter
-        If Is_SNOTEL Then
-            OutputName = BA_GeodatabasePath(AOIFolder, GeodatabaseNames.Layers, True) & BA_EnumDescription(MapsFileName.Snotel)
-            OutputKey = BA_EnumDescription(MapsFileName.Snotel)
-        Else
-            OutputName = BA_GeodatabasePath(AOIFolder, GeodatabaseNames.Layers, True) & BA_EnumDescription(MapsFileName.SnowCourse)
-            OutputKey = BA_EnumDescription(MapsFileName.SnowCourse)
-        End If
+         'set output file name - BA_UpdateSiteAttributes will change to permanent file name
+        OutputKey = "tmpSnoLayer"
+        OutputName = AOIFolder & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & OutputKey
+
 
         ClipShapeFile = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
         ClipName = BA_GeodatabasePath(AOIFolder, GeodatabaseNames.Aoi, True) & ClipShapeFile  'GP parameter
@@ -801,7 +820,6 @@ Module BAGIS_AOIModule
                         'update snotel attribute table to contain standard attribute info
                         Dim ElevFieldName As String
                         Dim NameFieldName As String
-                        Dim unit_factor As Double
 
                         'read the definition file to get the parameter
                         BA_SetSettingPath()
@@ -814,7 +832,6 @@ Module BAGIS_AOIModule
                             Else
                                 NameFieldName = ""
                             End If
-                            unit_factor = BA_SetConversionFactor(True, BA_SystemSettings.SNOTEL_ZUnit_IsMeter)
 
                         Else
                             ElevFieldName = BA_SystemSettings.SCourse_ElevationField
@@ -823,12 +840,11 @@ Module BAGIS_AOIModule
                             Else
                                 NameFieldName = ""
                             End If
-                            unit_factor = BA_SetConversionFactor(True, BA_SystemSettings.SCourse_ZUnit_IsMeter)
 
                         End If
 
                         response = BA_UpdateSiteAttributes(BA_GeodatabasePath(AOIFolder, GeodatabaseNames.Layers), OutputKey, _
-                                                           ElevFieldName, NameFieldName, unit_factor)
+                                                           ElevFieldName, NameFieldName, Is_SNOTEL)
 
                         return_value = 1
                     End If

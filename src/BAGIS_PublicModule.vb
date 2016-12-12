@@ -342,17 +342,16 @@ ErrorHandler:
             SaveAOIMXDButton.selectedProperty = False
         End If
 
+        Dim AOIInfoToolButton = AddIn.FromID(Of BtnAOI_Tool)(My.ThisAddIn.IDs.BtnAOI_Tool)
         If Len(BasinFolderBase) = 0 Then 'user bypass BASIN, select an AOI directly
             'MsgBox "Basin folder is not specified."
             AOIFolderBase = BasinFolderString & aoiname_string
+            'only enable AOI info tool if a basin is selected
+            AOIInfoToolButton.selectedProperty = True
         Else
             AOIFolderBase = BasinFolderBase & "\" & aoiname_string
+            AOIInfoToolButton.selectedProperty = False
         End If
-
-        'enable AOI info tool
-        'AOIInfo_Flag = True
-        Dim AOIInfoToolButton = AddIn.FromID(Of BtnAOI_Tool)(My.ThisAddIn.IDs.BtnAOI_Tool)
-        AOIInfoToolButton.selectedProperty = True
 
         'enable BtnCreateAOIStream when AOI is selected
         Dim createAOIStreamButton = AddIn.FromID(Of BtnCreateAOIStream)(My.ThisAddIn.IDs.BtnCreateAOIStream)

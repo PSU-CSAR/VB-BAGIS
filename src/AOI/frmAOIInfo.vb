@@ -188,7 +188,7 @@ Public Class frmAOIInfo
         LoadLstLayers()
 
         MsgBox(aoiName & " is set as the current AOI!", MsgBoxStyle.Information)
-        ''set the value of cbotargeted basin to the name of the aoi since an aoi should also be a basin
+        'set the value of cbotargeted basin to the name of the aoi since an aoi should also be a basin
         'Dim cboselectbasin = AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
         'cboselectbasin.setValue(BA_GetBareName(tempAOIFolderBase))
     End Sub
