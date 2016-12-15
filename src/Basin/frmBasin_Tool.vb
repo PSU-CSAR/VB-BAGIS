@@ -316,7 +316,7 @@ Public Class frmBasin_Tool
         Dim result As DialogResult = Windows.Forms.DialogResult.No
         Dim sb As New StringBuilder()
 
-        If UCase(lblDEMStatus.Text) = "YES" Then 'FGDB exists
+        If UCase(lblDEMStatus.Text).IndexOf("RESOLUTION") > -1 Then 'FGDB exists
             If UCase(lblAOIStatus.Text) = "YES" Or hasAOIinFolder Then 'the folder is also an AOI or contains AOIs, users cannot change its DEM
                 NeedtoClipDEM = False
                 MsgBox("The selected folder is an AOI or contains AOIs. You cannot alter its DEM data.")
@@ -417,15 +417,16 @@ Public Class frmBasin_Tool
 
                 pBasinEnvelope = Nothing
                 cboSelectedBasin.setValue(BA_GetBareName(BasinFolderBase))
-                'reset aoi information
-                BA_Reset_AOIFlags()
-                BA_ResetAOI()
 
                 setDEMExtenttool.selectedProperty = False
                 'clipDEMButton.selectedProperty = False
                 selectAOIButton.selectedProperty = True
                 basinInfoButton.selectedProperty = True
             End If
+
+            'reset aoi information
+            BA_Reset_AOIFlags()
+            BA_ResetAOI()
         Catch ex As Exception
             MsgBox("Unknown error")
             Exit Sub
