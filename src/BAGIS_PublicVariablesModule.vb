@@ -202,7 +202,7 @@ Module BAGIS_PublicVariablesModule
         Public OtherLayers() As String
         Public listCount As Integer
         Public GenerateAOIOnly As Boolean
-        'Public listlayers As Integer
+        Public AnalysisSourceNotSpecified As Boolean
     End Structure
 
     Public BA_SystemSettings As BA_SystemSettingsType

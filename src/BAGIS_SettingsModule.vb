@@ -364,6 +364,7 @@ Module BAGIS_SettingsModule
                 SettingsForm.ComboStation_Value.SelectedIndex = UnitIndex
 
                 'set snotel file
+                BA_SystemSettings.AnalysisSourceNotSpecified = False 'Reset module-level variable
                 linestring = sr.ReadLine()                                                                                                                  '13
                 SettingsForm.txtSNOTEL.Text = Trim(linestring)
 
@@ -371,6 +372,7 @@ Module BAGIS_SettingsModule
                 If Trim(linestring) = "" Then
                     TempPathName = "SNOTEL"
                     FileExists = False
+                    BA_SystemSettings.AnalysisSourceNotSpecified = True
                 Else
                     valid1 = BA_VerifyUrl(SettingsForm.txtSNOTEL.Text, checkedUrls)
                     If valid1 Then
@@ -493,6 +495,7 @@ Module BAGIS_SettingsModule
                 If Trim(linestring) = "" Then
                     TempPathName = "Snow Course"
                     FileExists = False
+                    BA_SystemSettings.AnalysisSourceNotSpecified = True
                 Else
                     valid1 = BA_VerifyUrl(SettingsForm.txtSnowCourse.Text, checkedUrls)
                     If valid1 Then
@@ -614,6 +617,7 @@ Module BAGIS_SettingsModule
                 If Trim(linestring) = "" Then
                     TempPathName = "PRISM folder"
                     FileExists = False
+                    BA_SystemSettings.AnalysisSourceNotSpecified = True
                 Else
                     valid1 = BA_VerifyUrl(SettingsForm.txtPRISM.Text, checkedUrls)
                     If valid1 Then
@@ -688,7 +692,7 @@ Module BAGIS_SettingsModule
             Else
                 SettingsForm.ChkboxAOIOnly.Checked = True
                 BA_SystemSettings.GenerateAOIOnly = True
-                MsgBox("Missing required data for performing basin analysis!" & vbCrLf & "The Generate AOI Only option is turned on automatically for BAGIS.")
+                'MsgBox("Missing required data for performing basin analysis!" & vbCrLf & "The Generate AOI Only option is turned on automatically for BAGIS.")
             End If
 
             'Append any server connection errors to the return_message

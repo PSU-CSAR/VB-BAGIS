@@ -1076,11 +1076,20 @@ Public Class frmSettings
 
             'set settings
             settings_message = BA_Read_Settings(Me)
-            Dim cboSelectBasin = AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
+            Dim msgPrefix As String = Nothing
+            If BA_SystemSettings.AnalysisSourceNotSpecified = True Then
+                'PRISM, Snotel, or snow course data is not specified
+                msgPrefix = "The Generate AOI Only option is turned on for BAGIS because the sources for precipitation, SNOTEL, and snow course data are not specified." & vbCrLf & vbCrLf
+             ElseIf BA_SystemSettings.GenerateAOIOnly = True Then
+                msgPrefix = "The Generate AOI Only option is turned on for BAGIS because at least one of the required sources is missing. SNOTEL (and/or Snow Course and/or PRISM) data missing" & vbCrLf & vbCrLf
+            End If
+
             If Len(settings_message) > 0 Then
+                If Not String.IsNullOrEmpty(msgPrefix) Then
+                    settings_message = msgPrefix & settings_message
+                End If
+
                 MsgBox(settings_message)
-                'SelectBasin_Flag = False                                      
-                cboSelectBasin.selectedProperty = False
 
                 If settings_message.Substring(0, 7) = "Version" Then
                     MsgBox("Please update Settings file using save settings in Settings form.", vbOKOnly, "BAGIS Settings Version Error")
@@ -1088,6 +1097,12 @@ Public Class frmSettings
                 If settings_message.Substring(0, 6) = "ERROR!" Then
                     MsgBox("Please set and save the data layer settings first!")
                 End If
+
+                'SelectBasin_Flag = False 
+                Dim cboSelectBasin = AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
+                cboSelectBasin.selectedProperty = False
+            ElseIf Not String.IsNullOrEmpty(msgPrefix) Then
+                MsgBox(msgPrefix)
             End If
 
             CmdUndo.Enabled = False
