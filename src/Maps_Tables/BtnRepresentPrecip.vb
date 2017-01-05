@@ -37,6 +37,7 @@ Public Class BtnRepresentPrecip
 
             'Based on frmGenerateMaps.CmboxPrecipType.SelectedIndex
             Dim PRISMRasterName As String = Nothing
+            Dim PRISMFolderName As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True)
             Dim response As Integer
             If intSelectedIndex = 0 Then  'read direct Annual PRISM raster
                 PRISMRasterName = AOIPrismFolderNames.annual.ToString
@@ -49,8 +50,10 @@ Public Class BtnRepresentPrecip
                     Exit Sub
                 End If
                 PRISMRasterName = BA_TEMP_PRISM
+                PRISMFolderName = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
             End If
 
+            Dim success As BA_ReturnCode = BA_CreateElevPrecipLayer(AOIFolderBase, PRISMFolderName, PRISMRasterName)
             MessageBox.Show("Finished!")
         Catch ex As Exception
             Debug.Print("BtnRepresentPrecip.OnClick Exception: " + ex.Message)
