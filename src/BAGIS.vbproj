@@ -184,6 +184,7 @@
     <Compile Include="Forms\FrmWebservices.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Maps_Tables\BtnRepresentPrecip.vb" />
     <Compile Include="Maps_Tables\BtnScenario1.vb" />
     <Compile Include="BtnAddRefLayers.vb" />
     <Compile Include="BAGIS_PublicModule.vb" />
@@ -594,6 +595,7 @@
       <SubType>Designer</SubType>
     </Content>
     <AddInContent Include="Images\BtnWebServices.png" />
+    <AddInContent Include="Images\BtnRepresentPrecip.png" />
     <Content Include="Images\GenericYellowLeftArrow32.png" />
     <Content Include="Images\GenericYellowRightArrow32.png" />
     <AddInContent Include="Images\SelectSiteTool.png" />
