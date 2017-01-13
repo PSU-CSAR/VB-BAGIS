@@ -53,7 +53,16 @@ Public Class BtnRepresentPrecip
                 PRISMFolderName = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
             End If
 
-            Dim success As BA_ReturnCode = BA_CreateElevPrecipLayer(AOIFolderBase, PRISMFolderName, PRISMRasterName)
+            Dim resampleDemPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\resampleDem"
+            Dim success As BA_ReturnCode = BA_CreateElevPrecipLayer(AOIFolderBase, PRISMFolderName, PRISMRasterName, resampleDemPath)
+            If success = BA_ReturnCode.Success Then
+                Dim sampleTablePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\sampleTbl"
+                Dim sb As System.Text.StringBuilder = New System.Text.StringBuilder()
+                sb.Append(PRISMFolderName + "\" + PRISMRasterName & ";")
+                sb.Append(resampleDemPath)
+                success = BA_Sample(sb.ToString, PRISMFolderName + "\" + PRISMRasterName, sampleTablePath, _
+                          PRISMFolderName + "\" + PRISMRasterName, BA_Resample_Nearest)
+            End If
             MessageBox.Show("Finished!")
         Catch ex As Exception
             Debug.Print("BtnRepresentPrecip.OnClick Exception: " + ex.Message)
