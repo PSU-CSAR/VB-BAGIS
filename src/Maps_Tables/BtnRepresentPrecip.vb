@@ -1,5 +1,7 @@
 ﻿Imports BAGIS_ClassLibrary
 Imports System.Windows.Forms
+Imports ESRI.ArcGIS.esriSystem
+Imports ESRI.ArcGIS.Framework
 
 Public Class BtnRepresentPrecip
     Inherits ESRI.ArcGIS.Desktop.AddIns.Button
@@ -9,6 +11,10 @@ Public Class BtnRepresentPrecip
     End Sub
 
     Protected Overrides Sub OnClick()
+        'Declare progress indicator variables
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 5)
+        Dim progressDialog2 As IProgressDialog2 = Nothing
+
         Try
             Dim mapsFilePath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\" + BA_MapParameterFile
 
@@ -16,6 +22,11 @@ Public Class BtnRepresentPrecip
                 MessageBox.Show("Unable to read map parameters. Please use the Generate Maps tool to set the map parameters.")
                 Exit Sub
             End If
+
+            progressDialog2 = BA_GetProgressDialog(pStepProg, "Generating Represented Precipitation Chart", "Running...")
+            pStepProg.Show()
+            progressDialog2.ShowDialog()
+            pStepProg.Step()
 
             Dim strNext As String = Nothing
             Dim intSelectedIndex As Int16 = -1
@@ -53,20 +64,40 @@ Public Class BtnRepresentPrecip
                 PRISMFolderName = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
             End If
 
-            Dim resampleDemPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\resampleDem"
+            pStepProg.Message = "Resampling DEM to PRISM resolution..."
+            pStepProg.Step()
+            Dim resampleDemFile As String = "resampleDem"
+            Dim resampleDemPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + resampleDemFile
             Dim success As BA_ReturnCode = BA_CreateElevPrecipLayer(AOIFolderBase, PRISMFolderName, PRISMRasterName, resampleDemPath)
+            Dim objExcel As New Microsoft.Office.Interop.Excel.Application
             If success = BA_ReturnCode.Success Then
-                Dim sampleTablePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\sampleTbl"
+                Dim sampleTableFile As String = "sampleTbl"
+                Dim sampleTablePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + sampleTableFile
                 Dim sb As System.Text.StringBuilder = New System.Text.StringBuilder()
                 sb.Append(PRISMFolderName + "\" + PRISMRasterName & ";")
                 sb.Append(resampleDemPath)
+                pStepProg.Message = "Extracting DEM and PRISM values..."
+                pStepProg.Step()
                 success = BA_Sample(sb.ToString, PRISMFolderName + "\" + PRISMRasterName, sampleTablePath, _
                           PRISMFolderName + "\" + PRISMRasterName, BA_Resample_Nearest)
+                If success = BA_ReturnCode.Success Then
+                    BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), sampleTableFile, _
+                    PRISMRasterName + "_1", resampleDemFile, objExcel)
+                End If
             End If
-            MessageBox.Show("Finished!")
+            objExcel.Visible = True
         Catch ex As Exception
             Debug.Print("BtnRepresentPrecip.OnClick Exception: " + ex.Message)
             MessageBox.Show("Unable to calculate represented precipitation areas")
+        Finally
+            If pStepProg IsNot Nothing Then
+                pStepProg.Hide()
+                pStepProg = Nothing
+            End If
+            If progressDialog2 IsNot Nothing Then
+                progressDialog2.HideDialog()
+                progressDialog2 = Nothing
+            End If
         End Try
     End Sub
 
