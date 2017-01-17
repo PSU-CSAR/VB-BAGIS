@@ -2,6 +2,7 @@
 Imports System.Windows.Forms
 Imports ESRI.ArcGIS.esriSystem
 Imports ESRI.ArcGIS.Framework
+Imports Microsoft.Office.Interop.Excel
 
 Public Class BtnRepresentPrecip
     Inherits ESRI.ArcGIS.Desktop.AddIns.Button
@@ -70,6 +71,7 @@ Public Class BtnRepresentPrecip
             Dim resampleDemPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + resampleDemFile
             Dim success As BA_ReturnCode = BA_CreateElevPrecipLayer(AOIFolderBase, PRISMFolderName, PRISMRasterName, resampleDemPath)
             Dim objExcel As New Microsoft.Office.Interop.Excel.Application
+            Dim bkWorkBook As Workbook = objExcel.Workbooks.Add 'a file in excel
             If success = BA_ReturnCode.Success Then
                 Dim sampleTableFile As String = "sampleTbl"
                 Dim sampleTablePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + sampleTableFile
@@ -81,8 +83,35 @@ Public Class BtnRepresentPrecip
                 success = BA_Sample(sb.ToString, PRISMFolderName + "\" + PRISMRasterName, sampleTablePath, _
                           PRISMFolderName + "\" + PRISMRasterName, BA_Resample_Nearest)
                 If success = BA_ReturnCode.Success Then
-                    BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), sampleTableFile, _
-                    PRISMRasterName + "_1", resampleDemFile, objExcel)
+                    '@ToDo: Measurement units will come from frmGenerateMaps
+                    Dim demUnits As MeasurementUnit = MeasurementUnit.Meters
+                    Dim precipUnits As MeasurementUnit = MeasurementUnit.Inches
+
+                    'Determine Z Mapping Unit and Create Value Axis Title
+                    Dim demTitleUnit As String = Nothing
+                    If demUnits = MeasurementUnit.Meters = True Then
+                        demTitleUnit = " (Meters)"
+                    ElseIf demUnits = MeasurementUnit.Feet Then
+                        demTitleUnit = " (Feet)"
+                    End If
+
+                    'Determine Z Mapping Unit and Create Value Axis Title
+                    Dim precipTitleUnit As String = Nothing
+                    If precipUnits = MeasurementUnit.Inches = True Then
+                        precipTitleUnit = " (Inches)"
+                    ElseIf demUnits = MeasurementUnit.Millimeters Then
+                        precipTitleUnit = " (Millimeters)"
+                    End If
+
+                    Dim dataSheetName As String = "Precip-DEMElev"
+                    success = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), sampleTableFile, _
+                                PRISMRasterName + "_1", resampleDemFile, bkWorkBook, dataSheetName, demTitleUnit, _
+                                precipTitleUnit)
+                    If success = BA_ReturnCode.Success Then
+                        '@ToDo: Min axis values will come from frmGenerateMaps when this is integrated
+                        BA_CreateRepresentPrecipChart(bkWorkBook, dataSheetName, demTitleUnit, _
+                                                      precipTitleUnit, 1900, 4)
+                    End If
                 End If
             End If
             objExcel.Visible = True
