@@ -67,8 +67,7 @@ Public Class BtnRepresentPrecip
 
             pStepProg.Message = "Resampling DEM to PRISM resolution..."
             pStepProg.Step()
-            Dim resampleDemFile As String = "resampleDem"
-            Dim resampleDemPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + resampleDemFile
+            Dim resampleDemPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_RasterPrecMeanElev
             Dim success As BA_ReturnCode = BA_CreateElevPrecipLayer(AOIFolderBase, PRISMFolderName, PRISMRasterName, resampleDemPath)
             Dim objExcel As New Microsoft.Office.Interop.Excel.Application
             Dim bkWorkBook As Workbook = objExcel.Workbooks.Add 'a file in excel
@@ -87,30 +86,22 @@ Public Class BtnRepresentPrecip
                     Dim demUnits As MeasurementUnit = MeasurementUnit.Meters
                     Dim precipUnits As MeasurementUnit = MeasurementUnit.Inches
 
-                    'Determine Z Mapping Unit and Create Value Axis Title
-                    Dim demTitleUnit As String = Nothing
-                    If demUnits = MeasurementUnit.Meters = True Then
-                        demTitleUnit = " (Meters)"
-                    ElseIf demUnits = MeasurementUnit.Feet Then
-                        demTitleUnit = " (Feet)"
-                    End If
+                    'Create Elevation Distribution Worksheet
+                    Dim pPrecipDemElevWorksheet As Worksheet = bkWorkBook.Sheets.Add
+                    pPrecipDemElevWorksheet.Name = "Precip-DEMElev"
 
-                    'Determine Z Mapping Unit and Create Value Axis Title
-                    Dim precipTitleUnit As String = Nothing
-                    If precipUnits = MeasurementUnit.Inches = True Then
-                        precipTitleUnit = " (Inches)"
-                    ElseIf demUnits = MeasurementUnit.Millimeters Then
-                        precipTitleUnit = " (Millimeters)"
-                    End If
+                    'Create Elevation Distribution Worksheet
+                    Dim pChartsWorksheet As Worksheet = bkWorkBook.Sheets.Add
+                    pPrecipDemElevWorksheet.Name = "Charts"
 
-                    Dim dataSheetName As String = "Precip-DEMElev"
+
                     success = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), sampleTableFile, _
-                                PRISMRasterName + "_1", resampleDemFile, bkWorkBook, dataSheetName, demTitleUnit, _
-                                precipTitleUnit)
+                                PRISMRasterName + "_1", BA_RasterPrecMeanElev, bkWorkBook, pPrecipDemElevWorksheet, demUnits, _
+                                precipUnits)
                     If success = BA_ReturnCode.Success Then
                         '@ToDo: Min axis values will come from frmGenerateMaps when this is integrated
-                        BA_CreateRepresentPrecipChart(bkWorkBook, dataSheetName, demTitleUnit, _
-                                                      precipTitleUnit, 1900, 4)
+                        BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pChartsWorksheet, demUnits, _
+                                                      precipUnits, 1900, 4)
                     End If
                 End If
             End If
