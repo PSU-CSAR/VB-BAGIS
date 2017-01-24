@@ -1849,6 +1849,12 @@ Public Class frmGenerateMaps
                 pStepProg.Step()
                 success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath, _
                           PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest)
+                If success = BA_ReturnCode.Success Then
+                    'SNOTEL first
+                    Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_SnotelPrec
+                    success = BA_ExtractValuesToPoints(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers) + "\" + BA_EnumDescription(MapsFileName.Snotel), _
+                                                       PrecipPath + "\" + PRISMRasterName, snotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
+                End If
             End If
 
             '=================================
