@@ -76,7 +76,7 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_BufferDistanceFile = "buffer"
     Public Const BA_RasterPrecMeanElev = "precmeanelev"
     Public Const BA_TablePrecMeanElev = "precmeanelev_tbl"
-    Public Const BA_SnotelPrec = "stelprec_v"
+    Public Const BA_VectorSnotelPrec = "stelprec_v"
 
     'scenario output rasters
     Public Const BA_PseudoNP = "nppseduo"

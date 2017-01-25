@@ -1851,7 +1851,7 @@ Public Class frmGenerateMaps
                           PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest)
                 If success = BA_ReturnCode.Success Then
                     'SNOTEL first
-                    Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_SnotelPrec
+                    Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_VectorSnotelPrec
                     success = BA_ExtractValuesToPoints(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers) + "\" + BA_EnumDescription(MapsFileName.Snotel), _
                                                        PrecipPath + "\" + PRISMRasterName, snotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
                 End If
@@ -2206,6 +2206,11 @@ Public Class frmGenerateMaps
             Dim pPrecipDemElevWorksheet As Worksheet = bkWorkBook.Sheets.Add
             pPrecipDemElevWorksheet.Name = "Precip-DEMElev"
 
+            'Create Elevation Distribution Worksheet
+            Dim pPrecipSiteWorksheet As Worksheet = bkWorkBook.Sheets.Add
+            pPrecipSiteWorksheet.Name = "Precip-SiteElev"
+
+
 
             'Dim variables for the range worksheets in case we need them later
             Dim pSCRangeWorksheet As Worksheet = Nothing
@@ -2351,12 +2356,19 @@ Public Class frmGenerateMaps
             End If
 
             Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
-                PRISMRasterName + "_1", BA_RasterPrecMeanElev, bkWorkBook, pPrecipDemElevWorksheet, demTitleUnit, _
+                PRISMRasterName + "_1", BA_RasterPrecMeanElev, pPrecipDemElevWorksheet, demTitleUnit, _
                 MeasurementUnit.Inches)
             If success = BA_ReturnCode.Success Then
-                success = BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pChartsWorksheet, _
-                                                        demTitleUnit, MeasurementUnit.Inches, _
-                                                        Chart_YMinScale, 0)
+                success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
+                                                     BA_RasterValu, BA_SiteElevField, BA_SiteNameField, _
+                                                     pPrecipSiteWorksheet, MeasurementUnit.Inches)
+
+
+                If success = BA_ReturnCode.Success Then
+                    success = BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pChartsWorksheet, _
+                                                            demTitleUnit, MeasurementUnit.Inches, _
+                                                            Chart_YMinScale, 0)
+                End If
             End If
 
             If chkUseRange.Checked = True Then
