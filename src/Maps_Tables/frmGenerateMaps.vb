@@ -2365,7 +2365,8 @@ Public Class frmGenerateMaps
 
 
                 If success = BA_ReturnCode.Success Then
-                    success = BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pChartsWorksheet, _
+                    success = BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pPrecipSiteWorksheet, _
+                                                            pChartsWorksheet, _
                                                             demTitleUnit, MeasurementUnit.Inches, _
                                                             Chart_YMinScale, 0)
                 End If

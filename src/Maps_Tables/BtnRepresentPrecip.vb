@@ -94,13 +94,19 @@ Public Class BtnRepresentPrecip
                     Dim pChartsWorksheet As Worksheet = bkWorkBook.Sheets.Add
                     pPrecipDemElevWorksheet.Name = "Charts"
 
+                    'Create Elevation Distribution Worksheet
+                    Dim pPrecipSiteWorksheet As Worksheet = bkWorkBook.Sheets.Add
+                    pPrecipDemElevWorksheet.Name = "Precip-SiteElev"
+
+
 
                     success = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), sampleTableFile, _
                                 PRISMRasterName + "_1", BA_RasterPrecMeanElev, pPrecipDemElevWorksheet, demUnits, _
                                 precipUnits)
                     If success = BA_ReturnCode.Success Then
                         '@ToDo: Min axis values will come from frmGenerateMaps when this is integrated
-                        BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pChartsWorksheet, demUnits, _
+                        BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pPrecipSiteWorksheet, _
+                                                      pChartsWorksheet, demUnits, _
                                                       precipUnits, 1900, 4)
                     End If
                 End If
