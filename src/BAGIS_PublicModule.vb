@@ -378,7 +378,6 @@ ErrorHandler:
         Dim Scenario2RepButton = AddIn.FromID(Of BtnScenario2)(My.ThisAddIn.IDs.BtnScenario2)
         Dim DifferenceConditionButton = AddIn.FromID(Of BtnDifferenceCondition)(My.ThisAddIn.IDs.BtnDifferenceCondition)
         Dim SiteRepresentationButton = AddIn.FromID(Of BtnSiteRepresentation)(My.ThisAddIn.IDs.BtnSiteRepresentation)
-        Dim PrecipRepresentationButton = AddIn.FromID(Of BtnRepresentPrecip)(My.ThisAddIn.IDs.BtnRepresentPrecip)
         'disable addition elevational representation maps
         Scenario1RepButton.SelectedProperty = False
         Scenario2RepButton.SelectedProperty = False
@@ -393,12 +392,10 @@ ErrorHandler:
             GeneratMapsButton.SelectedProperty = False
             SiteScenarioButton.selectedProperty = False
             SaveAOIMXDButton.selectedProperty = False
-            PrecipRepresentationButton.SelectedProperty = False
         Else
             GeneratMapsButton.SelectedProperty = True
             SiteScenarioButton.selectedProperty = True
             SaveAOIMXDButton.selectedProperty = True
-            PrecipRepresentationButton.SelectedProperty = True
         End If
 
         'Close the dockable windows for Site Scenario and Representation if they are open
@@ -1206,12 +1203,10 @@ Function_Exit:
         Dim SiteScenarioButton = AddIn.FromID(Of BtnSiteScenario)(My.ThisAddIn.IDs.BtnSiteScenario)
         Dim SiteScenario1RepButton = AddIn.FromID(Of BtnScenario1)(My.ThisAddIn.IDs.BtnScenario1)
         Dim SiteScenario2RepButton = AddIn.FromID(Of BtnScenario2)(My.ThisAddIn.IDs.BtnScenario2)
-        Dim PrecipDistButton = AddIn.FromID(Of BtnRepresentPrecip)(My.ThisAddIn.IDs.BtnRepresentPrecip)
 
         SiteScenarioButton.selectedProperty = False
         SiteScenario1RepButton.SelectedProperty = False
         SiteScenario2RepButton.SelectedProperty = False
-        PrecipDistButton.SelectedProperty = False
 
         'ThisDocument.SelectedAOI.Text = ""
         'Dim cboSelectedBasin = AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)

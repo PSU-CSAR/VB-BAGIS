@@ -906,8 +906,10 @@ Public Class frmGenerateMaps
                 CmdMaps.Enabled = True
                 If BA_Excel_Available AndAlso precipMeanTableExists Then
                     CmdTables.Enabled = True
+                    CmdPartition.Enabled = True
                 Else
                     CmdTables.Enabled = False
+                    CmdPartition.Enabled = False
                 End If
             Else
                 'if PRISM zone intervals are populated but precipitation zones don't exist, enable CMdApplyPrism
@@ -2431,4 +2433,14 @@ Public Class frmGenerateMaps
         CmdTables.Enabled = False
     End Sub
 
+    Private Sub BtnPartition_Click(sender As System.Object, e As System.EventArgs) Handles CmdPartition.Click
+        Dim frmPartitionRaster As FrmPartitionRaster = New FrmPartitionRaster()
+        frmPartitionRaster.ShowDialog()
+        If Not String.IsNullOrEmpty(frmPartitionRaster.PartitionRasterPath) Then
+            LblPartitionLayer.Text = BA_GetBareName(frmPartitionRaster.PartitionRasterPath)
+        Else
+            LblPartitionLayer.Text = frmPartitionRaster.PartitionRasterPath
+        End If
+
+    End Sub
 End Class

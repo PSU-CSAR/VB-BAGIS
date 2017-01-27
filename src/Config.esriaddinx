@@ -41,7 +41,7 @@
             <Button refID="Microsoft_BAGIS_BtnScenario2" />
             <Button refID="Microsoft_BAGIS_BtnDifferenceCondition" />
             <Button refID="Microsoft_BAGIS_BtnSiteRepresentation" />
-            <Button refID="Portland_State_University_BAGIS_BtnRepresentPrecip" separator="true" />
+            <!--<Button refID="Portland_State_University_BAGIS_BtnRepresentPrecip" separator="true" /> -->
             <!-- Export Map menu item  subtype="9" -->
             <Button refID="esriArcMapUI.MxFileMenuItem" separator="true" subtype="9" />
           </Items>
@@ -94,7 +94,7 @@
         <Button id="Microsoft_BAGIS_BtnAOIfromShapefile" class="BtnAOIfromShapefile" message="Creating an AOI using an existing shapefile." caption="Create AOI from a shapefile" tip="Creating an AOI using an existing shapefile." category="BAGIS" />
         <Tool id="Microsoft_BAGIS_SelectSiteTool" class="SelectSiteTool" message="Select a pseudo site" caption="Select Site Tool" tip="Select Site Tool" category="BAGIS" image="Images\SelectSiteTool.png" />
         <Button id="Portland_State_University_BAGIS_BtnWebServices" class="BtnWebServices" message="Web Services Testing" caption="Web Services Testing" tip="Web Services Testing" category="BAGIS" image="Images\BtnWebServices.png" />
-        <Button id="Portland_State_University_BAGIS_BtnRepresentPrecip" class="BtnRepresentPrecip" message="Represented precipitation" caption="Represented precipitation (beta)" tip="Represented precipitation" category="BAGIS" image="Images\BtnRepresentPrecip.png" onDemand="false"/>
+        <!--<Button id="Portland_State_University_BAGIS_BtnRepresentPrecip" class="BtnRepresentPrecip" message="Represented precipitation" caption="Represented precipitation (beta)" tip="Represented precipitation" category="BAGIS" image="Images\BtnRepresentPrecip.png" onDemand="false"/> -->
       </Commands>
       <DockableWindows>
         <DockableWindow id="Portland_State_University_BAGIS_frmSiteScenario" class="frmSiteScenario+AddinImpl" caption="Site Scenario Analysis Tool" image="Images\frmSiteScenario.png">

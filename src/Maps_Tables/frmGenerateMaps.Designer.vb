@@ -97,6 +97,8 @@ Partial Class frmGenerateMaps
         Me.RasterName = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.CmboxAspect = New System.Windows.Forms.ComboBox()
         Me.Label9 = New System.Windows.Forms.Label()
+        Me.CmdPartition = New System.Windows.Forms.Button()
+        Me.LblPartitionLayer = New System.Windows.Forms.Label()
         Me.FrameInfo.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.FrameElevationDist.SuspendLayout()
@@ -860,7 +862,7 @@ Partial Class frmGenerateMaps
         'CmbClose
         '
         Me.CmbClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmbClose.Location = New System.Drawing.Point(827, 480)
+        Me.CmbClose.Location = New System.Drawing.Point(827, 519)
         Me.CmbClose.Name = "CmbClose"
         Me.CmbClose.Size = New System.Drawing.Size(100, 28)
         Me.CmbClose.TabIndex = 10
@@ -871,7 +873,7 @@ Partial Class frmGenerateMaps
         '
         Me.CmdMaps.Enabled = False
         Me.CmdMaps.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdMaps.Location = New System.Drawing.Point(628, 480)
+        Me.CmdMaps.Location = New System.Drawing.Point(628, 479)
         Me.CmdMaps.Name = "CmdMaps"
         Me.CmdMaps.Size = New System.Drawing.Size(77, 28)
         Me.CmdMaps.TabIndex = 10
@@ -923,11 +925,33 @@ Partial Class frmGenerateMaps
         Me.Label9.TabIndex = 13
         Me.Label9.Text = "Aspect Directions #:"
         '
+        'CmdPartition
+        '
+        Me.CmdPartition.Enabled = False
+        Me.CmdPartition.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CmdPartition.Location = New System.Drawing.Point(528, 519)
+        Me.CmdPartition.Name = "CmdPartition"
+        Me.CmdPartition.Size = New System.Drawing.Size(102, 28)
+        Me.CmdPartition.TabIndex = 14
+        Me.CmdPartition.Text = "Partition Layer"
+        Me.CmdPartition.UseVisualStyleBackColor = True
+        '
+        'LblPartitionLayer
+        '
+        Me.LblPartitionLayer.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LblPartitionLayer.ForeColor = System.Drawing.Color.Blue
+        Me.LblPartitionLayer.Location = New System.Drawing.Point(633, 525)
+        Me.LblPartitionLayer.Name = "LblPartitionLayer"
+        Me.LblPartitionLayer.Size = New System.Drawing.Size(180, 16)
+        Me.LblPartitionLayer.TabIndex = 15
+        '
         'frmGenerateMaps
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(952, 534)
+        Me.ClientSize = New System.Drawing.Size(952, 569)
+        Me.Controls.Add(Me.LblPartitionLayer)
+        Me.Controls.Add(Me.CmdPartition)
         Me.Controls.Add(Me.Label9)
         Me.Controls.Add(Me.CmboxAspect)
         Me.Controls.Add(Me.lstDataStatus)
@@ -1033,4 +1057,6 @@ Partial Class frmGenerateMaps
     Friend WithEvents RasterName As System.Windows.Forms.ColumnHeader
     Friend WithEvents CmboxAspect As System.Windows.Forms.ComboBox
     Friend WithEvents Label9 As System.Windows.Forms.Label
+    Friend WithEvents CmdPartition As System.Windows.Forms.Button
+    Friend WithEvents LblPartitionLayer As System.Windows.Forms.Label
 End Class
