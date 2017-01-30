@@ -98,6 +98,13 @@ Module BAGIS_SettingsModule
             Return "ERROR! BA_Read_Settings: The definition file does not exist."
         End If
 
+        'check to see if using network resources
+        Dim networkLayers As Boolean = BA_HasNetworkSettings(FileName)
+        If networkLayers = True Then
+            'this function sets a global variable and warns the user if they aren't connected
+            Dim isConnected As Boolean = BA_ConnectedToNetwork()
+        End If
+
         Try
 
             ' This Dictionary keeps track of all the checked urls so that BAGIS doesn't hang
@@ -115,10 +122,6 @@ Module BAGIS_SettingsModule
                 End If
 
                 return_message = "WARNING!"
-                'check for network connectivity
-                If Not BA_IsNetworkAvailable(0) Then
-                    return_message = return_message & vbCrLf & "Your computer is not connected to the network. You may be unable to access some of the data layers."
-                End If
                 linestring = sr.ReadLine() 'read the terrain reference layer name                                                                   '2
 
                 TempPathName = Trim(linestring)
@@ -754,6 +757,13 @@ Module BAGIS_SettingsModule
             Return -1
         End If
 
+        'check to see if using network resources
+        Dim networkLayers As Boolean = BA_HasNetworkSettings(source_namepath)
+        If networkLayers = True Then
+            'this function sets a global variable and warns the user if they aren't connected
+            Dim isConnected As Boolean = BA_ConnectedToNetwork()
+        End If
+
         Try
             Using sr As StreamReader = File.OpenText(source_namepath)
 
@@ -764,11 +774,6 @@ Module BAGIS_SettingsModule
                     MsgBox("The version of setting file is different from BAGIS version!" & vbCrLf & _
                            "Please save setting using settings form to update the version.", vbOKOnly, "BAGIS Settings Version Error")
                     Return -1
-                End If
-
-                'Check for network connectivity
-                If Not BA_IsNetworkAvailable(0) Then
-                    MessageBox.Show("Your computer is not connected to the network. You may be unable to access some of the data layers.")
                 End If
 
                 linestring = sr.ReadLine() 'three lines for reference layers                            '2
@@ -1075,6 +1080,40 @@ Module BAGIS_SettingsModule
             Debug.Print("BA_ReadDefaultSettingsFromJson Exception: " & ex.Message)
             Return Nothing
         End Try
+    End Function
+
+    Public Function BA_ConnectedToNetwork() As Boolean
+        If Not String.IsNullOrEmpty(BA_Network_Available) Then
+            If BA_Network_Available.Equals(YES) Then
+                Return True
+            Else
+                Return False
+            End If
+        Else
+            If Not BA_IsNetworkAvailable(0) Then
+                MessageBox.Show("Your computer is not connected to the network. You may be unable to access some of the data layers.")
+                BA_Network_Available = NO
+                Return False
+            Else
+                BA_Network_Available = YES
+                Return True
+            End If
+        End If
+    End Function
+
+    Public Function BA_HasNetworkSettings(ByVal settingsPath As String) As Boolean
+        Dim nextLine As String
+        Using sr As StreamReader = File.OpenText(settingsPath)
+            Do While sr.Peek() >= 0
+                nextLine = sr.ReadLine() 'read the next line
+                If Not String.IsNullOrEmpty(nextLine) Then
+                    If nextLine.IndexOf("http") = 0 Then
+                        Return True
+                    End If
+                End If
+            Loop
+        End Using
+        Return False
     End Function
 
 End Module

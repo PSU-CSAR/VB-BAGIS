@@ -15,7 +15,8 @@ Module BAGIS_PublicVariablesModule
     Public PRISMLayer(16) As String '18 elements
     Public BA_ElevationUnitString As String
     Public BA_Excel_Available As Boolean
-    Public BA_AOI_Forecast_ID As String 'Ver1E Update -
+    Public BA_AOI_Forecast_ID As String 'Ver1E Update
+    Public BA_Network_Available As String  'computer connected to network ?
 
     'Basin Layer Names
     Public BasinLayerDisplayNames(0 To 7) As String

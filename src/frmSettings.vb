@@ -1071,9 +1071,6 @@ Public Class frmSettings
             pStepProg.Hide()    'Don't use step progressor
             progressDialog2.ShowDialog()
 
-            'check for network connectivity
-            Dim connectedToNetwork As Boolean = BA_IsNetworkAvailable(0)
-
             'set settings
             settings_message = BA_Read_Settings(Me)
             Dim msgPrefix As String = Nothing
