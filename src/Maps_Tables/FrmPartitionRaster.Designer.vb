@@ -120,7 +120,7 @@ Partial Class FrmPartitionRaster
         Me.LstValues.FormattingEnabled = True
         Me.LstValues.Location = New System.Drawing.Point(372, 55)
         Me.LstValues.Name = "LstValues"
-        Me.LstValues.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended
+        Me.LstValues.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple
         Me.LstValues.Size = New System.Drawing.Size(98, 147)
         Me.LstValues.TabIndex = 15
         '

@@ -33,6 +33,12 @@ Public Class frmGenerateMaps
     Private m_demInMeters As Boolean
     Private m_formInit As Boolean = False
 
+    'partition raster variables from FrmPartitionRaster
+    Private m_partitionRasterPath As String
+    Private m_partitionField As String
+    Private m_partitionValuesList As IList(Of String)
+
+
     Public Sub New()
 
         ' This call is required by the designer.
@@ -2434,12 +2440,19 @@ Public Class frmGenerateMaps
     End Sub
 
     Private Sub BtnPartition_Click(sender As System.Object, e As System.EventArgs) Handles CmdPartition.Click
-        Dim frmPartitionRaster As FrmPartitionRaster = New FrmPartitionRaster()
+        Dim frmPartitionRaster As FrmPartitionRaster = New FrmPartitionRaster(m_partitionRasterPath, m_partitionField, _
+                                                                              m_partitionValuesList)
         frmPartitionRaster.ShowDialog()
         If Not String.IsNullOrEmpty(frmPartitionRaster.PartitionRasterPath) Then
             LblPartitionLayer.Text = BA_GetBareName(frmPartitionRaster.PartitionRasterPath)
+            m_partitionRasterPath = frmPartitionRaster.PartitionRasterPath
+            m_partitionField = frmPartitionRaster.PartitionField
+            m_partitionValuesList = frmPartitionRaster.PartitionValuesList
         Else
             LblPartitionLayer.Text = frmPartitionRaster.PartitionRasterPath
+            LblPartitionLayer.Text = BA_GetBareName(frmPartitionRaster.PartitionRasterPath)
+            m_partitionField = Nothing
+            m_partitionValuesList = Nothing
         End If
 
     End Sub

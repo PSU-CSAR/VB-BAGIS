@@ -9,7 +9,7 @@ Public Class FrmPartitionRaster
     Private m_partitionField As String
     Private m_partitionValuesList As IList(Of String)
 
-    Public Sub New()
+    Public Sub New(ByVal partRasterPath As String, ByVal partField As String, ByVal valuesList As IList(Of String))
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -17,7 +17,10 @@ Public Class FrmPartitionRaster
         ' Add any initialization after the InitializeComponent() call.
         Me.Text = "AOI: " + BA_GetBareName(AOIFolderBase)
 
-        LoadLstLayers()
+        m_partitionField = partField
+        m_partitionValuesList = valuesList
+        LoadLstLayers(partRasterPath)
+
     End Sub
 
     Private Sub LstRasters_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstRasters.SelectedIndexChanged
@@ -34,7 +37,7 @@ Public Class FrmPartitionRaster
         End If
     End Sub
 
-    Private Sub LoadLstLayers()
+    Private Sub LoadLstLayers(ByVal partRasterPath As String)
         Dim AOIVectorList() As String = Nothing
         Dim AOIRasterList() As String = Nothing
         Dim layerPath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers)
@@ -48,6 +51,11 @@ Public Class FrmPartitionRaster
                 Dim isDiscrete As Boolean = BA_IsIntegerRasterGDB(fullLayerPath)
                 Dim item As LayerListItem = New LayerListItem(AOIRasterList(i), fullLayerPath, LayerType.Raster, isDiscrete)
                 LstRasters.Items.Add(item)
+                If Not String.IsNullOrEmpty(partRasterPath) Then
+                    If item.Value.Equals(partRasterPath) Then
+                        LstRasters.SetSelected(i - 1, True)
+                    End If
+                End If
             Next
         End If
     End Sub
@@ -80,6 +88,9 @@ Public Class FrmPartitionRaster
                     If Not pField.Name.Equals("OBJECTID") AndAlso Not pField.Name.Equals("Count") _
                         AndAlso Not pField.Name.Equals("COUNT") Then
                         LstFields.Items.Add(pField.Name)
+                        If pField.Name.Equals(m_partitionField) Then
+                            LstFields.SetSelected(i - 1, True)
+                        End If
                     End If
                 Next i
             Else
@@ -155,15 +166,26 @@ Public Class FrmPartitionRaster
             pRasterBandCollection = CType(pGeoDataset, IRasterBandCollection)
             pRasterBand = pRasterBandCollection.Item(0)
             pTable = pRasterBand.AttributeTable
+            Dim prevSelectedValues As List(Of String) = New List(Of String)
+            If m_partitionValuesList IsNot Nothing AndAlso m_partitionValuesList.Count > 0 Then
+                prevSelectedValues.AddRange(m_partitionValuesList)
+            End If
+            Dim i As Int32 = 0
             If pTable IsNot Nothing Then
                 pFields = pTable.Fields
                 Dim idxValue As Integer = pFields.FindField(m_partitionField)
                 pCursor = pTable.Search(Nothing, False)
                 pRow = pCursor.NextRow
                 Do While pRow IsNot Nothing
-                    Dim nextValue As String = Convert.ToInt32(pRow.Value(idxValue))
+                    Dim nextValue As String = Convert.ToString(pRow.Value(idxValue))
                     LstValues.Items.Add(nextValue)
+                    If prevSelectedValues.Count > 0 Then
+                        If prevSelectedValues.Contains(nextValue) Then
+                            LstValues.SetSelected(i, True)
+                        End If
+                    End If
                     pRow = pCursor.NextRow
+                    i += 1
                 Loop
                 LstValues.Sorted = True
             Else
@@ -181,5 +203,23 @@ Public Class FrmPartitionRaster
             GC.WaitForPendingFinalizers()
             GC.Collect()
         End Try
+    End Sub
+
+    Private Sub LstValues_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstValues.SelectedIndexChanged
+        m_partitionValuesList = New List(Of String)
+        If LstValues.SelectedIndex > -1 Then
+            For Each item As Object In LstValues.SelectedItems
+                m_partitionValuesList.Add(Convert.ToString(item))
+            Next
+            CmdClearValues.Enabled = True
+        Else
+            CmdClearValues.Enabled = False
+        End If
+    End Sub
+
+    Private Sub CmdSelectAll_Click(sender As System.Object, e As System.EventArgs) Handles CmdSelectAll.Click
+        For i As Int32 = 0 To LstValues.Items.Count - 1
+            LstValues.SetSelected(i, True)
+        Next i
     End Sub
 End Class
