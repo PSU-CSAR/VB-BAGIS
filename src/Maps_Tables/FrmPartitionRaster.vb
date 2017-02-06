@@ -2,14 +2,19 @@
 Imports ESRI.ArcGIS.DataSourcesRaster
 Imports ESRI.ArcGIS.Geodatabase
 Imports System.Windows.Forms
+Imports ESRI.ArcGIS.esriSystem
+Imports ESRI.ArcGIS.Framework
 
 Public Class FrmPartitionRaster
 
     Private m_partitionRasterPath As String
     Private m_partitionField As String
     Private m_partitionValuesList As IList(Of String)
+    Private m_cellSize As Double
+    Private m_snapRasterPath As String
 
-    Public Sub New(ByVal partRasterPath As String, ByVal partField As String, ByVal valuesList As IList(Of String))
+    Public Sub New(ByVal partRasterPath As String, ByVal partField As String, ByVal valuesList As IList(Of String), _
+                   ByVal snapRasterpath As String, ByVal cellSize As Double)
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -19,6 +24,8 @@ Public Class FrmPartitionRaster
 
         m_partitionField = partField
         m_partitionValuesList = valuesList
+        m_snapRasterPath = snapRasterpath
+        m_cellSize = cellSize
         LoadLstLayers(partRasterPath)
 
     End Sub
@@ -212,8 +219,10 @@ Public Class FrmPartitionRaster
                 m_partitionValuesList.Add(Convert.ToString(item))
             Next
             CmdClearValues.Enabled = True
+            CmdCreateRaster.Enabled = True
         Else
             CmdClearValues.Enabled = False
+            CmdCreateRaster.Enabled = False
         End If
     End Sub
 
@@ -221,5 +230,39 @@ Public Class FrmPartitionRaster
         For i As Int32 = 0 To LstValues.Items.Count - 1
             LstValues.SetSelected(i, True)
         Next i
+    End Sub
+
+    Private Sub CmdCreateRaster_Click(sender As System.Object, e As System.EventArgs) Handles CmdCreateRaster.Click
+        If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
+            Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 10)
+            Dim progressDialog2 As IProgressDialog2 = Nothing
+
+            Try
+                progressDialog2 = BA_GetProgressDialog(pStepProg, "Creating partition raster layer", "Running...")
+                pStepProg.Show()
+                progressDialog2.ShowDialog()
+                pStepProg.Step()
+                Dim outputRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_RasterPartition
+                Dim success As BA_ReturnCode = BA_Resample_Raster(m_partitionRasterPath, outputRasterPath, _
+                                                                  m_cellSize, m_snapRasterPath, Nothing)
+                If success = BA_ReturnCode.Success Then
+                    MessageBox.Show("Partition raster has been created and will be used in analysis!")
+                    Me.Close()
+                Else
+                    MessageBox.Show("Partition raster could not be created and cannot be used in analysis!")
+                End If
+            Catch ex As Exception
+                Debug.Print("CmdCreateRaster_Click Exception" & ex.Message)
+            Finally
+                If pStepProg IsNot Nothing Then
+                    pStepProg.Hide()
+                    pStepProg = Nothing
+                End If
+                If progressDialog2 IsNot Nothing Then
+                    progressDialog2.HideDialog()
+                    progressDialog2 = Nothing
+                End If
+            End Try
+        End If
     End Sub
 End Class

@@ -78,6 +78,7 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_RasterPrecMeanElev = "precmeanelev"
     Public Const BA_TablePrecMeanElev = "precmeanelev_tbl"
     Public Const BA_VectorSnotelPrec = "stelprec_v"
+    Public Const BA_RasterPartition = "partition"
 
     'scenario output rasters
     Public Const BA_PseudoNP = "nppseduo"

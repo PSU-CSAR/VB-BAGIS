@@ -2440,8 +2440,23 @@ Public Class frmGenerateMaps
     End Sub
 
     Private Sub BtnPartition_Click(sender As System.Object, e As System.EventArgs) Handles CmdPartition.Click
+        'set parameters
+        If CmboxPrecipType.SelectedIndex = 0 Then  'read direct Annual PRISM raster
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
+            PRISMRasterName = AOIPrismFolderNames.annual.ToString
+        ElseIf CmboxPrecipType.SelectedIndex > 0 And CmboxPrecipType.SelectedIndex < 5 Then 'read directly Quarterly PRISM raster
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
+            PRISMRasterName = BA_GetPrismFolderName(CmboxPrecipType.SelectedIndex + 12)
+        Else 'sum individual monthly PRISM rasters
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
+            PRISMRasterName = BA_TEMP_PRISM
+        End If
+
+        Dim cellSize As Double = BA_CellSize(PrecipPath, PRISMRasterName)
+        Dim snapRasterPath As String = PrecipPath + "\" + PRISMRasterName
         Dim frmPartitionRaster As FrmPartitionRaster = New FrmPartitionRaster(m_partitionRasterPath, m_partitionField, _
-                                                                              m_partitionValuesList)
+                                                                              m_partitionValuesList, snapRasterPath, _
+                                                                              cellSize)
         frmPartitionRaster.ShowDialog()
         If Not String.IsNullOrEmpty(frmPartitionRaster.PartitionRasterPath) Then
             LblPartitionLayer.Text = BA_GetBareName(frmPartitionRaster.PartitionRasterPath)

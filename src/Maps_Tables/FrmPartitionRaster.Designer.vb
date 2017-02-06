@@ -34,6 +34,7 @@ Partial Class FrmPartitionRaster
         Me.CmdClearValues = New System.Windows.Forms.Button()
         Me.CmdSelectAll = New System.Windows.Forms.Button()
         Me.Label3 = New System.Windows.Forms.Label()
+        Me.CmdCreateRaster = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'Label7
@@ -155,11 +156,23 @@ Partial Class FrmPartitionRaster
         Me.Label3.Text = "Click to select; Ctrl-click to de-select" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Selected values will be included in ana" & _
     "lysis"
         '
+        'CmdCreateRaster
+        '
+        Me.CmdCreateRaster.Enabled = False
+        Me.CmdCreateRaster.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CmdCreateRaster.Location = New System.Drawing.Point(639, 188)
+        Me.CmdCreateRaster.Name = "CmdCreateRaster"
+        Me.CmdCreateRaster.Size = New System.Drawing.Size(106, 28)
+        Me.CmdCreateRaster.TabIndex = 20
+        Me.CmdCreateRaster.Text = "Create Raster"
+        Me.CmdCreateRaster.UseVisualStyleBackColor = True
+        '
         'FrmPartitionRaster
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(759, 262)
+        Me.Controls.Add(Me.CmdCreateRaster)
         Me.Controls.Add(Me.Label3)
         Me.Controls.Add(Me.CmdSelectAll)
         Me.Controls.Add(Me.CmdClearValues)
@@ -191,4 +204,5 @@ Partial Class FrmPartitionRaster
     Friend WithEvents CmdClearValues As System.Windows.Forms.Button
     Friend WithEvents CmdSelectAll As System.Windows.Forms.Button
     Friend WithEvents Label3 As System.Windows.Forms.Label
+    Friend WithEvents CmdCreateRaster As System.Windows.Forms.Button
 End Class
