@@ -801,7 +801,7 @@ Public Class frmGenerateMaps
 
         'number of data layers, determined by the program developer
         'layers to be checked
-        Dim ndata As Integer = 9
+        Dim ndata As Integer = 8
 
         'prepare list
         Dim datastatus(ndata) As String
@@ -822,20 +822,17 @@ Public Class frmGenerateMaps
         datadesc(3) = BA_MapPrecipMeanElevation
         DataName(3) = BA_RasterPrecMeanElev
 
-        datadesc(4) = BA_MapPrecipZone
-        DataName(4) = BA_RasterPrecipitationZones
+        datadesc(4) = BA_MapSNOTELZone
+        DataName(4) = BA_RasterSNOTELZones
 
-        datadesc(5) = BA_MapSNOTELZone
-        DataName(5) = BA_RasterSNOTELZones
+        datadesc(5) = BA_MapSnowCourseZone
+        DataName(5) = BA_RasterSnowCourseZones
 
-        datadesc(6) = BA_MapSnowCourseZone
-        DataName(6) = BA_RasterSnowCourseZones
+        datadesc(6) = BA_MapAspect
+        DataName(6) = BA_RasterAspectZones
 
-        datadesc(7) = BA_MapAspect
-        DataName(7) = BA_RasterAspectZones
-
-        datadesc(8) = BA_MapSlope
-        DataName(8) = BA_RasterSlopeZones
+        datadesc(7) = BA_MapSlope
+        DataName(7) = BA_RasterSlopeZones
 
         Dim i As Long
 
@@ -1840,31 +1837,6 @@ Public Class frmGenerateMaps
             pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
             response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, strSavePath, RasterName, NO_VECTOR_NAME, MessageKey)
 
-            pStepProg.Message = "Creating Precipitation Mean Elevation layer ..."
-            pStepProg.Step()
-
-            'Resample DEM to PRISM resolution
-            Dim precipMeanPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_RasterPrecMeanElev
-            Dim success As BA_ReturnCode = BA_CreateElevPrecipLayer(AOIFolderBase, PrecipPath, PRISMRasterName, precipMeanPath)
-
-            'Run Sample tool to extract elevation/precipitation for PRISM cell locations; The output is a table
-            If success = BA_ReturnCode.Success Then
-                Dim sampleTablePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_TablePrecMeanElev
-                Dim sb As System.Text.StringBuilder = New System.Text.StringBuilder()
-                sb.Append(PrecipPath + "\" + PRISMRasterName & ";")
-                sb.Append(precipMeanPath)
-                pStepProg.Message = "Extracting DEM and PRISM values to table..."
-                pStepProg.Step()
-                success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath, _
-                          PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest)
-                If success = BA_ReturnCode.Success Then
-                    'SNOTEL first
-                    Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_VectorSnotelPrec
-                    success = BA_ExtractValuesToPoints(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers) + "\" + BA_EnumDescription(MapsFileName.Snotel), _
-                                                       PrecipPath + "\" + PRISMRasterName, snotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
-                End If
-            End If
-
             '=================================
             'Update map parameters file
             '=================================
@@ -2062,6 +2034,33 @@ Public Class frmGenerateMaps
                 pInputRaster = Nothing
             End If
 
+            If ChkRepresentedPrecip.Checked = True Then
+                pStepProg.Message = "Creating Precipitation Mean Elevation layer ..."
+                pStepProg.Step()
+
+                'Resample DEM to PRISM resolution
+                Dim precipMeanPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_RasterPrecMeanElev
+                Dim success As BA_ReturnCode = BA_CreateElevPrecipLayer(AOIFolderBase, PrecipPath, PRISMRasterName, precipMeanPath)
+
+                'Run Sample tool to extract elevation/precipitation for PRISM cell locations; The output is a table
+                If success = BA_ReturnCode.Success Then
+                    Dim sampleTablePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_TablePrecMeanElev
+                    Dim sb As System.Text.StringBuilder = New System.Text.StringBuilder()
+                    sb.Append(PrecipPath + "\" + PRISMRasterName & ";")
+                    sb.Append(precipMeanPath)
+                    pStepProg.Message = "Extracting DEM and PRISM values to table..."
+                    pStepProg.Step()
+                    success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath, _
+                              PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest)
+                    If success = BA_ReturnCode.Success Then
+                        'SNOTEL first
+                        Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_VectorSnotelPrec
+                        success = BA_ExtractValuesToPoints(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers) + "\" + BA_EnumDescription(MapsFileName.Snotel), _
+                                                           PrecipPath + "\" + PRISMRasterName, snotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
+                    End If
+                End If
+            End If
+
             '=================================
             'Update map parameters file
             '=================================
@@ -2210,15 +2209,18 @@ Public Class frmGenerateMaps
             Dim pAreaElvWorksheet As Worksheet = bkWorkBook.Sheets.Add
             pAreaElvWorksheet.Name = "Area Elevations"
 
-            'Create Elevation Distribution Worksheet
-            Dim pPrecipDemElevWorksheet As Worksheet = bkWorkBook.Sheets.Add
-            pPrecipDemElevWorksheet.Name = "Precip-DEMElev"
 
-            'Create Elevation Distribution Worksheet
-            Dim pPrecipSiteWorksheet As Worksheet = bkWorkBook.Sheets.Add
-            pPrecipSiteWorksheet.Name = "Precip-SiteElev"
+            Dim pPrecipDemElevWorksheet As Worksheet = Nothing
+            Dim pPrecipSiteWorksheet As Worksheet = Nothing
+            If ChkRepresentedPrecip.Checked = True Then
+                'Create Elevation Distribution Worksheet
+                pPrecipDemElevWorksheet = bkWorkBook.Sheets.Add
+                pPrecipDemElevWorksheet.Name = "Precip-DEMElev"
 
-
+                'Create Elevation Distribution Worksheet
+                pPrecipSiteWorksheet = bkWorkBook.Sheets.Add
+                pPrecipSiteWorksheet.Name = "Precip-SiteElev"
+            End If
 
             'Dim variables for the range worksheets in case we need them later
             Dim pSCRangeWorksheet As Worksheet = Nothing
@@ -2363,20 +2365,22 @@ Public Class frmGenerateMaps
                 demTitleUnit = MeasurementUnit.Meters
             End If
 
-            Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
-                PRISMRasterName + "_1", BA_RasterPrecMeanElev, pPrecipDemElevWorksheet, demTitleUnit, _
-                MeasurementUnit.Inches)
-            If success = BA_ReturnCode.Success Then
-                success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
-                                                     BA_RasterValu, BA_SiteElevField, BA_SiteNameField, _
-                                                     pPrecipSiteWorksheet, MeasurementUnit.Inches)
-
-
+            If ChkRepresentedPrecip.Checked = True Then
+                Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
+                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, pPrecipDemElevWorksheet, demTitleUnit, _
+                    MeasurementUnit.Inches)
                 If success = BA_ReturnCode.Success Then
-                    success = BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pPrecipSiteWorksheet, _
-                                                            pChartsWorksheet, _
-                                                            demTitleUnit, MeasurementUnit.Inches, _
-                                                            Chart_YMinScale, 0)
+                    success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
+                                                         BA_RasterValu, BA_SiteElevField, BA_SiteNameField, _
+                                                         pPrecipSiteWorksheet, MeasurementUnit.Inches)
+
+
+                    If success = BA_ReturnCode.Success Then
+                        success = BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pPrecipSiteWorksheet, _
+                                                                pChartsWorksheet, _
+                                                                demTitleUnit, MeasurementUnit.Inches, _
+                                                                Chart_YMinScale, 0)
+                    End If
                 End If
             End If
 

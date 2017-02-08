@@ -1091,7 +1091,9 @@ Module BAGIS_SettingsModule
             End If
         Else
             If Not BA_IsNetworkAvailable(0) Then
-                MessageBox.Show("Your computer is not connected to the network. You may be unable to access some of the data layers.")
+                MessageBox.Show("Your computer is not connected to the network. " + _
+                                "If you use any web services in BAGIS, then these web services may not available " + _
+                                "for BASIN creation.")
                 BA_Network_Available = NO
                 Return False
             Else

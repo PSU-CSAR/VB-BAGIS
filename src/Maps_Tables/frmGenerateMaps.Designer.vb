@@ -99,11 +99,16 @@ Partial Class frmGenerateMaps
         Me.Label9 = New System.Windows.Forms.Label()
         Me.CmdPartition = New System.Windows.Forms.Button()
         Me.LblPartitionLayer = New System.Windows.Forms.Label()
+        Me.FrameRepresentedPrecipitation = New System.Windows.Forms.GroupBox()
+        Me.ChkRepresentedPrecip = New System.Windows.Forms.CheckBox()
+        Me.Label10 = New System.Windows.Forms.Label()
+        Me.CmdClearPartition = New System.Windows.Forms.Button()
         Me.FrameInfo.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.FrameElevationDist.SuspendLayout()
         Me.FrameElevationRange.SuspendLayout()
         Me.FramePrecipitationDist.SuspendLayout()
+        Me.FrameRepresentedPrecipitation.SuspendLayout()
         Me.SuspendLayout()
         '
         'FrameInfo
@@ -841,7 +846,7 @@ Partial Class frmGenerateMaps
         '
         Me.CmdGenerate.Enabled = False
         Me.CmdGenerate.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdGenerate.Location = New System.Drawing.Point(528, 434)
+        Me.CmdGenerate.Location = New System.Drawing.Point(528, 528)
         Me.CmdGenerate.Name = "CmdGenerate"
         Me.CmdGenerate.Size = New System.Drawing.Size(177, 28)
         Me.CmdGenerate.TabIndex = 10
@@ -852,7 +857,7 @@ Partial Class frmGenerateMaps
         '
         Me.CmdTables.Enabled = False
         Me.CmdTables.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdTables.Location = New System.Drawing.Point(528, 480)
+        Me.CmdTables.Location = New System.Drawing.Point(528, 574)
         Me.CmdTables.Name = "CmdTables"
         Me.CmdTables.Size = New System.Drawing.Size(77, 28)
         Me.CmdTables.TabIndex = 10
@@ -862,7 +867,7 @@ Partial Class frmGenerateMaps
         'CmbClose
         '
         Me.CmbClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmbClose.Location = New System.Drawing.Point(827, 519)
+        Me.CmbClose.Location = New System.Drawing.Point(827, 573)
         Me.CmbClose.Name = "CmbClose"
         Me.CmbClose.Size = New System.Drawing.Size(100, 28)
         Me.CmbClose.TabIndex = 10
@@ -873,7 +878,7 @@ Partial Class frmGenerateMaps
         '
         Me.CmdMaps.Enabled = False
         Me.CmdMaps.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdMaps.Location = New System.Drawing.Point(628, 479)
+        Me.CmdMaps.Location = New System.Drawing.Point(628, 573)
         Me.CmdMaps.Name = "CmdMaps"
         Me.CmdMaps.Size = New System.Drawing.Size(77, 28)
         Me.CmdMaps.TabIndex = 10
@@ -910,7 +915,7 @@ Partial Class frmGenerateMaps
         '
         Me.CmboxAspect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.CmboxAspect.FormattingEnabled = True
-        Me.CmboxAspect.Location = New System.Drawing.Point(860, 438)
+        Me.CmboxAspect.Location = New System.Drawing.Point(860, 532)
         Me.CmboxAspect.Name = "CmboxAspect"
         Me.CmboxAspect.Size = New System.Drawing.Size(67, 21)
         Me.CmboxAspect.TabIndex = 12
@@ -919,7 +924,7 @@ Partial Class frmGenerateMaps
         '
         Me.Label9.AutoSize = True
         Me.Label9.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label9.Location = New System.Drawing.Point(728, 439)
+        Me.Label9.Location = New System.Drawing.Point(728, 533)
         Me.Label9.Name = "Label9"
         Me.Label9.Size = New System.Drawing.Size(126, 16)
         Me.Label9.TabIndex = 13
@@ -927,31 +932,78 @@ Partial Class frmGenerateMaps
         '
         'CmdPartition
         '
-        Me.CmdPartition.Enabled = False
         Me.CmdPartition.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdPartition.Location = New System.Drawing.Point(528, 519)
+        Me.CmdPartition.Location = New System.Drawing.Point(304, 44)
         Me.CmdPartition.Name = "CmdPartition"
-        Me.CmdPartition.Size = New System.Drawing.Size(102, 28)
+        Me.CmdPartition.Size = New System.Drawing.Size(60, 25)
         Me.CmdPartition.TabIndex = 14
-        Me.CmdPartition.Text = "Partition Layer"
+        Me.CmdPartition.Text = "Select"
         Me.CmdPartition.UseVisualStyleBackColor = True
         '
         'LblPartitionLayer
         '
+        Me.LblPartitionLayer.Enabled = False
         Me.LblPartitionLayer.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.LblPartitionLayer.ForeColor = System.Drawing.Color.Blue
-        Me.LblPartitionLayer.Location = New System.Drawing.Point(633, 525)
+        Me.LblPartitionLayer.Location = New System.Drawing.Point(182, 47)
         Me.LblPartitionLayer.Name = "LblPartitionLayer"
-        Me.LblPartitionLayer.Size = New System.Drawing.Size(180, 16)
+        Me.LblPartitionLayer.Size = New System.Drawing.Size(110, 21)
         Me.LblPartitionLayer.TabIndex = 15
+        '
+        'FrameRepresentedPrecipitation
+        '
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.CmdClearPartition)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.Label10)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.CmdPartition)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.ChkRepresentedPrecip)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.LblPartitionLayer)
+        Me.FrameRepresentedPrecipitation.Enabled = False
+        Me.FrameRepresentedPrecipitation.Font = New System.Drawing.Font("Microsoft Sans Serif", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.FrameRepresentedPrecipitation.Location = New System.Drawing.Point(497, 424)
+        Me.FrameRepresentedPrecipitation.Name = "FrameRepresentedPrecipitation"
+        Me.FrameRepresentedPrecipitation.Size = New System.Drawing.Size(443, 80)
+        Me.FrameRepresentedPrecipitation.TabIndex = 16
+        Me.FrameRepresentedPrecipitation.TabStop = False
+        Me.FrameRepresentedPrecipitation.Text = "Represented Precipitation"
+        '
+        'ChkRepresentedPrecip
+        '
+        Me.ChkRepresentedPrecip.AutoSize = True
+        Me.ChkRepresentedPrecip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.ChkRepresentedPrecip.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.ChkRepresentedPrecip.Location = New System.Drawing.Point(9, 23)
+        Me.ChkRepresentedPrecip.Name = "ChkRepresentedPrecip"
+        Me.ChkRepresentedPrecip.Size = New System.Drawing.Size(341, 20)
+        Me.ChkRepresentedPrecip.TabIndex = 5
+        Me.ChkRepresentedPrecip.Text = "Generate Represented Precipitation Table and Chart"
+        Me.ChkRepresentedPrecip.UseVisualStyleBackColor = True
+        '
+        'Label10
+        '
+        Me.Label10.AutoSize = True
+        Me.Label10.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label10.Location = New System.Drawing.Point(12, 47)
+        Me.Label10.Name = "Label10"
+        Me.Label10.Size = New System.Drawing.Size(169, 16)
+        Me.Label10.TabIndex = 16
+        Me.Label10.Text = "Elev-Precip Attribute Layer:"
+        '
+        'CmdClearPartition
+        '
+        Me.CmdClearPartition.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CmdClearPartition.Location = New System.Drawing.Point(369, 44)
+        Me.CmdClearPartition.Name = "CmdClearPartition"
+        Me.CmdClearPartition.Size = New System.Drawing.Size(60, 25)
+        Me.CmdClearPartition.TabIndex = 17
+        Me.CmdClearPartition.Text = "Clear"
+        Me.CmdClearPartition.UseVisualStyleBackColor = True
         '
         'frmGenerateMaps
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(952, 569)
-        Me.Controls.Add(Me.LblPartitionLayer)
-        Me.Controls.Add(Me.CmdPartition)
+        Me.ClientSize = New System.Drawing.Size(952, 609)
+        Me.Controls.Add(Me.FrameRepresentedPrecipitation)
         Me.Controls.Add(Me.Label9)
         Me.Controls.Add(Me.CmboxAspect)
         Me.Controls.Add(Me.lstDataStatus)
@@ -978,6 +1030,8 @@ Partial Class frmGenerateMaps
         Me.FrameElevationRange.PerformLayout()
         Me.FramePrecipitationDist.ResumeLayout(False)
         Me.FramePrecipitationDist.PerformLayout()
+        Me.FrameRepresentedPrecipitation.ResumeLayout(False)
+        Me.FrameRepresentedPrecipitation.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -1059,4 +1113,8 @@ Partial Class frmGenerateMaps
     Friend WithEvents Label9 As System.Windows.Forms.Label
     Friend WithEvents CmdPartition As System.Windows.Forms.Button
     Friend WithEvents LblPartitionLayer As System.Windows.Forms.Label
+    Friend WithEvents FrameRepresentedPrecipitation As System.Windows.Forms.GroupBox
+    Friend WithEvents CmdClearPartition As System.Windows.Forms.Button
+    Friend WithEvents Label10 As System.Windows.Forms.Label
+    Friend WithEvents ChkRepresentedPrecip As System.Windows.Forms.CheckBox
 End Class
