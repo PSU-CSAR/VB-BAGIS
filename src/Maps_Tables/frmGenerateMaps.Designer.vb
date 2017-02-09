@@ -957,7 +957,6 @@ Partial Class frmGenerateMaps
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.CmdPartition)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.ChkRepresentedPrecip)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.LblPartitionLayer)
-        Me.FrameRepresentedPrecipitation.Enabled = False
         Me.FrameRepresentedPrecipitation.Font = New System.Drawing.Font("Microsoft Sans Serif", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.FrameRepresentedPrecipitation.Location = New System.Drawing.Point(497, 424)
         Me.FrameRepresentedPrecipitation.Name = "FrameRepresentedPrecipitation"

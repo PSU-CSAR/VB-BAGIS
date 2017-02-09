@@ -2209,19 +2209,6 @@ Public Class frmGenerateMaps
             Dim pAreaElvWorksheet As Worksheet = bkWorkBook.Sheets.Add
             pAreaElvWorksheet.Name = "Area Elevations"
 
-
-            Dim pPrecipDemElevWorksheet As Worksheet = Nothing
-            Dim pPrecipSiteWorksheet As Worksheet = Nothing
-            If ChkRepresentedPrecip.Checked = True Then
-                'Create Elevation Distribution Worksheet
-                pPrecipDemElevWorksheet = bkWorkBook.Sheets.Add
-                pPrecipDemElevWorksheet.Name = "Precip-DEMElev"
-
-                'Create Elevation Distribution Worksheet
-                pPrecipSiteWorksheet = bkWorkBook.Sheets.Add
-                pPrecipSiteWorksheet.Name = "Precip-SiteElev"
-            End If
-
             'Dim variables for the range worksheets in case we need them later
             Dim pSCRangeWorksheet As Worksheet = Nothing
             Dim pElevationRangeWorksheet As Worksheet = Nothing
@@ -2259,6 +2246,23 @@ Public Class frmGenerateMaps
                 FileName = BA_MapParameterFile 'i.e., map_parameters.txt
                 response = SaveMapParameters(filepath, FileName)
                 If response <= 0 Then MsgBox("Error! Unable to update map parameter file. Please report the error to the developer.")
+            End If
+
+            Dim pPrecipDemElevWorksheet As Worksheet = Nothing
+            Dim pPrecipSiteWorksheet As Worksheet = Nothing
+            Dim pPrecipChartWorksheet As Worksheet = Nothing
+            If ChkRepresentedPrecip.Checked = True Then
+                'Create Elevation Precipitation Worksheet
+                pPrecipDemElevWorksheet = bkWorkBook.Sheets.Add
+                pPrecipDemElevWorksheet.Name = "Elev-Precip AOI"
+
+                'Create Site Precipitation Worksheet
+                pPrecipSiteWorksheet = bkWorkBook.Sheets.Add
+                pPrecipSiteWorksheet.Name = "Elev-Precip Sites"
+
+                'Create Elev-Precip chart Worksheet
+                pPrecipChartWorksheet = bkWorkBook.Sheets.Add
+                pPrecipChartWorksheet.Name = "Elev-Precip Chart"
             End If
 
             'Create Snow Course Distribution Worksheet
@@ -2376,10 +2380,12 @@ Public Class frmGenerateMaps
 
 
                     If success = BA_ReturnCode.Success Then
+                        Dim demChartMin As Integer = Math.Floor(Convert.ToDouble(txtMinElev.Text) / 100) * 100
+                        Dim prismChartMin As Integer = Math.Floor(Convert.ToDouble(txtMinPrecip.Text)) - 1
                         success = BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pPrecipSiteWorksheet, _
-                                                                pChartsWorksheet, _
+                                                                pPrecipChartWorksheet, _
                                                                 demTitleUnit, MeasurementUnit.Inches, _
-                                                                Chart_YMinScale, 0)
+                                                                demChartMin, prismChartMin)
                     End If
                 End If
             End If
