@@ -47,6 +47,9 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_SiteNameField = "BA_SNAME"
     Public Const BA_SiteElevField = "BA_SELEV"
     Public Const BA_RasterValu = "RASTERVALU"   'Field generated when using BA_ExtractValuesToPoints to populate BA_SELEV from DEM
+    Public Const BA_SiteTypeField = "BA_STYPE"
+    Public Const BA_SiteSnotel = "stel"
+    Public Const BA_SiteSnowCourse = "scos"
 
     'AOI pourpoint area and area unit field names
     Public Const BA_AOIShapeAreaField = "AOISHPAREA"
@@ -79,6 +82,7 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_TablePrecMeanElev = "precmeanelev_tbl"
     Public Const BA_VectorSnotelPrec = "stelprec_v"
     Public Const BA_RasterPartition = "partition"
+    Public Const BA_MergedSites = "mergesites_v"
 
     'scenario output rasters
     Public Const BA_PseudoNP = "nppseduo"

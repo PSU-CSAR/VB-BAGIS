@@ -963,18 +963,20 @@ Partial Class frmGenerateMaps
         Me.FrameRepresentedPrecipitation.Size = New System.Drawing.Size(443, 80)
         Me.FrameRepresentedPrecipitation.TabIndex = 16
         Me.FrameRepresentedPrecipitation.TabStop = False
-        Me.FrameRepresentedPrecipitation.Text = "Represented Precipitation"
+        Me.FrameRepresentedPrecipitation.Text = "Elevation-Precipitation Correlation"
         '
         'ChkRepresentedPrecip
         '
         Me.ChkRepresentedPrecip.AutoSize = True
+        Me.ChkRepresentedPrecip.Checked = True
+        Me.ChkRepresentedPrecip.CheckState = System.Windows.Forms.CheckState.Checked
         Me.ChkRepresentedPrecip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.ChkRepresentedPrecip.ForeColor = System.Drawing.SystemColors.ControlText
         Me.ChkRepresentedPrecip.Location = New System.Drawing.Point(9, 23)
         Me.ChkRepresentedPrecip.Name = "ChkRepresentedPrecip"
-        Me.ChkRepresentedPrecip.Size = New System.Drawing.Size(341, 20)
+        Me.ChkRepresentedPrecip.Size = New System.Drawing.Size(292, 20)
         Me.ChkRepresentedPrecip.TabIndex = 5
-        Me.ChkRepresentedPrecip.Text = "Generate Represented Precipitation Table and Chart"
+        Me.ChkRepresentedPrecip.Text = "Generate Elev-Precip Table and Scatter Plot"
         Me.ChkRepresentedPrecip.UseVisualStyleBackColor = True
         '
         'Label10

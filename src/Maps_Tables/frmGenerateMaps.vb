@@ -167,6 +167,11 @@ Public Class frmGenerateMaps
         ElvPath = AnalysisPath & "\" & BA_RasterElevationZones
 
         Display_DataStatus()
+
+        If Not AOI_HasSNOTEL AndAlso Not AOI_HasSnowCourse Then
+            'Disable Elevation-Precipitation Correlation if no sites
+            FrameRepresentedPrecipitation.Enabled = False
+        End If
         m_formInit = True
         Set_Silent_Mode = False
     End Sub
@@ -2053,10 +2058,16 @@ Public Class frmGenerateMaps
                     success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath, _
                               PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest)
                     If success = BA_ReturnCode.Success Then
-                        'SNOTEL first
-                        Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_VectorSnotelPrec
-                        success = BA_ExtractValuesToPoints(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers) + "\" + BA_EnumDescription(MapsFileName.Snotel), _
-                                                           PrecipPath + "\" + PRISMRasterName, snotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
+                        Dim sitesPath As String = BA_CreateSitesLayer(AOIFolderBase, BA_MergedSites, BA_SiteTypeField, _
+                                                                      BA_SiteSnotel, BA_SiteSnowCourse)
+                        'Extract DEM and prism values to sites
+                        If Not String.IsNullOrEmpty(sitesPath) Then
+                            Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_VectorSnotelPrec
+                            success = BA_ExtractValuesToPoints(sitesPath, _
+                                                               PrecipPath + "\" + PRISMRasterName, snotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
+                        Else
+                            MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
+                        End If
                     End If
                 End If
             End If
@@ -2376,7 +2387,7 @@ Public Class frmGenerateMaps
                 If success = BA_ReturnCode.Success Then
                     success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
                                                          BA_RasterValu, BA_SiteElevField, BA_SiteNameField, _
-                                                         pPrecipSiteWorksheet, MeasurementUnit.Inches)
+                                                         BA_SiteTypeField, pPrecipSiteWorksheet, MeasurementUnit.Inches)
 
 
                     If success = BA_ReturnCode.Success Then
