@@ -83,6 +83,7 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_VectorSnotelPrec = "stelprec_v"
     Public Const BA_RasterPartition = "partition"
     Public Const BA_MergedSites = "mergesites_v"
+    Public Const BA_AspectPrec = "aspzoneprec"
 
     'scenario output rasters
     Public Const BA_PseudoNP = "nppseduo"

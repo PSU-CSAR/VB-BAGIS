@@ -1811,16 +1811,7 @@ Public Class frmGenerateMaps
             'create precipitation zones
             '=================================
             'set parameters
-            If CmboxPrecipType.SelectedIndex = 0 Then  'read direct Annual PRISM raster
-                PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
-                PRISMRasterName = AOIPrismFolderNames.annual.ToString
-            ElseIf CmboxPrecipType.SelectedIndex > 0 And CmboxPrecipType.SelectedIndex < 5 Then 'read directly Quarterly PRISM raster
-                PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
-                PRISMRasterName = BA_GetPrismFolderName(CmboxPrecipType.SelectedIndex + 12)
-            Else 'sum individual monthly PRISM rasters
-                PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
-                PRISMRasterName = BA_TEMP_PRISM
-            End If
+            SetPrecipPathInfo()
 
             InputPath = PrecipPath
             InputName = PRISMRasterName
@@ -2043,30 +2034,43 @@ Public Class frmGenerateMaps
                 pStepProg.Message = "Creating Precipitation Mean Elevation layer ..."
                 pStepProg.Step()
 
+                SetPrecipPathInfo()
+
                 'Resample DEM to PRISM resolution
                 Dim precipMeanPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_RasterPrecMeanElev
                 Dim success As BA_ReturnCode = BA_CreateElevPrecipLayer(AOIFolderBase, PrecipPath, PRISMRasterName, precipMeanPath)
 
-                'Run Sample tool to extract elevation/precipitation for PRISM cell locations; The output is a table
+                'Resample Aspect to PRISM resolution
                 If success = BA_ReturnCode.Success Then
-                    Dim sampleTablePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_TablePrecMeanElev
-                    Dim sb As System.Text.StringBuilder = New System.Text.StringBuilder()
-                    sb.Append(PrecipPath + "\" + PRISMRasterName & ";")
-                    sb.Append(precipMeanPath)
-                    pStepProg.Message = "Extracting DEM and PRISM values to table..."
-                    pStepProg.Step()
-                    success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath, _
-                              PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest)
+                    Dim cellSize As Double = BA_CellSize(PrecipPath, PRISMRasterName)
+                    Dim aspZonesPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_RasterAspectZones
+                    Dim aspResamplePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_AspectPrec
+                    success = BA_Resample_Raster(aspZonesPath, aspResamplePath, cellSize, _
+                                                 PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest)
                     If success = BA_ReturnCode.Success Then
-                        Dim sitesPath As String = BA_CreateSitesLayer(AOIFolderBase, BA_MergedSites, BA_SiteTypeField, _
-                                                                      BA_SiteSnotel, BA_SiteSnowCourse)
-                        'Extract DEM and prism values to sites
-                        If Not String.IsNullOrEmpty(sitesPath) Then
-                            Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_VectorSnotelPrec
-                            success = BA_ExtractValuesToPoints(sitesPath, _
-                                                               PrecipPath + "\" + PRISMRasterName, snotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
-                        Else
-                            MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
+                        'Run Sample tool to extract elevation/precipitation for PRISM cell locations; The output is a table
+                        If success = BA_ReturnCode.Success Then
+                            Dim sampleTablePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_TablePrecMeanElev
+                            Dim sb As System.Text.StringBuilder = New System.Text.StringBuilder()
+                            sb.Append(aspResamplePath + ";")
+                            sb.Append(PrecipPath + "\" + PRISMRasterName & ";")
+                            sb.Append(precipMeanPath)
+                            pStepProg.Message = "Extracting DEM and PRISM values to table..."
+                            pStepProg.Step()
+                            success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath, _
+                                      PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest)
+                            If success = BA_ReturnCode.Success Then
+                                Dim sitesPath As String = BA_CreateSitesLayer(AOIFolderBase, BA_MergedSites, BA_SiteTypeField, _
+                                                                              BA_SiteSnotel, BA_SiteSnowCourse)
+                                'Extract DEM and prism values to sites
+                                If Not String.IsNullOrEmpty(sitesPath) Then
+                                    Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_VectorSnotelPrec
+                                    success = BA_ExtractValuesToPoints(sitesPath, _
+                                                                       PrecipPath + "\" + PRISMRasterName, snotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
+                                Else
+                                    MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
+                                End If
+                            End If
                         End If
                     End If
                 End If
@@ -2345,17 +2349,9 @@ Public Class frmGenerateMaps
             pStepProg.Step()
 
             'Calculate file path for prism based on the form
-            Dim PRISMFolderName As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True)
-            If CmboxPrecipType.SelectedIndex = 0 Then  'read direct Annual PRISM raster
-                PRISMRasterName = AOIPrismFolderNames.annual.ToString
-            ElseIf CmboxPrecipType.SelectedIndex > 0 And CmboxPrecipType.SelectedIndex < 5 Then 'read directly Quarterly PRISM raster
-                PRISMRasterName = BA_GetPrismFolderName(CmboxPrecipType.SelectedIndex + 12)
-            Else 'sum individual monthly PRISM rasters
-                PRISMFolderName = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
-                PRISMRasterName = BA_TEMP_PRISM
-            End If
+            SetPrecipPathInfo()
             response = BA_Excel_CreatePRISMTable(AOIFolderBase, pPRISMWorkSheet, pSubElvWorksheet, MaxPRISMValue, _
-                                                 PRISMFolderName & PRISMRasterName, AOI_DEMMin, conversionFactor, OptZMeters.Checked)
+                                                 PrecipPath & PRISMRasterName, AOI_DEMMin, conversionFactor, OptZMeters.Checked)
             response = BA_Excel_CreatePRISMChart(pPRISMWorkSheet, pSubElvWorksheet, pChartsWorksheet, _
                                                  BA_ChartWidth + BA_ChartSpacing + BA_ChartSpacing, BA_ChartSpacing, _
                                                  Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, MaxPRISMValue, OptZMeters.Checked, _
@@ -2491,5 +2487,18 @@ Public Class frmGenerateMaps
             m_partitionValuesList = Nothing
         End If
 
+    End Sub
+
+    Private Sub SetPrecipPathInfo()
+        If CmboxPrecipType.SelectedIndex = 0 Then  'read direct Annual PRISM raster
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
+            PRISMRasterName = AOIPrismFolderNames.annual.ToString
+        ElseIf CmboxPrecipType.SelectedIndex > 0 And CmboxPrecipType.SelectedIndex < 5 Then 'read directly Quarterly PRISM raster
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
+            PRISMRasterName = BA_GetPrismFolderName(CmboxPrecipType.SelectedIndex + 12)
+        Else 'sum individual monthly PRISM rasters
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
+            PRISMRasterName = BA_TEMP_PRISM
+        End If
     End Sub
 End Class
