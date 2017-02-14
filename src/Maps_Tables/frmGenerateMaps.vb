@@ -2070,9 +2070,25 @@ Public Class frmGenerateMaps
                                                                               BA_SiteSnotel, BA_SiteSnowCourse)
                                 'Extract DEM and prism values to sites
                                 If Not String.IsNullOrEmpty(sitesPath) Then
-                                    Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_VectorSnotelPrec
+                                    Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_VectorSnotelPrec
+                                    Dim tempSnotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + "tmpSnoExtract"
                                     success = BA_ExtractValuesToPoints(sitesPath, _
-                                                                       PrecipPath + "\" + PRISMRasterName, snotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
+                                                                       PrecipPath + "\" + PRISMRasterName, tempSnotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
+                                    If success = BA_ReturnCode.Success Then
+                                        Dim tempfileName As String = BA_GetBareName(tempSnotelPrecipPath)
+                                        RenamePrecipValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempfileName)
+                                        success = BA_ExtractValuesToPoints(tempSnotelPrecipPath, aspLayerPath, snotelPrecipPath, _
+                                                                           PrecipPath + "\" + PRISMRasterName, True)
+                                        BA_Remove_ShapefileFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempfileName)
+                                        If success = BA_ReturnCode.Success Then
+                                            success = BA_UpdateFeatureClassAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
+                                                                                      BA_VectorSnotelPrec, BA_Aspect, BA_RasterValu, esriFieldType.esriFieldTypeString)
+                                        Else
+                                            MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
+                                        End If
+                                    Else
+                                        MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
+                                    End If
                                 Else
                                     MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
                                 End If
@@ -2391,8 +2407,8 @@ Public Class frmGenerateMaps
                     MeasurementUnit.Inches)
                 If success = BA_ReturnCode.Success Then
                     success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
-                                                         BA_RasterValu, BA_SiteElevField, BA_SiteNameField, _
-                                                         BA_SiteTypeField, pPrecipSiteWorksheet, MeasurementUnit.Inches)
+                                                         BA_Precip, BA_SiteElevField, BA_SiteNameField, _
+                                                         BA_SiteTypeField, BA_Aspect, pPrecipSiteWorksheet, MeasurementUnit.Inches)
 
 
                     If success = BA_ReturnCode.Success Then
@@ -2539,6 +2555,48 @@ Public Class frmGenerateMaps
             Debug.Print("CreateAspectLayerForElevPrecip Exception: " & ex.Message)
             Return Nothing
         End Try
+    End Function
+
+    Private Function RenamePrecipValuesField(ByVal filePath As String, ByVal fileName As String) As BA_ReturnCode
+
+        'open raster attribute table
+        Dim pFClass As IFeatureClass
+        Dim pFld As IFieldEdit
+        Dim success As BA_ReturnCode = BA_ReturnCode.OtherError
+
+        'add field
+        Try
+            pFClass = BA_OpenFeatureClassFromGDB(filePath, fileName)
+            If pFClass IsNot Nothing Then
+                Dim idxTarget = pFClass.FindField(BA_Precip)
+                If idxTarget < 0 Then
+                    pFld = New Field
+                    pFld.Name_2 = BA_Precip
+                    pFld.Type_2 = esriFieldType.esriFieldTypeDouble
+                    pFld.Length_2 = 24
+                    pFld.Required_2 = False
+
+                    ' Add field
+                    pFClass.AddField(pFld)
+                End If
+
+                Dim expressType As String = "VB"
+                Dim expression As String = "[" + BA_RasterValu + "]"
+                Dim outPointFeatures As String = filePath & "\" & fileName
+                success = BA_CalculateField(outPointFeatures, BA_Precip, expression, expressType)
+                If success = BA_ReturnCode.Success Then
+                    success = BA_DeleteFieldFromFeatureClass(filePath, fileName, BA_RasterValu)
+                End If
+            End If
+            Return success
+        Catch ex As Exception
+            Debug.Print("RenamePrecipValuesField: " & ex.Message)
+            Return BA_ReturnCode.UnknownError
+        Finally
+            pFClass = Nothing
+            pFld = Nothing
+        End Try
+
     End Function
 
 End Class
