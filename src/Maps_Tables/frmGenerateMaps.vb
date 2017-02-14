@@ -2060,6 +2060,12 @@ Public Class frmGenerateMaps
                             success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath, _
                                       PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest, CStr(prismCellSize))
                             If success = BA_ReturnCode.Success Then
+                                'set reclass
+                                Dim AspIntervalList() As BA_IntervalList = Nothing
+                                BA_SetAspectClasses(AspIntervalList, AspectDirectionsNumber)
+                                Dim aspFieldName As String = BA_GetBareName(aspLayerPath)
+                                BA_UpdateTableAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
+                                                         BA_TablePrecMeanElev, BA_Aspect, aspFieldName, esriFieldType.esriFieldTypeString)
                                 Dim sitesPath As String = BA_CreateSitesLayer(AOIFolderBase, BA_MergedSites, BA_SiteTypeField, _
                                                                               BA_SiteSnotel, BA_SiteSnowCourse)
                                 'Extract DEM and prism values to sites
@@ -2351,7 +2357,7 @@ Public Class frmGenerateMaps
             'Calculate file path for prism based on the form
             SetPrecipPathInfo()
             response = BA_Excel_CreatePRISMTable(AOIFolderBase, pPRISMWorkSheet, pSubElvWorksheet, MaxPRISMValue, _
-                                                 PrecipPath & PRISMRasterName, AOI_DEMMin, conversionFactor, OptZMeters.Checked)
+                                                 PrecipPath & "\" + PRISMRasterName, AOI_DEMMin, conversionFactor, OptZMeters.Checked)
             response = BA_Excel_CreatePRISMChart(pPRISMWorkSheet, pSubElvWorksheet, pChartsWorksheet, _
                                                  BA_ChartWidth + BA_ChartSpacing + BA_ChartSpacing, BA_ChartSpacing, _
                                                  Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, MaxPRISMValue, OptZMeters.Checked, _
@@ -2377,8 +2383,11 @@ Public Class frmGenerateMaps
             End If
 
             If ChkRepresentedPrecip.Checked = True Then
+                pStepProg.Message = "Creating Elevation-Precipitation Correlation Charts..."
+                pStepProg.Step()
+
                 Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
-                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, pPrecipDemElevWorksheet, demTitleUnit, _
+                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, pPrecipDemElevWorksheet, demTitleUnit, _
                     MeasurementUnit.Inches)
                 If success = BA_ReturnCode.Success Then
                     success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _

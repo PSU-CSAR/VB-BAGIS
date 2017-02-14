@@ -50,6 +50,7 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_SiteTypeField = "BA_STYPE"
     Public Const BA_SiteSnotel = "stel"
     Public Const BA_SiteSnowCourse = "scos"
+    Public Const BA_Aspect = "BA_ASPECT"
 
     'AOI pourpoint area and area unit field names
     Public Const BA_AOIShapeAreaField = "AOISHPAREA"
