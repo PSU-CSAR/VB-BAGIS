@@ -10,6 +10,7 @@ Imports ESRI.ArcGIS.SpatialAnalyst
 Imports ESRI.ArcGIS.Geometry
 Imports ESRI.ArcGIS.Desktop.AddIns
 Imports Microsoft.Office.Interop.Excel
+Imports ESRI.ArcGIS.GeoAnalyst
 
 Public Class frmGenerateMaps
 
@@ -1263,236 +1264,236 @@ Public Class frmGenerateMaps
             SiteScenarioButton.selectedProperty = True
 
 
-                MessageKey = "Subdivided-Elevation"
-                pStepProg.Message = "Creating " & MessageKey & " Zones ..."
-                pStepProg.Step()
+            MessageKey = "Subdivided-Elevation"
+            pStepProg.Message = "Creating " & MessageKey & " Zones ..."
+            pStepProg.Step()
 
-                'repeat the same procedures for sub elevation raster
-                response = BA_ReclassRasterFromIntervalList(SubIntervalList, pDEMGeoDataset, strSavePath, BA_SubElevationZones)
-                response = BA_UpdateReclassRasterAttributes(SubIntervalList, strSavePath, BA_SubElevationZones)
+            'repeat the same procedures for sub elevation raster
+            response = BA_ReclassRasterFromIntervalList(SubIntervalList, pDEMGeoDataset, strSavePath, BA_SubElevationZones)
+            response = BA_UpdateReclassRasterAttributes(SubIntervalList, strSavePath, BA_SubElevationZones)
 
-                'open the raster elevation zone dataset for use
-                pZoneRaster = BA_OpenRasterFromGDB(strSavePath, BA_RasterElevationZones)
+            'open the raster elevation zone dataset for use
+            pZoneRaster = BA_OpenRasterFromGDB(strSavePath, BA_RasterElevationZones)
 
-                '=====================================================================================
-                '3. Get Percent Area
-                '=====================================================================================
-                'Get zone Raster attribute
-                pRasterBandCollection = pZoneRaster
-                pRasterBand = pRasterBandCollection.Item(0)
+            '=====================================================================================
+            '3. Get Percent Area
+            '=====================================================================================
+            'Get zone Raster attribute
+            pRasterBandCollection = pZoneRaster
+            pRasterBand = pRasterBandCollection.Item(0)
 
-                'Get Total Count of Cells
-                Dim AreaSUM As Long
-                Dim classarea() As Long
-                Dim piField As Integer
+            'Get Total Count of Cells
+            Dim AreaSUM As Long
+            Dim classarea() As Long
+            Dim piField As Integer
 
-                pTable = pRasterBand.AttributeTable
-                pCursor = pTable.Search(Nothing, True)
+            pTable = pRasterBand.AttributeTable
+            pCursor = pTable.Search(Nothing, True)
+            pRow = pCursor.NextRow
+
+            AreaSUM = 0
+            piField = pCursor.FindField(BA_FIELD_COUNT)
+            ReDim classarea(0 To ninterval)
+
+            For j = 1 To ninterval
+                classarea(j) = pRow.Value(piField)
+                AreaSUM = AreaSUM + classarea(j)
                 pRow = pCursor.NextRow
+            Next
 
-                AreaSUM = 0
-                piField = pCursor.FindField(BA_FIELD_COUNT)
-                ReDim classarea(0 To ninterval)
+            'calculate Percent Area
+            For j = 1 To ninterval
+                IntervalList(j).Area = (classarea(j) / AreaSUM) * 100
+            Next
 
+            '=====================================================================================
+            '4. Convert Raster to Vector
+            '=====================================================================================
+            'Silently Delete Shapefile if Exists
+            If BA_File_Exists(strSavePath & "\" & BA_VectorElevationZones, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                'Remove Layer
+                response = BA_RemoveLayersInFolder(My.Document, strSavePath)
+                'Delete Dataset
+                response = BA_Remove_ShapefileFromGDB(strSavePath, BA_VectorElevationZones)
+            End If
+
+            'set mask on the pZoneRaster so that the vector version doesn't include the buffer
+            'Use the AOI extent for analysis
+            'Open AOI Polygon to set the analysis mask
+            pAOIRaster = BA_OpenRasterFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi), BA_AOIExtentRaster)
+            If pAOIRaster Is Nothing Then
+                MsgBox("Cannot locate AOI boundary raster in the AOI.  Please re-run AOI Tool.")
+                Exit Sub
+            End If
+
+            pTempRaster = pExtractOp.Raster(pZoneRaster, pAOIRaster)
+            response = BA_Raster2PolygonShapefile(strSavePath, BA_VectorElevationZones, pTempRaster)
+
+            If response = 0 Then
+                MsgBox("Unable to convert the elevation zone raster to vector! Program stopped.")
+                Exit Sub
+            End If
+
+            'propogate interval list data to the attribute table of the shapefile
+            response = BA_UpdateReclassVectorAttributes(IntervalList, strSavePath, BA_VectorElevationZones)
+
+            '=====================================================================================
+            '5. SNOTEL and Snow Course Analysis
+            '=====================================================================================
+
+            'Snow Course
+            Dim SnowCourseBareName As String
+            Dim SnowCourseParentName As String
+
+            'Declarations for Opening SNOTEL File
+            Dim SNOTELBareName As String
+            Dim SNOTELParentName As String
+
+            'Declarations for Within Array
+            Dim nSTSite As Long
+            Dim nSCSite As Long
+
+            'Get BareName, ParentDirectory, and Extension
+            SNOTELBareName = BA_SNOTELSites 'BA_GetBareNameAndExtension(frmSettings.txtSNOTEL.Text, SNOTELParentName, SNOTELExtension)
+            SnowCourseBareName = BA_SnowCourseSites 'BA_GetBareNameAndExtension(frmSettings.txtSnowCourse.Text, SnowCourseParentName, SnowCourseExtension)
+            SNOTELParentName = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers)
+            SnowCourseParentName = SNOTELParentName
+
+            Dim Has_SNOTELLayer As Boolean, Has_SnowCourseLayer As Boolean
+
+            'Check to see if SNOTEL Shapefile Exist
+            If BA_File_Exists(SNOTELParentName & "\" & SNOTELBareName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                Has_SNOTELLayer = True
+            Else
+                Has_SNOTELLayer = False
+            End If
+
+            'Check to see if SnowCourse Shapefile Exist
+            If BA_File_Exists(SnowCourseParentName & "\" & SnowCourseBareName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                Has_SnowCourseLayer = True
+            Else
+                Has_SnowCourseLayer = False
+            End If
+
+            'Open Elevation zone file Files
+            pFeatureClass = BA_OpenFeatureClassFromGDB(strSavePath, BA_VectorElevationZones)
+            If Has_SNOTELLayer Then
+                'Open SNOTEL, Snowcourse, and Zone vector Shapefiles
+                SNOTELFeatureClass = BA_OpenFeatureClassFromGDB(SNOTELParentName, SNOTELBareName)
+
+                'Determine Number of Features Within Each Class
+                pQueryFilter = New QueryFilter
+                pZoneFeature = New Feature
+                pSFilter = New SpatialFilter
+
+                'Run Analysis
                 For j = 1 To ninterval
-                    classarea(j) = pRow.Value(piField)
-                    AreaSUM = AreaSUM + classarea(j)
-                    pRow = pCursor.NextRow
-                Next
+                    pQueryFilter.WhereClause = BA_FIELD_GRIDCODE & " = " & j
+                    pZoneFeatureCursor = pFeatureClass.Search(pQueryFilter, False)
+                    pZoneFeature = pZoneFeatureCursor.NextFeature
 
-                'calculate Percent Area
+                    'Build Filter
+                    nSTSite = 0
+
+                    Do Until pZoneFeature Is Nothing
+                        'Create Spatial Filter
+                        pGeo = pZoneFeature.Shape
+
+                        With pSFilter
+                            .Geometry = pGeo
+                            .GeometryField = BA_FIELD_SHAPE
+                            .SpatialRel = esriSpatialRelEnum.esriSpatialRelContains
+                        End With
+
+                        'Get Number of sites within Filter
+                        nSTSite = nSTSite + SNOTELFeatureClass.FeatureCount(pSFilter)
+                        pZoneFeature = pZoneFeatureCursor.NextFeature
+                    Loop
+
+                    'Call next SNOTEL Feature
+                    IntervalList(j).SNOTEL = nSTSite
+                Next
+            Else
+                'reset count to zero
                 For j = 1 To ninterval
-                    IntervalList(j).Area = (classarea(j) / AreaSUM) * 100
+                    IntervalList(j).SNOTEL = 0
                 Next
+            End If
 
-                '=====================================================================================
-                '4. Convert Raster to Vector
-                '=====================================================================================
-                'Silently Delete Shapefile if Exists
-                If BA_File_Exists(strSavePath & "\" & BA_VectorElevationZones, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                    'Remove Layer
-                    response = BA_RemoveLayersInFolder(My.Document, strSavePath)
-                    'Delete Dataset
-                    response = BA_Remove_ShapefileFromGDB(strSavePath, BA_VectorElevationZones)
-                End If
+            If Has_SnowCourseLayer Then
+                'Open Snowcourse, and Zone vector Shapefiles
+                SnowCourseFeatureClass = BA_OpenFeatureClassFromGDB(SnowCourseParentName, SnowCourseBareName)
 
-                'set mask on the pZoneRaster so that the vector version doesn't include the buffer
-                'Use the AOI extent for analysis
-                'Open AOI Polygon to set the analysis mask
-                pAOIRaster = BA_OpenRasterFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi), BA_AOIExtentRaster)
-                If pAOIRaster Is Nothing Then
-                    MsgBox("Cannot locate AOI boundary raster in the AOI.  Please re-run AOI Tool.")
-                    Exit Sub
-                End If
+                'Determine Number of Features Within Each Class
+                pQueryFilter = New QueryFilter
+                pZoneFeature = New Feature
+                pSFilter = New SpatialFilter
 
-                pTempRaster = pExtractOp.Raster(pZoneRaster, pAOIRaster)
-                response = BA_Raster2PolygonShapefile(strSavePath, BA_VectorElevationZones, pTempRaster)
+                'Run Analysis
+                For j = 1 To ninterval
+                    pQueryFilter.WhereClause = BA_FIELD_GRIDCODE & " = " & j
+                    pZoneFeatureCursor = pFeatureClass.Search(pQueryFilter, False)
+                    pZoneFeature = pZoneFeatureCursor.NextFeature
 
-                If response = 0 Then
-                    MsgBox("Unable to convert the elevation zone raster to vector! Program stopped.")
-                    Exit Sub
-                End If
+                    'Build Filter
+                    nSCSite = 0
 
-                'propogate interval list data to the attribute table of the shapefile
-                response = BA_UpdateReclassVectorAttributes(IntervalList, strSavePath, BA_VectorElevationZones)
+                    Do Until pZoneFeature Is Nothing
+                        'Create Spatial Filter
+                        pGeo = pZoneFeature.Shape
 
-                '=====================================================================================
-                '5. SNOTEL and Snow Course Analysis
-                '=====================================================================================
+                        With pSFilter
+                            .Geometry = pGeo
+                            .GeometryField = BA_FIELD_SHAPE
+                            .SpatialRel = esriSpatialRelEnum.esriSpatialRelContains
+                        End With
 
-                'Snow Course
-                Dim SnowCourseBareName As String
-                Dim SnowCourseParentName As String
-
-                'Declarations for Opening SNOTEL File
-                Dim SNOTELBareName As String
-                Dim SNOTELParentName As String
-
-                'Declarations for Within Array
-                Dim nSTSite As Long
-                Dim nSCSite As Long
-
-                'Get BareName, ParentDirectory, and Extension
-                SNOTELBareName = BA_SNOTELSites 'BA_GetBareNameAndExtension(frmSettings.txtSNOTEL.Text, SNOTELParentName, SNOTELExtension)
-                SnowCourseBareName = BA_SnowCourseSites 'BA_GetBareNameAndExtension(frmSettings.txtSnowCourse.Text, SnowCourseParentName, SnowCourseExtension)
-                SNOTELParentName = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers)
-                SnowCourseParentName = SNOTELParentName
-
-                Dim Has_SNOTELLayer As Boolean, Has_SnowCourseLayer As Boolean
-
-                'Check to see if SNOTEL Shapefile Exist
-                If BA_File_Exists(SNOTELParentName & "\" & SNOTELBareName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                    Has_SNOTELLayer = True
-                Else
-                    Has_SNOTELLayer = False
-                End If
-
-                'Check to see if SnowCourse Shapefile Exist
-                If BA_File_Exists(SnowCourseParentName & "\" & SnowCourseBareName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                    Has_SnowCourseLayer = True
-                Else
-                    Has_SnowCourseLayer = False
-                End If
-
-                'Open Elevation zone file Files
-                pFeatureClass = BA_OpenFeatureClassFromGDB(strSavePath, BA_VectorElevationZones)
-                If Has_SNOTELLayer Then
-                    'Open SNOTEL, Snowcourse, and Zone vector Shapefiles
-                    SNOTELFeatureClass = BA_OpenFeatureClassFromGDB(SNOTELParentName, SNOTELBareName)
-
-                    'Determine Number of Features Within Each Class
-                    pQueryFilter = New QueryFilter
-                    pZoneFeature = New Feature
-                    pSFilter = New SpatialFilter
-
-                    'Run Analysis
-                    For j = 1 To ninterval
-                        pQueryFilter.WhereClause = BA_FIELD_GRIDCODE & " = " & j
-                        pZoneFeatureCursor = pFeatureClass.Search(pQueryFilter, False)
+                        'Get Number of sites within Filter
+                        nSCSite = nSCSite + SnowCourseFeatureClass.FeatureCount(pSFilter)
                         pZoneFeature = pZoneFeatureCursor.NextFeature
+                    Loop
 
-                        'Build Filter
-                        nSTSite = 0
+                    'Call next SNOTEL Feature
+                    IntervalList(j).SnowCourse = nSCSite
+                Next
+            Else
+                'reset count to zero
+                For j = 1 To ninterval
+                    IntervalList(j).SnowCourse = 0
+                Next
+            End If
 
-                        Do Until pZoneFeature Is Nothing
-                            'Create Spatial Filter
-                            pGeo = pZoneFeature.Shape
+            '=======================================================================================================================
+            '7. Add Values to Form
+            '=======================================================================================================================
+            Display_IntervalList(IntervalList)
 
-                            With pSFilter
-                                .Geometry = pGeo
-                                .GeometryField = BA_FIELD_SHAPE
-                                .SpatialRel = esriSpatialRelEnum.esriSpatialRelContains
-                            End With
-
-                            'Get Number of sites within Filter
-                            nSTSite = nSTSite + SNOTELFeatureClass.FeatureCount(pSFilter)
-                            pZoneFeature = pZoneFeatureCursor.NextFeature
-                        Loop
-
-                        'Call next SNOTEL Feature
-                        IntervalList(j).SNOTEL = nSTSite
-                    Next
-                Else
-                    'reset count to zero
-                    For j = 1 To ninterval
-                        IntervalList(j).SNOTEL = 0
-                    Next
-                End If
-
-                If Has_SnowCourseLayer Then
-                    'Open Snowcourse, and Zone vector Shapefiles
-                    SnowCourseFeatureClass = BA_OpenFeatureClassFromGDB(SnowCourseParentName, SnowCourseBareName)
-
-                    'Determine Number of Features Within Each Class
-                    pQueryFilter = New QueryFilter
-                    pZoneFeature = New Feature
-                    pSFilter = New SpatialFilter
-
-                    'Run Analysis
-                    For j = 1 To ninterval
-                        pQueryFilter.WhereClause = BA_FIELD_GRIDCODE & " = " & j
-                        pZoneFeatureCursor = pFeatureClass.Search(pQueryFilter, False)
-                        pZoneFeature = pZoneFeatureCursor.NextFeature
-
-                        'Build Filter
-                        nSCSite = 0
-
-                        Do Until pZoneFeature Is Nothing
-                            'Create Spatial Filter
-                            pGeo = pZoneFeature.Shape
-
-                            With pSFilter
-                                .Geometry = pGeo
-                                .GeometryField = BA_FIELD_SHAPE
-                                .SpatialRel = esriSpatialRelEnum.esriSpatialRelContains
-                            End With
-
-                            'Get Number of sites within Filter
-                            nSCSite = nSCSite + SnowCourseFeatureClass.FeatureCount(pSFilter)
-                            pZoneFeature = pZoneFeatureCursor.NextFeature
-                        Loop
-
-                        'Call next SNOTEL Feature
-                        IntervalList(j).SnowCourse = nSCSite
-                    Next
-                Else
-                    'reset count to zero
-                    For j = 1 To ninterval
-                        IntervalList(j).SnowCourse = 0
-                    Next
-                End If
-
-                '=======================================================================================================================
-                '7. Add Values to Form
-                '=======================================================================================================================
-                Display_IntervalList(IntervalList)
-
-                '=================================
-                'Update map parameters file
-                '=================================
-                Dim filepath As String, FileName As String
+            '=================================
+            'Update map parameters file
+            '=================================
+            Dim filepath As String, FileName As String
 
 
             Flag_ElevOrPrecipChange = True
             'check if map_parameters.txt file exists
-                filepath = BA_GetPath(AOIFolderBase, PublicPath.Maps)
-                FileName = BA_MapParameterFile 'i.e., map_parameters.txt
-                response = UpdateMapParameters(filepath, FileName)
+            filepath = BA_GetPath(AOIFolderBase, PublicPath.Maps)
+            FileName = BA_MapParameterFile 'i.e., map_parameters.txt
+            response = UpdateMapParameters(filepath, FileName)
 
-                If response <= 0 Then
-                    response = SaveMapParameters(filepath, FileName)
-                    '    MsgBox "Error! Unable to update map parameter file. Please report the error to the developer."
-                End If
+            If response <= 0 Then
+                response = SaveMapParameters(filepath, FileName)
+                '    MsgBox "Error! Unable to update map parameter file. Please report the error to the developer."
+            End If
 
-                'set flags
+            'set flags
             Flag_ElevationZone = True
-                Flag_BasinTables = False
-                Flag_BasinMaps = False
+            Flag_BasinTables = False
+            Flag_BasinMaps = False
 
-                If Flag_PrecipitationZone Then
-                    CmdGenerate.Enabled = True
-                Else
-                    CmdGenerate.Enabled = False
+            If Flag_PrecipitationZone Then
+                CmdGenerate.Enabled = True
+            Else
+                CmdGenerate.Enabled = False
             End If
 
             'We only want to enable button #2 after this completes if there is not a previous analysis
@@ -2042,23 +2043,22 @@ Public Class frmGenerateMaps
 
                 'Resample Aspect to PRISM resolution
                 If success = BA_ReturnCode.Success Then
-                    Dim cellSize As Double = BA_CellSize(PrecipPath, PRISMRasterName)
-                    Dim aspZonesPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_RasterAspectZones
-                    Dim aspResamplePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_AspectPrec
-                    success = BA_Resample_Raster(aspZonesPath, aspResamplePath, cellSize, _
-                                                 PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest)
+                    pStepProg.Message = "Creating Aspect layer for elev-precip analysis..."
+                    pStepProg.Step()
+                    Dim aspLayerPath As String = CreateAspectLayerForElevPrecip(PrecipPath, PRISMRasterName)
                     If success = BA_ReturnCode.Success Then
                         'Run Sample tool to extract elevation/precipitation for PRISM cell locations; The output is a table
                         If success = BA_ReturnCode.Success Then
                             Dim sampleTablePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_TablePrecMeanElev
                             Dim sb As System.Text.StringBuilder = New System.Text.StringBuilder()
-                            sb.Append(aspResamplePath + ";")
+                            sb.Append(aspLayerPath + ";")
                             sb.Append(PrecipPath + "\" + PRISMRasterName & ";")
                             sb.Append(precipMeanPath)
                             pStepProg.Message = "Extracting DEM and PRISM values to table..."
                             pStepProg.Step()
+                            Dim prismCellSize As Double = BA_CellSize(PrecipPath, PRISMRasterName)
                             success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath, _
-                                      PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest)
+                                      PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest, CStr(prismCellSize))
                             If success = BA_ReturnCode.Success Then
                                 Dim sitesPath As String = BA_CreateSitesLayer(AOIFolderBase, BA_MergedSites, BA_SiteTypeField, _
                                                                               BA_SiteSnotel, BA_SiteSnowCourse)
@@ -2501,4 +2501,35 @@ Public Class frmGenerateMaps
             PRISMRasterName = BA_TEMP_PRISM
         End If
     End Sub
+
+    Private Function CreateAspectLayerForElevPrecip(ByVal PrecipPath As String, ByVal PRISMRasterName As String) As String
+        Dim prismCellSize As Double = BA_CellSize(PrecipPath, PRISMRasterName)
+        Dim aspectCellSize As Double = BA_CellSize(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_RasterAspectZones)
+        Dim outputFilePath As String = Nothing
+        Try
+            If aspectCellSize < prismCellSize Then
+                'Execute focal statistics to account for differing cell sizes
+                '"Rectangle 5 5 Cell"
+                Dim neighborhood As String = "Rectangle " & prismCellSize & " " & prismCellSize & " Map"
+                Dim strFilterType As String = StatisticsFieldName.MAJORITY.ToString
+                Dim success As BA_ReturnCode = BA_FocalStatistics_GP(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_RasterAspectZones, _
+                                                                     BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_AspectPrec, _
+                                                                     PrecipPath & "\" & PRISMRasterName, _
+                                                                     neighborhood, strFilterType, PrecipPath & "\" & PRISMRasterName)
+                If success <> BA_ReturnCode.Success Then
+                    MessageBox.Show("An error occurred while resampling the aspect layer for elevation precipitation")
+                    Return Nothing
+                Else
+                    outputFilePath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_AspectPrec
+                End If
+            Else
+                outputFilePath = BA_CellSize(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_RasterAspectZones)
+            End If
+            Return outputFilePath
+        Catch ex As Exception
+            Debug.Print("CreateAspectLayerForElevPrecip Exception: " & ex.Message)
+            Return Nothing
+        End Try
+    End Function
+
 End Class

@@ -80,7 +80,7 @@ Public Class BtnRepresentPrecip
                 pStepProg.Message = "Extracting DEM and PRISM values..."
                 pStepProg.Step()
                 success = BA_Sample(sb.ToString, PRISMFolderName + "\" + PRISMRasterName, sampleTablePath, _
-                          PRISMFolderName + "\" + PRISMRasterName, BA_Resample_Nearest)
+                          PRISMFolderName + "\" + PRISMRasterName, BA_Resample_Nearest, 935)
                 If success = BA_ReturnCode.Success Then
                     '@ToDo: Measurement units will come from frmGenerateMaps
                     Dim demUnits As MeasurementUnit = MeasurementUnit.Meters
