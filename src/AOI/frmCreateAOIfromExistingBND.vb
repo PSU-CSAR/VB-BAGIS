@@ -1057,4 +1057,16 @@ Public Class frmCreateAOIfromExistingBND
         End Try
     End Function
 
+    Private Sub txtOutputName_Validating(ByVal sender As Object, _
+        ByVal e As System.ComponentModel.CancelEventArgs) Handles txtOutputName.Validating
+
+        'Replace spaces with underscore _, spaces not allowed in AOI names
+        txtOutputName.Text = txtOutputName.Text.Trim()
+        txtOutputName.Text = txtOutputName.Text.Replace(" ", "_")
+
+        If String.IsNullOrEmpty(txtOutputName.Text) Then
+            txtOutputName.Focus()
+            e.Cancel = True
+        End If
+    End Sub
 End Class
