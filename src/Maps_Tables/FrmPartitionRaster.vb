@@ -8,6 +8,7 @@ Imports ESRI.ArcGIS.Framework
 Public Class FrmPartitionRaster
 
     Private m_partitionRasterPath As String
+    Private m_partitionRasterName As String
     Private m_cellSize As Double
     Private m_snapRasterPath As String
 
@@ -29,11 +30,11 @@ Public Class FrmPartitionRaster
     Private Sub LstRasters_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstRasters.SelectedIndexChanged
         If LstRasters.SelectedIndex > -1 Then
             Dim selItem As LayerListItem = LstRasters.SelectedItem
-            m_partitionRasterPath = selItem.Value
             CmdClear.Enabled = True
             CmdCreateRaster.Enabled = True
         Else
             m_partitionRasterPath = Nothing
+            m_partitionRasterName = Nothing
             CmdClear.Enabled = False
             CmdCreateRaster.Enabled = False
         End If
@@ -116,6 +117,12 @@ Public Class FrmPartitionRaster
         End Get
     End Property
 
+    Public ReadOnly Property PartitionRasterName As String
+        Get
+            Return m_partitionRasterName
+        End Get
+    End Property
+
     Private Sub CmdClose_Click(sender As System.Object, e As System.EventArgs) Handles CmdClose.Click
         Me.Close()
     End Sub
@@ -184,7 +191,7 @@ Public Class FrmPartitionRaster
     'End Sub
 
     Private Sub CmdCreateRaster_Click(sender As System.Object, e As System.EventArgs) Handles CmdCreateRaster.Click
-        If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
+        If LstRasters.SelectedItem IsNot Nothing Then
             Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 10)
             Dim progressDialog2 As IProgressDialog2 = Nothing
 
@@ -193,14 +200,19 @@ Public Class FrmPartitionRaster
                 pStepProg.Show()
                 progressDialog2.ShowDialog()
                 pStepProg.Step()
-                'Dim outputRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_RasterPartition
-                'Dim success As BA_ReturnCode = BA_Resample_Raster(m_partitionRasterPath, outputRasterPath, _
-                '                                                  m_cellSize, m_snapRasterPath, Nothing)
-                Dim success As BA_ReturnCode = BA_ReturnCode.Success
+                Dim selItem As LayerListItem = LstRasters.SelectedItem
+                Dim partRasterPath As String = selItem.Value
+                Dim outputRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_RasterPartition
+                Dim success As BA_ReturnCode = BA_Resample_Raster(partRasterPath, outputRasterPath, _
+                                                                  m_cellSize, m_snapRasterPath, Nothing)
                 If success = BA_ReturnCode.Success Then
+                    m_partitionRasterPath = outputRasterPath
+                    m_partitionRasterName = selItem.Name
                     MessageBox.Show("Partition raster has been created and will be used in analysis!")
                     Me.Close()
                 Else
+                    m_partitionRasterPath = Nothing
+                    m_partitionRasterName = Nothing
                     MessageBox.Show("Partition raster could not be created and cannot be used in analysis!")
                 End If
             Catch ex As Exception
