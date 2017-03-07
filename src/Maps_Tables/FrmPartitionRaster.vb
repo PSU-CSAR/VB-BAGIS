@@ -8,12 +8,10 @@ Imports ESRI.ArcGIS.Framework
 Public Class FrmPartitionRaster
 
     Private m_partitionRasterPath As String
-    Private m_partitionField As String
-    Private m_partitionValuesList As IList(Of String)
     Private m_cellSize As Double
     Private m_snapRasterPath As String
 
-    Public Sub New(ByVal partRasterPath As String, ByVal partField As String, ByVal valuesList As IList(Of String), _
+    Public Sub New(ByVal partRasterPath As String, _
                    ByVal snapRasterpath As String, ByVal cellSize As Double)
 
         ' This call is required by the designer.
@@ -22,8 +20,6 @@ Public Class FrmPartitionRaster
         ' Add any initialization after the InitializeComponent() call.
         Me.Text = "AOI: " + BA_GetBareName(AOIFolderBase)
 
-        m_partitionField = partField
-        m_partitionValuesList = valuesList
         m_snapRasterPath = snapRasterpath
         m_cellSize = cellSize
         LoadLstLayers(partRasterPath)
@@ -31,16 +27,15 @@ Public Class FrmPartitionRaster
     End Sub
 
     Private Sub LstRasters_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstRasters.SelectedIndexChanged
-        LstFields.Items.Clear()
-        LstValues.Items.Clear()
         If LstRasters.SelectedIndex > -1 Then
             Dim selItem As LayerListItem = LstRasters.SelectedItem
             m_partitionRasterPath = selItem.Value
-            LoadFields()
             CmdClear.Enabled = True
+            CmdCreateRaster.Enabled = True
         Else
             m_partitionRasterPath = Nothing
             CmdClear.Enabled = False
+            CmdCreateRaster.Enabled = False
         End If
     End Sub
 
@@ -67,69 +62,57 @@ Public Class FrmPartitionRaster
         End If
     End Sub
 
-    Private Sub LoadFields()
-        Dim pGeoDataset As IGeoDataset = Nothing
-        Dim pRasterBandCollection As IRasterBandCollection = Nothing
-        Dim pRasterBand As IRasterBand = Nothing
-        Dim pTable As ITable = Nothing
-        Dim pFields As IFields = Nothing
-        Dim pField As IField
-        Try
-            Dim filePath As String = "PleaseReturn"
-            Dim fileName As String = BA_GetBareName(m_partitionRasterPath, filePath)
-            Dim pWorkspaceType As WorkspaceType = BA_GetWorkspaceTypeFromPath(filePath)
-            If pWorkspaceType = WorkspaceType.Raster Then
-                pGeoDataset = BA_OpenRasterFromFile(filePath, fileName)
-            ElseIf pWorkspaceType = WorkspaceType.Geodatabase Then
-                pGeoDataset = BA_OpenRasterFromGDB(filePath, fileName)
-            End If
+    'Private Sub LoadFields()
+    '    Dim pGeoDataset As IGeoDataset = Nothing
+    '    Dim pRasterBandCollection As IRasterBandCollection = Nothing
+    '    Dim pRasterBand As IRasterBand = Nothing
+    '    Dim pTable As ITable = Nothing
+    '    Dim pFields As IFields = Nothing
+    '    Dim pField As IField
+    '    Try
+    '        Dim filePath As String = "PleaseReturn"
+    '        Dim fileName As String = BA_GetBareName(m_partitionRasterPath, filePath)
+    '        Dim pWorkspaceType As WorkspaceType = BA_GetWorkspaceTypeFromPath(filePath)
+    '        If pWorkspaceType = WorkspaceType.Raster Then
+    '            pGeoDataset = BA_OpenRasterFromFile(filePath, fileName)
+    '        ElseIf pWorkspaceType = WorkspaceType.Geodatabase Then
+    '            pGeoDataset = BA_OpenRasterFromGDB(filePath, fileName)
+    '        End If
 
-            pRasterBandCollection = CType(pGeoDataset, IRasterBandCollection)
-            pRasterBand = pRasterBandCollection.Item(0)
-            pTable = pRasterBand.AttributeTable
-            If pTable IsNot Nothing Then
-                pFields = pTable.Fields
-                For i As Integer = 0 To pFields.FieldCount - 1
-                    ' Get the field at the given index.
-                    pField = pFields.Field(i)
-                    If Not pField.Name.Equals("OBJECTID") AndAlso Not pField.Name.Equals("Count") _
-                        AndAlso Not pField.Name.Equals("COUNT") Then
-                        LstFields.Items.Add(pField.Name)
-                        If pField.Name.Equals(m_partitionField) Then
-                            LstFields.SetSelected(i - 1, True)
-                        End If
-                    End If
-                Next i
-            Else
-                MessageBox.Show("Attribute table missing from raster. This raster cannot be used as a partition layer.")
-            End If
-        Catch ex As Exception
-            Debug.Print("LoadFields Exception: " + ex.Message)
-        Finally
-            pGeoDataset = Nothing
-            pRasterBand = Nothing
-            pRasterBandCollection = Nothing
-            pTable = Nothing
-            GC.WaitForPendingFinalizers()
-            GC.Collect()
-        End Try
-    End Sub
+    '        pRasterBandCollection = CType(pGeoDataset, IRasterBandCollection)
+    '        pRasterBand = pRasterBandCollection.Item(0)
+    '        pTable = pRasterBand.AttributeTable
+    '        If pTable IsNot Nothing Then
+    '            pFields = pTable.Fields
+    '            For i As Integer = 0 To pFields.FieldCount - 1
+    '                ' Get the field at the given index.
+    '                pField = pFields.Field(i)
+    '                If Not pField.Name.Equals("OBJECTID") AndAlso Not pField.Name.Equals("Count") _
+    '                    AndAlso Not pField.Name.Equals("COUNT") Then
+    '                    LstFields.Items.Add(pField.Name)
+    '                    If pField.Name.Equals(m_partitionField) Then
+    '                        LstFields.SetSelected(i - 1, True)
+    '                    End If
+    '                End If
+    '            Next i
+    '        Else
+    '            MessageBox.Show("Attribute table missing from raster. This raster cannot be used as a partition layer.")
+    '        End If
+    '    Catch ex As Exception
+    '        Debug.Print("LoadFields Exception: " + ex.Message)
+    '    Finally
+    '        pGeoDataset = Nothing
+    '        pRasterBand = Nothing
+    '        pRasterBandCollection = Nothing
+    '        pTable = Nothing
+    '        GC.WaitForPendingFinalizers()
+    '        GC.Collect()
+    '    End Try
+    'End Sub
 
     Public ReadOnly Property PartitionRasterPath As String
         Get
             Return m_partitionRasterPath
-        End Get
-    End Property
-
-    Public ReadOnly Property PartitionValuesList As IList(Of String)
-        Get
-            Return m_partitionValuesList
-        End Get
-    End Property
-
-    Public ReadOnly Property PartitionField As String
-        Get
-            Return m_partitionField
         End Get
     End Property
 
@@ -141,96 +124,64 @@ Public Class FrmPartitionRaster
         LstRasters.ClearSelected()
     End Sub
 
-    Private Sub LstFields_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstFields.SelectedIndexChanged
-        LstValues.Items.Clear()
-        If LstFields.SelectedIndex > -1 Then
-            m_partitionField = Convert.ToString(LstFields.SelectedItem)
-            LoadValues()
-            CmdClear.Enabled = True
-        Else
-            m_partitionRasterPath = Nothing
-            CmdClear.Enabled = False
-        End If
-    End Sub
-
-    Private Sub LoadValues()
-        Dim pGeoDataset As IGeoDataset = Nothing
-        Dim pRasterBandCollection As IRasterBandCollection = Nothing
-        Dim pRasterBand As IRasterBand = Nothing
-        Dim pTable As ITable = Nothing
-        Dim pFields As IFields = Nothing
-        Dim pCursor As ICursor = Nothing
-        Dim pRow As IRow = Nothing
-        Try
-            Dim filePath As String = "PleaseReturn"
-            Dim fileName As String = BA_GetBareName(m_partitionRasterPath, filePath)
-            Dim pWorkspaceType As WorkspaceType = BA_GetWorkspaceTypeFromPath(filePath)
-            If pWorkspaceType = WorkspaceType.Raster Then
-                pGeoDataset = BA_OpenRasterFromFile(filePath, fileName)
-            ElseIf pWorkspaceType = WorkspaceType.Geodatabase Then
-                pGeoDataset = BA_OpenRasterFromGDB(filePath, fileName)
-            End If
-            pRasterBandCollection = CType(pGeoDataset, IRasterBandCollection)
-            pRasterBand = pRasterBandCollection.Item(0)
-            pTable = pRasterBand.AttributeTable
-            Dim prevSelectedValues As List(Of String) = New List(Of String)
-            If m_partitionValuesList IsNot Nothing AndAlso m_partitionValuesList.Count > 0 Then
-                prevSelectedValues.AddRange(m_partitionValuesList)
-            End If
-            Dim i As Int32 = 0
-            If pTable IsNot Nothing Then
-                pFields = pTable.Fields
-                Dim idxValue As Integer = pFields.FindField(m_partitionField)
-                pCursor = pTable.Search(Nothing, False)
-                pRow = pCursor.NextRow
-                Do While pRow IsNot Nothing
-                    Dim nextValue As String = Convert.ToString(pRow.Value(idxValue))
-                    LstValues.Items.Add(nextValue)
-                    If prevSelectedValues.Count > 0 Then
-                        If prevSelectedValues.Contains(nextValue) Then
-                            LstValues.SetSelected(i, True)
-                        End If
-                    End If
-                    pRow = pCursor.NextRow
-                    i += 1
-                Loop
-                LstValues.Sorted = True
-            Else
-                MessageBox.Show("Attribute table missing from raster. This raster cannot be used as a partition layer.")
-            End If
-        Catch ex As Exception
-            Debug.Print("LoadValues Exception: " + ex.Message)
-        Finally
-            pGeoDataset = Nothing
-            pRasterBand = Nothing
-            pRasterBandCollection = Nothing
-            pCursor = Nothing
-            pRow = Nothing
-            pTable = Nothing
-            GC.WaitForPendingFinalizers()
-            GC.Collect()
-        End Try
-    End Sub
-
-    Private Sub LstValues_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstValues.SelectedIndexChanged
-        m_partitionValuesList = New List(Of String)
-        If LstValues.SelectedIndex > -1 Then
-            For Each item As Object In LstValues.SelectedItems
-                m_partitionValuesList.Add(Convert.ToString(item))
-            Next
-            CmdClearValues.Enabled = True
-            CmdCreateRaster.Enabled = True
-        Else
-            CmdClearValues.Enabled = False
-            CmdCreateRaster.Enabled = False
-        End If
-    End Sub
-
-    Private Sub CmdSelectAll_Click(sender As System.Object, e As System.EventArgs) Handles CmdSelectAll.Click
-        For i As Int32 = 0 To LstValues.Items.Count - 1
-            LstValues.SetSelected(i, True)
-        Next i
-    End Sub
+    'Private Sub LoadValues()
+    '    Dim pGeoDataset As IGeoDataset = Nothing
+    '    Dim pRasterBandCollection As IRasterBandCollection = Nothing
+    '    Dim pRasterBand As IRasterBand = Nothing
+    '    Dim pTable As ITable = Nothing
+    '    Dim pFields As IFields = Nothing
+    '    Dim pCursor As ICursor = Nothing
+    '    Dim pRow As IRow = Nothing
+    '    Try
+    '        Dim filePath As String = "PleaseReturn"
+    '        Dim fileName As String = BA_GetBareName(m_partitionRasterPath, filePath)
+    '        Dim pWorkspaceType As WorkspaceType = BA_GetWorkspaceTypeFromPath(filePath)
+    '        If pWorkspaceType = WorkspaceType.Raster Then
+    '            pGeoDataset = BA_OpenRasterFromFile(filePath, fileName)
+    '        ElseIf pWorkspaceType = WorkspaceType.Geodatabase Then
+    '            pGeoDataset = BA_OpenRasterFromGDB(filePath, fileName)
+    '        End If
+    '        pRasterBandCollection = CType(pGeoDataset, IRasterBandCollection)
+    '        pRasterBand = pRasterBandCollection.Item(0)
+    '        pTable = pRasterBand.AttributeTable
+    '        Dim prevSelectedValues As List(Of String) = New List(Of String)
+    '        If m_partitionValuesList IsNot Nothing AndAlso m_partitionValuesList.Count > 0 Then
+    '            prevSelectedValues.AddRange(m_partitionValuesList)
+    '        End If
+    '        Dim i As Int32 = 0
+    '        If pTable IsNot Nothing Then
+    '            pFields = pTable.Fields
+    '            Dim idxValue As Integer = pFields.FindField(m_partitionField)
+    '            pCursor = pTable.Search(Nothing, False)
+    '            pRow = pCursor.NextRow
+    '            Do While pRow IsNot Nothing
+    '                Dim nextValue As String = Convert.ToString(pRow.Value(idxValue))
+    '                LstValues.Items.Add(nextValue)
+    '                If prevSelectedValues.Count > 0 Then
+    '                    If prevSelectedValues.Contains(nextValue) Then
+    '                        LstValues.SetSelected(i, True)
+    '                    End If
+    '                End If
+    '                pRow = pCursor.NextRow
+    '                i += 1
+    '            Loop
+    '            LstValues.Sorted = True
+    '        Else
+    '            MessageBox.Show("Attribute table missing from raster. This raster cannot be used as a partition layer.")
+    '        End If
+    '    Catch ex As Exception
+    '        Debug.Print("LoadValues Exception: " + ex.Message)
+    '    Finally
+    '        pGeoDataset = Nothing
+    '        pRasterBand = Nothing
+    '        pRasterBandCollection = Nothing
+    '        pCursor = Nothing
+    '        pRow = Nothing
+    '        pTable = Nothing
+    '        GC.WaitForPendingFinalizers()
+    '        GC.Collect()
+    '    End Try
+    'End Sub
 
     Private Sub CmdCreateRaster_Click(sender As System.Object, e As System.EventArgs) Handles CmdCreateRaster.Click
         If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
@@ -242,9 +193,10 @@ Public Class FrmPartitionRaster
                 pStepProg.Show()
                 progressDialog2.ShowDialog()
                 pStepProg.Step()
-                Dim outputRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_RasterPartition
-                Dim success As BA_ReturnCode = BA_Resample_Raster(m_partitionRasterPath, outputRasterPath, _
-                                                                  m_cellSize, m_snapRasterPath, Nothing)
+                'Dim outputRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_RasterPartition
+                'Dim success As BA_ReturnCode = BA_Resample_Raster(m_partitionRasterPath, outputRasterPath, _
+                '                                                  m_cellSize, m_snapRasterPath, Nothing)
+                Dim success As BA_ReturnCode = BA_ReturnCode.Success
                 If success = BA_ReturnCode.Success Then
                     MessageBox.Show("Partition raster has been created and will be used in analysis!")
                     Me.Close()

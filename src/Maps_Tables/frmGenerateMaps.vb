@@ -36,8 +36,6 @@ Public Class frmGenerateMaps
 
     'partition raster variables from FrmPartitionRaster
     Private m_partitionRasterPath As String
-    Private m_partitionField As String
-    Private m_partitionValuesList As IList(Of String)
 
 
     Public Sub New()
@@ -173,6 +171,16 @@ Public Class frmGenerateMaps
             'Disable Elevation-Precipitation Correlation if no sites
             FrameRepresentedPrecipitation.Enabled = False
         End If
+
+        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" _
+                                          + BA_TablePrecMeanElev, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
+            ChkPrecipAoiTable.Checked = True
+        End If
+        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + _
+                          BA_VectorSnotelPrec, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+            ChkPrecipSitesLayer.Checked = True
+        End If
+
         m_formInit = True
         Set_Silent_Mode = False
     End Sub
@@ -907,13 +915,18 @@ Public Class frmGenerateMaps
             End If
 
             'set UI control
-            'check for existence of precip mean table before enabling tables button
-            '@ToDo: if this becomes optional, need to also check the checkbox
-            Dim precipMeanTableExists As Boolean = BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" _
-                                                      + BA_TablePrecMeanElev, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable)
-            If DataCount = ndata - 1 AndAlso Flag_ElevOrPrecipChange = False Then 'not counting the AOI stream layer
+            Dim ElevPrecipLayersReady As Boolean = True
+            If ChkRepresentedPrecip.Checked = True Then
+                If ChkPrecipAoiTable.Checked = True AndAlso ChkPrecipSitesLayer.Checked = True Then
+                    ElevPrecipLayersReady = True
+                Else
+                    ElevPrecipLayersReady = False
+                End If
+            End If
+            If DataCount = ndata - 1 AndAlso ElevPrecipLayersReady = True AndAlso _
+                Flag_ElevOrPrecipChange = False Then 'not counting the AOI stream layer
                 CmdMaps.Enabled = True
-                If BA_Excel_Available AndAlso precipMeanTableExists Then
+                If BA_Excel_Available Then
                     CmdTables.Enabled = True
                     CmdPartition.Enabled = True
                 Else
@@ -924,7 +937,7 @@ Public Class frmGenerateMaps
                 'if PRISM zone intervals are populated but precipitation zones don't exist, enable CMdApplyPrism
                 If datastatus(2) = "Ready" And datastatus(3) = " ?" And lstPrecipZones.Items.Count > 0 Then cmdApplyPRISMInterval.Enabled = True
                 'enable generate zones button when elevation and precipitation zones exist
-                If datastatus(2) = "Ready" And datastatus(3) = "Ready" Then CmdGenerate.Enabled = True
+                If datastatus(2) = "Ready" And datastatus(3) = "Ready" And ElevPrecipLayersReady = False Then CmdGenerate.Enabled = True
                 CmdMaps.Enabled = False
                 CmdTables.Enabled = False
             End If
@@ -1841,6 +1854,12 @@ Public Class frmGenerateMaps
 
             Flag_ElevOrPrecipChange = True
 
+            If ChkRepresentedPrecip.Checked = True Then
+                'Need to re-run represented precip layers
+                ChkPrecipAoiTable.Checked = False
+                ChkPrecipSitesLayer.Checked = False
+            End If
+
             'check if map_parameters.txt file exists
             filepath = BA_GetPath(AOIFolderBase, PublicPath.Maps)
             FileName = BA_MapParameterFile 'i.e., map_parameters.txt
@@ -2064,8 +2083,12 @@ Public Class frmGenerateMaps
                                 Dim AspIntervalList() As BA_IntervalList = Nothing
                                 BA_SetAspectClasses(AspIntervalList, AspectDirectionsNumber)
                                 Dim aspFieldName As String = BA_GetBareName(aspLayerPath)
-                                BA_UpdateTableAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
+                                success = BA_UpdateTableAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
                                                          BA_TablePrecMeanElev, BA_Aspect, aspFieldName, esriFieldType.esriFieldTypeString)
+
+                                If success = BA_ReturnCode.Success Then
+                                    ChkPrecipAoiTable.Checked = True
+                                End If
                                 Dim sitesPath As String = BA_CreateSitesLayer(AOIFolderBase, BA_MergedSites, BA_SiteTypeField, _
                                                                               BA_SiteSnotel, BA_SiteSnowCourse)
                                 'Extract DEM and prism values to sites
@@ -2083,6 +2106,9 @@ Public Class frmGenerateMaps
                                         If success = BA_ReturnCode.Success Then
                                             success = BA_UpdateFeatureClassAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
                                                                                       BA_VectorSnotelPrec, BA_Aspect, BA_RasterValu, esriFieldType.esriFieldTypeString)
+                                            If success = BA_ReturnCode.Success Then
+                                                ChkPrecipSitesLayer.Checked = True
+                                            End If
                                         Else
                                             MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
                                         End If
@@ -2482,36 +2508,26 @@ Public Class frmGenerateMaps
     End Sub
 
     Private Sub BtnPartition_Click(sender As System.Object, e As System.EventArgs) Handles CmdPartition.Click
-        'set parameters
-        If CmboxPrecipType.SelectedIndex = 0 Then  'read direct Annual PRISM raster
-            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
-            PRISMRasterName = AOIPrismFolderNames.annual.ToString
-        ElseIf CmboxPrecipType.SelectedIndex > 0 And CmboxPrecipType.SelectedIndex < 5 Then 'read directly Quarterly PRISM raster
-            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
-            PRISMRasterName = BA_GetPrismFolderName(CmboxPrecipType.SelectedIndex + 12)
-        Else 'sum individual monthly PRISM rasters
-            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
-            PRISMRasterName = BA_TEMP_PRISM
-        End If
+        SetPrecipPathInfo()
 
         Dim cellSize As Double = BA_CellSize(PrecipPath, PRISMRasterName)
         Dim snapRasterPath As String = PrecipPath + "\" + PRISMRasterName
-        Dim frmPartitionRaster As FrmPartitionRaster = New FrmPartitionRaster(m_partitionRasterPath, m_partitionField, _
-                                                                              m_partitionValuesList, snapRasterPath, _
+        Dim frmPartitionRaster As FrmPartitionRaster = New FrmPartitionRaster(m_partitionRasterPath, snapRasterPath, _
                                                                               cellSize)
         frmPartitionRaster.ShowDialog()
         If Not String.IsNullOrEmpty(frmPartitionRaster.PartitionRasterPath) Then
             LblPartitionLayer.Text = BA_GetBareName(frmPartitionRaster.PartitionRasterPath)
             m_partitionRasterPath = frmPartitionRaster.PartitionRasterPath
-            m_partitionField = frmPartitionRaster.PartitionField
-            m_partitionValuesList = frmPartitionRaster.PartitionValuesList
         Else
             LblPartitionLayer.Text = frmPartitionRaster.PartitionRasterPath
-            LblPartitionLayer.Text = BA_GetBareName(frmPartitionRaster.PartitionRasterPath)
-            m_partitionField = Nothing
-            m_partitionValuesList = Nothing
+            m_partitionRasterPath = frmPartitionRaster.PartitionRasterPath
         End If
 
+    End Sub
+
+    Private Sub CmdClearPartition_Click(sender As System.Object, e As System.EventArgs) Handles CmdClearPartition.Click
+        LblPartitionLayer.Text = Nothing
+        m_partitionRasterPath = Nothing
     End Sub
 
     Private Sub SetPrecipPathInfo()

@@ -100,9 +100,11 @@ Partial Class frmGenerateMaps
         Me.CmdPartition = New System.Windows.Forms.Button()
         Me.LblPartitionLayer = New System.Windows.Forms.Label()
         Me.FrameRepresentedPrecipitation = New System.Windows.Forms.GroupBox()
-        Me.ChkRepresentedPrecip = New System.Windows.Forms.CheckBox()
-        Me.Label10 = New System.Windows.Forms.Label()
+        Me.ChkPrecipSitesLayer = New System.Windows.Forms.CheckBox()
+        Me.ChkPrecipAoiTable = New System.Windows.Forms.CheckBox()
         Me.CmdClearPartition = New System.Windows.Forms.Button()
+        Me.Label10 = New System.Windows.Forms.Label()
+        Me.ChkRepresentedPrecip = New System.Windows.Forms.CheckBox()
         Me.FrameInfo.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.FrameElevationDist.SuspendLayout()
@@ -604,7 +606,7 @@ Partial Class frmGenerateMaps
         Me.FramePrecipitationDist.Controls.Add(Me.Label16)
         Me.FramePrecipitationDist.Controls.Add(Me.Label7)
         Me.FramePrecipitationDist.Font = New System.Drawing.Font("Microsoft Sans Serif", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.FramePrecipitationDist.Location = New System.Drawing.Point(497, 197)
+        Me.FramePrecipitationDist.Location = New System.Drawing.Point(497, 157)
         Me.FramePrecipitationDist.Name = "FramePrecipitationDist"
         Me.FramePrecipitationDist.Size = New System.Drawing.Size(443, 216)
         Me.FramePrecipitationDist.TabIndex = 0
@@ -891,7 +893,7 @@ Partial Class frmGenerateMaps
         Me.lstDataStatus.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.lstDataStatus.Location = New System.Drawing.Point(506, 18)
         Me.lstDataStatus.Name = "lstDataStatus"
-        Me.lstDataStatus.Size = New System.Drawing.Size(434, 173)
+        Me.lstDataStatus.Size = New System.Drawing.Size(434, 134)
         Me.lstDataStatus.TabIndex = 11
         Me.lstDataStatus.UseCompatibleStateImageBehavior = False
         Me.lstDataStatus.View = System.Windows.Forms.View.Details
@@ -933,7 +935,7 @@ Partial Class frmGenerateMaps
         'CmdPartition
         '
         Me.CmdPartition.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdPartition.Location = New System.Drawing.Point(304, 44)
+        Me.CmdPartition.Location = New System.Drawing.Point(300, 94)
         Me.CmdPartition.Name = "CmdPartition"
         Me.CmdPartition.Size = New System.Drawing.Size(60, 25)
         Me.CmdPartition.TabIndex = 14
@@ -945,25 +947,73 @@ Partial Class frmGenerateMaps
         Me.LblPartitionLayer.Enabled = False
         Me.LblPartitionLayer.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.LblPartitionLayer.ForeColor = System.Drawing.Color.Blue
-        Me.LblPartitionLayer.Location = New System.Drawing.Point(182, 47)
+        Me.LblPartitionLayer.Location = New System.Drawing.Point(177, 97)
         Me.LblPartitionLayer.Name = "LblPartitionLayer"
         Me.LblPartitionLayer.Size = New System.Drawing.Size(110, 21)
         Me.LblPartitionLayer.TabIndex = 15
         '
         'FrameRepresentedPrecipitation
         '
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.ChkPrecipSitesLayer)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.ChkPrecipAoiTable)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.CmdClearPartition)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.Label10)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.CmdPartition)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.ChkRepresentedPrecip)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.LblPartitionLayer)
         Me.FrameRepresentedPrecipitation.Font = New System.Drawing.Font("Microsoft Sans Serif", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.FrameRepresentedPrecipitation.Location = New System.Drawing.Point(497, 424)
+        Me.FrameRepresentedPrecipitation.Location = New System.Drawing.Point(497, 379)
         Me.FrameRepresentedPrecipitation.Name = "FrameRepresentedPrecipitation"
-        Me.FrameRepresentedPrecipitation.Size = New System.Drawing.Size(443, 80)
+        Me.FrameRepresentedPrecipitation.Size = New System.Drawing.Size(443, 125)
         Me.FrameRepresentedPrecipitation.TabIndex = 16
         Me.FrameRepresentedPrecipitation.TabStop = False
         Me.FrameRepresentedPrecipitation.Text = "Elevation-Precipitation Correlation"
+        '
+        'ChkPrecipSitesLayer
+        '
+        Me.ChkPrecipSitesLayer.AutoSize = True
+        Me.ChkPrecipSitesLayer.Enabled = False
+        Me.ChkPrecipSitesLayer.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.ChkPrecipSitesLayer.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.ChkPrecipSitesLayer.Location = New System.Drawing.Point(237, 46)
+        Me.ChkPrecipSitesLayer.Name = "ChkPrecipSitesLayer"
+        Me.ChkPrecipSitesLayer.Size = New System.Drawing.Size(203, 20)
+        Me.ChkPrecipSitesLayer.TabIndex = 19
+        Me.ChkPrecipSitesLayer.Text = "Elev-Precip Sites layer exists "
+        Me.ChkPrecipSitesLayer.UseVisualStyleBackColor = True
+        '
+        'ChkPrecipAoiTable
+        '
+        Me.ChkPrecipAoiTable.AutoSize = True
+        Me.ChkPrecipAoiTable.Enabled = False
+        Me.ChkPrecipAoiTable.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.ChkPrecipAoiTable.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.ChkPrecipAoiTable.Location = New System.Drawing.Point(9, 46)
+        Me.ChkPrecipAoiTable.Name = "ChkPrecipAoiTable"
+        Me.ChkPrecipAoiTable.Size = New System.Drawing.Size(195, 20)
+        Me.ChkPrecipAoiTable.TabIndex = 18
+        Me.ChkPrecipAoiTable.Text = "Elev-Precip AOI table exists "
+        Me.ChkPrecipAoiTable.UseVisualStyleBackColor = True
+        '
+        'CmdClearPartition
+        '
+        Me.CmdClearPartition.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CmdClearPartition.Location = New System.Drawing.Point(365, 94)
+        Me.CmdClearPartition.Name = "CmdClearPartition"
+        Me.CmdClearPartition.Size = New System.Drawing.Size(60, 25)
+        Me.CmdClearPartition.TabIndex = 17
+        Me.CmdClearPartition.Text = "Clear"
+        Me.CmdClearPartition.UseVisualStyleBackColor = True
+        '
+        'Label10
+        '
+        Me.Label10.AutoSize = True
+        Me.Label10.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label10.Location = New System.Drawing.Point(8, 97)
+        Me.Label10.Name = "Label10"
+        Me.Label10.Size = New System.Drawing.Size(169, 16)
+        Me.Label10.TabIndex = 16
+        Me.Label10.Text = "Elev-Precip Attribute Layer:"
         '
         'ChkRepresentedPrecip
         '
@@ -978,26 +1028,6 @@ Partial Class frmGenerateMaps
         Me.ChkRepresentedPrecip.TabIndex = 5
         Me.ChkRepresentedPrecip.Text = "Generate Elev-Precip Table and Scatter Plot"
         Me.ChkRepresentedPrecip.UseVisualStyleBackColor = True
-        '
-        'Label10
-        '
-        Me.Label10.AutoSize = True
-        Me.Label10.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label10.Location = New System.Drawing.Point(12, 47)
-        Me.Label10.Name = "Label10"
-        Me.Label10.Size = New System.Drawing.Size(169, 16)
-        Me.Label10.TabIndex = 16
-        Me.Label10.Text = "Elev-Precip Attribute Layer:"
-        '
-        'CmdClearPartition
-        '
-        Me.CmdClearPartition.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdClearPartition.Location = New System.Drawing.Point(369, 44)
-        Me.CmdClearPartition.Name = "CmdClearPartition"
-        Me.CmdClearPartition.Size = New System.Drawing.Size(60, 25)
-        Me.CmdClearPartition.TabIndex = 17
-        Me.CmdClearPartition.Text = "Clear"
-        Me.CmdClearPartition.UseVisualStyleBackColor = True
         '
         'frmGenerateMaps
         '
@@ -1118,4 +1148,6 @@ Partial Class frmGenerateMaps
     Friend WithEvents CmdClearPartition As System.Windows.Forms.Button
     Friend WithEvents Label10 As System.Windows.Forms.Label
     Friend WithEvents ChkRepresentedPrecip As System.Windows.Forms.CheckBox
+    Friend WithEvents ChkPrecipSitesLayer As System.Windows.Forms.CheckBox
+    Friend WithEvents ChkPrecipAoiTable As System.Windows.Forms.CheckBox
 End Class
