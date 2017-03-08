@@ -1858,6 +1858,7 @@ Public Class frmGenerateMaps
                 'Need to re-run represented precip layers
                 ChkPrecipAoiTable.Checked = False
                 ChkPrecipSitesLayer.Checked = False
+                FrameRepresentedPrecipitation.Enabled = True
             End If
 
             'check if map_parameters.txt file exists
@@ -2450,8 +2451,12 @@ Public Class frmGenerateMaps
                 pStepProg.Message = "Creating Elevation-Precipitation Correlation Charts..."
                 pStepProg.Step()
 
+                Dim partitionFieldName As String = Nothing
+                Dim partitionFileName As String = FindPartitionRasterName()
+                If Not String.IsNullOrEmpty(partitionFileName) Then _
+                    partitionFieldName = partitionFileName
                 Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
-                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, pPrecipDemElevWorksheet, demTitleUnit, _
+                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFieldName, pPrecipDemElevWorksheet, demTitleUnit, _
                     MeasurementUnit.Inches)
                 If success = BA_ReturnCode.Success Then
                     success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
@@ -2570,10 +2575,9 @@ Public Class frmGenerateMaps
                 '"Rectangle 5 5 Cell"
                 Dim neighborhood As String = "Rectangle " & prismCellSize & " " & prismCellSize & " Map"
                 Dim strFilterType As String = StatisticsFieldName.MAJORITY.ToString
-                Dim success As BA_ReturnCode = BA_FocalStatistics_GP(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_RasterAspectZones, _
-                                                                     BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_AspectPrec, _
-                                                                     PrecipPath & "\" & PRISMRasterName, _
-                                                                     neighborhood, strFilterType, PrecipPath & "\" & PRISMRasterName)
+                Dim success As BA_ReturnCode = BA_FocalStatistics_CellSize(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_RasterAspectZones, _
+                                                     BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_AspectPrec, _
+                                                     neighborhood, strFilterType, PrecipPath & "\" & PRISMRasterName, Convert.ToString(prismCellSize))
                 If success <> BA_ReturnCode.Success Then
                     MessageBox.Show("An error occurred while resampling the aspect layer for elevation precipitation")
                     Return Nothing
@@ -2633,6 +2637,22 @@ Public Class frmGenerateMaps
             pFld = Nothing
         End Try
 
+    End Function
+
+    Private Function FindPartitionRasterName() As String
+        Dim AOIVectorList() As String = Nothing
+        Dim AOIRasterList() As String = Nothing
+        Dim layerPath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Analysis)
+        BA_ListLayersinGDB(layerPath, AOIRasterList, AOIVectorList)
+        Dim RasterCount As Integer = UBound(AOIRasterList)
+        If RasterCount > 0 Then
+            For i = 1 To RasterCount
+                If AOIRasterList(i).IndexOf(BA_RasterPartPrefix) = 0 Then
+                    Return AOIRasterList(i)
+                End If
+            Next
+        End If
+        Return Nothing
     End Function
 
 End Class
