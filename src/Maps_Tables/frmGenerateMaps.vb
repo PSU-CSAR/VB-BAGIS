@@ -2115,8 +2115,10 @@ Public Class frmGenerateMaps
                                                                                aspectValuesInputPath, PrecipPath + "\" + PRISMRasterName, True)
                                             If success = BA_ReturnCode.Success Then
                                                 'Rename extracted partition field
+                                                Dim partFileName As String = BA_GetBareName(m_partitionRasterPath)
+                                                Dim partitionFieldName As String = partFileName.Substring(BA_RasterPartPrefix.Length)
                                                 RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), partitionFileName, BA_RasterValu, _
-                                                                        BA_Partition, esriFieldType.esriFieldTypeDouble)
+                                                                        partitionFieldName, esriFieldType.esriFieldTypeDouble)
                                             End If
                                         End If
                                         'Extract ASPECT values to sites
@@ -2451,18 +2453,18 @@ Public Class frmGenerateMaps
                 pStepProg.Message = "Creating Elevation-Precipitation Correlation Charts..."
                 pStepProg.Step()
 
-                Dim partitionFieldName As String = Nothing
+                Dim partitionFieldName As String = "partition"
                 Dim partitionFileName As String = FindPartitionRasterName()
                 If Not String.IsNullOrEmpty(partitionFileName) Then _
-                    partitionFieldName = partitionFileName
+                    partitionFieldName = partitionFileName.Substring(BA_RasterPartPrefix.Length)
                 Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
                     PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFieldName, pPrecipDemElevWorksheet, demTitleUnit, _
-                    MeasurementUnit.Inches)
+                    MeasurementUnit.Inches, partitionFileName.Substring(BA_RasterPartPrefix.Length))
                 If success = BA_ReturnCode.Success Then
                     success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
                                                          BA_Precip, BA_SiteElevField, BA_SiteNameField, _
-                                                         BA_SiteTypeField, BA_Aspect, pPrecipSiteWorksheet, MeasurementUnit.Inches)
-
+                                                         BA_SiteTypeField, BA_Aspect, partitionFieldName, _
+                                                         pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName)
 
                     If success = BA_ReturnCode.Success Then
                         Dim demChartMin As Integer = Math.Floor(Convert.ToDouble(txtMinElev.Text) / 100) * 100

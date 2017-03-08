@@ -101,8 +101,8 @@ Public Class BtnRepresentPrecip
 
 
                     success = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), sampleTableFile, _
-                                PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, BA_Partition, pPrecipDemElevWorksheet, demUnits, _
-                                precipUnits)
+                                PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, "Partition", pPrecipDemElevWorksheet, demUnits, _
+                                precipUnits, "Partition")
                     If success = BA_ReturnCode.Success Then
                         '@ToDo: Min axis values will come from frmGenerateMaps when this is integrated
                         BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pPrecipSiteWorksheet, _

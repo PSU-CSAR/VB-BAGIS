@@ -52,7 +52,6 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_SiteSnowCourse = "scos"
     Public Const BA_Aspect = "BA_ASPECT"
     Public Const BA_Precip = "BA_PRECIP"
-    Public Const BA_Partition = "BA_PARTITION"
 
     'AOI pourpoint area and area unit field names
     Public Const BA_AOIShapeAreaField = "AOISHPAREA"
