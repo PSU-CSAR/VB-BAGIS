@@ -165,20 +165,6 @@ Public Class frmGenerateMaps
         PRISMPath = AnalysisPath & "\" & BA_RasterPrecipitationZones
         ElvPath = AnalysisPath & "\" & BA_RasterElevationZones
 
-        If Not AOI_HasSNOTEL AndAlso Not AOI_HasSnowCourse Then
-            'Disable Elevation-Precipitation Correlation if no sites
-            FrameRepresentedPrecipitation.Enabled = False
-        End If
-
-        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" _
-                                          + BA_TablePrecMeanElev, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
-            ChkPrecipAoiTable.Checked = True
-        End If
-        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + _
-                          BA_VectorSnotelPrec, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-            ChkPrecipSitesLayer.Checked = True
-        End If
-
         Display_DataStatus()
 
         m_formInit = True
@@ -914,15 +900,33 @@ Public Class frmGenerateMaps
                 cmdApplyElevInterval.Enabled = True
             End If
 
-            'set UI control
+            'configure UI for Elevation-Precipitation Correlation
             Dim ElevPrecipLayersReady As Boolean = True
-            If ChkRepresentedPrecip.Checked = True Then
+            If Not AOI_HasSNOTEL AndAlso Not AOI_HasSnowCourse Then
+                'Disable Elevation-Precipitation Correlation if no sites
+                FrameRepresentedPrecipitation.Enabled = False
+            Else
+                If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" _
+                                      + BA_TablePrecMeanElev, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
+                    ChkPrecipAoiTable.Checked = True
+                End If
+                If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + _
+                                  BA_VectorSnotelPrec, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                    ChkPrecipSitesLayer.Checked = True
+                End If
                 If ChkPrecipAoiTable.Checked = True AndAlso ChkPrecipSitesLayer.Checked = True Then
                     ElevPrecipLayersReady = True
                 Else
                     ElevPrecipLayersReady = False
                 End If
+                Dim partitionFileName As String = FindPartitionRasterName()
+                If Not String.IsNullOrEmpty(partitionFileName) Then
+                    LblPartitionLayer.Text = partitionFileName.Substring(BA_RasterPartPrefix.Length)
+                    m_partitionRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName
+                End If
             End If
+
+            'set UI control
             If DataCount = ndata - 1 AndAlso ElevPrecipLayersReady = True AndAlso _
                 Flag_ElevOrPrecipChange = False Then 'not counting the AOI stream layer
                 CmdMaps.Enabled = True
@@ -1604,6 +1608,14 @@ Public Class frmGenerateMaps
         If m_formInit = True Then
             cmdApplyPRISMInterval.Enabled = False
         End If
+
+        'reset represented precipitation
+        If ChkRepresentedPrecip.Checked = True Then
+            'Need to re-run represented precip layers
+            ChkPrecipAoiTable.Checked = False
+            ChkPrecipSitesLayer.Checked = False
+            FrameRepresentedPrecipitation.Enabled = True
+        End If
     End Sub
 
     Private Sub cmdPRISM_Click(sender As System.Object, e As System.EventArgs) Handles cmdPRISM.Click
@@ -1853,13 +1865,6 @@ Public Class frmGenerateMaps
             Dim filepath As String, FileName As String
 
             Flag_ElevOrPrecipChange = True
-
-            If ChkRepresentedPrecip.Checked = True Then
-                'Need to re-run represented precip layers
-                ChkPrecipAoiTable.Checked = False
-                ChkPrecipSitesLayer.Checked = False
-                FrameRepresentedPrecipitation.Enabled = True
-            End If
 
             'check if map_parameters.txt file exists
             filepath = BA_GetPath(AOIFolderBase, PublicPath.Maps)
@@ -2453,13 +2458,16 @@ Public Class frmGenerateMaps
                 pStepProg.Message = "Creating Elevation-Precipitation Correlation Charts..."
                 pStepProg.Step()
 
-                Dim partitionFieldName As String = "partition"
-                Dim partitionFileName As String = FindPartitionRasterName()
-                If Not String.IsNullOrEmpty(partitionFileName) Then _
-                    partitionFieldName = partitionFileName.Substring(BA_RasterPartPrefix.Length)
+                Dim partitionFieldName As String = BA_UNKNOWN
+                Dim partitionFileName As String = BA_UNKNOWN
+                If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
+                    partitionFileName = BA_GetBareName(m_partitionRasterPath)
+                    If Not String.IsNullOrEmpty(partitionFileName) Then _
+                        partitionFieldName = partitionFileName.Substring(BA_RasterPartPrefix.Length)
+                End If
                 Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
-                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFieldName, pPrecipDemElevWorksheet, demTitleUnit, _
-                    MeasurementUnit.Inches, partitionFileName.Substring(BA_RasterPartPrefix.Length))
+                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, _
+                    MeasurementUnit.Inches, partitionFieldName)
                 If success = BA_ReturnCode.Success Then
                     success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
                                                          BA_Precip, BA_SiteElevField, BA_SiteNameField, _
