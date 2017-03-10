@@ -28,6 +28,7 @@ Partial Class FrmPartitionRaster
         Me.CmdClear = New System.Windows.Forms.Button()
         Me.CmdClose = New System.Windows.Forms.Button()
         Me.CmdCreateRaster = New System.Windows.Forms.Button()
+        Me.BtnAbout = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'Label7
@@ -36,9 +37,9 @@ Partial Class FrmPartitionRaster
         Me.Label7.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label7.Location = New System.Drawing.Point(3, 9)
         Me.Label7.Name = "Label7"
-        Me.Label7.Size = New System.Drawing.Size(266, 16)
+        Me.Label7.Size = New System.Drawing.Size(269, 16)
         Me.Label7.TabIndex = 8
-        Me.Label7.Text = "Precipitation Representation Partition"
+        Me.Label7.Text = "Elevation-Precipitation Attribute Layer"
         '
         'Label9
         '
@@ -72,7 +73,7 @@ Partial Class FrmPartitionRaster
         'CmdClose
         '
         Me.CmdClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdClose.Location = New System.Drawing.Point(210, 246)
+        Me.CmdClose.Location = New System.Drawing.Point(287, 250)
         Me.CmdClose.Name = "CmdClose"
         Me.CmdClose.Size = New System.Drawing.Size(106, 28)
         Me.CmdClose.TabIndex = 12
@@ -83,18 +84,30 @@ Partial Class FrmPartitionRaster
         '
         Me.CmdCreateRaster.Enabled = False
         Me.CmdCreateRaster.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdCreateRaster.Location = New System.Drawing.Point(211, 211)
+        Me.CmdCreateRaster.Location = New System.Drawing.Point(288, 215)
         Me.CmdCreateRaster.Name = "CmdCreateRaster"
         Me.CmdCreateRaster.Size = New System.Drawing.Size(106, 28)
         Me.CmdCreateRaster.TabIndex = 20
         Me.CmdCreateRaster.Text = "Create Raster"
         Me.CmdCreateRaster.UseVisualStyleBackColor = True
         '
+        'BtnAbout
+        '
+        Me.BtnAbout.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnAbout.Location = New System.Drawing.Point(299, 6)
+        Me.BtnAbout.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnAbout.Name = "BtnAbout"
+        Me.BtnAbout.Size = New System.Drawing.Size(97, 28)
+        Me.BtnAbout.TabIndex = 37
+        Me.BtnAbout.Text = "Tell me more"
+        Me.BtnAbout.UseVisualStyleBackColor = True
+        '
         'FrmPartitionRaster
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(329, 281)
+        Me.ClientSize = New System.Drawing.Size(405, 281)
+        Me.Controls.Add(Me.BtnAbout)
         Me.Controls.Add(Me.CmdCreateRaster)
         Me.Controls.Add(Me.CmdClose)
         Me.Controls.Add(Me.CmdClear)
@@ -114,4 +127,5 @@ Partial Class FrmPartitionRaster
     Friend WithEvents CmdClear As System.Windows.Forms.Button
     Friend WithEvents CmdClose As System.Windows.Forms.Button
     Friend WithEvents CmdCreateRaster As System.Windows.Forms.Button
+    Friend WithEvents BtnAbout As System.Windows.Forms.Button
 End Class

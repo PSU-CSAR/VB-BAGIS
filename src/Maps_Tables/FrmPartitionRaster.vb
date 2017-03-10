@@ -260,4 +260,9 @@ Public Class FrmPartitionRaster
             End Try
         End If
     End Sub
+
+    Private Sub BtnAbout_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles BtnAbout.Click
+        Dim toolHelpForm As FrmHelp = New FrmHelp(BA_HelpTopics.ElevPrecipAttribLayer)
+        toolHelpForm.ShowDialog()
+    End Sub
 End Class

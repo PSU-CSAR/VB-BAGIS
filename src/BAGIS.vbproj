@@ -184,6 +184,12 @@
     <Compile Include="Forms\FrmWebservices.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Help\FrmHelp.Designer.vb">
+      <DependentUpon>FrmHelp.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Help\FrmHelp.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Maps_Tables\BtnRepresentPrecip.vb" />
     <Compile Include="Maps_Tables\BtnScenario1.vb" />
     <Compile Include="BtnAddRefLayers.vb" />
@@ -323,6 +329,12 @@
     <Compile Include="Maps_Tables\FrmPartitionRaster.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Maps_Tables\FrmPsuedoSite.Designer.vb">
+      <DependentUpon>FrmPsuedoSite.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Maps_Tables\FrmPsuedoSite.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Maps_Tables\frmSiteRepresentations.Designer.vb">
       <DependentUpon>frmSiteRepresentations.vb</DependentUpon>
     </Compile>
@@ -375,6 +387,9 @@
     <EmbeddedResource Include="AOI\frmAOIStream.resx">
       <DependentUpon>frmAOIStream.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Help\FrmHelp.resx">
+      <DependentUpon>FrmHelp.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Maps_Tables\FrmDataUnits.resx">
       <DependentUpon>FrmDataUnits.vb</DependentUpon>
     </EmbeddedResource>
@@ -423,6 +438,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Maps_Tables\FrmPartitionRaster.resx">
       <DependentUpon>FrmPartitionRaster.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Maps_Tables\FrmPsuedoSite.resx">
+      <DependentUpon>FrmPsuedoSite.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Maps_Tables\frmSiteRepresentations.resx">
       <DependentUpon>frmSiteRepresentations.vb</DependentUpon>

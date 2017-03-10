@@ -2554,12 +2554,26 @@ Public Class frmGenerateMaps
         frmPartitionRaster.ShowDialog()
         LblPartitionLayer.Text = frmPartitionRaster.PartitionRasterName
         m_partitionRasterPath = frmPartitionRaster.PartitionRasterPath
-
+        If String.IsNullOrEmpty(m_partitionRasterPath) Then
+            ' Delete existing partition raster if it exists
+            Dim deleteFileName As String = FindPartitionRasterName()
+            If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + deleteFileName, _
+                              WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                BA_RemoveRasterFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), deleteFileName)
+            End If
+        End If
     End Sub
 
     Private Sub CmdClearPartition_Click(sender As System.Object, e As System.EventArgs) Handles CmdClearPartition.Click
-        LblPartitionLayer.Text = Nothing
+        ' Delete existing partition raster if it exists
+        Dim parentFolder As String = "PleaseReturn"
+        Dim deleteFileName As String = BA_GetBareName(m_partitionRasterPath, parentFolder)
+        If BA_File_Exists(m_partitionRasterPath, _
+                          WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+            BA_RemoveRasterFromGDB(parentFolder, deleteFileName)
+        End If
         m_partitionRasterPath = Nothing
+        LblPartitionLayer.Text = Nothing
     End Sub
 
     Private Sub SetPrecipPathInfo()
