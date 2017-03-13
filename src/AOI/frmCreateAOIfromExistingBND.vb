@@ -956,8 +956,6 @@ Public Class frmCreateAOIfromExistingBND
     End Sub
 
     Private Sub frmCreateAOIfromExistingBND_Load(sender As System.Object, e As System.EventArgs) Handles MyBase.Load
-        Dim response As Integer = 0
-
         BA_SetSettingPath()
 
         If Not File.Exists(BA_Settings_Filepath & "\" & BA_Settings_Filename) Then
@@ -965,7 +963,7 @@ Public Class frmCreateAOIfromExistingBND
             Exit Sub
         End If
 
-        response = BA_ReadBAGISSettings(BA_Settings_Filepath) 'set the system setting parameters
+        Dim response As Integer = BA_ReadBAGISSettings(BA_Settings_Filepath) 'set the system setting parameters
 
         If response <> 1 Then
             MsgBox("Unable to get critical system settings information. Program stopped!")
@@ -1068,5 +1066,14 @@ Public Class frmCreateAOIfromExistingBND
             txtOutputName.Focus()
             e.Cancel = True
         End If
+    End Sub
+
+    Public Sub New()
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+
     End Sub
 End Class

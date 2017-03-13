@@ -52,6 +52,14 @@ Public Class BtnAOIfromShapefile
         If data_type = ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureDataset Or _
             data_type = ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass Then
 
+            If Data_Name.Contains(" ") Then
+                MessageBox.Show("An AOI cannot be created from a shapefile with a space in the name. Please " + _
+                                "rename the shapefile and try again.", "Invalid file name", MessageBoxButtons.OK, _
+                                MessageBoxIcon.Error)
+                Exit Sub
+            End If
+
+
             'check geometrytyp, only polygon layer is allowed.
             Dim projText As String = BA_GetProjectionString(Data_Path & "\" & BA_StandardizeShapefileName(Data_Name, True, False))
             MsgBox("The input shapefile must be in the same projection as the source DEM specified in the BAGIS settings!" & _

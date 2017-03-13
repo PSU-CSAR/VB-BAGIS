@@ -388,6 +388,10 @@ Public Class frmBasin_Tool
         Dim response1 As Integer = BA_SetMapFrameDimension(BA_DefaultMapName, 1, 2, 7.5, 9, True)
 
         Try
+            'reset aoi information
+            BA_Reset_AOIFlags()
+            BA_ResetAOI()
+
             If NeedtoClipDEM Then
                 If BA_DEMDimension.X_CellSize * BA_DEMDimension.Y_CellSize = 0 Then
                     Dim strDEMDataSet As String
@@ -424,9 +428,6 @@ Public Class frmBasin_Tool
                 basinInfoButton.selectedProperty = True
             End If
 
-            'reset aoi information
-            BA_Reset_AOIFlags()
-            BA_ResetAOI()
         Catch ex As Exception
             MsgBox("Unknown error")
             Exit Sub
