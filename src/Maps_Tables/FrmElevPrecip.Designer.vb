@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
-Partial Class FrmPartitionRaster
+Partial Class FrmElevPrecip
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
@@ -22,7 +22,7 @@ Partial Class FrmPartitionRaster
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Me.Label7 = New System.Windows.Forms.Label()
+        Me.LblHeading = New System.Windows.Forms.Label()
         Me.Label9 = New System.Windows.Forms.Label()
         Me.LstRasters = New System.Windows.Forms.ListBox()
         Me.CmdClear = New System.Windows.Forms.Button()
@@ -31,15 +31,15 @@ Partial Class FrmPartitionRaster
         Me.BtnAbout = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
-        'Label7
+        'LblHeading
         '
-        Me.Label7.AutoSize = True
-        Me.Label7.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label7.Location = New System.Drawing.Point(3, 9)
-        Me.Label7.Name = "Label7"
-        Me.Label7.Size = New System.Drawing.Size(269, 16)
-        Me.Label7.TabIndex = 8
-        Me.Label7.Text = "Elevation-Precipitation Attribute Layer"
+        Me.LblHeading.AutoSize = True
+        Me.LblHeading.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LblHeading.Location = New System.Drawing.Point(3, 9)
+        Me.LblHeading.Name = "LblHeading"
+        Me.LblHeading.Size = New System.Drawing.Size(269, 16)
+        Me.LblHeading.TabIndex = 8
+        Me.LblHeading.Text = "Elevation-Precipitation Attribute Layer"
         '
         'Label9
         '
@@ -102,7 +102,7 @@ Partial Class FrmPartitionRaster
         Me.BtnAbout.Text = "Tell me more"
         Me.BtnAbout.UseVisualStyleBackColor = True
         '
-        'FrmPartitionRaster
+        'FrmElevPrecip
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
@@ -113,15 +113,15 @@ Partial Class FrmPartitionRaster
         Me.Controls.Add(Me.CmdClear)
         Me.Controls.Add(Me.LstRasters)
         Me.Controls.Add(Me.Label9)
-        Me.Controls.Add(Me.Label7)
-        Me.Name = "FrmPartitionRaster"
+        Me.Controls.Add(Me.LblHeading)
+        Me.Name = "FrmElevPrecip"
         Me.ShowIcon = False
         Me.Text = "AOI: "
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
     End Sub
-    Friend WithEvents Label7 As System.Windows.Forms.Label
+    Friend WithEvents LblHeading As System.Windows.Forms.Label
     Friend WithEvents Label9 As System.Windows.Forms.Label
     Friend WithEvents LstRasters As System.Windows.Forms.ListBox
     Friend WithEvents CmdClear As System.Windows.Forms.Button

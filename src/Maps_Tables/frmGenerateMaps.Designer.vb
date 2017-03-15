@@ -100,6 +100,13 @@ Partial Class frmGenerateMaps
         Me.CmdPartition = New System.Windows.Forms.Button()
         Me.LblPartitionLayer = New System.Windows.Forms.Label()
         Me.FrameRepresentedPrecipitation = New System.Windows.Forms.GroupBox()
+        Me.OptAggZone = New System.Windows.Forms.RadioButton()
+        Me.OptAggPrism = New System.Windows.Forms.RadioButton()
+        Me.Label12 = New System.Windows.Forms.Label()
+        Me.CmdClearZonal = New System.Windows.Forms.Button()
+        Me.CmdZonalAggregate = New System.Windows.Forms.Button()
+        Me.LblZonalLayer = New System.Windows.Forms.Label()
+        Me.Label11 = New System.Windows.Forms.Label()
         Me.ChkPrecipSitesLayer = New System.Windows.Forms.CheckBox()
         Me.ChkPrecipAoiTable = New System.Windows.Forms.CheckBox()
         Me.CmdClearPartition = New System.Windows.Forms.Button()
@@ -606,7 +613,7 @@ Partial Class frmGenerateMaps
         Me.FramePrecipitationDist.Controls.Add(Me.Label16)
         Me.FramePrecipitationDist.Controls.Add(Me.Label7)
         Me.FramePrecipitationDist.Font = New System.Drawing.Font("Microsoft Sans Serif", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.FramePrecipitationDist.Location = New System.Drawing.Point(497, 157)
+        Me.FramePrecipitationDist.Location = New System.Drawing.Point(497, 137)
         Me.FramePrecipitationDist.Name = "FramePrecipitationDist"
         Me.FramePrecipitationDist.Size = New System.Drawing.Size(443, 216)
         Me.FramePrecipitationDist.TabIndex = 0
@@ -893,7 +900,7 @@ Partial Class frmGenerateMaps
         Me.lstDataStatus.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.lstDataStatus.Location = New System.Drawing.Point(506, 18)
         Me.lstDataStatus.Name = "lstDataStatus"
-        Me.lstDataStatus.Size = New System.Drawing.Size(434, 134)
+        Me.lstDataStatus.Size = New System.Drawing.Size(434, 116)
         Me.lstDataStatus.TabIndex = 11
         Me.lstDataStatus.UseCompatibleStateImageBehavior = False
         Me.lstDataStatus.View = System.Windows.Forms.View.Details
@@ -935,7 +942,7 @@ Partial Class frmGenerateMaps
         'CmdPartition
         '
         Me.CmdPartition.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdPartition.Location = New System.Drawing.Point(300, 94)
+        Me.CmdPartition.Location = New System.Drawing.Point(300, 97)
         Me.CmdPartition.Name = "CmdPartition"
         Me.CmdPartition.Size = New System.Drawing.Size(60, 25)
         Me.CmdPartition.TabIndex = 14
@@ -947,13 +954,20 @@ Partial Class frmGenerateMaps
         Me.LblPartitionLayer.Enabled = False
         Me.LblPartitionLayer.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.LblPartitionLayer.ForeColor = System.Drawing.Color.Blue
-        Me.LblPartitionLayer.Location = New System.Drawing.Point(177, 97)
+        Me.LblPartitionLayer.Location = New System.Drawing.Point(177, 100)
         Me.LblPartitionLayer.Name = "LblPartitionLayer"
         Me.LblPartitionLayer.Size = New System.Drawing.Size(110, 21)
         Me.LblPartitionLayer.TabIndex = 15
         '
         'FrameRepresentedPrecipitation
         '
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.OptAggZone)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.OptAggPrism)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.Label12)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.CmdClearZonal)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.CmdZonalAggregate)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.LblZonalLayer)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.Label11)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.ChkPrecipSitesLayer)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.ChkPrecipAoiTable)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.CmdClearPartition)
@@ -962,12 +976,84 @@ Partial Class frmGenerateMaps
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.ChkRepresentedPrecip)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.LblPartitionLayer)
         Me.FrameRepresentedPrecipitation.Font = New System.Drawing.Font("Microsoft Sans Serif", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.FrameRepresentedPrecipitation.Location = New System.Drawing.Point(497, 379)
+        Me.FrameRepresentedPrecipitation.Location = New System.Drawing.Point(497, 359)
         Me.FrameRepresentedPrecipitation.Name = "FrameRepresentedPrecipitation"
-        Me.FrameRepresentedPrecipitation.Size = New System.Drawing.Size(443, 125)
+        Me.FrameRepresentedPrecipitation.Size = New System.Drawing.Size(443, 160)
         Me.FrameRepresentedPrecipitation.TabIndex = 16
         Me.FrameRepresentedPrecipitation.TabStop = False
         Me.FrameRepresentedPrecipitation.Text = "Elevation-Precipitation Correlation"
+        '
+        'OptAggZone
+        '
+        Me.OptAggZone.AutoSize = True
+        Me.OptAggZone.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.OptAggZone.Location = New System.Drawing.Point(215, 46)
+        Me.OptAggZone.Name = "OptAggZone"
+        Me.OptAggZone.Size = New System.Drawing.Size(94, 20)
+        Me.OptAggZone.TabIndex = 26
+        Me.OptAggZone.Text = "Zone Layer"
+        Me.OptAggZone.UseVisualStyleBackColor = True
+        '
+        'OptAggPrism
+        '
+        Me.OptAggPrism.AutoSize = True
+        Me.OptAggPrism.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.OptAggPrism.Location = New System.Drawing.Point(108, 46)
+        Me.OptAggPrism.Name = "OptAggPrism"
+        Me.OptAggPrism.Size = New System.Drawing.Size(101, 20)
+        Me.OptAggPrism.TabIndex = 25
+        Me.OptAggPrism.Text = "PRISM Cells"
+        Me.OptAggPrism.UseVisualStyleBackColor = True
+        '
+        'Label12
+        '
+        Me.Label12.AutoSize = True
+        Me.Label12.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label12.Location = New System.Drawing.Point(8, 48)
+        Me.Label12.Name = "Label12"
+        Me.Label12.Size = New System.Drawing.Size(94, 16)
+        Me.Label12.TabIndex = 24
+        Me.Label12.Text = "Aggregate By:"
+        '
+        'CmdClearZonal
+        '
+        Me.CmdClearZonal.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CmdClearZonal.Location = New System.Drawing.Point(365, 65)
+        Me.CmdClearZonal.Name = "CmdClearZonal"
+        Me.CmdClearZonal.Size = New System.Drawing.Size(60, 25)
+        Me.CmdClearZonal.TabIndex = 23
+        Me.CmdClearZonal.Text = "Clear"
+        Me.CmdClearZonal.UseVisualStyleBackColor = True
+        '
+        'CmdZonalAggregate
+        '
+        Me.CmdZonalAggregate.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CmdZonalAggregate.Location = New System.Drawing.Point(300, 65)
+        Me.CmdZonalAggregate.Name = "CmdZonalAggregate"
+        Me.CmdZonalAggregate.Size = New System.Drawing.Size(60, 25)
+        Me.CmdZonalAggregate.TabIndex = 22
+        Me.CmdZonalAggregate.Text = "Select"
+        Me.CmdZonalAggregate.UseVisualStyleBackColor = True
+        '
+        'LblZonalLayer
+        '
+        Me.LblZonalLayer.Enabled = False
+        Me.LblZonalLayer.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LblZonalLayer.ForeColor = System.Drawing.Color.Blue
+        Me.LblZonalLayer.Location = New System.Drawing.Point(177, 75)
+        Me.LblZonalLayer.Name = "LblZonalLayer"
+        Me.LblZonalLayer.Size = New System.Drawing.Size(110, 21)
+        Me.LblZonalLayer.TabIndex = 21
+        '
+        'Label11
+        '
+        Me.Label11.AutoSize = True
+        Me.Label11.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label11.Location = New System.Drawing.Point(8, 75)
+        Me.Label11.Name = "Label11"
+        Me.Label11.Size = New System.Drawing.Size(146, 16)
+        Me.Label11.TabIndex = 20
+        Me.Label11.Text = "Zone Aggregate Layer:"
         '
         'ChkPrecipSitesLayer
         '
@@ -975,7 +1061,7 @@ Partial Class frmGenerateMaps
         Me.ChkPrecipSitesLayer.Enabled = False
         Me.ChkPrecipSitesLayer.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.ChkPrecipSitesLayer.ForeColor = System.Drawing.SystemColors.ControlText
-        Me.ChkPrecipSitesLayer.Location = New System.Drawing.Point(237, 46)
+        Me.ChkPrecipSitesLayer.Location = New System.Drawing.Point(234, 131)
         Me.ChkPrecipSitesLayer.Name = "ChkPrecipSitesLayer"
         Me.ChkPrecipSitesLayer.Size = New System.Drawing.Size(203, 20)
         Me.ChkPrecipSitesLayer.TabIndex = 19
@@ -988,7 +1074,7 @@ Partial Class frmGenerateMaps
         Me.ChkPrecipAoiTable.Enabled = False
         Me.ChkPrecipAoiTable.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.ChkPrecipAoiTable.ForeColor = System.Drawing.SystemColors.ControlText
-        Me.ChkPrecipAoiTable.Location = New System.Drawing.Point(9, 46)
+        Me.ChkPrecipAoiTable.Location = New System.Drawing.Point(6, 131)
         Me.ChkPrecipAoiTable.Name = "ChkPrecipAoiTable"
         Me.ChkPrecipAoiTable.Size = New System.Drawing.Size(195, 20)
         Me.ChkPrecipAoiTable.TabIndex = 18
@@ -998,7 +1084,7 @@ Partial Class frmGenerateMaps
         'CmdClearPartition
         '
         Me.CmdClearPartition.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdClearPartition.Location = New System.Drawing.Point(365, 94)
+        Me.CmdClearPartition.Location = New System.Drawing.Point(365, 97)
         Me.CmdClearPartition.Name = "CmdClearPartition"
         Me.CmdClearPartition.Size = New System.Drawing.Size(60, 25)
         Me.CmdClearPartition.TabIndex = 17
@@ -1009,7 +1095,7 @@ Partial Class frmGenerateMaps
         '
         Me.Label10.AutoSize = True
         Me.Label10.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label10.Location = New System.Drawing.Point(8, 97)
+        Me.Label10.Location = New System.Drawing.Point(8, 100)
         Me.Label10.Name = "Label10"
         Me.Label10.Size = New System.Drawing.Size(169, 16)
         Me.Label10.TabIndex = 16
@@ -1150,4 +1236,11 @@ Partial Class frmGenerateMaps
     Friend WithEvents ChkRepresentedPrecip As System.Windows.Forms.CheckBox
     Friend WithEvents ChkPrecipSitesLayer As System.Windows.Forms.CheckBox
     Friend WithEvents ChkPrecipAoiTable As System.Windows.Forms.CheckBox
+    Friend WithEvents CmdClearZonal As System.Windows.Forms.Button
+    Friend WithEvents CmdZonalAggregate As System.Windows.Forms.Button
+    Friend WithEvents LblZonalLayer As System.Windows.Forms.Label
+    Friend WithEvents Label11 As System.Windows.Forms.Label
+    Friend WithEvents OptAggZone As System.Windows.Forms.RadioButton
+    Friend WithEvents OptAggPrism As System.Windows.Forms.RadioButton
+    Friend WithEvents Label12 As System.Windows.Forms.Label
 End Class

@@ -5,14 +5,15 @@ Imports System.Windows.Forms
 Imports ESRI.ArcGIS.esriSystem
 Imports ESRI.ArcGIS.Framework
 
-Public Class FrmPartitionRaster
+Public Class FrmElevPrecip
 
-    Private m_partitionRasterPath As String
+    Private m_RasterPath As String
     Private m_cellSize As Double
     Private m_snapRasterPath As String
+    Private m_formMode As String
 
     Public Sub New(ByVal partRasterPath As String, _
-                   ByVal snapRasterpath As String, ByVal cellSize As Double)
+                   ByVal snapRasterpath As String, ByVal cellSize As Double, ByVal formMode As String)
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -22,6 +23,12 @@ Public Class FrmPartitionRaster
 
         m_snapRasterPath = snapRasterpath
         m_cellSize = cellSize
+        m_formMode = formMode
+        If formMode.Equals(frmGenerateMaps.PARTITION_MODE) Then
+            LblHeading.Text = "Elevation-Precipitation Attribute Layer"
+        Else
+            LblHeading.Text = "Elevation-Precipitation Zone Layer"
+        End If
         LoadLstLayers(partRasterPath)
 
     End Sub
@@ -32,7 +39,7 @@ Public Class FrmPartitionRaster
             CmdClear.Enabled = True
             CmdCreateRaster.Enabled = True
         Else
-            m_partitionRasterPath = Nothing
+            m_RasterPath = Nothing
             CmdClear.Enabled = False
             CmdCreateRaster.Enabled = False
         End If
@@ -113,19 +120,23 @@ Public Class FrmPartitionRaster
     '    End Try
     'End Sub
 
-    Public ReadOnly Property PartitionRasterPath As String
+    Public ReadOnly Property RasterPath As String
         Get
-            Return m_partitionRasterPath
+            Return m_RasterPath
         End Get
     End Property
 
-    Public ReadOnly Property PartitionRasterName As String
+    Public ReadOnly Property RasterName As String
         Get
-            If String.IsNullOrEmpty(m_partitionRasterPath) Then
+            If String.IsNullOrEmpty(m_RasterPath) Then
                 Return Nothing
             Else
-                Dim fileName As String = BA_GetBareName(m_partitionRasterPath)
-                Return fileName.Substring(BA_RasterPartPrefix.Length)
+                Dim fileName As String = BA_GetBareName(m_RasterPath)
+                If m_formMode = frmGenerateMaps.PARTITION_MODE Then
+                    Return fileName.Substring(BA_RasterPartPrefix.Length)
+                Else
+                    Return fileName.Substring(BA_ZonesRasterPrefix.Length)
+                End If
             End If
         End Get
     End Property
@@ -203,48 +214,84 @@ Public Class FrmPartitionRaster
             Dim progressDialog2 As IProgressDialog2 = Nothing
 
             Try
-                progressDialog2 = BA_GetProgressDialog(pStepProg, "Creating partition raster layer", "Running...")
+                If m_formMode = frmGenerateMaps.PARTITION_MODE Then
+                    progressDialog2 = BA_GetProgressDialog(pStepProg, "Creating partition raster layer", "Running...")
+                Else
+                    progressDialog2 = BA_GetProgressDialog(pStepProg, "Creating zones raster layer", "Running...")
+                End If
                 pStepProg.Show()
                 progressDialog2.ShowDialog()
                 pStepProg.Step()
 
-                ' Delete any pre-existing partition rasters
-                Dim AOIVectorList() As String = Nothing
-                Dim AOIRasterList() As String = Nothing
-                Dim layerPath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Analysis)
-                BA_ListLayersinGDB(layerPath, AOIRasterList, AOIVectorList)
-                Dim RasterCount As Integer = UBound(AOIRasterList)
-                If RasterCount > 0 Then
-                    For i = 1 To RasterCount
-                        If AOIRasterList(i).IndexOf(BA_RasterPartPrefix) = 0 Then
-                            Dim fullLayerPath As String = layerPath & "\" & AOIRasterList(i)
-                            BA_RemoveRasterFromGDB(layerPath, AOIRasterList(i))
-                        End If
-                    Next
-                End If
+                If m_formMode.Equals(frmGenerateMaps.PARTITION_MODE) Then
 
-                Dim selItem As LayerListItem = LstRasters.SelectedItem
-                Dim partRasterPath As String = selItem.Value
-                Dim outputRasterName As String = BA_RasterPartPrefix + selItem.Name
-                Dim outputRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + outputRasterName
-                Dim cellSize As Double = BA_CellSize(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), selItem.Name)
-                Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
-                'Only run statistics if the cell sizes are different
-                If cellSize <> m_cellSize Then
-                    Dim neighborhood As String = "Rectangle " & m_cellSize & " " & m_cellSize & " Map"
-                    success = BA_FocalStatistics_CellSize(partRasterPath, outputRasterPath, neighborhood, _
-                                                          StatisticsFieldName.MAJORITY.ToString, m_snapRasterPath, _
-                                                          Convert.ToString(m_cellSize))
+                    ' Delete any pre-existing partition rasters
+                    Dim AOIVectorList() As String = Nothing
+                    Dim AOIRasterList() As String = Nothing
+                    Dim layerPath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Analysis)
+                    BA_ListLayersinGDB(layerPath, AOIRasterList, AOIVectorList)
+                    Dim RasterCount As Integer = UBound(AOIRasterList)
+                    If RasterCount > 0 Then
+                        For i = 1 To RasterCount
+                            If AOIRasterList(i).IndexOf(BA_RasterPartPrefix) = 0 Then
+                                Dim fullLayerPath As String = layerPath & "\" & AOIRasterList(i)
+                                BA_RemoveRasterFromGDB(layerPath, AOIRasterList(i))
+                            End If
+                        Next
+                    End If
+
+                    Dim selItem As LayerListItem = LstRasters.SelectedItem
+                    Dim partRasterPath As String = selItem.Value
+                    Dim outputRasterName As String = BA_RasterPartPrefix + selItem.Name
+                    Dim outputRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + outputRasterName
+                    Dim cellSize As Double = BA_CellSize(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), selItem.Name)
+                    Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
+                    'Only run statistics if the cell sizes are different
+                    If cellSize <> m_cellSize Then
+                        Dim neighborhood As String = "Rectangle " & m_cellSize & " " & m_cellSize & " Map"
+                        success = BA_FocalStatistics_CellSize(partRasterPath, outputRasterPath, neighborhood, _
+                                                              StatisticsFieldName.MAJORITY.ToString, m_snapRasterPath, _
+                                                              Convert.ToString(m_cellSize))
+                    Else
+                        success = BA_Copy(partRasterPath, outputRasterPath)
+                    End If
+                    If success = BA_ReturnCode.Success Then
+                        m_RasterPath = outputRasterPath
+                        MessageBox.Show("Partition raster has been created and will be used in analysis!")
+                        Me.Close()
+                    Else
+                        m_RasterPath = Nothing
+                        MessageBox.Show("Partition raster could not be created and cannot be used in analysis!")
+                    End If
                 Else
-                    success = BA_Copy(partRasterPath, outputRasterPath)
-                End If
-                If success = BA_ReturnCode.Success Then
-                    m_partitionRasterPath = outputRasterPath
-                    MessageBox.Show("Partition raster has been created and will be used in analysis!")
-                    Me.Close()
-                Else
-                    m_partitionRasterPath = Nothing
-                    MessageBox.Show("Partition raster could not be created and cannot be used in analysis!")
+                    ' Delete any pre-existing zone rasters
+                    Dim AOIVectorList() As String = Nothing
+                    Dim AOIRasterList() As String = Nothing
+                    Dim layerPath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Analysis)
+                    BA_ListLayersinGDB(layerPath, AOIRasterList, AOIVectorList)
+                    Dim RasterCount As Integer = UBound(AOIRasterList)
+                    If RasterCount > 0 Then
+                        For i = 1 To RasterCount
+                            If AOIRasterList(i).IndexOf(BA_ZonesRasterPrefix) = 0 Then
+                                Dim fullLayerPath As String = layerPath & "\" & AOIRasterList(i)
+                                BA_RemoveRasterFromGDB(layerPath, AOIRasterList(i))
+                            End If
+                        Next
+                    End If
+
+                    Dim selItem As LayerListItem = LstRasters.SelectedItem
+                    Dim zonesRasterPath As String = selItem.Value
+                    Dim outputRasterName As String = BA_ZonesRasterPrefix + selItem.Name
+                    Dim outputRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + outputRasterName
+                    Dim success As BA_ReturnCode = BA_Copy(zonesRasterPath, outputRasterPath)
+                    If success = BA_ReturnCode.Success Then
+                        m_RasterPath = outputRasterPath
+                        MessageBox.Show("Zones raster has been created and will be used in analysis!")
+                        Me.Close()
+                    Else
+                        m_RasterPath = Nothing
+                        MessageBox.Show("Zones raster could not be created and cannot be used in analysis!")
+                    End If
                 End If
             Catch ex As Exception
                 Debug.Print("CmdCreateRaster_Click Exception" & ex.Message)

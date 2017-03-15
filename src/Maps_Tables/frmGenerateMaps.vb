@@ -34,8 +34,12 @@ Public Class frmGenerateMaps
     Private m_demInMeters As Boolean
     Private m_formInit As Boolean = False
 
-    'partition raster variables from FrmPartitionRaster
+    'partition raster variables from FrmElevPrecip
     Private m_partitionRasterPath As String
+    Private m_zoneRasterPath As String
+
+    Friend Const PARTITION_MODE As String = "PARTITION"
+    Friend Const ZONE_MODE As String = "ZONE"
 
 
     Public Sub New()
@@ -906,6 +910,7 @@ Public Class frmGenerateMaps
                 'Disable Elevation-Precipitation Correlation if no sites
                 FrameRepresentedPrecipitation.Enabled = False
             Else
+                OptAggPrism.Checked = True
                 If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" _
                                       + BA_TablePrecMeanElev, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
                     ChkPrecipAoiTable.Checked = True
@@ -919,11 +924,17 @@ Public Class frmGenerateMaps
                 Else
                     ElevPrecipLayersReady = False
                 End If
-                Dim partitionFileName As String = FindPartitionRasterName()
+                Dim partitionFileName As String = FindElevPrecipRasterName(BA_RasterPartPrefix)
                 If Not String.IsNullOrEmpty(partitionFileName) Then
                     LblPartitionLayer.Text = partitionFileName.Substring(BA_RasterPartPrefix.Length)
                     m_partitionRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName
                 End If
+                Dim zonesFileName As String = FindElevPrecipRasterName(BA_ZonesRasterPrefix)
+                If Not String.IsNullOrEmpty(zonesFileName) Then
+                    m_zoneRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + zonesFileName
+                    OptAggZone.Checked = True
+                End If
+
             End If
 
             'set UI control
@@ -2549,14 +2560,14 @@ Public Class frmGenerateMaps
 
         Dim cellSize As Double = BA_CellSize(PrecipPath, PRISMRasterName)
         Dim snapRasterPath As String = PrecipPath + "\" + PRISMRasterName
-        Dim frmPartitionRaster As FrmPartitionRaster = New FrmPartitionRaster(m_partitionRasterPath, snapRasterPath, _
-                                                                              cellSize)
+        Dim frmPartitionRaster As FrmElevPrecip = New FrmElevPrecip(m_partitionRasterPath, snapRasterPath, _
+                                                                              cellSize, PARTITION_MODE)
         frmPartitionRaster.ShowDialog()
-        LblPartitionLayer.Text = frmPartitionRaster.PartitionRasterName
-        m_partitionRasterPath = frmPartitionRaster.PartitionRasterPath
+        LblPartitionLayer.Text = frmPartitionRaster.RasterName
+        m_partitionRasterPath = frmPartitionRaster.RasterPath
         If String.IsNullOrEmpty(m_partitionRasterPath) Then
             ' Delete existing partition raster if it exists
-            Dim deleteFileName As String = FindPartitionRasterName()
+            Dim deleteFileName As String = FindElevPrecipRasterName(BA_RasterPartPrefix)
             If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + deleteFileName, _
                               WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
                 BA_RemoveRasterFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), deleteFileName)
@@ -2663,7 +2674,7 @@ Public Class frmGenerateMaps
 
     End Function
 
-    Private Function FindPartitionRasterName() As String
+    Private Function FindElevPrecipRasterName(ByVal searchPrefix As String) As String
         Dim AOIVectorList() As String = Nothing
         Dim AOIRasterList() As String = Nothing
         Dim layerPath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Analysis)
@@ -2671,7 +2682,7 @@ Public Class frmGenerateMaps
         Dim RasterCount As Integer = UBound(AOIRasterList)
         If RasterCount > 0 Then
             For i = 1 To RasterCount
-                If AOIRasterList(i).IndexOf(BA_RasterPartPrefix) = 0 Then
+                If AOIRasterList(i).IndexOf(searchPrefix) = 0 Then
                     Return AOIRasterList(i)
                 End If
             Next
@@ -2679,4 +2690,72 @@ Public Class frmGenerateMaps
         Return Nothing
     End Function
 
+    Private Sub ChkRepresentedPrecip_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles ChkRepresentedPrecip.CheckedChanged
+        OptAggPrism.Enabled = ChkRepresentedPrecip.Checked
+        OptAggZone.Enabled = ChkRepresentedPrecip.Checked
+        CmdPartition.Enabled = ChkRepresentedPrecip.Checked
+        CmdClearPartition.Enabled = ChkRepresentedPrecip.Checked
+        CmdZonalAggregate.Enabled = ChkRepresentedPrecip.Checked
+        CmdClearZonal.Enabled = ChkRepresentedPrecip.Checked
+        If ChkRepresentedPrecip.Checked Then
+            If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
+                Dim partitionFileName As String = BA_GetBareName(m_partitionRasterPath)
+                LblPartitionLayer.Text = partitionFileName.Substring(BA_RasterPartPrefix.Length)
+            End If
+            If Not String.IsNullOrEmpty(m_zoneRasterPath) Then
+                Dim zonesFileName As String = BA_GetBareName(m_zoneRasterPath)
+                LblZonalLayer.Text = zonesFileName.Substring(BA_ZonesRasterPrefix.Length)
+            End If
+        Else
+            LblPartitionLayer.Text = Nothing
+            LblZonalLayer.Text = Nothing
+        End If
+    End Sub
+
+    Private Sub OptAggPrism_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles OptAggPrism.CheckedChanged
+        If OptAggPrism.Checked Then
+            LblZonalLayer.Text = Nothing
+            CmdZonalAggregate.Enabled = False
+            CmdClearZonal.Enabled = False
+        End If
+    End Sub
+
+    Private Sub OptAggZone_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles OptAggZone.CheckedChanged
+        If OptAggZone.Checked Then
+            If Not String.IsNullOrEmpty(m_zoneRasterPath) Then
+                Dim zonesFileName As String = BA_GetBareName(m_zoneRasterPath)
+                LblZonalLayer.Text = zonesFileName.Substring(BA_ZonesRasterPrefix.Length)
+            End If
+            CmdZonalAggregate.Enabled = True
+            CmdClearZonal.Enabled = True
+        End If
+    End Sub
+
+    Private Sub CmdClearZonal_Click(sender As System.Object, e As System.EventArgs) Handles CmdClearZonal.Click
+        ' Delete existing partition raster if it exists
+        Dim parentFolder As String = "PleaseReturn"
+        Dim deleteFileName As String = BA_GetBareName(m_zoneRasterPath, parentFolder)
+        If BA_File_Exists(m_zoneRasterPath, _
+                          WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+            BA_RemoveRasterFromGDB(parentFolder, deleteFileName)
+        End If
+        m_zoneRasterPath = Nothing
+        LblZonalLayer.Text = Nothing
+    End Sub
+
+    Private Sub CmdZonalAggregate_Click(sender As System.Object, e As System.EventArgs) Handles CmdZonalAggregate.Click
+        Dim frmElevPrecip As FrmElevPrecip = New FrmElevPrecip(m_partitionRasterPath, Nothing, _
+                                                                    -1, ZONE_MODE)
+        frmElevPrecip.ShowDialog()
+        LblZonalLayer.Text = frmElevPrecip.RasterName
+        m_zoneRasterPath = frmElevPrecip.RasterPath
+        If String.IsNullOrEmpty(m_zoneRasterPath) Then
+            ' Delete existing partition raster if it exists
+            Dim deleteFileName As String = FindElevPrecipRasterName(BA_ZonesRasterPrefix)
+            If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + deleteFileName, _
+                              WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                BA_RemoveRasterFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), deleteFileName)
+            End If
+        End If
+    End Sub
 End Class

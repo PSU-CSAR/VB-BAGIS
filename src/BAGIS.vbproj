@@ -323,10 +323,10 @@
     <Compile Include="Maps_Tables\FrmNewSite.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Maps_Tables\FrmPartitionRaster.Designer.vb">
-      <DependentUpon>FrmPartitionRaster.vb</DependentUpon>
+    <Compile Include="Maps_Tables\FrmElevPrecip.Designer.vb">
+      <DependentUpon>FrmElevPrecip.vb</DependentUpon>
     </Compile>
-    <Compile Include="Maps_Tables\FrmPartitionRaster.vb">
+    <Compile Include="Maps_Tables\FrmElevPrecip.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Maps_Tables\FrmPsuedoSite.Designer.vb">
@@ -436,8 +436,8 @@
     <EmbeddedResource Include="Maps_Tables\FrmNewSite.resx">
       <DependentUpon>FrmNewSite.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Maps_Tables\FrmPartitionRaster.resx">
-      <DependentUpon>FrmPartitionRaster.vb</DependentUpon>
+    <EmbeddedResource Include="Maps_Tables\FrmElevPrecip.resx">
+      <DependentUpon>FrmElevPrecip.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Maps_Tables\FrmPsuedoSite.resx">
       <DependentUpon>FrmPsuedoSite.vb</DependentUpon>
