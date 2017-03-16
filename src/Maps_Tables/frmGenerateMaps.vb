@@ -2072,97 +2072,124 @@ Public Class frmGenerateMaps
                 pStepProg.Step()
 
                 SetPrecipPathInfo()
+                Dim AspIntervalList() As BA_IntervalList = Nothing
+                BA_SetAspectClasses(AspIntervalList, AspectDirectionsNumber)
+                Dim aspLayerPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_RasterAspectZones
 
-                'Resample DEM to PRISM resolution
-                Dim precipMeanPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_RasterPrecMeanElev
-                Dim success As BA_ReturnCode = BA_CreateElevPrecipLayer(AOIFolderBase, PrecipPath, PRISMRasterName, precipMeanPath)
+                Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
+                If OptAggZone.Checked = False Then
+                    'AGGREGATING BY PRISM CELLS
+                    'Resample DEM to PRISM resolution
+                    Dim precipMeanPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_RasterPrecMeanElev
+                    success = BA_CreateElevPrecipLayer(AOIFolderBase, PrecipPath, PRISMRasterName, precipMeanPath)
 
-                'Resample Aspect to PRISM resolution
-                If success = BA_ReturnCode.Success Then
-                    pStepProg.Message = "Creating Aspect layer for elev-precip analysis..."
-                    pStepProg.Step()
-                    Dim aspLayerPath As String = CreateAspectLayerForElevPrecip(PrecipPath, PRISMRasterName)
-                    If success = BA_ReturnCode.Success AndAlso Not String.IsNullOrEmpty(aspLayerPath) Then
-                        'Run Sample tool to extract elevation/precipitation for PRISM cell locations; The output is a table
-                        If success = BA_ReturnCode.Success Then
-                            Dim sampleTablePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_TablePrecMeanElev
-                            Dim sb As System.Text.StringBuilder = New System.Text.StringBuilder()
-                            sb.Append(aspLayerPath + ";")
-                            If Not String.IsNullOrEmpty(m_partitionRasterPath) Then _
-                                sb.Append(m_partitionRasterPath + ";")
-                            sb.Append(PrecipPath + "\" + PRISMRasterName & ";")
-                            sb.Append(precipMeanPath)
-                            pStepProg.Message = "Extracting DEM and PRISM values to table..."
-                            pStepProg.Step()
-                            Dim prismCellSize As Double = BA_CellSize(PrecipPath, PRISMRasterName)
-                            success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath, _
-                                      PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest, CStr(prismCellSize))
+                    'Resample Aspect to PRISM resolution
+                    If success = BA_ReturnCode.Success Then
+                        pStepProg.Message = "Creating Aspect layer for elev-precip analysis..."
+                        pStepProg.Step()
+                        aspLayerPath = CreateAspectLayerForElevPrecip(PrecipPath, PRISMRasterName)
+                        If success = BA_ReturnCode.Success AndAlso Not String.IsNullOrEmpty(aspLayerPath) Then
+                            'Run Sample tool to extract elevation/precipitation for PRISM cell locations; The output is a table
                             If success = BA_ReturnCode.Success Then
-                                'set reclass
-                                Dim AspIntervalList() As BA_IntervalList = Nothing
-                                BA_SetAspectClasses(AspIntervalList, AspectDirectionsNumber)
-                                Dim aspFieldName As String = BA_GetBareName(aspLayerPath)
-                                success = BA_UpdateTableAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
-                                                         BA_TablePrecMeanElev, BA_Aspect, aspFieldName, esriFieldType.esriFieldTypeString)
-
+                                Dim sampleTablePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" + BA_TablePrecMeanElev
+                                Dim sb As System.Text.StringBuilder = New System.Text.StringBuilder()
+                                sb.Append(aspLayerPath + ";")
+                                If Not String.IsNullOrEmpty(m_partitionRasterPath) Then _
+                                    sb.Append(m_partitionRasterPath + ";")
+                                sb.Append(PrecipPath + "\" + PRISMRasterName & ";")
+                                sb.Append(precipMeanPath)
+                                pStepProg.Message = "Extracting DEM and PRISM values to table..."
+                                pStepProg.Step()
+                                Dim prismCellSize As Double = BA_CellSize(PrecipPath, PRISMRasterName)
+                                success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath, _
+                                          PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest, CStr(prismCellSize))
                                 If success = BA_ReturnCode.Success Then
-                                    ChkPrecipAoiTable.Checked = True
-                                End If
-                                Dim sitesPath As String = BA_CreateSitesLayer(AOIFolderBase, BA_MergedSites, BA_SiteTypeField, _
-                                                                              BA_SiteSnotel, BA_SiteSnowCourse)
-                                'Extract values to sites; DEM comes from BA_SELEV
-                                If Not String.IsNullOrEmpty(sitesPath) Then
-                                    Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_VectorSnotelPrec
-                                    Dim tempSnotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + "tmpSnoExtract"
-                                    'Extract PRISM values to sites
-                                    success = BA_ExtractValuesToPoints(sitesPath, _
-                                                                       PrecipPath + "\" + PRISMRasterName, tempSnotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
-                                    If success = BA_ReturnCode.Success Then
-                                        'Rename extracted precip field
-                                        Dim tempfileName As String = BA_GetBareName(tempSnotelPrecipPath)
-                                        RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempfileName, BA_RasterValu, _
-                                                                BA_Precip, esriFieldType.esriFieldTypeDouble)
-                                        Dim aspectValuesInputPath As String = tempSnotelPrecipPath
-                                        Dim partitionFileName As String = "tmpPartition"
-                                        If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
-                                            'Extract PARTITION values to sites
-                                            aspectValuesInputPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName
-                                            success = BA_ExtractValuesToPoints(tempSnotelPrecipPath, m_partitionRasterPath, _
-                                                                               aspectValuesInputPath, PrecipPath + "\" + PRISMRasterName, True)
-                                            If success = BA_ReturnCode.Success Then
-                                                'Rename extracted partition field
-                                                Dim partFileName As String = BA_GetBareName(m_partitionRasterPath)
-                                                Dim partitionFieldName As String = partFileName.Substring(BA_RasterPartPrefix.Length)
-                                                RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), partitionFileName, BA_RasterValu, _
-                                                                        partitionFieldName, esriFieldType.esriFieldTypeDouble)
-                                            End If
-                                        End If
-                                        'Extract ASPECT values to sites
-                                        success = BA_ExtractValuesToPoints(aspectValuesInputPath, aspLayerPath, snotelPrecipPath, _
-                                                                           PrecipPath + "\" + PRISMRasterName, True)
-                                        If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
-                                            BA_Remove_ShapefileFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), partitionFileName)
-                                        End If
-                                        BA_Remove_ShapefileFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempfileName)
-                                        If success = BA_ReturnCode.Success Then
-                                            success = BA_UpdateFeatureClassAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
-                                                                                      BA_VectorSnotelPrec, BA_Aspect, BA_RasterValu, esriFieldType.esriFieldTypeString)
-                                            If success = BA_ReturnCode.Success Then
-                                                ChkPrecipSitesLayer.Checked = True
-                                            End If
-                                        Else
-                                            MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
-                                        End If
-                                    Else
-                                        MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
-                                    End If
-                                Else
-                                    MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
+                                    'set reclass
+                                    Dim aspFieldName As String = BA_GetBareName(aspLayerPath)
+                                    success = BA_UpdateTableAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
+                                                             BA_TablePrecMeanElev, BA_Aspect, aspFieldName, esriFieldType.esriFieldTypeString)
                                 End If
                             End If
                         End If
                     End If
+                Else
+                    'AGGREGATING ACCORDING TO ZONE LAYER
+                    success = GenerateZonePrecipElevLayers(pStepProg, AspectDirectionsNumber, AspIntervalList)
                 End If
+                If success = BA_ReturnCode.Success Then
+                    ChkPrecipAoiTable.Checked = True
+                End If
+                Dim sitesPath As String = BA_CreateSitesLayer(AOIFolderBase, BA_MergedSites, BA_SiteTypeField, _
+                                                              BA_SiteSnotel, BA_SiteSnowCourse)
+                'Extract values to sites; DEM comes from BA_SELEV
+                If Not String.IsNullOrEmpty(sitesPath) Then
+                    Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_VectorSnotelPrec
+                    Dim tempSnotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + "tmpSnoExtract"
+                    'Extract PRISM values to sites
+                    success = BA_ExtractValuesToPoints(sitesPath, _
+                                                       PrecipPath + "\" + PRISMRasterName, tempSnotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
+                    If success = BA_ReturnCode.Success Then
+                        'Rename extracted precip field
+                        Dim tempfileName As String = BA_GetBareName(tempSnotelPrecipPath)
+                        RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempfileName, BA_RasterValu, _
+                                                BA_Precip, esriFieldType.esriFieldTypeDouble)
+                        Dim aspectValuesInputPath As String = tempSnotelPrecipPath
+                        Dim partitionFileName As String = "tmpPartition"
+                        If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
+                            'Extract PARTITION values to sites
+                             success = BA_ExtractValuesToPoints(tempSnotelPrecipPath, m_partitionRasterPath, _
+                                                               BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName, _
+                                                               PrecipPath + "\" + PRISMRasterName, True)
+                            If success = BA_ReturnCode.Success Then
+                                'Rename extracted partition field
+                                Dim partFileName As String = BA_GetBareName(m_partitionRasterPath)
+                                Dim partitionFieldName As String = partFileName.Substring(BA_RasterPartPrefix.Length)
+                                RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), partitionFileName, BA_RasterValu, _
+                                                        partitionFieldName, esriFieldType.esriFieldTypeDouble)
+                                aspectValuesInputPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName
+                            End If
+                        End If
+                        Dim tmpZonesFileName As String = "tmpZones"
+                        If Not String.IsNullOrEmpty(m_zoneRasterPath) Then
+                            'Extract ZONES values to sites
+                            success = BA_ExtractValuesToPoints(aspectValuesInputPath, m_zoneRasterPath, _
+                                  BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tmpZonesFileName, _
+                                  PrecipPath + "\" + PRISMRasterName, True)
+                            If success = BA_ReturnCode.Success Then
+                                'Rename extracted partition field
+                                Dim zonesFileName As String = BA_GetBareName(m_zoneRasterPath)
+                                Dim zonesFieldName As String = zonesFileName.Substring(BA_ZonesRasterPrefix.Length)
+                                RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tmpZonesFileName, BA_RasterValu, _
+                                                        zonesFieldName, esriFieldType.esriFieldTypeInteger)
+                                aspectValuesInputPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tmpZonesFileName
+                            End If
+                        End If
+                        'Extract ASPECT values to sites
+                        success = BA_ExtractValuesToPoints(aspectValuesInputPath, aspLayerPath, snotelPrecipPath, _
+                                                           PrecipPath + "\" + PRISMRasterName, True)
+                        If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
+                            BA_Remove_ShapefileFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), partitionFileName)
+                        End If
+                        If Not String.IsNullOrEmpty(m_zoneRasterPath) Then
+                            BA_Remove_ShapefileFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tmpZonesFileName)
+                        End If
+                        BA_Remove_ShapefileFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempfileName)
+                        If success = BA_ReturnCode.Success Then
+                            success = BA_UpdateFeatureClassAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
+                                                                      BA_VectorSnotelPrec, BA_Aspect, BA_RasterValu, esriFieldType.esriFieldTypeString)
+                            If success = BA_ReturnCode.Success Then
+                                ChkPrecipSitesLayer.Checked = True
+                            End If
+                        Else
+                            MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
+                        End If
+                    Else
+                        MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
+                    End If
+                Else
+                    MessageBox.Show("An error occurred while trying to process the site layers for represented precipitation!")
+                End If
+
             End If
 
             '=================================
@@ -2471,19 +2498,28 @@ Public Class frmGenerateMaps
 
                 Dim partitionFieldName As String = BA_UNKNOWN
                 Dim partitionFileName As String = BA_UNKNOWN
-                If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
+                If Not String.IsNullOrEmpty(LblPartitionLayer.Text) Then
                     partitionFileName = BA_GetBareName(m_partitionRasterPath)
                     If Not String.IsNullOrEmpty(partitionFileName) Then _
                         partitionFieldName = partitionFileName.Substring(BA_RasterPartPrefix.Length)
                 End If
+                Dim zonesFieldName As String = Nothing
+                Dim zonesFileName As String = Nothing
+                If Not String.IsNullOrEmpty(LblZonalLayer.Text) Then
+                    zonesFileName = BA_GetBareName(m_zoneRasterPath)
+                    zonesFileName = zonesFileName.Substring(BA_ZonesRasterPrefix.Length)
+                    zonesFieldName = BA_FIELD_VALUE
+                End If
+
                 Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
                     PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, _
-                    MeasurementUnit.Inches, partitionFieldName)
+                    MeasurementUnit.Inches, partitionFieldName, zonesFileName, zonesFieldName)
                 If success = BA_ReturnCode.Success Then
                     success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
                                                          BA_Precip, BA_SiteElevField, BA_SiteNameField, _
                                                          BA_SiteTypeField, BA_Aspect, partitionFieldName, _
-                                                         pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName)
+                                                         pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName, _
+                                                         zonesFileName)
 
                     If success = BA_ReturnCode.Success Then
                         Dim demChartMin As Integer = Math.Floor(Convert.ToDouble(txtMinElev.Text) / 100) * 100
@@ -2620,7 +2656,7 @@ Public Class frmGenerateMaps
                     outputFilePath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_AspectPrec
                 End If
             Else
-                outputFilePath = BA_CellSize(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_RasterAspectZones)
+                outputFilePath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_RasterAspectZones
             End If
             Return outputFilePath
         Catch ex As Exception
@@ -2669,6 +2705,51 @@ Public Class frmGenerateMaps
             Return BA_ReturnCode.UnknownError
         Finally
             pFClass = Nothing
+            pFld = Nothing
+        End Try
+
+    End Function
+
+    'sourceField = BA_RasterValu
+    'targetField = BA_Precip
+    'fieldType - esriFieldType.esriFieldTypeDouble
+    Private Function RenameTableAttribute(ByVal filePath As String, ByVal fileName As String, ByVal sourceField As String,
+                                          ByVal targetField As String, ByVal fieldType As esriFieldType) As BA_ReturnCode
+
+        'open raster attribute table
+        Dim pTable As ITable
+        Dim pFld As IFieldEdit
+        Dim success As BA_ReturnCode = BA_ReturnCode.OtherError
+
+        'add field
+        Try
+            pTable = BA_OpenTableFromGDB(filePath, fileName)
+            If pTable IsNot Nothing Then
+                Dim idxTarget = pTable.FindField(targetField)
+                If idxTarget < 0 Then
+                    pFld = New Field
+                    pFld.Name_2 = targetField
+                    pFld.Type_2 = fieldType
+                    pFld.Required_2 = False
+
+                    ' Add field
+                    pTable.AddField(pFld)
+                End If
+
+                Dim expressType As String = "VB"
+                Dim expression As String = "[" + sourceField + "]"
+                Dim outTable As String = filePath & "\" & fileName
+                success = BA_CalculateField(outTable, targetField, expression, expressType)
+                If success = BA_ReturnCode.Success Then
+                    success = BA_DeleteFieldFromTable(filePath, fileName, sourceField)
+                End If
+            End If
+            Return success
+        Catch ex As Exception
+            Debug.Print("RenameTableAttribute: " & ex.Message)
+            Return BA_ReturnCode.UnknownError
+        Finally
+            pTable = Nothing
             pFld = Nothing
         End Try
 
@@ -2733,14 +2814,21 @@ Public Class frmGenerateMaps
 
     Private Sub CmdClearZonal_Click(sender As System.Object, e As System.EventArgs) Handles CmdClearZonal.Click
         ' Delete existing partition raster if it exists
-        Dim parentFolder As String = "PleaseReturn"
-        Dim deleteFileName As String = BA_GetBareName(m_zoneRasterPath, parentFolder)
-        If BA_File_Exists(m_zoneRasterPath, _
-                          WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-            BA_RemoveRasterFromGDB(parentFolder, deleteFileName)
-        End If
-        m_zoneRasterPath = Nothing
-        LblZonalLayer.Text = Nothing
+        'Dim parentFolder As String = "PleaseReturn"
+        'Dim deleteFileName As String = BA_GetBareName(m_zoneRasterPath, parentFolder)
+        'If BA_File_Exists(m_zoneRasterPath, _
+        '                  WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+        '    BA_RemoveRasterFromGDB(parentFolder, deleteFileName)
+        'End If
+        'm_zoneRasterPath = Nothing
+        'LblZonalLayer.Text = Nothing
+
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 10)
+        SetPrecipPathInfo()
+        Dim AspIntervalList() As BA_IntervalList = Nothing
+        BA_SetAspectClasses(AspIntervalList, 8)
+        GenerateZonePrecipElevLayers(pStepProg, 8, AspIntervalList)
+
     End Sub
 
     Private Sub CmdZonalAggregate_Click(sender As System.Object, e As System.EventArgs) Handles CmdZonalAggregate.Click
@@ -2758,4 +2846,71 @@ Public Class frmGenerateMaps
             End If
         End If
     End Sub
+
+    Private Function GenerateZonePrecipElevLayers(ByVal pStepProg As IStepProgressor, ByVal AspectDirectionsNumber As Integer, _
+                                                  ByVal AspIntervalList As BA_IntervalList()) As BA_ReturnCode
+        'Zonal statistics as table for DEM
+        Dim zoneFileName As String = BA_GetBareName(m_zoneRasterPath)
+        Dim demLayerPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
+
+        Dim success As BA_ReturnCode = BA_ZonalStatisticsAsTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), zoneFileName, BA_FIELD_VALUE, _
+                                                                 demLayerPath, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
+                                                                 BA_TablePrecMeanElev, demLayerPath, _
+                                                                 StatisticsTypeString.MEAN)
+        If success = BA_ReturnCode.Success Then
+            'Rename MEAN field to precmeanelev
+            success = RenameTableAttribute(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
+                                           StatisticsTypeString.MEAN.ToString, BA_RasterPrecMeanElev, esriFieldType.esriFieldTypeDouble)
+
+        End If
+        If success = BA_ReturnCode.Success Then
+            ' Zonal statistics as table for PRISM
+            Dim tempPrismTableName As String = "tmpPrism"
+            success = BA_ZonalStatisticsAsTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), zoneFileName, BA_FIELD_VALUE, _
+                                                                 PrecipPath + "\" + PRISMRasterName, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
+                                                                 tempPrismTableName, demLayerPath, _
+                                                                 StatisticsTypeString.MEAN)
+            If success = BA_ReturnCode.Success Then
+                'Join PRISM to DEM table and copy field
+                success = BA_JoinField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_TablePrecMeanElev, BA_FIELD_VALUE, _
+                                       BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & tempPrismTableName, _
+                                       BA_FIELD_VALUE, StatisticsTypeString.MEAN.ToString)
+                If success = BA_ReturnCode.Success Then
+                    'Rename MEAN field to PRISMRasterName + "_1"
+                    success = RenameTableAttribute(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
+                                                   StatisticsTypeString.MEAN.ToString, PRISMRasterName + "_1", esriFieldType.esriFieldTypeDouble)
+
+                    'Delete temporary PRISM table
+                    success = BA_Remove_TableFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempPrismTableName)
+                End If
+            End If
+            If success = BA_ReturnCode.Success Then
+                pStepProg.Message = "Creating Aspect layer for elev-precip analysis..."
+                pStepProg.Step()
+                Dim tempAspectTableName As String = "tmpAspect"
+                ' Zonal statistics as table for Aspect
+                success = BA_ZonalStatisticsAsTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), zoneFileName, BA_FIELD_VALUE, _
+                                                      BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_RasterAspectZones, _
+                                                      BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempAspectTableName, _
+                                                      demLayerPath, StatisticsTypeString.MAJORITY)
+
+                If success = BA_ReturnCode.Success Then
+                    'Join ASPECT to DEM table and copy field
+                    success = BA_JoinField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_TablePrecMeanElev, BA_FIELD_VALUE, _
+                                           BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & tempAspectTableName, _
+                                           BA_FIELD_VALUE, StatisticsTypeString.MAJORITY.ToString)
+                    'set reclass
+                    success = BA_UpdateTableAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
+                                                       BA_TablePrecMeanElev, BA_Aspect, StatisticsTypeString.MAJORITY.ToString, esriFieldType.esriFieldTypeString)
+                    'rename MAJORITY field in case there is a partition raster
+                    success = RenameTableAttribute(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
+                                                   StatisticsTypeString.MAJORITY.ToString, BA_AspectPrec, esriFieldType.esriFieldTypeDouble)
+
+                    'Delete temporary ASPECT table
+                    success = BA_Remove_TableFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempAspectTableName)
+                End If
+            End If
+        End If
+        Return success
+    End Function
 End Class
