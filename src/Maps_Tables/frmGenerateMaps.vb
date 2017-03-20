@@ -910,7 +910,6 @@ Public Class frmGenerateMaps
                 'Disable Elevation-Precipitation Correlation if no sites
                 FrameRepresentedPrecipitation.Enabled = False
             Else
-                OptAggPrism.Checked = True
                 If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" _
                                       + BA_TablePrecMeanElev, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
                     ChkPrecipAoiTable.Checked = True
@@ -933,6 +932,8 @@ Public Class frmGenerateMaps
                 If Not String.IsNullOrEmpty(zonesFileName) Then
                     m_zoneRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + zonesFileName
                     OptAggZone.Checked = True
+                Else
+                    OptAggPrism.Checked = True
                 End If
 
             End If
@@ -2597,7 +2598,7 @@ Public Class frmGenerateMaps
         Dim cellSize As Double = BA_CellSize(PrecipPath, PRISMRasterName)
         Dim snapRasterPath As String = PrecipPath + "\" + PRISMRasterName
         Dim frmPartitionRaster As FrmElevPrecip = New FrmElevPrecip(m_partitionRasterPath, snapRasterPath, _
-                                                                              cellSize, PARTITION_MODE)
+                                                                              cellSize, PARTITION_MODE, OptAggZone.Checked)
         frmPartitionRaster.ShowDialog()
         LblPartitionLayer.Text = frmPartitionRaster.RasterName
         m_partitionRasterPath = frmPartitionRaster.RasterPath
@@ -2798,6 +2799,13 @@ Public Class frmGenerateMaps
             LblZonalLayer.Text = Nothing
             CmdZonalAggregate.Enabled = False
             CmdClearZonal.Enabled = False
+            'Delete zonal layer, if it exists
+            If BA_File_Exists(m_zoneRasterPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                Dim parentPath As String = "PleaseReturn"
+                Dim fileName As String = BA_GetBareName(m_zoneRasterPath, parentPath)
+                BA_RemoveRasterFromGDB(parentPath, fileName)
+                m_zoneRasterPath = Nothing
+            End If
         End If
     End Sub
 
@@ -2832,8 +2840,8 @@ Public Class frmGenerateMaps
     End Sub
 
     Private Sub CmdZonalAggregate_Click(sender As System.Object, e As System.EventArgs) Handles CmdZonalAggregate.Click
-        Dim frmElevPrecip As FrmElevPrecip = New FrmElevPrecip(m_partitionRasterPath, Nothing, _
-                                                                    -1, ZONE_MODE)
+        Dim frmElevPrecip As FrmElevPrecip = New FrmElevPrecip(m_zoneRasterPath, Nothing, _
+                                                               -1, ZONE_MODE, OptAggZone.Checked)
         frmElevPrecip.ShowDialog()
         LblZonalLayer.Text = frmElevPrecip.RasterName
         m_zoneRasterPath = frmElevPrecip.RasterPath
@@ -2910,7 +2918,52 @@ Public Class frmGenerateMaps
                     success = BA_Remove_TableFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempAspectTableName)
                 End If
             End If
+            If success = BA_ReturnCode.Success AndAlso Not String.IsNullOrEmpty(LblPartitionLayer.Text) Then
+                pStepProg.Message = "Creating attribute layer for elev-precip analysis..."
+                pStepProg.Step()
+
+                Dim tempAttribTableName As String = "tmpAttrib"
+                ' Zonal statistics as table for attribute layer
+                success = BA_ZonalStatisticsAsTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), zoneFileName, BA_FIELD_VALUE, _
+                                                    m_partitionRasterPath, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
+                                                    tempAttribTableName, demLayerPath, StatisticsTypeString.MAJORITY)
+
+                If success = BA_ReturnCode.Success Then
+                    'Join attribute layer to DEM table and copy field
+                    success = BA_JoinField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_TablePrecMeanElev, BA_FIELD_VALUE, _
+                                           BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & tempAttribTableName, _
+                                           BA_FIELD_VALUE, StatisticsTypeString.MAJORITY.ToString)
+
+                    'rename MAJORITY field
+                    Dim partitionFileName As String = BA_UNKNOWN
+                    If Not String.IsNullOrEmpty(LblPartitionLayer.Text) Then
+                        partitionFileName = BA_GetBareName(m_partitionRasterPath)
+                    End If
+                    success = RenameTableAttribute(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
+                                                   StatisticsTypeString.MAJORITY.ToString, partitionFileName, esriFieldType.esriFieldTypeDouble)
+                    'Delete temporary attribute table
+                    success = BA_Remove_TableFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempAttribTableName)
+
+                End If
+            End If
         End If
         Return success
     End Function
+
+    Private Sub ChkPrecipAoiTable_CheckedChanged(sender As Object, e As System.EventArgs) Handles ChkPrecipAoiTable.CheckedChanged
+        If ChkPrecipAoiTable.Checked Then
+            LblAttribLayerExists.Text = "Elev-Precip AOI table - Ready"
+        Else
+            LblAttribLayerExists.Text = "Elev-Precip AOI table - ?"
+        End If
+    End Sub
+
+
+    Private Sub ChkPrecipSitesLayer_CheckedChanged(sender As Object, e As System.EventArgs) Handles ChkPrecipSitesLayer.CheckedChanged
+        If ChkPrecipSitesLayer.Checked Then
+            LblSitesLayerExists.Text = "Elev-Precip Sites layer - Ready"
+        Else
+            LblSitesLayerExists.Text = "Elev-Precip Sites layer - ?"
+        End If
+    End Sub
 End Class

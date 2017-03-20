@@ -112,6 +112,8 @@ Partial Class frmGenerateMaps
         Me.CmdClearPartition = New System.Windows.Forms.Button()
         Me.Label10 = New System.Windows.Forms.Label()
         Me.ChkRepresentedPrecip = New System.Windows.Forms.CheckBox()
+        Me.LblAttribLayerExists = New System.Windows.Forms.Label()
+        Me.LblSitesLayerExists = New System.Windows.Forms.Label()
         Me.FrameInfo.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.FrameElevationDist.SuspendLayout()
@@ -961,6 +963,8 @@ Partial Class frmGenerateMaps
         '
         'FrameRepresentedPrecipitation
         '
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.LblSitesLayerExists)
+        Me.FrameRepresentedPrecipitation.Controls.Add(Me.LblAttribLayerExists)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.OptAggZone)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.OptAggPrism)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.Label12)
@@ -1067,6 +1071,7 @@ Partial Class frmGenerateMaps
         Me.ChkPrecipSitesLayer.TabIndex = 19
         Me.ChkPrecipSitesLayer.Text = "Elev-Precip Sites layer exists "
         Me.ChkPrecipSitesLayer.UseVisualStyleBackColor = True
+        Me.ChkPrecipSitesLayer.Visible = False
         '
         'ChkPrecipAoiTable
         '
@@ -1080,6 +1085,7 @@ Partial Class frmGenerateMaps
         Me.ChkPrecipAoiTable.TabIndex = 18
         Me.ChkPrecipAoiTable.Text = "Elev-Precip AOI table exists "
         Me.ChkPrecipAoiTable.UseVisualStyleBackColor = True
+        Me.ChkPrecipAoiTable.Visible = False
         '
         'CmdClearPartition
         '
@@ -1114,6 +1120,26 @@ Partial Class frmGenerateMaps
         Me.ChkRepresentedPrecip.TabIndex = 5
         Me.ChkRepresentedPrecip.Text = "Generate Elev-Precip Table and Scatter Plot"
         Me.ChkRepresentedPrecip.UseVisualStyleBackColor = True
+        '
+        'LblAttribLayerExists
+        '
+        Me.LblAttribLayerExists.AutoSize = True
+        Me.LblAttribLayerExists.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LblAttribLayerExists.Location = New System.Drawing.Point(6, 132)
+        Me.LblAttribLayerExists.Name = "LblAttribLayerExists"
+        Me.LblAttribLayerExists.Size = New System.Drawing.Size(43, 16)
+        Me.LblAttribLayerExists.TabIndex = 27
+        Me.LblAttribLayerExists.Text = "Exists"
+        '
+        'LblSitesLayerExists
+        '
+        Me.LblSitesLayerExists.AutoSize = True
+        Me.LblSitesLayerExists.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LblSitesLayerExists.Location = New System.Drawing.Point(231, 132)
+        Me.LblSitesLayerExists.Name = "LblSitesLayerExists"
+        Me.LblSitesLayerExists.Size = New System.Drawing.Size(43, 16)
+        Me.LblSitesLayerExists.TabIndex = 28
+        Me.LblSitesLayerExists.Text = "Exists"
         '
         'frmGenerateMaps
         '
@@ -1243,4 +1269,6 @@ Partial Class frmGenerateMaps
     Friend WithEvents OptAggZone As System.Windows.Forms.RadioButton
     Friend WithEvents OptAggPrism As System.Windows.Forms.RadioButton
     Friend WithEvents Label12 As System.Windows.Forms.Label
+    Friend WithEvents LblSitesLayerExists As System.Windows.Forms.Label
+    Friend WithEvents LblAttribLayerExists As System.Windows.Forms.Label
 End Class

@@ -11,9 +11,10 @@ Public Class FrmElevPrecip
     Private m_cellSize As Double
     Private m_snapRasterPath As String
     Private m_formMode As String
+    Private m_aggregateByZones As Boolean
 
-    Public Sub New(ByVal partRasterPath As String, _
-                   ByVal snapRasterpath As String, ByVal cellSize As Double, ByVal formMode As String)
+    Public Sub New(ByVal partRasterPath As String, ByVal snapRasterpath As String, ByVal cellSize As Double, _
+                   ByVal formMode As String, ByVal aggregateByZones As Boolean)
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -24,6 +25,7 @@ Public Class FrmElevPrecip
         m_snapRasterPath = snapRasterpath
         m_cellSize = cellSize
         m_formMode = formMode
+        m_aggregateByZones = aggregateByZones
         If formMode.Equals(frmGenerateMaps.PARTITION_MODE) Then
             LblHeading.Text = "Elevation-Precipitation Attribute Layer"
         Else
@@ -246,8 +248,8 @@ Public Class FrmElevPrecip
                     Dim outputRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + outputRasterName
                     Dim cellSize As Double = BA_CellSize(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), selItem.Name)
                     Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
-                    'Only run statistics if the cell sizes are different
-                    If cellSize <> m_cellSize Then
+                    'Only run statistics if the cell sizes are different and we aren't aggregating by zones
+                    If m_aggregateByZones = False AndAlso cellSize <> m_cellSize Then
                         Dim neighborhood As String = "Rectangle " & m_cellSize & " " & m_cellSize & " Map"
                         success = BA_FocalStatistics_CellSize(partRasterPath, outputRasterPath, neighborhood, _
                                                               StatisticsFieldName.MAJORITY.ToString, m_snapRasterPath, _
