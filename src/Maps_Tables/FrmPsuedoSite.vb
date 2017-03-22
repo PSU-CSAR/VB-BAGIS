@@ -61,11 +61,11 @@
     End Sub
 
     Private Sub CkPrecip_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkPrecip.CheckedChanged
-        GrpPrecipitation.Enabled = CkPrecip.Enabled
+        GrpPrecipitation.Enabled = CkPrecip.Checked
     End Sub
 
     Private Sub CkProximity_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkProximity.CheckedChanged
-        GrpProximity.Enabled = CkProximity.Enabled
+        GrpProximity.Enabled = CkProximity.Checked
     End Sub
 
     Private Sub BtnClose_Click(sender As Object, e As System.EventArgs) Handles BtnClose.Click
