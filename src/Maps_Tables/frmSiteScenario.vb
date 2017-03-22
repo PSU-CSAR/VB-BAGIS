@@ -2669,4 +2669,8 @@ Public Class frmSiteScenario
         End Try
     End Sub
 
+    Private Sub BtnAutoPseudo_Click(sender As System.Object, e As System.EventArgs) Handles BtnAutoPseudo.Click
+        Dim frmPseudo As FrmPsuedoSite = New FrmPsuedoSite
+        frmPseudo.ShowDialog()
+    End Sub
 End Class
