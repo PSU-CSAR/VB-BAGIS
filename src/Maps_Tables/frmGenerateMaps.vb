@@ -2513,14 +2513,14 @@ Public Class frmGenerateMaps
                 End If
 
                 Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
-                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, _
+                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, conversionFactor, _
                     MeasurementUnit.Inches, partitionFieldName, zonesFileName, zonesFieldName)
                 If success = BA_ReturnCode.Success Then
                     success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
                                                          BA_Precip, BA_SiteElevField, BA_SiteNameField, _
                                                          BA_SiteTypeField, BA_Aspect, partitionFieldName, _
                                                          pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName, _
-                                                         zonesFileName)
+                                                         zonesFileName, conversionFactor)
 
                     If success = BA_ReturnCode.Success Then
                         Dim demChartMin As Integer = Math.Floor(Convert.ToDouble(txtMinElev.Text) / 100) * 100

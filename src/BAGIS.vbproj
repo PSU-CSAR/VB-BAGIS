@@ -190,7 +190,6 @@
     <Compile Include="Help\FrmHelp.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Maps_Tables\BtnRepresentPrecip.vb" />
     <Compile Include="Maps_Tables\BtnScenario1.vb" />
     <Compile Include="BtnAddRefLayers.vb" />
     <Compile Include="BAGIS_PublicModule.vb" />
