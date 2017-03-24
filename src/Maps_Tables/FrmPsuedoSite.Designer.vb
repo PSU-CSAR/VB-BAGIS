@@ -36,20 +36,13 @@ Partial Class FrmPsuedoSite
         Me.txtMinElev = New System.Windows.Forms.TextBox()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.Label4 = New System.Windows.Forms.Label()
-        Me.TextBox1 = New System.Windows.Forms.TextBox()
+        Me.TxtMaxElev = New System.Windows.Forms.TextBox()
         Me.txtLower = New System.Windows.Forms.TextBox()
-        Me.TextBox2 = New System.Windows.Forms.TextBox()
+        Me.TxtRange = New System.Windows.Forms.TextBox()
         Me.Label3 = New System.Windows.Forms.Label()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.TxtUpperRange = New System.Windows.Forms.TextBox()
         Me.GrpPrecipitation = New System.Windows.Forms.GroupBox()
-        Me.CmboxEnd = New System.Windows.Forms.ComboBox()
-        Me.CmboxBegin = New System.Windows.Forms.ComboBox()
-        Me.CmboxPrecipType = New System.Windows.Forms.ComboBox()
-        Me.lblEndMonth = New System.Windows.Forms.Label()
-        Me.lblBeginMonth = New System.Windows.Forms.Label()
-        Me.Label8 = New System.Windows.Forms.Label()
-        Me.CmdPrism = New System.Windows.Forms.Button()
         Me.Label9 = New System.Windows.Forms.Label()
         Me.Label10 = New System.Windows.Forms.Label()
         Me.Label11 = New System.Windows.Forms.Label()
@@ -62,6 +55,13 @@ Partial Class FrmPsuedoSite
         Me.Label14 = New System.Windows.Forms.Label()
         Me.Label15 = New System.Windows.Forms.Label()
         Me.TextBox7 = New System.Windows.Forms.TextBox()
+        Me.CmdPrism = New System.Windows.Forms.Button()
+        Me.CmboxEnd = New System.Windows.Forms.ComboBox()
+        Me.CmboxBegin = New System.Windows.Forms.ComboBox()
+        Me.CmboxPrecipType = New System.Windows.Forms.ComboBox()
+        Me.lblEndMonth = New System.Windows.Forms.Label()
+        Me.lblBeginMonth = New System.Windows.Forms.Label()
+        Me.Label8 = New System.Windows.Forms.Label()
         Me.GrpProximity = New System.Windows.Forms.GroupBox()
         Me.CkProximity = New System.Windows.Forms.CheckBox()
         Me.BtnFindSite = New System.Windows.Forms.Button()
@@ -157,16 +157,16 @@ Partial Class FrmPsuedoSite
         Me.GrpElevation.Controls.Add(Me.txtMinElev)
         Me.GrpElevation.Controls.Add(Me.Label1)
         Me.GrpElevation.Controls.Add(Me.Label4)
-        Me.GrpElevation.Controls.Add(Me.TextBox1)
+        Me.GrpElevation.Controls.Add(Me.TxtMaxElev)
         Me.GrpElevation.Controls.Add(Me.txtLower)
-        Me.GrpElevation.Controls.Add(Me.TextBox2)
+        Me.GrpElevation.Controls.Add(Me.TxtRange)
         Me.GrpElevation.Controls.Add(Me.Label3)
         Me.GrpElevation.Controls.Add(Me.Label2)
         Me.GrpElevation.Controls.Add(Me.TxtUpperRange)
         Me.GrpElevation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpElevation.Location = New System.Drawing.Point(62, 24)
         Me.GrpElevation.Name = "GrpElevation"
-        Me.GrpElevation.Size = New System.Drawing.Size(439, 80)
+        Me.GrpElevation.Size = New System.Drawing.Size(487, 80)
         Me.GrpElevation.TabIndex = 79
         Me.GrpElevation.TabStop = False
         Me.GrpElevation.Text = "Elevation"
@@ -197,7 +197,7 @@ Partial Class FrmPsuedoSite
         '
         Me.Label24.AutoSize = True
         Me.Label24.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label24.Location = New System.Drawing.Point(258, 22)
+        Me.Label24.Location = New System.Drawing.Point(264, 22)
         Me.Label24.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label24.Name = "Label24"
         Me.Label24.Size = New System.Drawing.Size(36, 16)
@@ -214,7 +214,7 @@ Partial Class FrmPsuedoSite
         Me.txtMinElev.Margin = New System.Windows.Forms.Padding(2)
         Me.txtMinElev.Name = "txtMinElev"
         Me.txtMinElev.ReadOnly = True
-        Me.txtMinElev.Size = New System.Drawing.Size(38, 15)
+        Me.txtMinElev.Size = New System.Drawing.Size(47, 15)
         Me.txtMinElev.TabIndex = 72
         Me.txtMinElev.Text = "1816"
         '
@@ -222,12 +222,12 @@ Partial Class FrmPsuedoSite
         '
         Me.Label1.AutoSize = True
         Me.Label1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label1.Location = New System.Drawing.Point(343, 22)
+        Me.Label1.Location = New System.Drawing.Point(358, 22)
         Me.Label1.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(45, 16)
+        Me.Label1.Size = New System.Drawing.Size(52, 16)
         Me.Label1.TabIndex = 73
-        Me.Label1.Text = "Mean:"
+        Me.Label1.Text = "Range:"
         '
         'Label4
         '
@@ -240,19 +240,19 @@ Partial Class FrmPsuedoSite
         Me.Label4.TabIndex = 80
         Me.Label4.Text = "Lower:"
         '
-        'TextBox1
+        'TxtMaxElev
         '
-        Me.TextBox1.BackColor = System.Drawing.SystemColors.Menu
-        Me.TextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.TextBox1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TextBox1.ForeColor = System.Drawing.Color.Blue
-        Me.TextBox1.Location = New System.Drawing.Point(301, 22)
-        Me.TextBox1.Margin = New System.Windows.Forms.Padding(2)
-        Me.TextBox1.Name = "TextBox1"
-        Me.TextBox1.ReadOnly = True
-        Me.TextBox1.Size = New System.Drawing.Size(38, 15)
-        Me.TextBox1.TabIndex = 74
-        Me.TextBox1.Text = "3536"
+        Me.TxtMaxElev.BackColor = System.Drawing.SystemColors.Menu
+        Me.TxtMaxElev.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.TxtMaxElev.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TxtMaxElev.ForeColor = System.Drawing.Color.Blue
+        Me.TxtMaxElev.Location = New System.Drawing.Point(307, 22)
+        Me.TxtMaxElev.Margin = New System.Windows.Forms.Padding(2)
+        Me.TxtMaxElev.Name = "TxtMaxElev"
+        Me.TxtMaxElev.ReadOnly = True
+        Me.TxtMaxElev.Size = New System.Drawing.Size(53, 15)
+        Me.TxtMaxElev.TabIndex = 74
+        Me.TxtMaxElev.Text = "3536"
         '
         'txtLower
         '
@@ -265,19 +265,19 @@ Partial Class FrmPsuedoSite
         Me.txtLower.Text = "2000"
         Me.txtLower.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
-        'TextBox2
+        'TxtRange
         '
-        Me.TextBox2.BackColor = System.Drawing.SystemColors.Menu
-        Me.TextBox2.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.TextBox2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TextBox2.ForeColor = System.Drawing.Color.Blue
-        Me.TextBox2.Location = New System.Drawing.Point(396, 22)
-        Me.TextBox2.Margin = New System.Windows.Forms.Padding(2)
-        Me.TextBox2.Name = "TextBox2"
-        Me.TextBox2.ReadOnly = True
-        Me.TextBox2.Size = New System.Drawing.Size(35, 15)
-        Me.TextBox2.TabIndex = 75
-        Me.TextBox2.Text = "2722"
+        Me.TxtRange.BackColor = System.Drawing.SystemColors.Menu
+        Me.TxtRange.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.TxtRange.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TxtRange.ForeColor = System.Drawing.Color.Blue
+        Me.TxtRange.Location = New System.Drawing.Point(411, 22)
+        Me.TxtRange.Margin = New System.Windows.Forms.Padding(2)
+        Me.TxtRange.Name = "TxtRange"
+        Me.TxtRange.ReadOnly = True
+        Me.TxtRange.Size = New System.Drawing.Size(52, 15)
+        Me.TxtRange.TabIndex = 75
+        Me.TxtRange.Text = "2722"
         '
         'Label3
         '
@@ -336,80 +336,10 @@ Partial Class FrmPsuedoSite
         Me.GrpPrecipitation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpPrecipitation.Location = New System.Drawing.Point(62, 110)
         Me.GrpPrecipitation.Name = "GrpPrecipitation"
-        Me.GrpPrecipitation.Size = New System.Drawing.Size(439, 146)
+        Me.GrpPrecipitation.Size = New System.Drawing.Size(487, 146)
         Me.GrpPrecipitation.TabIndex = 80
         Me.GrpPrecipitation.TabStop = False
         Me.GrpPrecipitation.Text = "Precipitation"
-        '
-        'CmboxEnd
-        '
-        Me.CmboxEnd.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.CmboxEnd.Enabled = False
-        Me.CmboxEnd.FormattingEnabled = True
-        Me.CmboxEnd.Location = New System.Drawing.Point(224, 54)
-        Me.CmboxEnd.Name = "CmboxEnd"
-        Me.CmboxEnd.Size = New System.Drawing.Size(67, 24)
-        Me.CmboxEnd.TabIndex = 12
-        '
-        'CmboxBegin
-        '
-        Me.CmboxBegin.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.CmboxBegin.Enabled = False
-        Me.CmboxBegin.FormattingEnabled = True
-        Me.CmboxBegin.Location = New System.Drawing.Point(96, 54)
-        Me.CmboxBegin.Name = "CmboxBegin"
-        Me.CmboxBegin.Size = New System.Drawing.Size(67, 24)
-        Me.CmboxBegin.TabIndex = 13
-        '
-        'CmboxPrecipType
-        '
-        Me.CmboxPrecipType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.CmboxPrecipType.FormattingEnabled = True
-        Me.CmboxPrecipType.Location = New System.Drawing.Point(96, 22)
-        Me.CmboxPrecipType.Name = "CmboxPrecipType"
-        Me.CmboxPrecipType.Size = New System.Drawing.Size(195, 24)
-        Me.CmboxPrecipType.TabIndex = 14
-        '
-        'lblEndMonth
-        '
-        Me.lblEndMonth.AutoSize = True
-        Me.lblEndMonth.Enabled = False
-        Me.lblEndMonth.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblEndMonth.Location = New System.Drawing.Point(191, 59)
-        Me.lblEndMonth.Name = "lblEndMonth"
-        Me.lblEndMonth.Size = New System.Drawing.Size(28, 16)
-        Me.lblEndMonth.TabIndex = 10
-        Me.lblEndMonth.Text = "To:"
-        '
-        'lblBeginMonth
-        '
-        Me.lblBeginMonth.AutoSize = True
-        Me.lblBeginMonth.Enabled = False
-        Me.lblBeginMonth.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblBeginMonth.Location = New System.Drawing.Point(48, 59)
-        Me.lblBeginMonth.Name = "lblBeginMonth"
-        Me.lblBeginMonth.Size = New System.Drawing.Size(42, 16)
-        Me.lblBeginMonth.TabIndex = 9
-        Me.lblBeginMonth.Text = "From:"
-        '
-        'Label8
-        '
-        Me.Label8.AutoSize = True
-        Me.Label8.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label8.Location = New System.Drawing.Point(6, 24)
-        Me.Label8.Name = "Label8"
-        Me.Label8.Size = New System.Drawing.Size(82, 16)
-        Me.Label8.TabIndex = 11
-        Me.Label8.Text = "PRISM Data"
-        '
-        'CmdPrism
-        '
-        Me.CmdPrism.Location = New System.Drawing.Point(307, 20)
-        Me.CmdPrism.Name = "CmdPrism"
-        Me.CmdPrism.Size = New System.Drawing.Size(93, 30)
-        Me.CmdPrism.TabIndex = 15
-        Me.CmdPrism.Text = "Get Values"
-        Me.CmdPrism.UseVisualStyleBackColor = True
         '
         'Label9
         '
@@ -552,6 +482,76 @@ Partial Class FrmPsuedoSite
         Me.TextBox7.Text = "45.0"
         Me.TextBox7.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
+        'CmdPrism
+        '
+        Me.CmdPrism.Location = New System.Drawing.Point(307, 20)
+        Me.CmdPrism.Name = "CmdPrism"
+        Me.CmdPrism.Size = New System.Drawing.Size(93, 30)
+        Me.CmdPrism.TabIndex = 15
+        Me.CmdPrism.Text = "Get Values"
+        Me.CmdPrism.UseVisualStyleBackColor = True
+        '
+        'CmboxEnd
+        '
+        Me.CmboxEnd.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.CmboxEnd.Enabled = False
+        Me.CmboxEnd.FormattingEnabled = True
+        Me.CmboxEnd.Location = New System.Drawing.Point(224, 54)
+        Me.CmboxEnd.Name = "CmboxEnd"
+        Me.CmboxEnd.Size = New System.Drawing.Size(67, 24)
+        Me.CmboxEnd.TabIndex = 12
+        '
+        'CmboxBegin
+        '
+        Me.CmboxBegin.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.CmboxBegin.Enabled = False
+        Me.CmboxBegin.FormattingEnabled = True
+        Me.CmboxBegin.Location = New System.Drawing.Point(96, 54)
+        Me.CmboxBegin.Name = "CmboxBegin"
+        Me.CmboxBegin.Size = New System.Drawing.Size(67, 24)
+        Me.CmboxBegin.TabIndex = 13
+        '
+        'CmboxPrecipType
+        '
+        Me.CmboxPrecipType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.CmboxPrecipType.FormattingEnabled = True
+        Me.CmboxPrecipType.Location = New System.Drawing.Point(96, 22)
+        Me.CmboxPrecipType.Name = "CmboxPrecipType"
+        Me.CmboxPrecipType.Size = New System.Drawing.Size(195, 24)
+        Me.CmboxPrecipType.TabIndex = 14
+        '
+        'lblEndMonth
+        '
+        Me.lblEndMonth.AutoSize = True
+        Me.lblEndMonth.Enabled = False
+        Me.lblEndMonth.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblEndMonth.Location = New System.Drawing.Point(191, 59)
+        Me.lblEndMonth.Name = "lblEndMonth"
+        Me.lblEndMonth.Size = New System.Drawing.Size(28, 16)
+        Me.lblEndMonth.TabIndex = 10
+        Me.lblEndMonth.Text = "To:"
+        '
+        'lblBeginMonth
+        '
+        Me.lblBeginMonth.AutoSize = True
+        Me.lblBeginMonth.Enabled = False
+        Me.lblBeginMonth.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblBeginMonth.Location = New System.Drawing.Point(48, 59)
+        Me.lblBeginMonth.Name = "lblBeginMonth"
+        Me.lblBeginMonth.Size = New System.Drawing.Size(42, 16)
+        Me.lblBeginMonth.TabIndex = 9
+        Me.lblBeginMonth.Text = "From:"
+        '
+        'Label8
+        '
+        Me.Label8.AutoSize = True
+        Me.Label8.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label8.Location = New System.Drawing.Point(6, 24)
+        Me.Label8.Name = "Label8"
+        Me.Label8.Size = New System.Drawing.Size(82, 16)
+        Me.Label8.TabIndex = 11
+        Me.Label8.Text = "PRISM Data"
+        '
         'GrpProximity
         '
         Me.GrpProximity.Controls.Add(Me.Label5)
@@ -561,7 +561,7 @@ Partial Class FrmPsuedoSite
         Me.GrpProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpProximity.Location = New System.Drawing.Point(62, 271)
         Me.GrpProximity.Name = "GrpProximity"
-        Me.GrpProximity.Size = New System.Drawing.Size(439, 100)
+        Me.GrpProximity.Size = New System.Drawing.Size(487, 100)
         Me.GrpProximity.TabIndex = 81
         Me.GrpProximity.TabStop = False
         Me.GrpProximity.Text = "Proximity"
@@ -603,7 +603,7 @@ Partial Class FrmPsuedoSite
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(518, 422)
+        Me.ClientSize = New System.Drawing.Size(561, 422)
         Me.Controls.Add(Me.BtnClose)
         Me.Controls.Add(Me.BtnFindSite)
         Me.Controls.Add(Me.CkProximity)
@@ -613,7 +613,7 @@ Partial Class FrmPsuedoSite
         Me.Controls.Add(Me.CkPrecip)
         Me.Controls.Add(Me.Label7)
         Me.Controls.Add(Me.CkElev)
-        Me.Margin = New System.Windows.Forms.Padding(2, 2, 2, 2)
+        Me.Margin = New System.Windows.Forms.Padding(2)
         Me.Name = "FrmPsuedoSite"
         Me.ShowIcon = False
         Me.Text = "Add Pseudo Site: animas_AOI_prms_3"
@@ -641,9 +641,9 @@ Partial Class FrmPsuedoSite
     Friend WithEvents txtMinElev As System.Windows.Forms.TextBox
     Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents Label4 As System.Windows.Forms.Label
-    Friend WithEvents TextBox1 As System.Windows.Forms.TextBox
+    Friend WithEvents TxtMaxElev As System.Windows.Forms.TextBox
     Friend WithEvents txtLower As System.Windows.Forms.TextBox
-    Friend WithEvents TextBox2 As System.Windows.Forms.TextBox
+    Friend WithEvents TxtRange As System.Windows.Forms.TextBox
     Friend WithEvents Label3 As System.Windows.Forms.Label
     Friend WithEvents Label2 As System.Windows.Forms.Label
     Friend WithEvents TxtUpperRange As System.Windows.Forms.TextBox
