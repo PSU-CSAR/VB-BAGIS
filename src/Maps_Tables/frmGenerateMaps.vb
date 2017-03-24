@@ -906,7 +906,9 @@ Public Class frmGenerateMaps
 
             'configure UI for Elevation-Precipitation Correlation
             Dim ElevPrecipLayersReady As Boolean = True
-            If Not AOI_HasSNOTEL AndAlso Not AOI_HasSnowCourse Then
+            Dim Has_SNOTELLayer As Boolean, Has_SnowCourseLayer As Boolean
+            CheckForSitesLayers(Has_SNOTELLayer, Has_SnowCourseLayer)
+            If Not Has_SNOTELLayer AndAlso Not Has_SnowCourseLayer Then
                 'Disable Elevation-Precipitation Correlation if no sites
                 FrameRepresentedPrecipitation.Enabled = False
             Else
@@ -1369,46 +1371,22 @@ Public Class frmGenerateMaps
             '=====================================================================================
             '5. SNOTEL and Snow Course Analysis
             '=====================================================================================
-
-            'Snow Course
-            Dim SnowCourseBareName As String
-            Dim SnowCourseParentName As String
-
-            'Declarations for Opening SNOTEL File
-            Dim SNOTELBareName As String
-            Dim SNOTELParentName As String
-
             'Declarations for Within Array
             Dim nSTSite As Long
             Dim nSCSite As Long
 
             'Get BareName, ParentDirectory, and Extension
-            SNOTELBareName = BA_SNOTELSites 'BA_GetBareNameAndExtension(frmSettings.txtSNOTEL.Text, SNOTELParentName, SNOTELExtension)
-            SnowCourseBareName = BA_SnowCourseSites 'BA_GetBareNameAndExtension(frmSettings.txtSnowCourse.Text, SnowCourseParentName, SnowCourseExtension)
-            SNOTELParentName = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers)
-            SnowCourseParentName = SNOTELParentName
+            'SNOTELBareName = BA_SNOTELSites 'BA_GetBareNameAndExtension(frmSettings.txtSNOTEL.Text, SNOTELParentName, SNOTELExtension)
+            'SnowCourseBareName = BA_SnowCourseSites 'BA_GetBareNameAndExtension(frmSettings.txtSnowCourse.Text, SnowCourseParentName, SnowCourseExtension)
 
             Dim Has_SNOTELLayer As Boolean, Has_SnowCourseLayer As Boolean
-
-            'Check to see if SNOTEL Shapefile Exist
-            If BA_File_Exists(SNOTELParentName & "\" & SNOTELBareName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                Has_SNOTELLayer = True
-            Else
-                Has_SNOTELLayer = False
-            End If
-
-            'Check to see if SnowCourse Shapefile Exist
-            If BA_File_Exists(SnowCourseParentName & "\" & SnowCourseBareName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                Has_SnowCourseLayer = True
-            Else
-                Has_SnowCourseLayer = False
-            End If
+            CheckForSitesLayers(Has_SNOTELLayer, Has_SnowCourseLayer)
 
             'Open Elevation zone file Files
             pFeatureClass = BA_OpenFeatureClassFromGDB(strSavePath, BA_VectorElevationZones)
             If Has_SNOTELLayer Then
                 'Open SNOTEL, Snowcourse, and Zone vector Shapefiles
-                SNOTELFeatureClass = BA_OpenFeatureClassFromGDB(SNOTELParentName, SNOTELBareName)
+                SNOTELFeatureClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), BA_SNOTELSites)
 
                 'Determine Number of Features Within Each Class
                 pQueryFilter = New QueryFilter
@@ -1451,7 +1429,7 @@ Public Class frmGenerateMaps
 
             If Has_SnowCourseLayer Then
                 'Open Snowcourse, and Zone vector Shapefiles
-                SnowCourseFeatureClass = BA_OpenFeatureClassFromGDB(SnowCourseParentName, SnowCourseBareName)
+                SnowCourseFeatureClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), BA_SnowCourseSites)
 
                 'Determine Number of Features Within Each Class
                 pQueryFilter = New QueryFilter
@@ -2964,6 +2942,22 @@ Public Class frmGenerateMaps
             LblSitesLayerExists.Text = "Elev-Precip Sites layer - Ready"
         Else
             LblSitesLayerExists.Text = "Elev-Precip Sites layer - ?"
+        End If
+    End Sub
+
+    Private Sub CheckForSitesLayers(ByRef hasSnotelLayer As Boolean, ByRef hasSnowCourseLayer As Boolean)
+        'Check to see if SNOTEL Shapefile Exist
+        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) & BA_SNOTELSites, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+            hasSnotelLayer = True
+        Else
+            hasSnotelLayer = False
+        End If
+
+        'Check to see if SnowCourse Shapefile Exist
+        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) & "\" & BA_SnowCourseSites, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+            hasSnowCourseLayer = True
+        Else
+            hasSnowCourseLayer = False
         End If
     End Sub
 End Class

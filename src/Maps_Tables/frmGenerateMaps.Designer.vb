@@ -100,6 +100,8 @@ Partial Class frmGenerateMaps
         Me.CmdPartition = New System.Windows.Forms.Button()
         Me.LblPartitionLayer = New System.Windows.Forms.Label()
         Me.FrameRepresentedPrecipitation = New System.Windows.Forms.GroupBox()
+        Me.LblSitesLayerExists = New System.Windows.Forms.Label()
+        Me.LblAttribLayerExists = New System.Windows.Forms.Label()
         Me.OptAggZone = New System.Windows.Forms.RadioButton()
         Me.OptAggPrism = New System.Windows.Forms.RadioButton()
         Me.Label12 = New System.Windows.Forms.Label()
@@ -112,8 +114,6 @@ Partial Class frmGenerateMaps
         Me.CmdClearPartition = New System.Windows.Forms.Button()
         Me.Label10 = New System.Windows.Forms.Label()
         Me.ChkRepresentedPrecip = New System.Windows.Forms.CheckBox()
-        Me.LblAttribLayerExists = New System.Windows.Forms.Label()
-        Me.LblSitesLayerExists = New System.Windows.Forms.Label()
         Me.FrameInfo.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.FrameElevationDist.SuspendLayout()
@@ -987,6 +987,28 @@ Partial Class frmGenerateMaps
         Me.FrameRepresentedPrecipitation.TabStop = False
         Me.FrameRepresentedPrecipitation.Text = "Elevation-Precipitation Correlation"
         '
+        'LblSitesLayerExists
+        '
+        Me.LblSitesLayerExists.AutoSize = True
+        Me.LblSitesLayerExists.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LblSitesLayerExists.ForeColor = System.Drawing.Color.Blue
+        Me.LblSitesLayerExists.Location = New System.Drawing.Point(231, 132)
+        Me.LblSitesLayerExists.Name = "LblSitesLayerExists"
+        Me.LblSitesLayerExists.Size = New System.Drawing.Size(161, 16)
+        Me.LblSitesLayerExists.TabIndex = 28
+        Me.LblSitesLayerExists.Text = "Elev-Precip Sites layer - ?"
+        '
+        'LblAttribLayerExists
+        '
+        Me.LblAttribLayerExists.AutoSize = True
+        Me.LblAttribLayerExists.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LblAttribLayerExists.ForeColor = System.Drawing.Color.Blue
+        Me.LblAttribLayerExists.Location = New System.Drawing.Point(8, 132)
+        Me.LblAttribLayerExists.Name = "LblAttribLayerExists"
+        Me.LblAttribLayerExists.Size = New System.Drawing.Size(153, 16)
+        Me.LblAttribLayerExists.TabIndex = 27
+        Me.LblAttribLayerExists.Text = "Elev-Precip AOI table - ?"
+        '
         'OptAggZone
         '
         Me.OptAggZone.AutoSize = True
@@ -1120,26 +1142,6 @@ Partial Class frmGenerateMaps
         Me.ChkRepresentedPrecip.TabIndex = 5
         Me.ChkRepresentedPrecip.Text = "Generate Elev-Precip Table and Scatter Plot"
         Me.ChkRepresentedPrecip.UseVisualStyleBackColor = True
-        '
-        'LblAttribLayerExists
-        '
-        Me.LblAttribLayerExists.AutoSize = True
-        Me.LblAttribLayerExists.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.LblAttribLayerExists.Location = New System.Drawing.Point(6, 132)
-        Me.LblAttribLayerExists.Name = "LblAttribLayerExists"
-        Me.LblAttribLayerExists.Size = New System.Drawing.Size(43, 16)
-        Me.LblAttribLayerExists.TabIndex = 27
-        Me.LblAttribLayerExists.Text = "Exists"
-        '
-        'LblSitesLayerExists
-        '
-        Me.LblSitesLayerExists.AutoSize = True
-        Me.LblSitesLayerExists.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.LblSitesLayerExists.Location = New System.Drawing.Point(231, 132)
-        Me.LblSitesLayerExists.Name = "LblSitesLayerExists"
-        Me.LblSitesLayerExists.Size = New System.Drawing.Size(43, 16)
-        Me.LblSitesLayerExists.TabIndex = 28
-        Me.LblSitesLayerExists.Text = "Exists"
         '
         'frmGenerateMaps
         '
