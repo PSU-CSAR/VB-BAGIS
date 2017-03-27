@@ -105,7 +105,6 @@ Partial Class frmGenerateMaps
         Me.OptAggZone = New System.Windows.Forms.RadioButton()
         Me.OptAggPrism = New System.Windows.Forms.RadioButton()
         Me.Label12 = New System.Windows.Forms.Label()
-        Me.CmdClearZonal = New System.Windows.Forms.Button()
         Me.CmdZonalAggregate = New System.Windows.Forms.Button()
         Me.LblZonalLayer = New System.Windows.Forms.Label()
         Me.Label11 = New System.Windows.Forms.Label()
@@ -968,7 +967,6 @@ Partial Class frmGenerateMaps
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.OptAggZone)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.OptAggPrism)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.Label12)
-        Me.FrameRepresentedPrecipitation.Controls.Add(Me.CmdClearZonal)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.CmdZonalAggregate)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.LblZonalLayer)
         Me.FrameRepresentedPrecipitation.Controls.Add(Me.Label11)
@@ -1040,16 +1038,6 @@ Partial Class frmGenerateMaps
         Me.Label12.Size = New System.Drawing.Size(94, 16)
         Me.Label12.TabIndex = 24
         Me.Label12.Text = "Aggregate By:"
-        '
-        'CmdClearZonal
-        '
-        Me.CmdClearZonal.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CmdClearZonal.Location = New System.Drawing.Point(365, 65)
-        Me.CmdClearZonal.Name = "CmdClearZonal"
-        Me.CmdClearZonal.Size = New System.Drawing.Size(60, 25)
-        Me.CmdClearZonal.TabIndex = 23
-        Me.CmdClearZonal.Text = "Clear"
-        Me.CmdClearZonal.UseVisualStyleBackColor = True
         '
         'CmdZonalAggregate
         '
@@ -1264,7 +1252,6 @@ Partial Class frmGenerateMaps
     Friend WithEvents ChkRepresentedPrecip As System.Windows.Forms.CheckBox
     Friend WithEvents ChkPrecipSitesLayer As System.Windows.Forms.CheckBox
     Friend WithEvents ChkPrecipAoiTable As System.Windows.Forms.CheckBox
-    Friend WithEvents CmdClearZonal As System.Windows.Forms.Button
     Friend WithEvents CmdZonalAggregate As System.Windows.Forms.Button
     Friend WithEvents LblZonalLayer As System.Windows.Forms.Label
     Friend WithEvents Label11 As System.Windows.Forms.Label
