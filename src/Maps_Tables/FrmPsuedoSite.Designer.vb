@@ -46,12 +46,12 @@ Partial Class FrmPsuedoSite
         Me.Label9 = New System.Windows.Forms.Label()
         Me.Label10 = New System.Windows.Forms.Label()
         Me.Label11 = New System.Windows.Forms.Label()
-        Me.TextBox3 = New System.Windows.Forms.TextBox()
+        Me.txtMinPrecip = New System.Windows.Forms.TextBox()
         Me.Label12 = New System.Windows.Forms.Label()
         Me.Label13 = New System.Windows.Forms.Label()
-        Me.TextBox4 = New System.Windows.Forms.TextBox()
+        Me.txtMaxPrecip = New System.Windows.Forms.TextBox()
         Me.TextBox5 = New System.Windows.Forms.TextBox()
-        Me.TextBox6 = New System.Windows.Forms.TextBox()
+        Me.txtRangePrecip = New System.Windows.Forms.TextBox()
         Me.Label14 = New System.Windows.Forms.Label()
         Me.Label15 = New System.Windows.Forms.Label()
         Me.TextBox7 = New System.Windows.Forms.TextBox()
@@ -233,7 +233,7 @@ Partial Class FrmPsuedoSite
         '
         Me.Label4.AutoSize = True
         Me.Label4.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label4.Location = New System.Drawing.Point(243, 47)
+        Me.Label4.Location = New System.Drawing.Point(169, 47)
         Me.Label4.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(47, 16)
@@ -257,7 +257,7 @@ Partial Class FrmPsuedoSite
         'txtLower
         '
         Me.txtLower.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtLower.Location = New System.Drawing.Point(292, 45)
+        Me.txtLower.Location = New System.Drawing.Point(218, 46)
         Me.txtLower.Margin = New System.Windows.Forms.Padding(2)
         Me.txtLower.Name = "txtLower"
         Me.txtLower.Size = New System.Drawing.Size(41, 20)
@@ -283,7 +283,7 @@ Partial Class FrmPsuedoSite
         '
         Me.Label3.AutoSize = True
         Me.Label3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label3.Location = New System.Drawing.Point(132, 45)
+        Me.Label3.Location = New System.Drawing.Point(279, 47)
         Me.Label3.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(49, 16)
@@ -297,14 +297,14 @@ Partial Class FrmPsuedoSite
         Me.Label2.Location = New System.Drawing.Point(5, 45)
         Me.Label2.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(100, 16)
+        Me.Label2.Size = New System.Drawing.Size(152, 16)
         Me.Label2.TabIndex = 76
-        Me.Label2.Text = "Desired Range"
+        Me.Label2.Text = "Desired Range (Meters)"
         '
         'TxtUpperRange
         '
         Me.TxtUpperRange.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TxtUpperRange.Location = New System.Drawing.Point(180, 44)
+        Me.TxtUpperRange.Location = New System.Drawing.Point(332, 46)
         Me.TxtUpperRange.Margin = New System.Windows.Forms.Padding(2)
         Me.TxtUpperRange.Name = "TxtUpperRange"
         Me.TxtUpperRange.Size = New System.Drawing.Size(41, 20)
@@ -317,12 +317,12 @@ Partial Class FrmPsuedoSite
         Me.GrpPrecipitation.Controls.Add(Me.Label9)
         Me.GrpPrecipitation.Controls.Add(Me.Label10)
         Me.GrpPrecipitation.Controls.Add(Me.Label11)
-        Me.GrpPrecipitation.Controls.Add(Me.TextBox3)
+        Me.GrpPrecipitation.Controls.Add(Me.txtMinPrecip)
         Me.GrpPrecipitation.Controls.Add(Me.Label12)
         Me.GrpPrecipitation.Controls.Add(Me.Label13)
-        Me.GrpPrecipitation.Controls.Add(Me.TextBox4)
+        Me.GrpPrecipitation.Controls.Add(Me.txtMaxPrecip)
         Me.GrpPrecipitation.Controls.Add(Me.TextBox5)
-        Me.GrpPrecipitation.Controls.Add(Me.TextBox6)
+        Me.GrpPrecipitation.Controls.Add(Me.txtRangePrecip)
         Me.GrpPrecipitation.Controls.Add(Me.Label14)
         Me.GrpPrecipitation.Controls.Add(Me.Label15)
         Me.GrpPrecipitation.Controls.Add(Me.TextBox7)
@@ -374,19 +374,19 @@ Partial Class FrmPsuedoSite
         Me.Label11.TabIndex = 83
         Me.Label11.Text = "Max:"
         '
-        'TextBox3
+        'txtMinPrecip
         '
-        Me.TextBox3.BackColor = System.Drawing.SystemColors.Menu
-        Me.TextBox3.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.TextBox3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TextBox3.ForeColor = System.Drawing.Color.Blue
-        Me.TextBox3.Location = New System.Drawing.Point(215, 94)
-        Me.TextBox3.Margin = New System.Windows.Forms.Padding(2)
-        Me.TextBox3.Name = "TextBox3"
-        Me.TextBox3.ReadOnly = True
-        Me.TextBox3.Size = New System.Drawing.Size(38, 15)
-        Me.TextBox3.TabIndex = 84
-        Me.TextBox3.Text = "18.98"
+        Me.txtMinPrecip.BackColor = System.Drawing.SystemColors.Menu
+        Me.txtMinPrecip.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.txtMinPrecip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtMinPrecip.ForeColor = System.Drawing.Color.Blue
+        Me.txtMinPrecip.Location = New System.Drawing.Point(215, 94)
+        Me.txtMinPrecip.Margin = New System.Windows.Forms.Padding(2)
+        Me.txtMinPrecip.Name = "txtMinPrecip"
+        Me.txtMinPrecip.ReadOnly = True
+        Me.txtMinPrecip.Size = New System.Drawing.Size(38, 15)
+        Me.txtMinPrecip.TabIndex = 84
+        Me.txtMinPrecip.Text = "-"
         '
         'Label12
         '
@@ -395,9 +395,9 @@ Partial Class FrmPsuedoSite
         Me.Label12.Location = New System.Drawing.Point(345, 94)
         Me.Label12.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label12.Name = "Label12"
-        Me.Label12.Size = New System.Drawing.Size(45, 16)
+        Me.Label12.Size = New System.Drawing.Size(52, 16)
         Me.Label12.TabIndex = 85
-        Me.Label12.Text = "Mean:"
+        Me.Label12.Text = "Range:"
         '
         'Label13
         '
@@ -410,19 +410,19 @@ Partial Class FrmPsuedoSite
         Me.Label13.TabIndex = 92
         Me.Label13.Text = "Lower:"
         '
-        'TextBox4
+        'txtMaxPrecip
         '
-        Me.TextBox4.BackColor = System.Drawing.SystemColors.Menu
-        Me.TextBox4.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.TextBox4.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TextBox4.ForeColor = System.Drawing.Color.Blue
-        Me.TextBox4.Location = New System.Drawing.Point(303, 94)
-        Me.TextBox4.Margin = New System.Windows.Forms.Padding(2)
-        Me.TextBox4.Name = "TextBox4"
-        Me.TextBox4.ReadOnly = True
-        Me.TextBox4.Size = New System.Drawing.Size(38, 15)
-        Me.TextBox4.TabIndex = 86
-        Me.TextBox4.Text = "54.29"
+        Me.txtMaxPrecip.BackColor = System.Drawing.SystemColors.Menu
+        Me.txtMaxPrecip.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.txtMaxPrecip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtMaxPrecip.ForeColor = System.Drawing.Color.Blue
+        Me.txtMaxPrecip.Location = New System.Drawing.Point(303, 94)
+        Me.txtMaxPrecip.Margin = New System.Windows.Forms.Padding(2)
+        Me.txtMaxPrecip.Name = "txtMaxPrecip"
+        Me.txtMaxPrecip.ReadOnly = True
+        Me.txtMaxPrecip.Size = New System.Drawing.Size(38, 15)
+        Me.txtMaxPrecip.TabIndex = 86
+        Me.txtMaxPrecip.Text = "-"
         '
         'TextBox5
         '
@@ -435,19 +435,19 @@ Partial Class FrmPsuedoSite
         Me.TextBox5.Text = "30.0"
         Me.TextBox5.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
-        'TextBox6
+        'txtRangePrecip
         '
-        Me.TextBox6.BackColor = System.Drawing.SystemColors.Menu
-        Me.TextBox6.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.TextBox6.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TextBox6.ForeColor = System.Drawing.Color.Blue
-        Me.TextBox6.Location = New System.Drawing.Point(398, 94)
-        Me.TextBox6.Margin = New System.Windows.Forms.Padding(2)
-        Me.TextBox6.Name = "TextBox6"
-        Me.TextBox6.ReadOnly = True
-        Me.TextBox6.Size = New System.Drawing.Size(35, 15)
-        Me.TextBox6.TabIndex = 87
-        Me.TextBox6.Text = "36.67"
+        Me.txtRangePrecip.BackColor = System.Drawing.SystemColors.Menu
+        Me.txtRangePrecip.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.txtRangePrecip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtRangePrecip.ForeColor = System.Drawing.Color.Blue
+        Me.txtRangePrecip.Location = New System.Drawing.Point(398, 94)
+        Me.txtRangePrecip.Margin = New System.Windows.Forms.Padding(2)
+        Me.txtRangePrecip.Name = "txtRangePrecip"
+        Me.txtRangePrecip.ReadOnly = True
+        Me.txtRangePrecip.Size = New System.Drawing.Size(35, 15)
+        Me.txtRangePrecip.TabIndex = 87
+        Me.txtRangePrecip.Text = "-"
         '
         'Label14
         '
@@ -657,12 +657,12 @@ Partial Class FrmPsuedoSite
     Friend WithEvents Label9 As System.Windows.Forms.Label
     Friend WithEvents Label10 As System.Windows.Forms.Label
     Friend WithEvents Label11 As System.Windows.Forms.Label
-    Friend WithEvents TextBox3 As System.Windows.Forms.TextBox
+    Friend WithEvents txtMinPrecip As System.Windows.Forms.TextBox
     Friend WithEvents Label12 As System.Windows.Forms.Label
     Friend WithEvents Label13 As System.Windows.Forms.Label
-    Friend WithEvents TextBox4 As System.Windows.Forms.TextBox
+    Friend WithEvents txtMaxPrecip As System.Windows.Forms.TextBox
     Friend WithEvents TextBox5 As System.Windows.Forms.TextBox
-    Friend WithEvents TextBox6 As System.Windows.Forms.TextBox
+    Friend WithEvents txtRangePrecip As System.Windows.Forms.TextBox
     Friend WithEvents Label14 As System.Windows.Forms.Label
     Friend WithEvents Label15 As System.Windows.Forms.Label
     Friend WithEvents TextBox7 As System.Windows.Forms.TextBox
