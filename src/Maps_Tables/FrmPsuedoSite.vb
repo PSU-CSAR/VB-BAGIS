@@ -2,13 +2,15 @@
 Imports System.Windows.Forms
 Imports System.Text
 Imports ESRI.ArcGIS.DataSourcesRaster
+Imports ESRI.ArcGIS.esriSystem
+Imports ESRI.ArcGIS.Framework
 
 Public Class FrmPsuedoSite
 
     Private m_analysisFolder As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
-    Private m_reclassElevFile As String = "elevrecl"
     Private m_precipFolder As String
     Private m_precipFile As String
+    Private m_elevLayer As String = "ps_elev"
 
     Public Sub New(ByVal useMeters As Boolean)
 
@@ -93,9 +95,55 @@ Public Class FrmPsuedoSite
                             MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Exit Sub
         End If
+
+        Dim snapRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi) & BA_EnumDescription(PublicPath.AoiGrid)
+        Dim maskPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BASIN_DEM_EXTENT_SHAPEFILE
+
+        'Use this to hold the list of layers that we send to the union tool
+        Dim sb As StringBuilder = New StringBuilder()
+        sb.Append(m_analysisFolder + "\" + BA_EnumDescription(MapsFileName.ActualRepresentedArea) + "; ")
+
+        ' Create/configure a step progressor
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 15)
+        pStepProg.Show()
+        ' Create/configure the ProgressDialog. This automatically displays the dialog
+        Dim progressDialog2 As IProgressDialog2 = BA_GetProgressDialog(pStepProg, "Locating pseudo-site", "Locating...")
+        progressDialog2.ShowDialog()
+
+        Dim success As BA_ReturnCode = BA_ReturnCode.Success
         If CkElev.Checked = True Then
-            Dim success As BA_ReturnCode = GenerateElevationLayer()
+            success = GenerateElevationLayer(pStepProg, snapRasterPath)
+            If success = BA_ReturnCode.Success Then
+                sb.Append(m_analysisFolder + "\" + m_elevLayer + "; ")
+            End If
         End If
+
+        Dim unionFileName As String = "ps_union"
+        If success = BA_ReturnCode.Success Then
+            'union all our layers to prepare for Euclidean distance tool
+            pStepProg.Message = "Union all participating layers"
+            pStepProg.Step()
+            sb.Remove(sb.ToString().LastIndexOf("; "), "; ".Length)
+            success = BA_Union(sb.ToString, m_analysisFolder + "\" + unionFileName)
+        End If
+
+        Dim distanceFileName As String = "ps_distance"
+        If success = BA_ReturnCode.Success Then
+            'Run the Euclidean distance tool
+            pStepProg.Message = "Executing Euclidean distance tool"
+            pStepProg.Step()
+            '@ToDo: Verify what cell size should be
+            Dim cellSize As Double = BA_CellSize(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces), BA_EnumDescription(MapsFileName.filled_dem_gdb))
+            success = BA_EuclideanDistance(m_analysisFolder + "\" + unionFileName, m_analysisFolder + "\" + distanceFileName, _
+                                           CStr(cellSize), maskPath, snapRasterPath)
+        End If
+
+
+        If progressDialog2 IsNot Nothing Then
+            progressDialog2.HideDialog()
+        End If
+        progressDialog2 = Nothing
+        pStepProg = Nothing
     End Sub
 
     Private Sub CkElev_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkElev.CheckedChanged
@@ -114,15 +162,39 @@ Public Class FrmPsuedoSite
         Me.Close()
     End Sub
 
-    Private Function GenerateElevationLayer() As BA_ReturnCode
+    Private Function GenerateElevationLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
+        '1. Reclass elevation raster according to upper and lower ranges
+        pStepProg.Message = "Reclass DEM for elevation layer"
+        pStepProg.Step()
         Dim sb As StringBuilder = New StringBuilder()
         sb.Append(txtMinElev.Text + " " + txtLower.Text + " 1;")
         sb.Append(txtLower.Text + " " + TxtUpperRange.Text + " 2;")
         sb.Append(TxtUpperRange.Text + " " + TxtMaxElev.Text + " 3 ")
         Dim inputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
-        Dim outputPath As String = m_analysisFolder & "\" & m_reclassElevFile
+        Dim reclassElevFile As String = "elevrecl"
+        Dim reclassElevPath As String = m_analysisFolder & "\" & reclassElevFile
         Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
-                                                                     outputPath, Nothing)
+                                                                     reclassElevPath, snapRasterPath)
+        pStepProg.Message = "Convert elevation raster to feature class"
+        pStepProg.Step()
+        '2. Convert raster to polygon
+        Dim reclassElevFc As String = "elevrecl_v"
+        Dim reclassElevFcPath As String = m_analysisFolder & "\" & reclassElevFc
+        If success = BA_ReturnCode.Success Then
+            success = BA_Raster2Polygon_GP(reclassElevPath, reclassElevFcPath, snapRasterPath)
+        End If
+
+        '3. Dissolve on grid code
+        If success = BA_ReturnCode.Success Then
+            Dim elevLayerPath As String = m_analysisFolder & "\" & m_elevLayer
+            success = BA_Dissolve(reclassElevFcPath, BA_FIELD_GRIDCODE, elevLayerPath)
+        End If
+
+        '4. Delete the polygon in the desired elevation range; This should always be #2
+        If success = BA_ReturnCode.Success Then
+            Dim selectQuery As String = " " + BA_FIELD_GRIDCODE + " = 2"
+            success = BA_DeleteFeatures(m_analysisFolder, m_elevLayer, selectQuery)
+        End If
         Return success
     End Function
 
