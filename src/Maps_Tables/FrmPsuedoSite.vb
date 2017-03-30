@@ -138,6 +138,26 @@ Public Class FrmPsuedoSite
                                            CStr(cellSize), maskPath, snapRasterPath)
         End If
 
+        Dim furthestPixelFileName As String = "ps_furthest"
+        If success = BA_ReturnCode.Success Then
+            pStepProg.Message = "Finding furthest pixel"
+            pStepProg.Step()
+            'Get the maximum pixel value
+            Dim cellSize As Double = -1
+            Dim pRasterStats As IRasterStatistics = BA_GetRasterStatsGDB(m_analysisFolder + "\" + distanceFileName, cellSize)
+            Dim whereClause As String = Nothing
+            If pRasterStats IsNot Nothing Then
+                '@ToDo: Need to work on where clause
+                whereClause = " < " + CStr(pRasterStats.Maximum) + " "
+            End If
+            If Not String.IsNullOrEmpty(whereClause) Then
+                'Run raster calculator to set all pixels to null except furthest
+                success = BA_SetNullSelectedCellsGDB(m_analysisFolder, distanceFileName, m_analysisFolder, furthestPixelFileName, _
+                                                    BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi), BA_BASIN_DEM_EXTENT_SHAPEFILE, _
+                                                    whereClause)
+            End If
+        End If
+
 
         If progressDialog2 IsNot Nothing Then
             progressDialog2.HideDialog()
