@@ -143,19 +143,41 @@ Public Class FrmPsuedoSite
             pStepProg.Message = "Finding furthest pixel"
             pStepProg.Step()
             'Get the maximum pixel value
+            'Set everything to null that is smaller than that; should leave one pixel
+            'Expression can be more precise; Rounding down works for now
             Dim cellSize As Double = -1
             Dim pRasterStats As IRasterStatistics = BA_GetRasterStatsGDB(m_analysisFolder + "\" + distanceFileName, cellSize)
-            Dim whereClause As String = Nothing
+            Dim pExpression As String = Nothing
             If pRasterStats IsNot Nothing Then
-                '@ToDo: Need to work on where clause
-                whereClause = " < " + CStr(pRasterStats.Maximum) + " "
+                'sample expression: SetNull('C:\Docs\Lesley\animas_AOI_prms_3\analysis.gdb\ps_distance' < 6259,'C:\Docs\Lesley\animas_AOI_prms_3\analysis.gdb\ps_distance')
+                Dim targetPath As String = m_analysisFolder + "\" + distanceFileName
+                pExpression = "SetNull('" + targetPath + "' < " + _
+                    CStr(Math.Floor(pRasterStats.Maximum)) + _
+                    ",'" + targetPath + "')"
+                success = BA_RasterCalculator(m_analysisFolder + "\" + furthestPixelFileName, pExpression, _
+                                              snapRasterPath, maskPath)
             End If
-            If Not String.IsNullOrEmpty(whereClause) Then
-                'Run raster calculator to set all pixels to null except furthest
-                success = BA_SetNullSelectedCellsGDB(m_analysisFolder, distanceFileName, m_analysisFolder, furthestPixelFileName, _
-                                                    BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi), BA_BASIN_DEM_EXTENT_SHAPEFILE, _
-                                                    whereClause)
+        End If
+
+        Dim pSiteFileName As String = "ps_site"
+        If success = BA_ReturnCode.Success Then
+            success = BA_RasterToPoint(m_analysisFolder + "\" + furthestPixelFileName, _
+                                       m_analysisFolder + "\" + pSiteFileName, BA_FIELD_VALUE)
+        End If
+
+        If success = BA_ReturnCode.Success Then
+            Dim numSites As Int16 = BA_CountPolygons(m_analysisFolder, pSiteFileName, BA_FIELD_GRIDCODE_GDB
+                                                     )
+            If numSites < 1 Then
+                MessageBox.Show("No psuedo-sites were found. Please double-check your selection criteria")
+            ElseIf numSites > 1 Then
+                MessageBox.Show(numSites & " pseudo-sites were found. Right now BAGIS only knows how to deal with one so it will pick the first one.")
             End If
+
+            'Delete the layers we don't need to keep for the map
+            BA_Remove_ShapefileFromGDB(m_analysisFolder, unionFileName)
+            BA_RemoveRasterFromGDB(m_analysisFolder, distanceFileName)
+            BA_RemoveRasterFromGDB(m_analysisFolder, furthestPixelFileName)
         End If
 
 

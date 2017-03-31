@@ -140,8 +140,7 @@ Partial Class FrmPsuedoSite
         'CkPrecip
         '
         Me.CkPrecip.AutoSize = True
-        Me.CkPrecip.Checked = True
-        Me.CkPrecip.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CkPrecip.Enabled = False
         Me.CkPrecip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CkPrecip.Location = New System.Drawing.Point(24, 156)
         Me.CkPrecip.Name = "CkPrecip"
@@ -333,6 +332,7 @@ Partial Class FrmPsuedoSite
         Me.GrpPrecipitation.Controls.Add(Me.lblEndMonth)
         Me.GrpPrecipitation.Controls.Add(Me.lblBeginMonth)
         Me.GrpPrecipitation.Controls.Add(Me.Label8)
+        Me.GrpPrecipitation.Enabled = False
         Me.GrpPrecipitation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpPrecipitation.Location = New System.Drawing.Point(62, 110)
         Me.GrpPrecipitation.Name = "GrpPrecipitation"
@@ -558,6 +558,7 @@ Partial Class FrmPsuedoSite
         Me.GrpProximity.Controls.Add(Me.LstVectors)
         Me.GrpProximity.Controls.Add(Me.txtBufferDistance)
         Me.GrpProximity.Controls.Add(Me.Label6)
+        Me.GrpProximity.Enabled = False
         Me.GrpProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpProximity.Location = New System.Drawing.Point(62, 271)
         Me.GrpProximity.Name = "GrpProximity"
@@ -569,8 +570,7 @@ Partial Class FrmPsuedoSite
         'CkProximity
         '
         Me.CkProximity.AutoSize = True
-        Me.CkProximity.Checked = True
-        Me.CkProximity.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CkProximity.Enabled = False
         Me.CkProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CkProximity.Location = New System.Drawing.Point(24, 300)
         Me.CkProximity.Name = "CkProximity"
