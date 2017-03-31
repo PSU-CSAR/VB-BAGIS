@@ -66,6 +66,7 @@ Partial Class FrmPsuedoSite
         Me.CkProximity = New System.Windows.Forms.CheckBox()
         Me.BtnFindSite = New System.Windows.Forms.Button()
         Me.BtnClose = New System.Windows.Forms.Button()
+        Me.BtnMap = New System.Windows.Forms.Button()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
@@ -591,7 +592,7 @@ Partial Class FrmPsuedoSite
         'BtnClose
         '
         Me.BtnClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClose.Location = New System.Drawing.Point(446, 386)
+        Me.BtnClose.Location = New System.Drawing.Point(446, 385)
         Me.BtnClose.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClose.Name = "BtnClose"
         Me.BtnClose.Size = New System.Drawing.Size(55, 22)
@@ -599,11 +600,22 @@ Partial Class FrmPsuedoSite
         Me.BtnClose.Text = "Close"
         Me.BtnClose.UseVisualStyleBackColor = True
         '
+        'BtnMap
+        '
+        Me.BtnMap.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnMap.Location = New System.Drawing.Point(229, 385)
+        Me.BtnMap.Name = "BtnMap"
+        Me.BtnMap.Size = New System.Drawing.Size(93, 23)
+        Me.BtnMap.TabIndex = 84
+        Me.BtnMap.Text = "Map"
+        Me.BtnMap.UseVisualStyleBackColor = True
+        '
         'FrmPsuedoSite
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(561, 422)
+        Me.Controls.Add(Me.BtnMap)
         Me.Controls.Add(Me.BtnClose)
         Me.Controls.Add(Me.BtnFindSite)
         Me.Controls.Add(Me.CkProximity)
@@ -671,4 +683,5 @@ Partial Class FrmPsuedoSite
     Friend WithEvents CkProximity As System.Windows.Forms.CheckBox
     Friend WithEvents BtnFindSite As System.Windows.Forms.Button
     Friend WithEvents BtnClose As System.Windows.Forms.Button
+    Friend WithEvents BtnMap As System.Windows.Forms.Button
 End Class

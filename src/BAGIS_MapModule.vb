@@ -1874,4 +1874,30 @@ Module BAGIS_MapModule
         Next
     End Sub
 
+    Public Function BA_BuildRendererForPoints(ByVal markerColor As IColor, ByVal size As Integer) As ISimpleRenderer
+        Dim pFillColor As IColor = New RgbColor
+        'Dim pMSymbol As IMarkerSymbol = Nothing
+        Dim pMSymbol As ISimpleMarkerSymbol = New SimpleMarkerSymbol
+        Dim pMask As IMask = Nothing
+        Dim pRenderer As ISimpleRenderer = New SimpleRenderer
+
+        Try
+            pMSymbol.Style = esriSimpleMarkerStyle.esriSMSCircle
+            pMSymbol.Size = size
+            pMSymbol.OutlineColor = markerColor
+            pMSymbol.Outline = True
+            pMSymbol.OutlineSize = 3.0
+            pFillColor.NullColor = True
+            pMSymbol.Color = pFillColor
+            pRenderer.Symbol = pMSymbol
+            Return pRenderer
+        Catch ex As Exception
+            Debug.Print("BA_BuildRendererForPoints Exception: " & ex.Message)
+            Return Nothing
+        Finally
+            pRenderer = Nothing
+            pMSymbol = Nothing
+        End Try
+    End Function
+
 End Module

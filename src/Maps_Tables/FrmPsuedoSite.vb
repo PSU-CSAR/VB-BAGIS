@@ -4,6 +4,9 @@ Imports System.Text
 Imports ESRI.ArcGIS.DataSourcesRaster
 Imports ESRI.ArcGIS.esriSystem
 Imports ESRI.ArcGIS.Framework
+Imports ESRI.ArcGIS.Display
+Imports ESRI.ArcGIS.Carto
+Imports ESRI.ArcGIS.Geodatabase
 
 Public Class FrmPsuedoSite
 
@@ -11,6 +14,7 @@ Public Class FrmPsuedoSite
     Private m_precipFolder As String
     Private m_precipFile As String
     Private m_elevLayer As String = "ps_elev"
+    Private m_siteFileName As String = "ps_site"
 
     Public Sub New(ByVal useMeters As Boolean)
 
@@ -159,15 +163,13 @@ Public Class FrmPsuedoSite
             End If
         End If
 
-        Dim pSiteFileName As String = "ps_site"
         If success = BA_ReturnCode.Success Then
             success = BA_RasterToPoint(m_analysisFolder + "\" + furthestPixelFileName, _
-                                       m_analysisFolder + "\" + pSiteFileName, BA_FIELD_VALUE)
+                                       m_analysisFolder + "\" + m_siteFileName, BA_FIELD_VALUE)
         End If
 
         If success = BA_ReturnCode.Success Then
-            Dim numSites As Int16 = BA_CountPolygons(m_analysisFolder, pSiteFileName, BA_FIELD_GRIDCODE_GDB
-                                                     )
+            Dim numSites As Int16 = BA_CountPolygons(m_analysisFolder, m_siteFileName, BA_FIELD_GRIDCODE_GDB)
             If numSites < 1 Then
                 MessageBox.Show("No psuedo-sites were found. Please double-check your selection criteria")
             ElseIf numSites > 1 Then
@@ -326,5 +328,68 @@ Public Class FrmPsuedoSite
         txtMinPrecip.Text = "-"
         txtMaxPrecip.Text = "-"
         txtRangePrecip.Text = "-"
+    End Sub
+
+    Private Sub BtnMap_Click(sender As System.Object, e As System.EventArgs) Handles BtnMap.Click
+        AddLayersToMapFrame(My.ThisApplication, My.Document)
+    End Sub
+
+    Private Sub AddLayersToMapFrame(ByVal pApplication As ESRI.ArcGIS.Framework.IApplication, _
+                                    ByVal pMxDoc As ESRI.ArcGIS.ArcMapUI.IMxDocument)
+        'Represented area
+        Dim filepathname As String = m_analysisFolder & "\" & BA_EnumDescription(MapsFileName.ActualRepresentedArea)
+        If Not BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
+            MessageBox.Show("Unable to locate the represented area from the site scenario tool. Cannot load map.", "Error", _
+                 MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Exit Sub
+        End If
+        Dim pColor As IColor = New RgbColor
+        pColor.RGB = RGB(255, 0, 0) 'red
+        Dim success As BA_ReturnCode = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_REPRESENTED, pColor)
+
+        'add aoi boundary and zoom to AOI
+        filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
+        success = BA_AddExtentLayer(pMxDoc, filepathname, Nothing, BA_MAPS_AOI_BOUNDARY, 0, 1.2, 2.0)
+
+        'add pseudo site
+        filepathname = m_analysisFolder & "\" & m_siteFileName
+        If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
+            pColor.RGB = RGB(65, 105, 225)    'Royal blue
+            success = BA_MapDisplayPointMarkers(pApplication, filepathname, MapsLayerName.NewPseudoSite, pColor, MapsMarkerType.PseudoSite)
+        End If
+
+        'draw circle around pseudo site
+        Dim siteLayerName As String = BA_EnumDescription(MapsLayerName.NewPseudoSite)
+        Dim tempLayer As ILayer
+        Dim pseudoSrc As IFeatureLayer = Nothing
+        'Reset layer count in case layers were removed
+        Dim nlayers As Int16 = pMxDoc.FocusMap.LayerCount
+
+        For i = nlayers To 1 Step -1
+            tempLayer = CType(pMxDoc.FocusMap.Layer(i - 1), ILayer)   'Explicit cast
+            If TypeOf tempLayer Is FeatureLayer AndAlso tempLayer.Name = siteLayerName Then
+                pseudoSrc = CType(tempLayer, IFeatureLayer)
+                Exit For
+            End If
+        Next
+
+        Dim pActualColor As IColor = New RgbColor
+        pActualColor.RGB = RGB(65, 105, 225)    'Royal blue
+        Dim actualRenderer As ISimpleRenderer = BA_BuildRendererForPoints(pActualColor, 25)
+
+        If pseudoSrc IsNot Nothing Then
+            Dim pFSele As IFeatureSelection = TryCast(pseudoSrc, IFeatureSelection)
+            Dim pQFilter As IQueryFilter = New QueryFilter
+            pFSele.SelectFeatures(pQFilter, esriSelectionResultEnum.esriSelectionResultNew, False)
+            Dim fLayerDef As IFeatureLayerDefinition = CType(pseudoSrc, IFeatureLayerDefinition)
+            Dim pseudoCopy As IFeatureLayer = fLayerDef.CreateSelectionLayer(siteLayerName, True, Nothing, Nothing)
+            Dim pGFLayer As IGeoFeatureLayer = CType(pseudoCopy, IGeoFeatureLayer)
+            pGFLayer.Renderer = actualRenderer
+            My.Document.FocusMap.AddLayer(pGFLayer)
+            pFSele.Clear()
+        End If
+
+        'zoom to the aoi boundary layer
+        BA_ZoomToAOI(pMxDoc, AOIFolderBase)
     End Sub
 End Class

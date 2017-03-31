@@ -1585,10 +1585,10 @@ Public Class frmSiteScenario
 
             Dim pActualColor As IColor = New RgbColor
             pActualColor.RGB = RGB(0, 0, 0)    'Black
-            Dim actualRenderer As ISimpleRenderer = BuildRendererForPoints(pActualColor, 25)
+            Dim actualRenderer As ISimpleRenderer = BA_BuildRendererForPoints(pActualColor, 25)
             Dim pPseudoColor As IColor = New RgbColor
             pPseudoColor.RGB = RGB(255, 170, 0) 'Electron gold
-            Dim pseudoRenderer As ISimpleRenderer = BuildRendererForPoints(pPseudoColor, 35)
+            Dim pseudoRenderer As ISimpleRenderer = BA_BuildRendererForPoints(pPseudoColor, 35)
             For Each nextRow As DataGridViewRow In GrdScenario1.Rows
                 If Convert.ToBoolean(nextRow.Cells(idxSelected).Value) = True Then
                     Dim strType As String = nextRow.Cells(idxSiteType).Value
@@ -1774,32 +1774,6 @@ Public Class frmSiteScenario
             fLayerDef = Nothing
         End Try
     End Sub
-
-    Private Function BuildRendererForPoints(ByVal markerColor As IColor, ByVal size As Integer) As ISimpleRenderer
-        Dim pFillColor As IColor = New RgbColor
-        'Dim pMSymbol As IMarkerSymbol = Nothing
-        Dim pMSymbol As ISimpleMarkerSymbol = New SimpleMarkerSymbol
-        Dim pMask As IMask = Nothing
-        Dim pRenderer As ISimpleRenderer = New SimpleRenderer
-
-        Try
-            pMSymbol.Style = esriSimpleMarkerStyle.esriSMSCircle
-            pMSymbol.Size = size
-            pMSymbol.OutlineColor = markerColor
-            pMSymbol.Outline = True
-            pMSymbol.OutlineSize = 3.0
-            pFillColor.NullColor = True
-            pMSymbol.Color = pFillColor
-            pRenderer.Symbol = pMSymbol
-            Return pRenderer
-        Catch ex As Exception
-            Debug.Print("BuildRendererForPoints Exception: " & ex.Message)
-            Return Nothing
-        Finally
-            pRenderer = Nothing
-            pMSymbol = Nothing
-        End Try
-    End Function
 
     Private Function BuildQueryFromOid(ByVal oidList As IList(Of Int32)) As String
         Dim sb As StringBuilder = New StringBuilder
