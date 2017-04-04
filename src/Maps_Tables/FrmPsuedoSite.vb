@@ -229,8 +229,8 @@ Public Class FrmPsuedoSite
         End If
 
         '3. Dissolve on grid code
+        Dim elevLayerPath As String = m_analysisFolder & "\" & m_elevLayer
         If success = BA_ReturnCode.Success Then
-            Dim elevLayerPath As String = m_analysisFolder & "\" & m_elevLayer
             success = BA_Dissolve(reclassElevFcPath, BA_FIELD_GRIDCODE, elevLayerPath)
         End If
 
@@ -332,64 +332,117 @@ Public Class FrmPsuedoSite
 
     Private Sub BtnMap_Click(sender As System.Object, e As System.EventArgs) Handles BtnMap.Click
         AddLayersToMapFrame(My.ThisApplication, My.Document)
+        Dim Basin_Name As String
+        Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
+        If Len(Trim(cboSelectedBasin.getValue)) = 0 Then
+            Basin_Name = ""
+        Else
+            Basin_Name = cboSelectedBasin.getValue
+        End If
+        Dim aoiName As String = BA_GetBareName(AOIFolderBase)
+        Dim mapTitle As String = aoiName & Basin_Name
+        BA_AddMapElements(My.Document, mapTitle, "Subtitle BAGIS")
+
+        BA_RemoveLayersfromLegend(My.Document)
+        'Note: these functions are called in BA_DisplayMap if we end up adding buttons
+        Dim UnitText As String = Nothing    'Textbox above scale bar
+        Dim subtitle As String = "PROPOSED PSEUDO SITE LOCATION"
+        BA_MapUpdateSubTitle(My.Document, mapTitle, subtitle, UnitText)
+        Dim keyLayerName As String = Nothing
+        BA_SetLegendFormat(My.Document, keyLayerName)
     End Sub
 
     Private Sub AddLayersToMapFrame(ByVal pApplication As ESRI.ArcGIS.Framework.IApplication, _
                                     ByVal pMxDoc As ESRI.ArcGIS.ArcMapUI.IMxDocument)
-        'Represented area
-        Dim filepathname As String = m_analysisFolder & "\" & BA_EnumDescription(MapsFileName.ActualRepresentedArea)
-        If Not BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
-            MessageBox.Show("Unable to locate the represented area from the site scenario tool. Cannot load map.", "Error", _
-                 MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            Exit Sub
-        End If
         Dim pColor As IColor = New RgbColor
-        pColor.RGB = RGB(255, 0, 0) 'red
-        Dim success As BA_ReturnCode = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_REPRESENTED, pColor)
+        Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
+        Dim retVal As Integer = -1
 
-        'add aoi boundary and zoom to AOI
-        filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
-        success = BA_AddExtentLayer(pMxDoc, filepathname, Nothing, BA_MAPS_AOI_BOUNDARY, 0, 1.2, 2.0)
-
-        'add pseudo site
-        filepathname = m_analysisFolder & "\" & m_siteFileName
-        If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
-            pColor.RGB = RGB(65, 105, 225)    'Royal blue
-            success = BA_MapDisplayPointMarkers(pApplication, filepathname, MapsLayerName.NewPseudoSite, pColor, MapsMarkerType.PseudoSite)
-        End If
-
-        'draw circle around pseudo site
-        Dim siteLayerName As String = BA_EnumDescription(MapsLayerName.NewPseudoSite)
-        Dim tempLayer As ILayer
-        Dim pseudoSrc As IFeatureLayer = Nothing
-        'Reset layer count in case layers were removed
-        Dim nlayers As Int16 = pMxDoc.FocusMap.LayerCount
-
-        For i = nlayers To 1 Step -1
-            tempLayer = CType(pMxDoc.FocusMap.Layer(i - 1), ILayer)   'Explicit cast
-            If TypeOf tempLayer Is FeatureLayer AndAlso tempLayer.Name = siteLayerName Then
-                pseudoSrc = CType(tempLayer, IFeatureLayer)
-                Exit For
+        Try
+            'Elevation if it exists
+            Dim filepathname As String = m_analysisFolder & "\" & m_elevLayer
+            If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                pColor.RGB = RGB(65, 105, 225) 'royal blue
+                success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, pColor)
             End If
-        Next
 
-        Dim pActualColor As IColor = New RgbColor
-        pActualColor.RGB = RGB(65, 105, 225)    'Royal blue
-        Dim actualRenderer As ISimpleRenderer = BA_BuildRendererForPoints(pActualColor, 25)
+            'Represented area
+            filepathname = m_analysisFolder & "\" & BA_EnumDescription(MapsFileName.ActualRepresentedArea)
+            If Not BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
+                MessageBox.Show("Unable to locate the represented area from the site scenario tool. Cannot load map.", "Error", _
+                     MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Exit Sub
+            End If
+            pColor.RGB = RGB(255, 0, 0) 'red
+            success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_REPRESENTED, pColor)
 
-        If pseudoSrc IsNot Nothing Then
-            Dim pFSele As IFeatureSelection = TryCast(pseudoSrc, IFeatureSelection)
-            Dim pQFilter As IQueryFilter = New QueryFilter
-            pFSele.SelectFeatures(pQFilter, esriSelectionResultEnum.esriSelectionResultNew, False)
-            Dim fLayerDef As IFeatureLayerDefinition = CType(pseudoSrc, IFeatureLayerDefinition)
-            Dim pseudoCopy As IFeatureLayer = fLayerDef.CreateSelectionLayer(siteLayerName, True, Nothing, Nothing)
-            Dim pGFLayer As IGeoFeatureLayer = CType(pseudoCopy, IGeoFeatureLayer)
-            pGFLayer.Renderer = actualRenderer
-            My.Document.FocusMap.AddLayer(pGFLayer)
-            pFSele.Clear()
-        End If
+            'add aoi boundary and zoom to AOI
+            filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
+            success = BA_AddExtentLayer(pMxDoc, filepathname, Nothing, BA_MAPS_AOI_BOUNDARY, 0, 1.2, 2.0)
 
-        'zoom to the aoi boundary layer
-        BA_ZoomToAOI(pMxDoc, AOIFolderBase)
+            'add pseudo site
+            filepathname = m_analysisFolder & "\" & m_siteFileName
+            If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
+                pColor.RGB = RGB(169, 0, 230)    'Purple
+                success = BA_MapDisplayPointMarkers(pApplication, filepathname, MapsLayerName.NewPseudoSite, pColor, MapsMarkerType.PseudoSite)
+            End If
+
+            'draw circle around pseudo site
+            Dim siteLayerName As String = BA_EnumDescription(MapsLayerName.NewPseudoSite)
+            Dim tempLayer As ILayer
+            Dim pseudoSrc As IFeatureLayer = Nothing
+            'Reset layer count in case layers were removed
+            Dim nlayers As Int16 = pMxDoc.FocusMap.LayerCount
+
+            For i = nlayers To 1 Step -1
+                tempLayer = CType(pMxDoc.FocusMap.Layer(i - 1), ILayer)   'Explicit cast
+                If TypeOf tempLayer Is FeatureLayer AndAlso tempLayer.Name = siteLayerName Then
+                    pseudoSrc = CType(tempLayer, IFeatureLayer)
+                    Exit For
+                End If
+            Next
+
+            Dim pActualColor As IColor = New RgbColor
+            pActualColor.RGB = RGB(169, 0, 230)    'Purple
+            Dim actualRenderer As ISimpleRenderer = BA_BuildRendererForPoints(pActualColor, 25)
+
+            If pseudoSrc IsNot Nothing Then
+                Dim pFSele As IFeatureSelection = TryCast(pseudoSrc, IFeatureSelection)
+                Dim pQFilter As IQueryFilter = New QueryFilter
+                pFSele.SelectFeatures(pQFilter, esriSelectionResultEnum.esriSelectionResultNew, False)
+                Dim fLayerDef As IFeatureLayerDefinition = CType(pseudoSrc, IFeatureLayerDefinition)
+                Dim pseudoCopy As IFeatureLayer = fLayerDef.CreateSelectionLayer(siteLayerName, True, Nothing, Nothing)
+                Dim pGFLayer As IGeoFeatureLayer = CType(pseudoCopy, IGeoFeatureLayer)
+                pGFLayer.Renderer = actualRenderer
+                My.Document.FocusMap.AddLayer(pGFLayer)
+                pFSele.Clear()
+            End If
+
+            'add aoib as base layer for difference of representation maps
+            filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BufferedAOIExtentRaster
+            retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_INCLUDE, _
+                                                MapsDisplayStyle.Cyan_Light_to_Blue_Dark, 30, WorkspaceType.Geodatabase)
+
+
+            'add hillshade
+            filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) & _
+                BA_GetBareName(BA_EnumDescription(PublicPath.Hillshade))
+            retVal = BA_MapDisplayRaster(pMxDoc, filepathname, BA_MAPS_HILLSHADE, 0)
+            'Move hillshade to bottom
+            Dim layerCount As Int16 = My.Document.FocusMap.LayerCount
+            Dim idxHillshade As Integer = BA_GetLayerIndexByName(My.Document, BA_MAPS_HILLSHADE)
+            Dim hLayer As ILayer = My.Document.FocusMap.Layer(idxHillshade)
+            My.Document.FocusMap.MoveLayer(hLayer, layerCount)
+
+            'zoom to the aoi boundary layer
+            BA_ZoomToAOI(pMxDoc, AOIFolderBase)
+
+        Catch ex As Exception
+            Debug.Print("AddLayersToMapFrame Exception: " & ex.Message)
+            MessageBox.Show("An error occurred while trying to load the map!")
+        Finally
+
+        End Try
+
     End Sub
 End Class
