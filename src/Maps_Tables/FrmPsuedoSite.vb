@@ -15,6 +15,10 @@ Public Class FrmPsuedoSite
     Private m_precipFile As String
     Private m_elevLayer As String = "ps_elev"
     Private m_siteFileName As String = "ps_site"
+    Private m_proximityLayer As String = "ps_proximity"
+    Private m_demInMeters As Boolean
+    Private m_demXYUnits As esriUnits = esriUnits.esriMeters
+
 
     Public Sub New(ByVal useMeters As Boolean)
 
@@ -71,14 +75,13 @@ Public Class FrmPsuedoSite
         'display dem elevation stats
         Dim pRasterStats As IRasterStatistics = BA_GetDemStatsGDB(AOIFolderBase)
         Dim elevUnit As MeasurementUnit = BA_GetElevationUnitsForAOI(AOIFolderBase)
-        Dim demInMeters As Boolean = False
         If elevUnit = MeasurementUnit.Meters Then
-            demInMeters = True
+            m_demInMeters = True
         End If
         If useMeters = True Then
             'Determine if Display ZUnit is the same as DEM ZUnit
             'AOI_DEMMin and AOI_DEMMax use internal system unit, i.e., meters
-            Dim Conversion_Factor As Double = BA_SetConversionFactor(True, demInMeters) 'i.e., meters to meters
+            Dim Conversion_Factor As Double = BA_SetConversionFactor(True, m_demInMeters) 'i.e., meters to meters
             AOI_DEMMin = Math.Round(pRasterStats.Minimum * Conversion_Factor - 0.005, 2)
             AOI_DEMMax = Math.Round(pRasterStats.Maximum * Conversion_Factor + 0.005, 2)
 
@@ -87,6 +90,8 @@ Public Class FrmPsuedoSite
             TxtMaxElev.Text = Math.Round(AOI_DEMMax * Conversion_Factor + 0.005, 2)
             TxtRange.Text = Val(TxtMaxElev.Text) - Val(txtMinElev.Text)
         End If
+
+        LoadLstLayers()
 
     End Sub
 
@@ -119,6 +124,13 @@ Public Class FrmPsuedoSite
             success = GenerateElevationLayer(pStepProg, snapRasterPath)
             If success = BA_ReturnCode.Success Then
                 sb.Append(m_analysisFolder + "\" + m_elevLayer + "; ")
+            End If
+        End If
+
+        If CkProximity.Checked = True Then
+            success = GenerateProximityLayer(pStepProg)
+            If success = BA_ReturnCode.Success Then
+                sb.Append(m_analysisFolder + "\" + m_proximityLayer + "; ")
             End If
         End If
 
@@ -445,4 +457,51 @@ Public Class FrmPsuedoSite
         End Try
 
     End Sub
+
+    Private Sub LoadLstLayers()
+        Dim AOIVectorList() As String = Nothing
+        Dim AOIRasterList() As String = Nothing
+        Dim layerPath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers)
+        BA_ListLayersinGDB(layerPath, AOIRasterList, AOIVectorList)
+
+        'display feature layers
+        Dim FeatureClassCount As Integer = UBound(AOIVectorList)
+        If FeatureClassCount > 0 Then
+            For i = 1 To FeatureClassCount
+                Dim fullLayerPath As String = layerPath & "\" & AOIVectorList(i)
+                Dim item As LayerListItem = New LayerListItem(AOIVectorList(i), fullLayerPath, LayerType.Vector, True)
+                LstVectors.Items.Add(item)
+            Next
+        End If
+    End Sub
+
+    Private Function GenerateProximityLayer(ByVal pStepProg As IStepProgressor) As BA_ReturnCode
+        pStepProg.Message = "Generating proximity layer"
+        pStepProg.Step()
+
+        '--- Calculate correct buffer distance based on XY units ---
+        Dim bufferDistance As Double = Convert.ToDouble(txtBufferDistance.Text)
+        Dim strBuffer As String = Convert.ToString(bufferDistance) + " "
+        If m_demXYUnits = esriUnits.esriMeters Then
+            strBuffer = strBuffer + MeasurementUnit.Meters.ToString
+        Else
+            strBuffer = strBuffer + MeasurementUnit.Feet.ToString
+        End If
+
+        Dim item As LayerListItem = LstVectors.SelectedItem
+        Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
+        Dim outFeaturesPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + "tmpBuffer"
+        If item IsNot Nothing Then
+            success = BA_Buffer(item.Value, outFeaturesPath, strBuffer)
+        End If
+        If success = BA_ReturnCode.Success Then
+            success = BA_Erase(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BASIN_DEM_EXTENT_SHAPEFILE, _
+                               outFeaturesPath, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & _
+                               m_proximityLayer)
+        End If
+        If Not success = BA_ReturnCode.Success Then
+            MessageBox.Show("An error occurred while generating the proximity layer. It will not be used in analysis")
+        End If
+        Return success
+    End Function
 End Class
