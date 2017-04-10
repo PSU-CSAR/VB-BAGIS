@@ -906,7 +906,9 @@ Public Class frmGenerateMaps
 
             'configure UI for Elevation-Precipitation Correlation
             Dim ElevPrecipLayersReady As Boolean = True
-            If Not AOI_HasSNOTEL AndAlso Not AOI_HasSnowCourse Then
+            Dim Has_SNOTELLayer As Boolean, Has_SnowCourseLayer As Boolean
+            CheckForSitesLayers(Has_SNOTELLayer, Has_SnowCourseLayer)
+            If Not Has_SNOTELLayer AndAlso Not Has_SnowCourseLayer Then
                 'Disable Elevation-Precipitation Correlation if no sites
                 FrameRepresentedPrecipitation.Enabled = False
             Else
@@ -1369,46 +1371,22 @@ Public Class frmGenerateMaps
             '=====================================================================================
             '5. SNOTEL and Snow Course Analysis
             '=====================================================================================
-
-            'Snow Course
-            Dim SnowCourseBareName As String
-            Dim SnowCourseParentName As String
-
-            'Declarations for Opening SNOTEL File
-            Dim SNOTELBareName As String
-            Dim SNOTELParentName As String
-
             'Declarations for Within Array
             Dim nSTSite As Long
             Dim nSCSite As Long
 
             'Get BareName, ParentDirectory, and Extension
-            SNOTELBareName = BA_SNOTELSites 'BA_GetBareNameAndExtension(frmSettings.txtSNOTEL.Text, SNOTELParentName, SNOTELExtension)
-            SnowCourseBareName = BA_SnowCourseSites 'BA_GetBareNameAndExtension(frmSettings.txtSnowCourse.Text, SnowCourseParentName, SnowCourseExtension)
-            SNOTELParentName = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers)
-            SnowCourseParentName = SNOTELParentName
+            'SNOTELBareName = BA_SNOTELSites 'BA_GetBareNameAndExtension(frmSettings.txtSNOTEL.Text, SNOTELParentName, SNOTELExtension)
+            'SnowCourseBareName = BA_SnowCourseSites 'BA_GetBareNameAndExtension(frmSettings.txtSnowCourse.Text, SnowCourseParentName, SnowCourseExtension)
 
             Dim Has_SNOTELLayer As Boolean, Has_SnowCourseLayer As Boolean
-
-            'Check to see if SNOTEL Shapefile Exist
-            If BA_File_Exists(SNOTELParentName & "\" & SNOTELBareName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                Has_SNOTELLayer = True
-            Else
-                Has_SNOTELLayer = False
-            End If
-
-            'Check to see if SnowCourse Shapefile Exist
-            If BA_File_Exists(SnowCourseParentName & "\" & SnowCourseBareName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                Has_SnowCourseLayer = True
-            Else
-                Has_SnowCourseLayer = False
-            End If
+            CheckForSitesLayers(Has_SNOTELLayer, Has_SnowCourseLayer)
 
             'Open Elevation zone file Files
             pFeatureClass = BA_OpenFeatureClassFromGDB(strSavePath, BA_VectorElevationZones)
             If Has_SNOTELLayer Then
                 'Open SNOTEL, Snowcourse, and Zone vector Shapefiles
-                SNOTELFeatureClass = BA_OpenFeatureClassFromGDB(SNOTELParentName, SNOTELBareName)
+                SNOTELFeatureClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), BA_SNOTELSites)
 
                 'Determine Number of Features Within Each Class
                 pQueryFilter = New QueryFilter
@@ -1451,7 +1429,7 @@ Public Class frmGenerateMaps
 
             If Has_SnowCourseLayer Then
                 'Open Snowcourse, and Zone vector Shapefiles
-                SnowCourseFeatureClass = BA_OpenFeatureClassFromGDB(SnowCourseParentName, SnowCourseBareName)
+                SnowCourseFeatureClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), BA_SnowCourseSites)
 
                 'Determine Number of Features Within Each Class
                 pQueryFilter = New QueryFilter
@@ -2513,14 +2491,14 @@ Public Class frmGenerateMaps
                 End If
 
                 Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
-                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, _
+                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, conversionFactor, _
                     MeasurementUnit.Inches, partitionFieldName, zonesFileName, zonesFieldName)
                 If success = BA_ReturnCode.Success Then
                     success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
                                                          BA_Precip, BA_SiteElevField, BA_SiteNameField, _
                                                          BA_SiteTypeField, BA_Aspect, partitionFieldName, _
                                                          pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName, _
-                                                         zonesFileName)
+                                                         zonesFileName, conversionFactor)
 
                     If success = BA_ReturnCode.Success Then
                         Dim demChartMin As Integer = Math.Floor(Convert.ToDouble(txtMinElev.Text) / 100) * 100
@@ -2600,9 +2578,21 @@ Public Class frmGenerateMaps
         Dim frmPartitionRaster As FrmElevPrecip = New FrmElevPrecip(m_partitionRasterPath, snapRasterPath, _
                                                                               cellSize, PARTITION_MODE, OptAggZone.Checked)
         frmPartitionRaster.ShowDialog()
-        LblPartitionLayer.Text = frmPartitionRaster.RasterName
-        m_partitionRasterPath = frmPartitionRaster.RasterPath
-        If String.IsNullOrEmpty(m_partitionRasterPath) Then
+
+        If Not String.IsNullOrEmpty(m_partitionRasterPath) AndAlso Not String.IsNullOrEmpty(frmPartitionRaster.RasterPath) Then
+            'The new partition layer is different; Enable generate
+            If Not m_partitionRasterPath.Equals(frmPartitionRaster.RasterPath) Then
+                EnableGenerate(True)
+            End If
+        Else
+            'The partition layer is new; Enable generate
+            If Not String.IsNullOrEmpty(frmPartitionRaster.RasterPath) Then
+                EnableGenerate(True)
+            End If
+        End If
+
+        'If no new partition raster was selected
+        If String.IsNullOrEmpty(frmPartitionRaster.RasterPath) Then
             ' Delete existing partition raster if it exists
             Dim deleteFileName As String = FindElevPrecipRasterName(BA_RasterPartPrefix)
             If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + deleteFileName, _
@@ -2610,6 +2600,10 @@ Public Class frmGenerateMaps
                 BA_RemoveRasterFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), deleteFileName)
             End If
         End If
+
+        LblPartitionLayer.Text = frmPartitionRaster.RasterName
+        m_partitionRasterPath = frmPartitionRaster.RasterPath
+
     End Sub
 
     Private Sub CmdClearPartition_Click(sender As System.Object, e As System.EventArgs) Handles CmdClearPartition.Click
@@ -2778,7 +2772,6 @@ Public Class frmGenerateMaps
         CmdPartition.Enabled = ChkRepresentedPrecip.Checked
         CmdClearPartition.Enabled = ChkRepresentedPrecip.Checked
         CmdZonalAggregate.Enabled = ChkRepresentedPrecip.Checked
-        CmdClearZonal.Enabled = ChkRepresentedPrecip.Checked
         If ChkRepresentedPrecip.Checked Then
             If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
                 Dim partitionFileName As String = BA_GetBareName(m_partitionRasterPath)
@@ -2798,13 +2791,15 @@ Public Class frmGenerateMaps
         If OptAggPrism.Checked Then
             LblZonalLayer.Text = Nothing
             CmdZonalAggregate.Enabled = False
-            CmdClearZonal.Enabled = False
             'Delete zonal layer, if it exists
-            If BA_File_Exists(m_zoneRasterPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-                Dim parentPath As String = "PleaseReturn"
-                Dim fileName As String = BA_GetBareName(m_zoneRasterPath, parentPath)
-                BA_RemoveRasterFromGDB(parentPath, fileName)
-                m_zoneRasterPath = Nothing
+            If Not String.IsNullOrEmpty(m_zoneRasterPath) Then
+                If BA_File_Exists(m_zoneRasterPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                    Dim parentPath As String = "PleaseReturn"
+                    Dim fileName As String = BA_GetBareName(m_zoneRasterPath, parentPath)
+                    BA_RemoveRasterFromGDB(parentPath, fileName)
+                    m_zoneRasterPath = Nothing
+                    EnableGenerate(True)
+                End If
             End If
         End If
     End Sub
@@ -2812,46 +2807,56 @@ Public Class frmGenerateMaps
     Private Sub OptAggZone_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles OptAggZone.CheckedChanged
         If OptAggZone.Checked Then
             If Not String.IsNullOrEmpty(m_zoneRasterPath) Then
-                Dim zonesFileName As String = BA_GetBareName(m_zoneRasterPath)
-                LblZonalLayer.Text = zonesFileName.Substring(BA_ZonesRasterPrefix.Length)
+                If BA_File_Exists(m_zoneRasterPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                    Dim zonesFileName As String = BA_GetBareName(m_zoneRasterPath)
+                    LblZonalLayer.Text = zonesFileName.Substring(BA_ZonesRasterPrefix.Length)
+                    EnableGenerate(True)
+                End If
             End If
             CmdZonalAggregate.Enabled = True
-            CmdClearZonal.Enabled = True
         End If
     End Sub
 
-    Private Sub CmdClearZonal_Click(sender As System.Object, e As System.EventArgs) Handles CmdClearZonal.Click
+    Private Sub CmdClearZonal_Click(sender As System.Object, e As System.EventArgs)
         ' Delete existing partition raster if it exists
-        'Dim parentFolder As String = "PleaseReturn"
-        'Dim deleteFileName As String = BA_GetBareName(m_zoneRasterPath, parentFolder)
-        'If BA_File_Exists(m_zoneRasterPath, _
-        '                  WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-        '    BA_RemoveRasterFromGDB(parentFolder, deleteFileName)
-        'End If
-        'm_zoneRasterPath = Nothing
-        'LblZonalLayer.Text = Nothing
-
-        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 10)
-        SetPrecipPathInfo()
-        Dim AspIntervalList() As BA_IntervalList = Nothing
-        BA_SetAspectClasses(AspIntervalList, 8)
-        GenerateZonePrecipElevLayers(pStepProg, 8, AspIntervalList)
-
+        Dim parentFolder As String = "PleaseReturn"
+        Dim deleteFileName As String = BA_GetBareName(m_zoneRasterPath, parentFolder)
+        If BA_File_Exists(m_zoneRasterPath, _
+                          WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+            BA_RemoveRasterFromGDB(parentFolder, deleteFileName)
+        End If
+        m_zoneRasterPath = Nothing
+        LblZonalLayer.Text = Nothing
     End Sub
 
     Private Sub CmdZonalAggregate_Click(sender As System.Object, e As System.EventArgs) Handles CmdZonalAggregate.Click
         Dim frmElevPrecip As FrmElevPrecip = New FrmElevPrecip(m_zoneRasterPath, Nothing, _
                                                                -1, ZONE_MODE, OptAggZone.Checked)
         frmElevPrecip.ShowDialog()
-        LblZonalLayer.Text = frmElevPrecip.RasterName
-        m_zoneRasterPath = frmElevPrecip.RasterPath
-        If String.IsNullOrEmpty(m_zoneRasterPath) Then
+        If Not String.IsNullOrEmpty(m_zoneRasterPath) Then
+            'The new zones layer is different; Enable generate
+            If Not m_zoneRasterPath.Equals(frmElevPrecip.RasterPath) Then
+                EnableGenerate(True)
+            End If
+        Else
+            'The zones layer is new; Enable generate
+            If Not String.IsNullOrEmpty(frmElevPrecip.RasterPath) Then
+                EnableGenerate(True)
+            End If
+        End If
+
+        If String.IsNullOrEmpty(frmElevPrecip.RasterPath) Then
             ' Delete existing partition raster if it exists
             Dim deleteFileName As String = FindElevPrecipRasterName(BA_ZonesRasterPrefix)
             If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + deleteFileName, _
                               WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
                 BA_RemoveRasterFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), deleteFileName)
             End If
+            LblZonalLayer.Text = frmElevPrecip.RasterName
+            m_zoneRasterPath = frmElevPrecip.RasterPath
+        Else
+            LblZonalLayer.Text = frmElevPrecip.RasterName
+            m_zoneRasterPath = frmElevPrecip.RasterPath
         End If
     End Sub
 
@@ -2964,6 +2969,36 @@ Public Class frmGenerateMaps
             LblSitesLayerExists.Text = "Elev-Precip Sites layer - Ready"
         Else
             LblSitesLayerExists.Text = "Elev-Precip Sites layer - ?"
+        End If
+    End Sub
+
+    Private Sub CheckForSitesLayers(ByRef hasSnotelLayer As Boolean, ByRef hasSnowCourseLayer As Boolean)
+        'Check to see if SNOTEL Shapefile Exist
+        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) & BA_SNOTELSites, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+            hasSnotelLayer = True
+        Else
+            hasSnotelLayer = False
+        End If
+
+        'Check to see if SnowCourse Shapefile Exist
+        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) & "\" & BA_SnowCourseSites, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+            hasSnowCourseLayer = True
+        Else
+            hasSnowCourseLayer = False
+        End If
+    End Sub
+
+    Private Sub EnableGenerate(ByVal enable As Boolean)
+        'We only want to override the normal order of buttons if maps/tables already activated
+        If CmdTables.Enabled = enable Then
+            CmdTables.Enabled = Not enable
+            CmdMaps.Enabled = Not enable
+            CmdGenerate.Enabled = enable
+            'Also note that layers are not longer read
+            ChkPrecipAoiTable.Checked = Not enable
+            ChkPrecipSitesLayer.Checked = Not enable
+        Else
+            CmdGenerate.Enabled = enable
         End If
     End Sub
 End Class
