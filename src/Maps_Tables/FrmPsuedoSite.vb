@@ -16,13 +16,12 @@ Public Class FrmPsuedoSite
     Private m_elevLayer As String = "ps_elev"
     Private m_siteFileName As String = "ps_site"
     Private m_proximityLayer As String = "ps_proximity"
-    Private m_demInMeters As Boolean
-    Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display
-    Private m_demXYUnits As esriUnits = esriUnits.esriMeters
-    Private m_usingXYMeters As Boolean  'Inerited from Site Scenario form; Controls buffer display  
+    Private m_demInMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
+    Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
+    Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
+    Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
 
-
-    Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean)
+    Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits)
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -30,6 +29,7 @@ Public Class FrmPsuedoSite
         'Populate class-level variables
         m_usingElevMeters = useMeters
         m_demInMeters = demInMeters
+        m_usingXYUnits = usingXYUnits
 
         ' Add any initialization after the InitializeComponent() call.
         CmboxPrecipType.Items.Clear()
@@ -97,26 +97,47 @@ Public Class FrmPsuedoSite
             LblElevRange.Text = "Desired Range (Feet)"
         End If
 
+        'Set proximity label; Default is meters when form loads
+        Select Case m_usingXYUnits
+            Case esriUnits.esriFeet
+                LblBufferDistance.Text = "Buffer Distance (Feet):"
+            Case esriUnits.esriKilometers
+                LblBufferDistance.Text = "Buffer Distance (Km):"
+            Case esriUnits.esriMiles
+                LblBufferDistance.Text = "Buffer Distance (Miles):"
+        End Select
+
         LoadLstLayers()
 
     End Sub
 
     Private Sub BtnFindSite_Click(sender As System.Object, e As System.EventArgs) Handles BtnFindSite.Click
         '1. Check to make sure npactual exists before going further; It's a required layer
-        If Not BA_File_Exists(m_analysisFolder + "\" + BA_EnumDescription(MapsFileName.ActualRepresentedArea), WorkspaceType.Geodatabase, _
+        If Not BA_File_Exists(m_analysisFolder + "\" + BA_EnumDescription(MapsFileName.PseudoRepresentedArea), WorkspaceType.Geodatabase, _
                               ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
 
-            MessageBox.Show("Unable to locate the represented area from the site scenario tool. Cannot generate pseudo site.", "Error", _
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            MessageBox.Show("Unable to locate the Scenario 2 represented area from the site scenario tool. Cannot generate pseudo site.", _
+                            "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Exit Sub
         End If
 
+        'If user selected proximity layer, did they choose a layer?
+        If CkProximity.Checked AndAlso LstVectors.SelectedItem Is Nothing Then
+            Dim res As DialogResult = MessageBox.Show("You selected the Proximity option but failed to select a layer. Do you wish to " + _
+                                                      "find a site without using the Proximity option ?", "Missing layer", MessageBoxButtons.YesNo, _
+                                                      MessageBoxIcon.Question)
+            If res <> Windows.Forms.DialogResult.Yes Then
+                CkProximity.Checked = False
+                Exit Sub
+            End If
+        End If
+
         Dim snapRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi) & BA_EnumDescription(PublicPath.AoiGrid)
-        Dim maskPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BASIN_DEM_EXTENT_SHAPEFILE
+        Dim maskPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & m_aoiBoundary
 
         'Use this to hold the list of layers that we send to the union tool
         Dim sb As StringBuilder = New StringBuilder()
-        sb.Append(m_analysisFolder + "\" + BA_EnumDescription(MapsFileName.ActualRepresentedArea) + "; ")
+        sb.Append(m_analysisFolder + "\" + BA_EnumDescription(MapsFileName.PseudoRepresentedArea) + "; ")
 
         ' Create/configure a step progressor
         Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 15)
@@ -402,8 +423,8 @@ Public Class FrmPsuedoSite
                 success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, pColor)
             End If
 
-            'Represented area
-            filepathname = m_analysisFolder & "\" & BA_EnumDescription(MapsFileName.ActualRepresentedArea)
+            'Scenario 2 Represented area
+            filepathname = m_analysisFolder & "\" & BA_EnumDescription(MapsFileName.PseudoRepresentedArea)
             If Not BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
                 MessageBox.Show("Unable to locate the represented area from the site scenario tool. Cannot load map.", "Error", _
                      MessageBoxButtons.OK, MessageBoxIcon.Warning)
@@ -413,7 +434,7 @@ Public Class FrmPsuedoSite
             success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_REPRESENTED, pColor)
 
             'add aoi boundary and zoom to AOI
-            filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
+            filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + m_aoiBoundary
             success = BA_AddExtentLayer(pMxDoc, filepathname, Nothing, BA_MAPS_AOI_BOUNDARY, 0, 1.2, 2.0)
 
             'add pseudo site
@@ -506,11 +527,16 @@ Public Class FrmPsuedoSite
         '--- Calculate correct buffer distance based on XY units ---
         Dim bufferDistance As Double = Convert.ToDouble(txtBufferDistance.Text)
         Dim strBuffer As String = Convert.ToString(bufferDistance) + " "
-        If m_demXYUnits = esriUnits.esriMeters Then
-            strBuffer = strBuffer + MeasurementUnit.Meters.ToString
-        Else
-            strBuffer = strBuffer + MeasurementUnit.Feet.ToString
-        End If
+        Select Case m_usingXYUnits
+            Case esriUnits.esriFeet
+                strBuffer = strBuffer + MeasurementUnit.Feet.ToString
+            Case esriUnits.esriKilometers
+                strBuffer = strBuffer + MeasurementUnit.Kilometers.ToString
+            Case esriUnits.esriMiles
+                strBuffer = strBuffer + MeasurementUnit.Miles.ToString
+            Case Else
+                strBuffer = strBuffer + MeasurementUnit.Meters.ToString
+        End Select
 
         Dim item As LayerListItem = LstVectors.SelectedItem
         Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
@@ -519,7 +545,7 @@ Public Class FrmPsuedoSite
             success = BA_Buffer(item.Value, outFeaturesPath, strBuffer)
         End If
         If success = BA_ReturnCode.Success Then
-            success = BA_Erase(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BASIN_DEM_EXTENT_SHAPEFILE, _
+            success = BA_Erase(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + m_aoiBoundary, _
                                outFeaturesPath, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & _
                                m_proximityLayer)
         End If

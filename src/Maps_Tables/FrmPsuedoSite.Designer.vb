@@ -24,7 +24,7 @@ Partial Class FrmPsuedoSite
     Private Sub InitializeComponent()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.LstVectors = New System.Windows.Forms.ListBox()
-        Me.Label6 = New System.Windows.Forms.Label()
+        Me.LblBufferDistance = New System.Windows.Forms.Label()
         Me.txtBufferDistance = New System.Windows.Forms.TextBox()
         Me.CkElev = New System.Windows.Forms.CheckBox()
         Me.Label7 = New System.Windows.Forms.Label()
@@ -92,16 +92,16 @@ Partial Class FrmPsuedoSite
         Me.LstVectors.Size = New System.Drawing.Size(197, 52)
         Me.LstVectors.TabIndex = 70
         '
-        'Label6
+        'LblBufferDistance
         '
-        Me.Label6.AutoSize = True
-        Me.Label6.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label6.Location = New System.Drawing.Point(215, 42)
-        Me.Label6.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
-        Me.Label6.Name = "Label6"
-        Me.Label6.Size = New System.Drawing.Size(153, 16)
-        Me.Label6.TabIndex = 72
-        Me.Label6.Text = "Buffer Distance (Meters):"
+        Me.LblBufferDistance.AutoSize = True
+        Me.LblBufferDistance.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LblBufferDistance.Location = New System.Drawing.Point(215, 42)
+        Me.LblBufferDistance.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.LblBufferDistance.Name = "LblBufferDistance"
+        Me.LblBufferDistance.Size = New System.Drawing.Size(153, 16)
+        Me.LblBufferDistance.TabIndex = 72
+        Me.LblBufferDistance.Text = "Buffer Distance (Meters):"
         '
         'txtBufferDistance
         '
@@ -557,7 +557,7 @@ Partial Class FrmPsuedoSite
         Me.GrpProximity.Controls.Add(Me.Label5)
         Me.GrpProximity.Controls.Add(Me.LstVectors)
         Me.GrpProximity.Controls.Add(Me.txtBufferDistance)
-        Me.GrpProximity.Controls.Add(Me.Label6)
+        Me.GrpProximity.Controls.Add(Me.LblBufferDistance)
         Me.GrpProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpProximity.Location = New System.Drawing.Point(62, 271)
         Me.GrpProximity.Name = "GrpProximity"
@@ -640,7 +640,7 @@ Partial Class FrmPsuedoSite
     End Sub
     Friend WithEvents Label5 As System.Windows.Forms.Label
     Friend WithEvents LstVectors As System.Windows.Forms.ListBox
-    Friend WithEvents Label6 As System.Windows.Forms.Label
+    Friend WithEvents LblBufferDistance As System.Windows.Forms.Label
     Friend WithEvents txtBufferDistance As System.Windows.Forms.TextBox
     Friend WithEvents CkElev As System.Windows.Forms.CheckBox
     Friend WithEvents Label7 As System.Windows.Forms.Label
