@@ -17,13 +17,19 @@ Public Class FrmPsuedoSite
     Private m_siteFileName As String = "ps_site"
     Private m_proximityLayer As String = "ps_proximity"
     Private m_demInMeters As Boolean
+    Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display
     Private m_demXYUnits As esriUnits = esriUnits.esriMeters
+    Private m_usingXYMeters As Boolean  'Inerited from Site Scenario form; Controls buffer display  
 
 
-    Public Sub New(ByVal useMeters As Boolean)
+    Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean)
 
         ' This call is required by the designer.
         InitializeComponent()
+
+        'Populate class-level variables
+        m_usingElevMeters = useMeters
+        m_demInMeters = demInMeters
 
         ' Add any initialization after the InitializeComponent() call.
         CmboxPrecipType.Items.Clear()
@@ -74,21 +80,21 @@ Public Class FrmPsuedoSite
         'read dem min, max everytime the form is activated
         'display dem elevation stats
         Dim pRasterStats As IRasterStatistics = BA_GetDemStatsGDB(AOIFolderBase)
-        Dim elevUnit As MeasurementUnit = BA_GetElevationUnitsForAOI(AOIFolderBase)
-        If elevUnit = MeasurementUnit.Meters Then
-            m_demInMeters = True
-        End If
-        If useMeters = True Then
-            'Determine if Display ZUnit is the same as DEM ZUnit
-            'AOI_DEMMin and AOI_DEMMax use internal system unit, i.e., meters
-            Dim Conversion_Factor As Double = BA_SetConversionFactor(True, m_demInMeters) 'i.e., meters to meters
-            AOI_DEMMin = Math.Round(pRasterStats.Minimum * Conversion_Factor - 0.005, 2)
-            AOI_DEMMax = Math.Round(pRasterStats.Maximum * Conversion_Factor + 0.005, 2)
+        'Determine if Display ZUnit is the same as DEM ZUnit
+        'AOI_DEMMin and AOI_DEMMax use internal system unit, i.e., meters
+        Dim Conversion_Factor As Double = BA_SetConversionFactor(m_usingElevMeters, m_demInMeters) 'i.e., meters to meters
+        AOI_DEMMin = Math.Round(pRasterStats.Minimum * Conversion_Factor - 0.005, 2)
+        AOI_DEMMax = Math.Round(pRasterStats.Maximum * Conversion_Factor + 0.005, 2)
 
-            'Populate Boxes
-            txtMinElev.Text = Math.Round(AOI_DEMMin * Conversion_Factor - 0.005, 2) 'adjust value to include the actual min, max
-            TxtMaxElev.Text = Math.Round(AOI_DEMMax * Conversion_Factor + 0.005, 2)
-            TxtRange.Text = Val(TxtMaxElev.Text) - Val(txtMinElev.Text)
+        'Populate Boxes
+        txtMinElev.Text = Convert.ToString(AOI_DEMMin)
+        TxtMaxElev.Text = Convert.ToString(AOI_DEMMax)
+        TxtRange.Text = Val(TxtMaxElev.Text) - Val(txtMinElev.Text)
+
+        'Set DEM label; Default is meters when form loads
+        If m_usingElevMeters = False Then
+            lblElevation.Text = "DEM Elevation (Feet)"
+            LblElevRange.Text = "Desired Range (Feet)"
         End If
 
         LoadLstLayers()
@@ -223,9 +229,27 @@ Public Class FrmPsuedoSite
         pStepProg.Message = "Reclass DEM for elevation layer"
         pStepProg.Step()
         Dim sb As StringBuilder = New StringBuilder()
-        sb.Append(txtMinElev.Text + " " + txtLower.Text + " 1;")
-        sb.Append(txtLower.Text + " " + TxtUpperRange.Text + " 2;")
-        sb.Append(TxtUpperRange.Text + " " + TxtMaxElev.Text + " 3 ")
+        Dim strMinElev As String = txtMinElev.Text
+        Dim strLower As String = txtLower.Text
+        Dim strUpperRange As String = TxtUpperRange.Text
+        Dim strMaxElev As String = TxtMaxElev.Text
+        'Convert the values to the DEM value, before composing the reclass string, if we need to
+        If m_demInMeters <> m_usingElevMeters Then
+            Dim converter As IUnitConverter = New UnitConverter
+            Dim toElevUnits As esriUnits = esriUnits.esriMeters
+            If Not m_demInMeters Then _
+                toElevUnits = esriUnits.esriFeet
+            Dim fromElevUnits As esriUnits = esriUnits.esriFeet
+            If m_usingElevMeters Then _
+                fromElevUnits = esriUnits.esriMeters
+            strMinElev = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(txtMinElev.Text), fromElevUnits, toElevUnits)))
+            strLower = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(txtLower.Text), fromElevUnits, toElevUnits)))
+            strUpperRange = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(TxtUpperRange.Text), fromElevUnits, toElevUnits)))
+            strMaxElev = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(TxtMaxElev.Text), fromElevUnits, toElevUnits)))
+        End If
+        sb.Append(strMinElev + " " + strLower + " 1;")
+        sb.Append(strLower + " " + strUpperRange + " 2;")
+        sb.Append(strUpperRange + " " + strMaxElev + " 3 ")
         Dim inputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
         Dim reclassElevFile As String = "elevrecl"
         Dim reclassElevPath As String = m_analysisFolder & "\" & reclassElevFile

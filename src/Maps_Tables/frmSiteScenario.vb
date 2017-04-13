@@ -2644,7 +2644,7 @@ Public Class frmSiteScenario
     End Sub
 
     Private Sub BtnAutoPseudo_Click(sender As System.Object, e As System.EventArgs) Handles BtnAutoPseudo.Click
-        Dim frmPseudo As FrmPsuedoSite = New FrmPsuedoSite(OptZMeters.Checked)
+        Dim frmPseudo As FrmPsuedoSite = New FrmPsuedoSite(m_demInMeters, OptZMeters.Checked)
         frmPseudo.ShowDialog()
     End Sub
 End Class

@@ -40,7 +40,7 @@ Partial Class FrmPsuedoSite
         Me.txtLower = New System.Windows.Forms.TextBox()
         Me.TxtRange = New System.Windows.Forms.TextBox()
         Me.Label3 = New System.Windows.Forms.Label()
-        Me.Label2 = New System.Windows.Forms.Label()
+        Me.LblElevRange = New System.Windows.Forms.Label()
         Me.TxtUpperRange = New System.Windows.Forms.TextBox()
         Me.GrpPrecipitation = New System.Windows.Forms.GroupBox()
         Me.Label9 = New System.Windows.Forms.Label()
@@ -160,7 +160,7 @@ Partial Class FrmPsuedoSite
         Me.GrpElevation.Controls.Add(Me.txtLower)
         Me.GrpElevation.Controls.Add(Me.TxtRange)
         Me.GrpElevation.Controls.Add(Me.Label3)
-        Me.GrpElevation.Controls.Add(Me.Label2)
+        Me.GrpElevation.Controls.Add(Me.LblElevRange)
         Me.GrpElevation.Controls.Add(Me.TxtUpperRange)
         Me.GrpElevation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpElevation.Location = New System.Drawing.Point(62, 24)
@@ -221,7 +221,7 @@ Partial Class FrmPsuedoSite
         '
         Me.Label1.AutoSize = True
         Me.Label1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label1.Location = New System.Drawing.Point(358, 22)
+        Me.Label1.Location = New System.Drawing.Point(369, 22)
         Me.Label1.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(52, 16)
@@ -270,7 +270,7 @@ Partial Class FrmPsuedoSite
         Me.TxtRange.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.TxtRange.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.TxtRange.ForeColor = System.Drawing.Color.Blue
-        Me.TxtRange.Location = New System.Drawing.Point(411, 22)
+        Me.TxtRange.Location = New System.Drawing.Point(422, 22)
         Me.TxtRange.Margin = New System.Windows.Forms.Padding(2)
         Me.TxtRange.Name = "TxtRange"
         Me.TxtRange.ReadOnly = True
@@ -289,16 +289,16 @@ Partial Class FrmPsuedoSite
         Me.Label3.TabIndex = 78
         Me.Label3.Text = "Upper:"
         '
-        'Label2
+        'LblElevRange
         '
-        Me.Label2.AutoSize = True
-        Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label2.Location = New System.Drawing.Point(5, 45)
-        Me.Label2.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
-        Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(152, 16)
-        Me.Label2.TabIndex = 76
-        Me.Label2.Text = "Desired Range (Meters)"
+        Me.LblElevRange.AutoSize = True
+        Me.LblElevRange.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LblElevRange.Location = New System.Drawing.Point(5, 45)
+        Me.LblElevRange.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.LblElevRange.Name = "LblElevRange"
+        Me.LblElevRange.Size = New System.Drawing.Size(152, 16)
+        Me.LblElevRange.TabIndex = 76
+        Me.LblElevRange.Text = "Desired Range (Meters)"
         '
         'TxtUpperRange
         '
@@ -656,7 +656,7 @@ Partial Class FrmPsuedoSite
     Friend WithEvents txtLower As System.Windows.Forms.TextBox
     Friend WithEvents TxtRange As System.Windows.Forms.TextBox
     Friend WithEvents Label3 As System.Windows.Forms.Label
-    Friend WithEvents Label2 As System.Windows.Forms.Label
+    Friend WithEvents LblElevRange As System.Windows.Forms.Label
     Friend WithEvents TxtUpperRange As System.Windows.Forms.TextBox
     Friend WithEvents GrpPrecipitation As System.Windows.Forms.GroupBox
     Friend WithEvents CmboxEnd As System.Windows.Forms.ComboBox
