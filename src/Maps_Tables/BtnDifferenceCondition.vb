@@ -16,12 +16,12 @@ Public Class BtnDifferenceCondition
             Dim filepathname As String = filepath & FileName
             Dim pColor As IColor = New RgbColor
             pColor.RGB = RGB(232, 157, 116)
-            Dim success As BA_ReturnCode = BA_MapDisplayPolygon(My.Document, filepathname, BA_MAPS_SCENARIO1_REPRESENTATION, pColor)
+            Dim success As BA_ReturnCode = BA_MapDisplayPolygon(My.Document, filepathname, BA_MAPS_SCENARIO1_REPRESENTATION, pColor, 0)
 
             FileName = BA_EnumDescription(MapsFileName.PseudoRepresentedArea)
             filepathname = filepath & FileName
             pColor.RGB = RGB(159, 167, 201)
-            success = BA_MapDisplayPolygon(My.Document, filepathname, BA_MAPS_SCENARIO2_REPRESENTATION, pColor)
+            success = BA_MapDisplayPolygon(My.Document, filepathname, BA_MAPS_SCENARIO2_REPRESENTATION, pColor, 0)
             'Reorder scenario layers so things are visible
             BA_MoveScenarioLayers()
         Catch ex As Exception

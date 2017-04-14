@@ -50,7 +50,7 @@ Public Class BtnScenario1
                 Dim filepath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
                 Dim FileName As String = BA_EnumDescription(MapsFileName.ActualRepresentedArea)
                 Dim filepathname As String = filepath & FileName
-                Dim success As BA_ReturnCode = BA_MapDisplayPolygon(My.Document, filepathname, BA_MAPS_SCENARIO1_REPRESENTATION, redColor)
+                Dim success As BA_ReturnCode = BA_MapDisplayPolygon(My.Document, filepathname, BA_MAPS_SCENARIO1_REPRESENTATION, redColor, 0)
                 'Reorder scenario layers so things are visible
                 BA_MoveScenarioLayers()
             End If

@@ -419,8 +419,8 @@ Public Class FrmPsuedoSite
             'Elevation if it exists
             Dim filepathname As String = m_analysisFolder & "\" & m_elevLayer
             If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                pColor.RGB = RGB(65, 105, 225) 'royal blue
-                success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, pColor)
+                pColor.RGB = RGB(115, 178, 115) 'green
+                success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, pColor, 30)
             End If
 
             'Scenario 2 Represented area
@@ -431,7 +431,14 @@ Public Class FrmPsuedoSite
                 Exit Sub
             End If
             pColor.RGB = RGB(255, 0, 0) 'red
-            success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_REPRESENTED, pColor)
+            success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_REPRESENTED, pColor, 30)
+
+            'Proximity if it exists
+            filepathname = m_analysisFolder & "\" & m_proximityLayer
+            If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                pColor.RGB = RGB(255, 165, 0) 'orange
+                success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_PROXIMITY, pColor, 30)
+            End If
 
             'add aoi boundary and zoom to AOI
             filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + m_aoiBoundary
@@ -468,7 +475,7 @@ Public Class FrmPsuedoSite
                 Dim pQFilter As IQueryFilter = New QueryFilter
                 pFSele.SelectFeatures(pQFilter, esriSelectionResultEnum.esriSelectionResultNew, False)
                 Dim fLayerDef As IFeatureLayerDefinition = CType(pseudoSrc, IFeatureLayerDefinition)
-                Dim pseudoCopy As IFeatureLayer = fLayerDef.CreateSelectionLayer(siteLayerName, True, Nothing, Nothing)
+                Dim pseudoCopy As IFeatureLayer = fLayerDef.CreateSelectionLayer(BA_MAPS_PS_INDICATOR, True, Nothing, Nothing)
                 Dim pGFLayer As IGeoFeatureLayer = CType(pseudoCopy, IGeoFeatureLayer)
                 pGFLayer.Renderer = actualRenderer
                 My.Document.FocusMap.AddLayer(pGFLayer)
@@ -479,7 +486,6 @@ Public Class FrmPsuedoSite
             filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BufferedAOIExtentRaster
             retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_INCLUDE, _
                                                 MapsDisplayStyle.Cyan_Light_to_Blue_Dark, 30, WorkspaceType.Geodatabase)
-
 
             'add hillshade
             filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) & _

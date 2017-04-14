@@ -239,7 +239,7 @@ Public Class frmSiteRepresentations
 
             Dim redColor As IRgbColor = New RgbColor
             redColor.RGB = RGB(255, 0, 0)
-            Dim success As BA_ReturnCode = BA_MapDisplayPolygon(My.Document, LayerPathName, DisplayName, redColor)
+            Dim success As BA_ReturnCode = BA_MapDisplayPolygon(My.Document, LayerPathName, DisplayName, redColor, 0)
             Dim idxNew As Integer
             ' We want to move the scenario layers directly on top of the streams layer
             For i = pMap.LayerCount To 1 Step -1

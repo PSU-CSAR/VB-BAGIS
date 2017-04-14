@@ -734,18 +734,18 @@ Module BAGIS_MapModule
         Dim filepathname As String = filepath & FileName
         Dim pColor As IColor = New RgbColor
         pColor.RGB = RGB(255, 0, 0) 'red
-        Dim success As BA_ReturnCode = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_SCENARIO1_REPRESENTATION, pColor)
+        Dim success As BA_ReturnCode = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_SCENARIO1_REPRESENTATION, pColor, 0)
 
         'Scenario 2
         FileName = BA_EnumDescription(MapsFileName.PseudoRepresentedArea)
         filepathname = filepath & FileName
-        success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_SCENARIO2_REPRESENTATION, pColor)
+        success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_SCENARIO2_REPRESENTATION, pColor, 0)
 
         'Both scenarios
         FileName = BA_EnumDescription(MapsFileName.DifferenceRepresentedArea)
         filepathname = filepath & FileName
         pColor.RGB = RGB(48, 95, 207) 'red
-        success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_BOTH_REPRESENTATION, pColor)
+        success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_BOTH_REPRESENTATION, pColor, 0)
         Dim response As Integer = -1
 
         'add aoi boundary and zoom to AOI
@@ -1751,7 +1751,7 @@ Module BAGIS_MapModule
     End Function
 
     Public Function BA_MapDisplayPolygon(ByVal pMxDoc As IMxDocument, ByVal filenamepath As String, _
-                                         ByVal layername As String, ByVal PolyColor As IRgbColor) As BA_ReturnCode
+                                         ByVal layername As String, ByVal PolyColor As IRgbColor, ByVal Transparency As Integer) As BA_ReturnCode
         Dim File_Path As String = "PleaseReturn"
         Dim File_Name As String
 
@@ -1807,6 +1807,11 @@ Module BAGIS_MapModule
 
             pGFLayer = pFLayer
             pGFLayer.Renderer = pRenderer
+
+            If Transparency > 0 Then
+                Dim pLayerEffects As ILayerEffects = CType(pGFLayer, ILayerEffects)
+                pLayerEffects.Transparency = Transparency
+            End If
 
             'check if a layer with the assigned name exists
             'search layer of the specified name, if found
