@@ -50,11 +50,11 @@ Partial Class FrmPsuedoSite
         Me.Label12 = New System.Windows.Forms.Label()
         Me.Label13 = New System.Windows.Forms.Label()
         Me.txtMaxPrecip = New System.Windows.Forms.TextBox()
-        Me.TextBox5 = New System.Windows.Forms.TextBox()
+        Me.TxtPrecipUpper = New System.Windows.Forms.TextBox()
         Me.txtRangePrecip = New System.Windows.Forms.TextBox()
         Me.Label14 = New System.Windows.Forms.Label()
         Me.Label15 = New System.Windows.Forms.Label()
-        Me.TextBox7 = New System.Windows.Forms.TextBox()
+        Me.TxtPrecipLower = New System.Windows.Forms.TextBox()
         Me.CmdPrism = New System.Windows.Forms.Button()
         Me.CmboxEnd = New System.Windows.Forms.ComboBox()
         Me.CmboxBegin = New System.Windows.Forms.ComboBox()
@@ -67,6 +67,8 @@ Partial Class FrmPsuedoSite
         Me.BtnFindSite = New System.Windows.Forms.Button()
         Me.BtnClose = New System.Windows.Forms.Button()
         Me.BtnMap = New System.Windows.Forms.Button()
+        Me.Label2 = New System.Windows.Forms.Label()
+        Me.TxtSiteName = New System.Windows.Forms.TextBox()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
@@ -117,10 +119,8 @@ Partial Class FrmPsuedoSite
         'CkElev
         '
         Me.CkElev.AutoSize = True
-        Me.CkElev.Checked = True
-        Me.CkElev.CheckState = System.Windows.Forms.CheckState.Checked
         Me.CkElev.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CkElev.Location = New System.Drawing.Point(24, 49)
+        Me.CkElev.Location = New System.Drawing.Point(19, 87)
         Me.CkElev.Name = "CkElev"
         Me.CkElev.Size = New System.Drawing.Size(15, 14)
         Me.CkElev.TabIndex = 74
@@ -130,7 +130,7 @@ Partial Class FrmPsuedoSite
         '
         Me.Label7.AutoSize = True
         Me.Label7.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label7.Location = New System.Drawing.Point(3, 9)
+        Me.Label7.Location = New System.Drawing.Point(0, 47)
         Me.Label7.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(58, 16)
@@ -142,7 +142,7 @@ Partial Class FrmPsuedoSite
         Me.CkPrecip.AutoSize = True
         Me.CkPrecip.Enabled = False
         Me.CkPrecip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CkPrecip.Location = New System.Drawing.Point(24, 156)
+        Me.CkPrecip.Location = New System.Drawing.Point(19, 194)
         Me.CkPrecip.Name = "CkPrecip"
         Me.CkPrecip.Size = New System.Drawing.Size(15, 14)
         Me.CkPrecip.TabIndex = 77
@@ -163,7 +163,7 @@ Partial Class FrmPsuedoSite
         Me.GrpElevation.Controls.Add(Me.LblElevRange)
         Me.GrpElevation.Controls.Add(Me.TxtUpperRange)
         Me.GrpElevation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.GrpElevation.Location = New System.Drawing.Point(62, 24)
+        Me.GrpElevation.Location = New System.Drawing.Point(57, 62)
         Me.GrpElevation.Name = "GrpElevation"
         Me.GrpElevation.Size = New System.Drawing.Size(487, 80)
         Me.GrpElevation.TabIndex = 79
@@ -261,7 +261,6 @@ Partial Class FrmPsuedoSite
         Me.txtLower.Name = "txtLower"
         Me.txtLower.Size = New System.Drawing.Size(41, 20)
         Me.txtLower.TabIndex = 79
-        Me.txtLower.Text = "2000"
         Me.txtLower.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'TxtRange
@@ -308,7 +307,6 @@ Partial Class FrmPsuedoSite
         Me.TxtUpperRange.Name = "TxtUpperRange"
         Me.TxtUpperRange.Size = New System.Drawing.Size(41, 20)
         Me.TxtUpperRange.TabIndex = 77
-        Me.TxtUpperRange.Text = "3000"
         Me.TxtUpperRange.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'GrpPrecipitation
@@ -320,11 +318,11 @@ Partial Class FrmPsuedoSite
         Me.GrpPrecipitation.Controls.Add(Me.Label12)
         Me.GrpPrecipitation.Controls.Add(Me.Label13)
         Me.GrpPrecipitation.Controls.Add(Me.txtMaxPrecip)
-        Me.GrpPrecipitation.Controls.Add(Me.TextBox5)
+        Me.GrpPrecipitation.Controls.Add(Me.TxtPrecipUpper)
         Me.GrpPrecipitation.Controls.Add(Me.txtRangePrecip)
         Me.GrpPrecipitation.Controls.Add(Me.Label14)
         Me.GrpPrecipitation.Controls.Add(Me.Label15)
-        Me.GrpPrecipitation.Controls.Add(Me.TextBox7)
+        Me.GrpPrecipitation.Controls.Add(Me.TxtPrecipLower)
         Me.GrpPrecipitation.Controls.Add(Me.CmdPrism)
         Me.GrpPrecipitation.Controls.Add(Me.CmboxEnd)
         Me.GrpPrecipitation.Controls.Add(Me.CmboxBegin)
@@ -334,7 +332,7 @@ Partial Class FrmPsuedoSite
         Me.GrpPrecipitation.Controls.Add(Me.Label8)
         Me.GrpPrecipitation.Enabled = False
         Me.GrpPrecipitation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.GrpPrecipitation.Location = New System.Drawing.Point(62, 110)
+        Me.GrpPrecipitation.Location = New System.Drawing.Point(57, 148)
         Me.GrpPrecipitation.Name = "GrpPrecipitation"
         Me.GrpPrecipitation.Size = New System.Drawing.Size(487, 146)
         Me.GrpPrecipitation.TabIndex = 80
@@ -424,16 +422,16 @@ Partial Class FrmPsuedoSite
         Me.txtMaxPrecip.TabIndex = 86
         Me.txtMaxPrecip.Text = "-"
         '
-        'TextBox5
+        'TxtPrecipUpper
         '
-        Me.TextBox5.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TextBox5.Location = New System.Drawing.Point(294, 117)
-        Me.TextBox5.Margin = New System.Windows.Forms.Padding(2)
-        Me.TextBox5.Name = "TextBox5"
-        Me.TextBox5.Size = New System.Drawing.Size(41, 20)
-        Me.TextBox5.TabIndex = 91
-        Me.TextBox5.Text = "30.0"
-        Me.TextBox5.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.TxtPrecipUpper.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TxtPrecipUpper.Location = New System.Drawing.Point(294, 117)
+        Me.TxtPrecipUpper.Margin = New System.Windows.Forms.Padding(2)
+        Me.TxtPrecipUpper.Name = "TxtPrecipUpper"
+        Me.TxtPrecipUpper.Size = New System.Drawing.Size(41, 20)
+        Me.TxtPrecipUpper.TabIndex = 91
+        Me.TxtPrecipUpper.Text = "30.0"
+        Me.TxtPrecipUpper.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'txtRangePrecip
         '
@@ -471,16 +469,16 @@ Partial Class FrmPsuedoSite
         Me.Label15.TabIndex = 88
         Me.Label15.Text = "Desired Range"
         '
-        'TextBox7
+        'TxtPrecipLower
         '
-        Me.TextBox7.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TextBox7.Location = New System.Drawing.Point(182, 116)
-        Me.TextBox7.Margin = New System.Windows.Forms.Padding(2)
-        Me.TextBox7.Name = "TextBox7"
-        Me.TextBox7.Size = New System.Drawing.Size(41, 20)
-        Me.TextBox7.TabIndex = 89
-        Me.TextBox7.Text = "45.0"
-        Me.TextBox7.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.TxtPrecipLower.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TxtPrecipLower.Location = New System.Drawing.Point(182, 116)
+        Me.TxtPrecipLower.Margin = New System.Windows.Forms.Padding(2)
+        Me.TxtPrecipLower.Name = "TxtPrecipLower"
+        Me.TxtPrecipLower.Size = New System.Drawing.Size(41, 20)
+        Me.TxtPrecipLower.TabIndex = 89
+        Me.TxtPrecipLower.Text = "45.0"
+        Me.TxtPrecipLower.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'CmdPrism
         '
@@ -559,7 +557,7 @@ Partial Class FrmPsuedoSite
         Me.GrpProximity.Controls.Add(Me.txtBufferDistance)
         Me.GrpProximity.Controls.Add(Me.LblBufferDistance)
         Me.GrpProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.GrpProximity.Location = New System.Drawing.Point(62, 271)
+        Me.GrpProximity.Location = New System.Drawing.Point(57, 309)
         Me.GrpProximity.Name = "GrpProximity"
         Me.GrpProximity.Size = New System.Drawing.Size(487, 100)
         Me.GrpProximity.TabIndex = 81
@@ -572,7 +570,7 @@ Partial Class FrmPsuedoSite
         Me.CkProximity.Checked = True
         Me.CkProximity.CheckState = System.Windows.Forms.CheckState.Checked
         Me.CkProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CkProximity.Location = New System.Drawing.Point(24, 300)
+        Me.CkProximity.Location = New System.Drawing.Point(19, 338)
         Me.CkProximity.Name = "CkProximity"
         Me.CkProximity.Size = New System.Drawing.Size(15, 14)
         Me.CkProximity.TabIndex = 82
@@ -581,7 +579,7 @@ Partial Class FrmPsuedoSite
         'BtnFindSite
         '
         Me.BtnFindSite.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnFindSite.Location = New System.Drawing.Point(337, 385)
+        Me.BtnFindSite.Location = New System.Drawing.Point(332, 423)
         Me.BtnFindSite.Name = "BtnFindSite"
         Me.BtnFindSite.Size = New System.Drawing.Size(93, 23)
         Me.BtnFindSite.TabIndex = 83
@@ -591,29 +589,52 @@ Partial Class FrmPsuedoSite
         'BtnClose
         '
         Me.BtnClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClose.Location = New System.Drawing.Point(446, 385)
+        Me.BtnClose.Location = New System.Drawing.Point(441, 423)
         Me.BtnClose.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClose.Name = "BtnClose"
-        Me.BtnClose.Size = New System.Drawing.Size(55, 22)
+        Me.BtnClose.Size = New System.Drawing.Size(65, 22)
         Me.BtnClose.TabIndex = 73
         Me.BtnClose.Text = "Close"
         Me.BtnClose.UseVisualStyleBackColor = True
         '
         'BtnMap
         '
+        Me.BtnMap.Enabled = False
         Me.BtnMap.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnMap.Location = New System.Drawing.Point(229, 385)
+        Me.BtnMap.Location = New System.Drawing.Point(224, 423)
         Me.BtnMap.Name = "BtnMap"
         Me.BtnMap.Size = New System.Drawing.Size(93, 23)
         Me.BtnMap.TabIndex = 84
         Me.BtnMap.Text = "Map"
         Me.BtnMap.UseVisualStyleBackColor = True
         '
+        'Label2
+        '
+        Me.Label2.AutoSize = True
+        Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label2.Location = New System.Drawing.Point(0, 19)
+        Me.Label2.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label2.Name = "Label2"
+        Me.Label2.Size = New System.Drawing.Size(81, 16)
+        Me.Label2.TabIndex = 85
+        Me.Label2.Text = "Site name:"
+        '
+        'TxtSiteName
+        '
+        Me.TxtSiteName.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TxtSiteName.Location = New System.Drawing.Point(85, 17)
+        Me.TxtSiteName.Margin = New System.Windows.Forms.Padding(2)
+        Me.TxtSiteName.Name = "TxtSiteName"
+        Me.TxtSiteName.Size = New System.Drawing.Size(168, 22)
+        Me.TxtSiteName.TabIndex = 86
+        '
         'FrmPsuedoSite
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(561, 422)
+        Me.ClientSize = New System.Drawing.Size(561, 472)
+        Me.Controls.Add(Me.TxtSiteName)
+        Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.BtnMap)
         Me.Controls.Add(Me.BtnClose)
         Me.Controls.Add(Me.BtnFindSite)
@@ -627,7 +648,7 @@ Partial Class FrmPsuedoSite
         Me.Margin = New System.Windows.Forms.Padding(2)
         Me.Name = "FrmPsuedoSite"
         Me.ShowIcon = False
-        Me.Text = "Add Pseudo Site: animas_AOI_prms_3"
+        Me.Text = "Add Pseudo Site:"
         Me.GrpElevation.ResumeLayout(False)
         Me.GrpElevation.PerformLayout()
         Me.GrpPrecipitation.ResumeLayout(False)
@@ -672,15 +693,17 @@ Partial Class FrmPsuedoSite
     Friend WithEvents Label12 As System.Windows.Forms.Label
     Friend WithEvents Label13 As System.Windows.Forms.Label
     Friend WithEvents txtMaxPrecip As System.Windows.Forms.TextBox
-    Friend WithEvents TextBox5 As System.Windows.Forms.TextBox
+    Friend WithEvents TxtPrecipUpper As System.Windows.Forms.TextBox
     Friend WithEvents txtRangePrecip As System.Windows.Forms.TextBox
     Friend WithEvents Label14 As System.Windows.Forms.Label
     Friend WithEvents Label15 As System.Windows.Forms.Label
-    Friend WithEvents TextBox7 As System.Windows.Forms.TextBox
+    Friend WithEvents TxtPrecipLower As System.Windows.Forms.TextBox
     Friend WithEvents CmdPrism As System.Windows.Forms.Button
     Friend WithEvents GrpProximity As System.Windows.Forms.GroupBox
     Friend WithEvents CkProximity As System.Windows.Forms.CheckBox
     Friend WithEvents BtnFindSite As System.Windows.Forms.Button
     Friend WithEvents BtnClose As System.Windows.Forms.Button
     Friend WithEvents BtnMap As System.Windows.Forms.Button
+    Friend WithEvents Label2 As System.Windows.Forms.Label
+    Friend WithEvents TxtSiteName As System.Windows.Forms.TextBox
 End Class

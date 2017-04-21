@@ -1905,4 +1905,24 @@ Module BAGIS_MapModule
         End Try
     End Function
 
+    ' Populates an PseudoSite object from an XML file
+    Public Function BA_LoadPseudoSiteFromXml(ByVal aoiPath As String) As PseudoSite
+        Try
+            Dim xmlInputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
+            If BA_File_ExistsWindowsIO(xmlInputPath) Then
+                Dim obj As Object = SerializableData.Load(xmlInputPath, GetType(PseudoSite))
+                If obj IsNot Nothing Then
+                    Dim analysis As PseudoSite = CType(obj, PseudoSite)
+                    Return analysis
+                Else
+                    Return Nothing
+                End If
+            Else
+                Return Nothing
+            End If
+        Catch ex As Exception
+            Debug.Print("BA_LoadPseudoSiteFromXml Exception: " & ex.Message)
+            Return Nothing
+        End Try
+    End Function
 End Module

@@ -107,7 +107,21 @@ Public Class FrmPsuedoSite
                 LblBufferDistance.Text = "Buffer Distance (Miles):"
         End Select
 
+        'Set label of form
+        Me.Text = "Add Pseudo Site: " + BA_GetBareName(AOIFolderBase)
+
+        SuggestSiteName()
         LoadLstLayers()
+
+        'Check for previously saved scenario and load those values as defaults
+        Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
+        Dim lastAnalysis As PseudoSite = Nothing
+        ' Open analysis file if there is one
+        If BA_File_ExistsWindowsIO(xmlOutputPath) Then
+            lastAnalysis = BA_LoadPseudoSiteFromXml(AOIFolderBase)
+            ReloadLastAnalysis(lastAnalysis)
+            BtnMap.Enabled = True
+        End If
 
     End Sub
 
@@ -134,6 +148,8 @@ Public Class FrmPsuedoSite
 
         Dim snapRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi) & BA_EnumDescription(PublicPath.AoiGrid)
         Dim maskPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & m_aoiBoundary
+
+        BtnFindSite.Enabled = False
 
         'Use this to hold the list of layers that we send to the union tool
         Dim sb As StringBuilder = New StringBuilder()
@@ -215,16 +231,24 @@ Public Class FrmPsuedoSite
                 MessageBox.Show(numSites & " pseudo-sites were found. Right now BAGIS only knows how to deal with one so it will pick the first one.")
             End If
 
+            BtnMap.Enabled = True
+
             'Delete the layers we don't need to keep for the map
             BA_Remove_ShapefileFromGDB(m_analysisFolder, unionFileName)
             BA_RemoveRasterFromGDB(m_analysisFolder, distanceFileName)
             BA_RemoveRasterFromGDB(m_analysisFolder, furthestPixelFileName)
         End If
 
+        If success = BA_ReturnCode.Success Then
+            pStepProg.Message = "Saving pseudo-site log"
+            pStepProg.Step()
+            SavePseudoSiteLog()
+        End If
 
         If progressDialog2 IsNot Nothing Then
             progressDialog2.HideDialog()
         End If
+        BtnFindSite.Enabled = True
         progressDialog2 = Nothing
         pStepProg = Nothing
     End Sub
@@ -560,4 +584,57 @@ Public Class FrmPsuedoSite
         End If
         Return success
     End Function
+
+    Private Sub SuggestSiteName()
+        Dim psuedoList As IList(Of Site) = BA_ReadSiteAttributes(SiteType.Pseudo)
+        Dim pSitePrefix As String = "pseudo_site_"
+        Dim pSiteId As Short = 1
+        If psuedoList.Count > 0 Then
+            For Each pSite As Site In psuedoList
+                If pSite.Name.Equals(pSitePrefix & pSiteId) Then
+                    pSiteId += 1
+                Else
+                    Exit For
+                End If
+            Next
+        End If
+        TxtSiteName.Text = pSitePrefix & pSiteId
+    End Sub
+
+    Private Sub SavePseudoSiteLog()
+        Dim pSite As PseudoSite = New PseudoSite(TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked)
+        'Save Elevation data
+        If pSite.UseElevation Then
+            Dim elevUnits As esriUnits = esriUnits.esriMeters
+            If m_usingElevMeters = False Then _
+                elevUnits = esriUnits.esriFeet
+            pSite.ElevationProperties(elevUnits, CDbl(txtLower.Text), CDbl(TxtUpperRange.Text))
+        End If
+        'Save Prism settings
+        If pSite.UsePrism Then
+            pSite.PrismProperties(CmboxPrecipType.SelectedIndex, CmboxBegin.SelectedIndex, CmboxEnd.SelectedIndex, _
+                                  CDbl(TxtPrecipLower.Text), CDbl(TxtPrecipUpper.Text))
+        End If
+        'Save Proximity settings
+        If pSite.UseProximity Then
+            Dim item As LayerListItem = LstVectors.SelectedItem
+            pSite.ProximityProperties(m_usingXYUnits, item.Name, CDbl(txtBufferDistance.Text))
+        End If
+        Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
+        pSite.Save(xmlOutputPath)
+    End Sub
+
+    Private Sub ReloadLastAnalysis(ByVal lastAnalysis As PseudoSite)
+        If lastAnalysis IsNot Nothing Then
+            TxtSiteName.Text = lastAnalysis.SiteName
+            If lastAnalysis.UseElevation Then
+                CkElev.Checked = True
+                If lastAnalysis.ElevUnits = esriUnits.esriFeet Then
+                    LblElevRange.Text = "Desired Range (Feet)"
+                End If
+                txtLower.Text = CStr(lastAnalysis.LowerElev)
+                TxtUpperRange.Text = CStr(lastAnalysis.UpperElev)
+            End If
+        End If
+    End Sub
 End Class

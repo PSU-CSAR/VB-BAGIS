@@ -366,6 +366,7 @@
     <Compile Include="AOI\setPourPointtool.vb" />
     <Compile Include="Objects\Analysis.vb" />
     <Compile Include="Objects\AreaStatistics.vb" />
+    <Compile Include="Objects\PseudoSite.vb" />
     <Compile Include="Objects\LayerDownload.vb" />
     <Compile Include="Objects\Settings.vb" />
     <Compile Include="Objects\Site.vb" />
