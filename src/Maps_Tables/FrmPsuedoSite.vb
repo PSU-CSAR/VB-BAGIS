@@ -368,6 +368,13 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub CmdPrism_Click(sender As System.Object, e As System.EventArgs) Handles CmdPrism.Click
+        ' Create/configure a step progressor
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 15)
+        pStepProg.Show()
+        ' Create/configure the ProgressDialog. This automatically displays the dialog
+        Dim progressDialog2 As IProgressDialog2 = BA_GetProgressDialog(pStepProg, "Calculating PRISM precipitation values", "Calculating...")
+        progressDialog2.ShowDialog()
+
         m_precipFolder = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True)
         If CmboxPrecipType.SelectedIndex = 0 Then  'read direct Annual PRISM raster
             m_precipFile = AOIPrismFolderNames.annual.ToString
@@ -390,6 +397,13 @@ Public Class FrmPsuedoSite
         txtMinPrecip.Text = Math.Round(pRasterStats.Minimum - 0.005, 2)
         txtMaxPrecip.Text = Math.Round(pRasterStats.Maximum + 0.005, 2)
         txtRangePrecip.Text = Val(txtMaxPrecip.Text) - Val(txtMinPrecip.Text)
+
+        If progressDialog2 IsNot Nothing Then
+            progressDialog2.HideDialog()
+        End If
+        progressDialog2 = Nothing
+        pStepProg = Nothing
+
     End Sub
 
     Private Sub CmboxPrecipType_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles CmboxPrecipType.SelectedIndexChanged
@@ -634,6 +648,39 @@ Public Class FrmPsuedoSite
                 End If
                 txtLower.Text = CStr(lastAnalysis.LowerElev)
                 TxtUpperRange.Text = CStr(lastAnalysis.UpperElev)
+            End If
+            If lastAnalysis.UsePrism Then
+                CkPrecip.Checked = True
+                CmboxPrecipType.SelectedIndex = lastAnalysis.PrecipTypeIdx
+                If CmboxPrecipType.SelectedIndex = 5 Then
+                    lblBeginMonth.Enabled = True
+                    CmboxBegin.Enabled = True
+                    CmboxBegin.SelectedIndex = lastAnalysis.PrecipBeginIdx
+                    lblEndMonth.Enabled = True
+                    CmboxEnd.Enabled = True
+                    CmboxEnd.SelectedIndex = lastAnalysis.PrecipEndIdx
+                Else
+                    lblBeginMonth.Enabled = False
+                    CmboxBegin.Enabled = False
+                    lblEndMonth.Enabled = False
+                    CmboxEnd.Enabled = False
+                End If
+                TxtPrecipLower.Text = CStr(lastAnalysis.LowerPrecip)
+                TxtPrecipUpper.Text = CStr(lastAnalysis.UpperPrecip)
+                CmdPrism_Click(Me, EventArgs.Empty)
+            End If
+            If lastAnalysis.UseProximity = True Then
+                CkProximity.Checked = True
+                For Each item As LayerListItem In LstVectors.Items
+                    If item.Name.Equals(lastAnalysis.ProximityLayer) Then
+                        LstVectors.SelectedItem = item
+                        Exit For
+                    End If
+                Next
+                If lastAnalysis.BufferUnits = esriUnits.esriFeet Then
+                    LblElevRange.Text = "Buffer Distance (Feet):"
+                End If
+                txtBufferDistance.Text = CStr(lastAnalysis.BufferDistance)
             End If
         End If
     End Sub

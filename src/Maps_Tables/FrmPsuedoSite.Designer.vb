@@ -113,7 +113,6 @@ Partial Class FrmPsuedoSite
         Me.txtBufferDistance.Name = "txtBufferDistance"
         Me.txtBufferDistance.Size = New System.Drawing.Size(41, 20)
         Me.txtBufferDistance.TabIndex = 71
-        Me.txtBufferDistance.Text = "500"
         Me.txtBufferDistance.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'CkElev
@@ -567,8 +566,6 @@ Partial Class FrmPsuedoSite
         'CkProximity
         '
         Me.CkProximity.AutoSize = True
-        Me.CkProximity.Checked = True
-        Me.CkProximity.CheckState = System.Windows.Forms.CheckState.Checked
         Me.CkProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CkProximity.Location = New System.Drawing.Point(19, 338)
         Me.CkProximity.Name = "CkProximity"
