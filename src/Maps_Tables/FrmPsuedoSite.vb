@@ -229,6 +229,24 @@ Public Class FrmPsuedoSite
                 MessageBox.Show("No psuedo-sites were found. Please double-check your selection criteria")
             ElseIf numSites > 1 Then
                 MessageBox.Show(numSites & " pseudo-sites were found. Right now BAGIS only knows how to deal with one so it will pick the first one.")
+                'Delete all sites except the first one
+                Dim strSelect As String = " " + BA_FIELD_OBJECT_ID + " > 1"
+                success = BA_DeleteFeatures(m_analysisFolder, m_siteFileName, strSelect)
+            End If
+
+            'Create new psuedo_sites file or append auto-site to existing
+            pStepProg.Message = "Integrating new pseudo-site into site selection layers"
+            pStepProg.Step()
+            success = PreparePointFileToAppend(snapRasterPath)
+            If success = BA_ReturnCode.Success Then
+                Dim pseudoPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) + BA_EnumDescription(MapsFileName.Pseudo)
+                If BA_File_Exists(pseudoPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                    success = BA_AppendFeatures(m_analysisFolder + "\" + m_siteFileName, pseudoPath)
+                Else
+                    success = BA_CopyFeatures(m_analysisFolder + "\" + m_siteFileName, pseudoPath)
+                End If
+            Else
+                MessageBox.Show("An error occurred while trying to process the new pseudo-site layer!")
             End If
 
             BtnMap.Enabled = True
@@ -592,6 +610,7 @@ Public Class FrmPsuedoSite
             success = BA_Erase(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + m_aoiBoundary, _
                                outFeaturesPath, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & _
                                m_proximityLayer)
+            BA_Remove_ShapefileFromGDB(m_analysisFolder, "tmpBuffer")
         End If
         If Not success = BA_ReturnCode.Success Then
             MessageBox.Show("An error occurred while generating the proximity layer. It will not be used in analysis")
@@ -684,4 +703,61 @@ Public Class FrmPsuedoSite
             End If
         End If
     End Sub
+
+    Public Function PreparePointFileToAppend(ByVal snapRasterPath As String) As BA_ReturnCode
+        Dim fClass As IFeatureClass = Nothing
+        Dim aField As IField = Nothing
+        Dim aCursor As IFeatureCursor = Nothing
+        Dim aFeature As IFeature = Nothing
+        Try
+            '1. Delete any fields that aren't shape or objectid
+            fClass = BA_OpenFeatureClassFromGDB(m_analysisFolder, m_siteFileName)
+            If fClass IsNot Nothing Then
+                For i As Short = fClass.Fields.FieldCount - 1 To 0 Step -1
+                    aField = fClass.Fields.Field(i)
+                    Select Case aField.Name
+                        Case BA_FIELD_OBJECT_ID
+                            'Do nothing
+                        Case BA_FIELD_SHAPE
+                            'Do nothing
+                        Case Else
+                            fClass.DeleteField(aField)
+                    End Select
+                Next
+            End If
+            '2. Calculate site elevation: Use extract values to points
+            Dim filledDemPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
+            Dim tempFileName As String = "tmpExtract"
+            Dim success As BA_ReturnCode = BA_ExtractValuesToPoints(m_analysisFolder + "\" + m_siteFileName, filledDemPath, _
+                                                                    m_analysisFolder + "\" + tempFileName, snapRasterPath, False)
+            If success = BA_ReturnCode.Success Then
+                Dim elev As Double = 9999.0
+                fClass = BA_OpenFeatureClassFromGDB(m_analysisFolder, tempFileName)
+                Dim idxElev As Short = fClass.Fields.FindField(BA_RasterValu)
+                If idxElev > -1 Then
+                    aCursor = fClass.Search(Nothing, False)
+                    aFeature = aCursor.NextFeature
+                    If aFeature IsNot Nothing Then
+                        elev = Convert.ToDouble(aFeature.Value(idxElev))
+                    End If
+                End If
+                BA_Remove_ShapefileFromGDB(m_analysisFolder, tempFileName)
+                '3. Updates the site attributes
+                'Only 1 site; Site id is always 1
+                '@ToDo: Add validation to site name; No spaces
+                Dim newSite As Site = New Site(1, TxtSiteName.Text, SiteType.Pseudo, elev, False)
+                success = BA_UpdatePseudoSiteAttributes(m_analysisFolder, m_siteFileName, 1, newSite)
+            End If
+            Return success
+        Catch ex As Exception
+            Debug.Print("PreparePointFileToAppend: " & ex.Message)
+        Finally
+            fClass = Nothing
+            aField = Nothing
+            aCursor = Nothing
+            aFeature = Nothing
+            GC.WaitForPendingFinalizers()
+            GC.Collect()
+        End Try
+    End Function
 End Class
