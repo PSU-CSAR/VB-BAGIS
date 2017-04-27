@@ -20,6 +20,7 @@ Public Class FrmPsuedoSite
     Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
     Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
+    Private m_lastAnalysis As PseudoSite = Nothing
 
     Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits)
 
@@ -116,11 +117,11 @@ Public Class FrmPsuedoSite
 
         'Check for previously saved scenario and load those values as defaults
         Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
-        Dim lastAnalysis As PseudoSite = Nothing
+
         ' Open analysis file if there is one
         If BA_File_ExistsWindowsIO(xmlOutputPath) Then
-            lastAnalysis = BA_LoadPseudoSiteFromXml(AOIFolderBase)
-            ReloadLastAnalysis(lastAnalysis)
+            m_lastAnalysis = BA_LoadPseudoSiteFromXml(AOIFolderBase)
+            ReloadLastAnalysis(m_lastAnalysis)
             BtnMap.Enabled = True
         End If
 
@@ -238,13 +239,23 @@ Public Class FrmPsuedoSite
             'Create new psuedo_sites file or append auto-site to existing
             pStepProg.Message = "Integrating new pseudo-site into site selection layers"
             pStepProg.Step()
-            success = PreparePointFileToAppend(snapRasterPath)
-            If success = BA_ReturnCode.Success Then
+            Dim newSite As Site = PreparePointFileToAppend(snapRasterPath)
+            If newSite IsNot Nothing Then
                 Dim pseudoPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) + BA_EnumDescription(MapsFileName.Pseudo)
                 If BA_File_Exists(pseudoPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
                     success = BA_AppendFeatures(m_analysisFolder + "\" + m_siteFileName, pseudoPath)
                 Else
                     success = BA_CopyFeatures(m_analysisFolder + "\" + m_siteFileName, pseudoPath)
+                End If
+
+                If success = BA_ReturnCode.Success Then
+                    'Adds the sites to 'existing sites' on the form
+                    Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of frmSiteScenario.AddinImpl)(My.ThisAddIn.IDs.frmSiteScenario)
+                    Dim siteScenarioForm As frmSiteScenario = dockWindowAddIn.UI
+                    siteScenarioForm.AddNewPseudoSite(newSite)
+
+                    'Set the global variable for pseudo-sites to true
+                    AOI_HasPseudoSite = True
                 End If
             Else
                 MessageBox.Show("An error occurred while trying to process the new pseudo-site layer!")
@@ -475,9 +486,11 @@ Public Class FrmPsuedoSite
         Try
             'Elevation if it exists
             Dim filepathname As String = m_analysisFolder & "\" & m_elevLayer
-            If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                pColor.RGB = RGB(115, 178, 115) 'green
-                success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, pColor, 30)
+            If m_lastAnalysis.UseElevation Then
+                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                    pColor.RGB = RGB(115, 178, 115) 'green
+                    success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, pColor, 30)
+                End If
             End If
 
             'Scenario 2 Represented area
@@ -491,10 +504,12 @@ Public Class FrmPsuedoSite
             success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_REPRESENTED, pColor, 30)
 
             'Proximity if it exists
-            filepathname = m_analysisFolder & "\" & m_proximityLayer
-            If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                pColor.RGB = RGB(255, 165, 0) 'orange
-                success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_PROXIMITY, pColor, 30)
+            If m_lastAnalysis.UseProximity Then
+                filepathname = m_analysisFolder & "\" & m_proximityLayer
+                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                    pColor.RGB = RGB(255, 165, 0) 'orange
+                    success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_PROXIMITY, pColor, 30)
+                End If
             End If
 
             'add aoi boundary and zoom to AOI
@@ -636,26 +651,26 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub SavePseudoSiteLog()
-        Dim pSite As PseudoSite = New PseudoSite(TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked)
+        m_lastAnalysis = New PseudoSite(TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked)
         'Save Elevation data
-        If pSite.UseElevation Then
+        If m_lastAnalysis.UseElevation Then
             Dim elevUnits As esriUnits = esriUnits.esriMeters
             If m_usingElevMeters = False Then _
                 elevUnits = esriUnits.esriFeet
-            pSite.ElevationProperties(elevUnits, CDbl(txtLower.Text), CDbl(TxtUpperRange.Text))
+            m_lastAnalysis.ElevationProperties(elevUnits, CDbl(txtLower.Text), CDbl(TxtUpperRange.Text))
         End If
         'Save Prism settings
-        If pSite.UsePrism Then
-            pSite.PrismProperties(CmboxPrecipType.SelectedIndex, CmboxBegin.SelectedIndex, CmboxEnd.SelectedIndex, _
+        If m_lastAnalysis.UsePrism Then
+            m_lastAnalysis.PrismProperties(CmboxPrecipType.SelectedIndex, CmboxBegin.SelectedIndex, CmboxEnd.SelectedIndex, _
                                   CDbl(TxtPrecipLower.Text), CDbl(TxtPrecipUpper.Text))
         End If
         'Save Proximity settings
-        If pSite.UseProximity Then
+        If m_lastAnalysis.UseProximity Then
             Dim item As LayerListItem = LstVectors.SelectedItem
-            pSite.ProximityProperties(m_usingXYUnits, item.Name, CDbl(txtBufferDistance.Text))
+            m_lastAnalysis.ProximityProperties(m_usingXYUnits, item.Name, CDbl(txtBufferDistance.Text))
         End If
         Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
-        pSite.Save(xmlOutputPath)
+        m_lastAnalysis.Save(xmlOutputPath)
     End Sub
 
     Private Sub ReloadLastAnalysis(ByVal lastAnalysis As PseudoSite)
@@ -705,7 +720,7 @@ Public Class FrmPsuedoSite
         End If
     End Sub
 
-    Public Function PreparePointFileToAppend(ByVal snapRasterPath As String) As BA_ReturnCode
+    Public Function PreparePointFileToAppend(ByVal snapRasterPath As String) As Site
         Dim fClass As IFeatureClass = Nothing
         Dim aField As IField = Nothing
         Dim aCursor As IFeatureCursor = Nothing
@@ -731,6 +746,7 @@ Public Class FrmPsuedoSite
             Dim tempFileName As String = "tmpExtract"
             Dim success As BA_ReturnCode = BA_ExtractValuesToPoints(m_analysisFolder + "\" + m_siteFileName, filledDemPath, _
                                                                     m_analysisFolder + "\" + tempFileName, snapRasterPath, False)
+            Dim newSite As Site = Nothing
             If success = BA_ReturnCode.Success Then
                 Dim elev As Double = 9999.0
                 fClass = BA_OpenFeatureClassFromGDB(m_analysisFolder, tempFileName)
@@ -745,13 +761,13 @@ Public Class FrmPsuedoSite
                 BA_Remove_ShapefileFromGDB(m_analysisFolder, tempFileName)
                 '3. Updates the site attributes
                 'Only 1 site; Site id is always 1
-                '@ToDo: Add validation to site name; No spaces
-                Dim newSite As Site = New Site(1, TxtSiteName.Text, SiteType.Pseudo, elev, False)
+                newSite = New Site(1, TxtSiteName.Text, SiteType.Pseudo, elev, False)
                 success = BA_UpdatePseudoSiteAttributes(m_analysisFolder, m_siteFileName, 1, newSite)
             End If
-            Return success
+            Return newSite
         Catch ex As Exception
             Debug.Print("PreparePointFileToAppend: " & ex.Message)
+            Return Nothing
         Finally
             fClass = Nothing
             aField = Nothing
