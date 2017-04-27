@@ -1802,24 +1802,34 @@ ErrorHandler:
     '    Return pClippedRaster
     'End Function
 
-    Public Function Smooth(ByVal pRaster As IGeoDataset2, height As Double, width As Double) As IGeoDataset2
+    Public Function Smooth(ByVal pRaster As IGeoDataset2, height As Double, width As Double, ByVal workspaceFolder As String) As IGeoDataset2
         ' Declare Variables
         Dim pNBOp As INeighborhoodOp = New RasterNeighborhoodOp
         Dim pSmooth As IGeoDataset2 = Nothing
         Dim pNB As IRasterNeighborhood = New RasterNeighborhood
-
+        Dim workspaceFactory As IWorkspaceFactory = New RasterWorkspaceFactory()
+        Dim workspace As IWorkspace = Nothing
+        Dim pEnv As IRasterAnalysisEnvironment = Nothing
         pNB.SetRectangle(width, height, ESRI.ArcGIS.GeoAnalyst.esriGeoAnalysisUnitsEnum.esriUnitsCells)
 
         Try
-            ' Create HydrologyOP and Complete Function
+            'Set scratch workspace
+            pEnv = CType(pNBOp, IRasterAnalysisEnvironment)  ' Explicit cast
+            workspace = workspaceFactory.OpenFromFile(workspaceFolder, 0)
+            pEnv.OutWorkspace = workspace
+
+            ' Complete Function
             pSmooth = pNBOp.FocalStatistics(pRaster, ESRI.ArcGIS.GeoAnalyst.esriGeoAnalysisStatisticsEnum.esriGeoAnalysisStatsMean, pNB, True)
 
         Catch ex As Exception
             MsgBox("Smooth Exception: " & ex.Message)
-
         Finally
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pNB)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pNBOp)
+            pNBOp = Nothing
+            pNB = Nothing
+            workspace = Nothing
+            pEnv = Nothing
+            GC.WaitForPendingFinalizers()
+            GC.Collect()
         End Try
 
         Return pSmooth

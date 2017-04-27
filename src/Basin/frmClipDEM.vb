@@ -175,7 +175,7 @@ Public Class frmClipDEMtoAOI
                 End If
 
                 Dim ptempDEM As IGeoDataset2 = BA_OpenRasterFromGDB(destSurfGDB, "tempdem")
-                pClippedDEM = Smooth(ptempDEM, Val(txtHeight.Text), Val(txtWidth.Text))
+                pClippedDEM = Smooth(ptempDEM, Val(txtHeight.Text), Val(txtWidth.Text), BasinFolderBase)
                 ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(ptempDEM)
 
                 If pClippedDEM Is Nothing Then 'no dem within the selected area
