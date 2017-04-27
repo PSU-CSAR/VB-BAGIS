@@ -112,6 +112,7 @@ Public Class FrmPsuedoSite
 
         SuggestSiteName()
         LoadLstLayers()
+        BA_SetDefaultProjection(My.ArcMap.Application)
 
         'Check for previously saved scenario and load those values as defaults
         Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
