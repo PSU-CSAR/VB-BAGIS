@@ -123,6 +123,7 @@ Public Class FrmPsuedoSite
             m_lastAnalysis = BA_LoadPseudoSiteFromXml(AOIFolderBase)
             ReloadLastAnalysis(m_lastAnalysis)
             BtnMap.Enabled = True
+            BtnFindSite.Enabled = False
         End If
 
     End Sub
@@ -292,14 +293,17 @@ Public Class FrmPsuedoSite
 
     Private Sub CkElev_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkElev.CheckedChanged
         GrpElevation.Enabled = CkElev.Checked
+        RaiseEvent FormInputChanged()
     End Sub
 
     Private Sub CkPrecip_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkPrecip.CheckedChanged
         GrpPrecipitation.Enabled = CkPrecip.Checked
+        RaiseEvent FormInputChanged()
     End Sub
 
     Private Sub CkProximity_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkProximity.CheckedChanged
         GrpProximity.Enabled = CkProximity.Checked
+        RaiseEvent FormInputChanged()
     End Sub
 
     Private Sub BtnClose_Click(sender As Object, e As System.EventArgs) Handles BtnClose.Click
@@ -361,6 +365,7 @@ Public Class FrmPsuedoSite
     End Function
 
     Private Sub txtLower_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtLower.Validating
+        RaiseEvent FormInputChanged()
         Dim sb As StringBuilder = New StringBuilder()
         Dim comps As Double
         Dim minElev As Double = CDbl(txtMinElev.Text)
@@ -386,6 +391,7 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub TxtUpperRange_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtUpperRange.Validating
+        RaiseEvent FormInputChanged()
         Dim sb As StringBuilder = New StringBuilder()
         Dim comps As Double
         Dim maxElev As Double = CDbl(TxtMaxElev.Text)
@@ -450,6 +456,7 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub CmboxPrecipType_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles CmboxPrecipType.SelectedIndexChanged
+        RaiseEvent FormInputChanged()
         If CmboxPrecipType.SelectedIndex = 5 Then
             lblBeginMonth.Enabled = True
             CmboxBegin.Enabled = True
@@ -650,15 +657,19 @@ Public Class FrmPsuedoSite
     Private Sub SuggestSiteName()
         Dim psuedoList As IList(Of Site) = BA_ReadSiteAttributes(SiteType.Pseudo)
         Dim pSitePrefix As String = "pseudo_site_"
-        Dim pSiteId As Short = 1
+        Dim pSiteId As Short = 0
+        Dim bName As Boolean = False
         If psuedoList.Count > 0 Then
-            For Each pSite As Site In psuedoList
-                If pSite.Name.Equals(pSitePrefix & pSiteId) Then
-                    pSiteId += 1
-                Else
-                    Exit For
-                End If
-            Next
+            Do While bName = False
+                pSiteId += 1
+                bName = True
+                For Each pSite As Site In psuedoList
+                    If pSite.Name.Equals(pSitePrefix & pSiteId) Then
+                        bName = False
+                        Exit For
+                    End If
+                Next
+            Loop
         End If
         TxtSiteName.Text = pSitePrefix & pSiteId
     End Sub
@@ -818,4 +829,58 @@ Public Class FrmPsuedoSite
             Return -1
         End Try
     End Function
+
+    Public Event FormInputChanged()
+
+    Protected Sub Form_InputChanged() Handles Me.FormInputChanged
+        BtnMap.Enabled = False
+        BtnFindSite.Enabled = True
+    End Sub
+
+    Private Sub TxtSiteName_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtSiteName.Validating
+
+        RaiseEvent FormInputChanged()
+    End Sub
+
+    Private Sub CmboxBegin_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles CmboxBegin.SelectedIndexChanged
+        RaiseEvent FormInputChanged()
+    End Sub
+
+    Private Sub CmboxEnd_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles CmboxEnd.SelectedIndexChanged
+        RaiseEvent FormInputChanged()
+    End Sub
+
+    Private Sub TxtPrecipUpper_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtPrecipUpper.Validating
+        RaiseEvent FormInputChanged()
+    End Sub
+
+    Private Sub TxtPrecipLower_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtPrecipLower.Validating
+        RaiseEvent FormInputChanged()
+    End Sub
+
+    Private Sub LstVectors_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstVectors.SelectedIndexChanged
+        RaiseEvent FormInputChanged()
+    End Sub
+
+    Private Sub txtBufferDistance_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtBufferDistance.Validating
+        RaiseEvent FormInputChanged()
+    End Sub
+
+    Private Sub BtnClear_Click(sender As System.Object, e As System.EventArgs) Handles BtnClear.Click
+        SuggestSiteName()
+        CkElev.Checked = False
+        txtLower.Text = Nothing
+        TxtUpperRange.Text = Nothing
+        CkPrecip.Checked = False
+        CmboxPrecipType.SelectedIndex = 0
+        CmboxBegin.SelectedIndex = 0
+        CmboxEnd.SelectedIndex = 0
+        txtMinPrecip.Text = "-"
+        txtMaxPrecip.Text = "-"
+        TxtPrecipLower.Text = Nothing
+        TxtPrecipUpper.Text = Nothing
+        CkProximity.Checked = False
+        LstVectors.ClearSelected()
+        txtBufferDistance.Text = Nothing
+    End Sub
 End Class

@@ -69,6 +69,7 @@ Partial Class FrmPsuedoSite
         Me.BtnMap = New System.Windows.Forms.Button()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.TxtSiteName = New System.Windows.Forms.TextBox()
+        Me.BtnClear = New System.Windows.Forms.Button()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
@@ -576,7 +577,7 @@ Partial Class FrmPsuedoSite
         'BtnFindSite
         '
         Me.BtnFindSite.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnFindSite.Location = New System.Drawing.Point(332, 423)
+        Me.BtnFindSite.Location = New System.Drawing.Point(260, 423)
         Me.BtnFindSite.Name = "BtnFindSite"
         Me.BtnFindSite.Size = New System.Drawing.Size(93, 23)
         Me.BtnFindSite.TabIndex = 83
@@ -598,7 +599,7 @@ Partial Class FrmPsuedoSite
         '
         Me.BtnMap.Enabled = False
         Me.BtnMap.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnMap.Location = New System.Drawing.Point(224, 423)
+        Me.BtnMap.Location = New System.Drawing.Point(155, 423)
         Me.BtnMap.Name = "BtnMap"
         Me.BtnMap.Size = New System.Drawing.Size(93, 23)
         Me.BtnMap.TabIndex = 84
@@ -626,11 +627,23 @@ Partial Class FrmPsuedoSite
         Me.TxtSiteName.Size = New System.Drawing.Size(168, 22)
         Me.TxtSiteName.TabIndex = 86
         '
+        'BtnClear
+        '
+        Me.BtnClear.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnClear.Location = New System.Drawing.Point(365, 423)
+        Me.BtnClear.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnClear.Name = "BtnClear"
+        Me.BtnClear.Size = New System.Drawing.Size(65, 22)
+        Me.BtnClear.TabIndex = 87
+        Me.BtnClear.Text = "Clear"
+        Me.BtnClear.UseVisualStyleBackColor = True
+        '
         'FrmPsuedoSite
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(561, 472)
+        Me.Controls.Add(Me.BtnClear)
         Me.Controls.Add(Me.TxtSiteName)
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.BtnMap)
@@ -704,4 +717,5 @@ Partial Class FrmPsuedoSite
     Friend WithEvents BtnMap As System.Windows.Forms.Button
     Friend WithEvents Label2 As System.Windows.Forms.Label
     Friend WithEvents TxtSiteName As System.Windows.Forms.TextBox
+    Friend WithEvents BtnClear As System.Windows.Forms.Button
 End Class
