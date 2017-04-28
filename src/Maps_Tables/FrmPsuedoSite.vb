@@ -249,38 +249,45 @@ Public Class FrmPsuedoSite
                 End If
 
                 If success = BA_ReturnCode.Success Then
-                    'Adds the sites to 'existing sites' on the form
-                    Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of frmSiteScenario.AddinImpl)(My.ThisAddIn.IDs.frmSiteScenario)
-                    Dim siteScenarioForm As frmSiteScenario = dockWindowAddIn.UI
-                    siteScenarioForm.AddNewPseudoSite(newSite)
+                    'Query the OID of the new site
+                    Dim siteObjectId As Integer = GetNewSiteObjectId(newSite.Elevation)
+                    If siteObjectId > 0 Then
+                        newSite.ObjectId = siteObjectId
+                        'Adds the sites to 'existing sites' on the form
+                        Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of frmSiteScenario.AddinImpl)(My.ThisAddIn.IDs.frmSiteScenario)
+                        Dim siteScenarioForm As frmSiteScenario = dockWindowAddIn.UI
+                        siteScenarioForm.AddNewPseudoSite(newSite)
 
-                    'Set the global variable for pseudo-sites to true
-                    AOI_HasPseudoSite = True
+                        'Set the global variable for pseudo-sites to true
+                        AOI_HasPseudoSite = True
+                    Else
+                        MessageBox.Show("Unable to add psuedo-site to Site Scenario Tool. Reload Site Scenario Tool")
+                    End If
                 End If
-            Else
-                MessageBox.Show("An error occurred while trying to process the new pseudo-site layer!")
+                Else
+                    MessageBox.Show("An error occurred while trying to process the new pseudo-site layer!")
+                End If
+
+                BtnMap.Enabled = True
+
+                'Delete the layers we don't need to keep for the map
+                BA_Remove_ShapefileFromGDB(m_analysisFolder, unionFileName)
+                BA_RemoveRasterFromGDB(m_analysisFolder, distanceFileName)
+                BA_RemoveRasterFromGDB(m_analysisFolder, furthestPixelFileName)
             End If
 
-            BtnMap.Enabled = True
+            If success = BA_ReturnCode.Success Then
+                pStepProg.Message = "Saving pseudo-site log"
+                pStepProg.Step()
+                SavePseudoSiteLog()
+            End If
 
-            'Delete the layers we don't need to keep for the map
-            BA_Remove_ShapefileFromGDB(m_analysisFolder, unionFileName)
-            BA_RemoveRasterFromGDB(m_analysisFolder, distanceFileName)
-            BA_RemoveRasterFromGDB(m_analysisFolder, furthestPixelFileName)
-        End If
-
-        If success = BA_ReturnCode.Success Then
-            pStepProg.Message = "Saving pseudo-site log"
-            pStepProg.Step()
-            SavePseudoSiteLog()
-        End If
-
-        If progressDialog2 IsNot Nothing Then
-            progressDialog2.HideDialog()
-        End If
-        BtnFindSite.Enabled = True
-        progressDialog2 = Nothing
-        pStepProg = Nothing
+            If progressDialog2 IsNot Nothing Then
+                progressDialog2.HideDialog()
+            End If
+            BtnFindSite.Enabled = True
+            progressDialog2 = Nothing
+            pStepProg = Nothing
     End Sub
 
     Private Sub CkElev_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkElev.CheckedChanged
@@ -357,7 +364,10 @@ Public Class FrmPsuedoSite
         Dim sb As StringBuilder = New StringBuilder()
         Dim comps As Double
         Dim minElev As Double = CDbl(txtMinElev.Text)
-        Dim upperElev As Double = CDbl(TxtUpperRange.Text)
+        Dim upperElev As Double = 99999
+        If Not String.IsNullOrEmpty(TxtUpperRange.Text) Then
+            upperElev = CDbl(TxtUpperRange.Text)
+        End If
         'tryparse fails, doesn't get into comps < 0 comparison
         If Double.TryParse(txtLower.Text, comps) Then
             If comps < minElev Then
@@ -379,7 +389,10 @@ Public Class FrmPsuedoSite
         Dim sb As StringBuilder = New StringBuilder()
         Dim comps As Double
         Dim maxElev As Double = CDbl(TxtMaxElev.Text)
-        Dim lowerRange As Double = CDbl(txtLower.Text)
+        Dim lowerRange As Double = 0
+        If Not String.IsNullOrEmpty(txtLower.Text) Then
+            lowerRange = CDbl(txtLower.Text)
+        End If
         'tryparse fails, doesn't get into comps < 0 comparison
         If Double.TryParse(TxtUpperRange.Text, comps) Then
             If comps < lowerRange Then
@@ -775,6 +788,34 @@ Public Class FrmPsuedoSite
             aFeature = Nothing
             GC.WaitForPendingFinalizers()
             GC.Collect()
+        End Try
+    End Function
+
+    Public Function GetNewSiteObjectId(ByVal siteElev As Double) As Integer
+        Dim fClass As IFeatureClass = Nothing
+        Dim aCursor As IFeatureCursor = Nothing
+        Dim aFeature As IFeature = Nothing
+        Dim aQueryFilter As IQueryFilter = New QueryFilter()
+        Try
+            Dim objectId As Integer = -1
+            fClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), BA_EnumDescription(MapsFileName.Pseudo))
+            Dim idxOid As Short = fClass.Fields.FindField(BA_FIELD_OBJECT_ID)
+            aQueryFilter.WhereClause = " " & BA_SiteNameField & " = '" & TxtSiteName.Text & _
+                                       " ' and " & BA_SiteElevField & " = " & siteElev
+            If idxOid > -1 Then
+                aCursor = fClass.Search(Nothing, False)
+                aFeature = aCursor.NextFeature
+                Do While aFeature IsNot Nothing
+                    If aFeature IsNot Nothing Then
+                        objectId = Convert.ToInt16(aFeature.Value(idxOid))
+                    End If
+                    aFeature = aCursor.NextFeature
+                Loop
+            End If
+            Return objectId
+        Catch ex As Exception
+            Debug.Print("GetNewSiteObjectId: " & ex.Message)
+            Return -1
         End Try
     End Function
 End Class
