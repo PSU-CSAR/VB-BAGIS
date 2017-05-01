@@ -5,6 +5,7 @@ Imports BAGIS_ClassLibrary
 Public Class PseudoSite
     Inherits SerializableData
 
+    Dim m_objectId As Integer
     Dim m_dateCreated As DateTime
     Dim m_siteName As String
     Dim m_useElev As Boolean
@@ -27,13 +28,24 @@ Public Class PseudoSite
         MyBase.New()
     End Sub
 
-    Sub New(ByVal siteName As String, ByVal useElevation As Boolean, ByVal usePrism As Boolean, ByVal useProximity As Boolean)
+    Sub New(ByVal objectId As Integer, ByVal siteName As String, ByVal useElevation As Boolean, ByVal usePrism As Boolean, _
+            ByVal useProximity As Boolean)
+        m_objectId = objectId
         m_siteName = siteName
         m_useElev = useElevation
         m_usePrism = usePrism
         m_useProximity = useProximity
         m_dateCreated = DateAndTime.Now
     End Sub
+
+    Public Property ObjectId() As Integer
+        Get
+            Return m_objectId
+        End Get
+        Set(ByVal value As Integer)
+            m_objectId = value
+        End Set
+    End Property
 
     Public Property DateCreated() As DateTime
         Get

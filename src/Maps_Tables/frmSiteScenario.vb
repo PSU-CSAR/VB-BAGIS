@@ -47,6 +47,7 @@ Public Class frmSiteScenario
     Protected Shared m_CurrentAOI As String = ""
     Private m_baseLayers As Boolean = False
     Private m_btnCalculateMessage As Boolean = True
+    Private m_lastAnalysisTimeStamp As DateTime
     'Identify dgv column indexes
     Friend idxSelected As Integer = 0
     Friend idxObjectId As Integer = 1
@@ -358,7 +359,7 @@ Public Class frmSiteScenario
                 If fromElevUnits <> toElevUnits Then
                     Dim dblElevation As Double = converter.ConvertUnits(Convert.ToDouble(item.Cells(idxDefaultElevation).Value), fromElevUnits, toElevUnits)
                     item.Cells(idxElevation).Value = Math.Round(dblElevation)
-                 End If
+                End If
             End If
             '---add the row---
             Dim idxNewRow As Integer = GrdScenario1.Rows.Add(item)
@@ -1435,6 +1436,7 @@ Public Class frmSiteScenario
                                                     TxtScenario1.Text, TxtScenario2.Text)
         'Set date created
         thisAnalysis.DateCreated = DateAndTime.Now
+        m_lastAnalysisTimeStamp = thisAnalysis.DateCreated
         'Create scenario 1 sites array
         Dim sitesArr(GrdScenario1.Rows.Count - 1) As Site
         Dim i As Integer = 0
@@ -1518,6 +1520,7 @@ Public Class frmSiteScenario
             TxtReportTitle.Text = lastAnalysis.ReportTitle
             TxtScenario1.Text = lastAnalysis.Scenario1Title
             TxtScenario2.Text = lastAnalysis.Scenario2Title
+            m_lastAnalysisTimeStamp = lastAnalysis.DateCreated
         End If
     End Sub
 
@@ -2283,7 +2286,8 @@ Public Class frmSiteScenario
     End Sub
 
     Private Sub BtnAutoPseudo_Click(sender As System.Object, e As System.EventArgs) Handles BtnAutoPseudo.Click
-        Dim frmPseudo As FrmPsuedoSite = New FrmPsuedoSite(m_demInMeters, OptZMeters.Checked, m_oldBufferUnits)
+        Dim frmPseudo As FrmPsuedoSite = New FrmPsuedoSite(m_demInMeters, OptZMeters.Checked, _
+                                                           m_oldBufferUnits, m_lastAnalysisTimeStamp)
         frmPseudo.ShowDialog()
     End Sub
 End Class

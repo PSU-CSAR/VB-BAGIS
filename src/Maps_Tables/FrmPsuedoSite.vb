@@ -11,6 +11,7 @@ Imports ESRI.ArcGIS.Geodatabase
 Public Class FrmPsuedoSite
 
     Private m_analysisFolder As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
+    Private m_representedArea As String = BA_EnumDescription(MapsFileName.ActualRepresentedArea)
     Private m_precipFolder As String
     Private m_precipFile As String
     Private m_elevLayer As String = "ps_elev"
@@ -22,7 +23,8 @@ Public Class FrmPsuedoSite
     Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
     Private m_lastAnalysis As PseudoSite = Nothing
 
-    Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits)
+    Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits, _
+                   ByVal siteScenarioToolTimeStamp As DateTime)
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -121,7 +123,7 @@ Public Class FrmPsuedoSite
         ' Open analysis file if there is one
         If BA_File_ExistsWindowsIO(xmlOutputPath) Then
             m_lastAnalysis = BA_LoadPseudoSiteFromXml(AOIFolderBase)
-            ReloadLastAnalysis(m_lastAnalysis)
+            ReloadLastAnalysis(siteScenarioToolTimeStamp)
             BtnMap.Enabled = True
             BtnFindSite.Enabled = False
         End If
@@ -130,10 +132,10 @@ Public Class FrmPsuedoSite
 
     Private Sub BtnFindSite_Click(sender As System.Object, e As System.EventArgs) Handles BtnFindSite.Click
         '1. Check to make sure npactual exists before going further; It's a required layer
-        If Not BA_File_Exists(m_analysisFolder + "\" + BA_EnumDescription(MapsFileName.PseudoRepresentedArea), WorkspaceType.Geodatabase, _
+        If Not BA_File_Exists(m_analysisFolder + "\" + m_representedArea, WorkspaceType.Geodatabase, _
                               ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
 
-            MessageBox.Show("Unable to locate the Scenario 2 represented area from the site scenario tool. Cannot generate pseudo site.", _
+            MessageBox.Show("Unable to locate the Scenario 1 represented area. Calculate Scenario 1 using the Site Scenario tool and try again.", _
                             "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Exit Sub
         End If
@@ -156,7 +158,7 @@ Public Class FrmPsuedoSite
 
         'Use this to hold the list of layers that we send to the union tool
         Dim sb As StringBuilder = New StringBuilder()
-        sb.Append(m_analysisFolder + "\" + BA_EnumDescription(MapsFileName.PseudoRepresentedArea) + "; ")
+        sb.Append(m_analysisFolder + "\" + m_representedArea + "; ")
 
         ' Create/configure a step progressor
         Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 15)
@@ -226,6 +228,7 @@ Public Class FrmPsuedoSite
                                        m_analysisFolder + "\" + m_siteFileName, BA_FIELD_VALUE)
         End If
 
+        Dim siteObjectId As Integer = -1
         If success = BA_ReturnCode.Success Then
             Dim numSites As Int16 = BA_CountPolygons(m_analysisFolder, m_siteFileName, BA_FIELD_GRIDCODE_GDB)
             If numSites < 1 Then
@@ -251,7 +254,7 @@ Public Class FrmPsuedoSite
 
                 If success = BA_ReturnCode.Success Then
                     'Query the OID of the new site
-                    Dim siteObjectId As Integer = GetNewSiteObjectId(newSite.Elevation)
+                    siteObjectId = GetNewSiteObjectId(newSite.Elevation)
                     If siteObjectId > 0 Then
                         newSite.ObjectId = siteObjectId
                         'Adds the sites to 'existing sites' on the form
@@ -265,22 +268,22 @@ Public Class FrmPsuedoSite
                         MessageBox.Show("Unable to add psuedo-site to Site Scenario Tool. Reload Site Scenario Tool")
                     End If
                 End If
-                Else
-                    MessageBox.Show("An error occurred while trying to process the new pseudo-site layer!")
-                End If
-
-                BtnMap.Enabled = True
-
-                'Delete the layers we don't need to keep for the map
-                BA_Remove_ShapefileFromGDB(m_analysisFolder, unionFileName)
-                BA_RemoveRasterFromGDB(m_analysisFolder, distanceFileName)
-                BA_RemoveRasterFromGDB(m_analysisFolder, furthestPixelFileName)
+            Else
+                MessageBox.Show("An error occurred while trying to process the new pseudo-site layer!")
             End If
+
+            BtnMap.Enabled = True
+
+            'Delete the layers we don't need to keep for the map
+            BA_Remove_ShapefileFromGDB(m_analysisFolder, unionFileName)
+            BA_RemoveRasterFromGDB(m_analysisFolder, distanceFileName)
+            BA_RemoveRasterFromGDB(m_analysisFolder, furthestPixelFileName)
+        End If
 
             If success = BA_ReturnCode.Success Then
                 pStepProg.Message = "Saving pseudo-site log"
                 pStepProg.Step()
-                SavePseudoSiteLog()
+            SavePseudoSiteLog(siteObjectId)
             End If
 
             If progressDialog2 IsNot Nothing Then
@@ -514,7 +517,7 @@ Public Class FrmPsuedoSite
             End If
 
             'Scenario 2 Represented area
-            filepathname = m_analysisFolder & "\" & BA_EnumDescription(MapsFileName.PseudoRepresentedArea)
+            filepathname = m_analysisFolder & "\" & m_representedArea
             If Not BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
                 MessageBox.Show("Unable to locate the represented area from the site scenario tool. Cannot load map.", "Error", _
                      MessageBoxButtons.OK, MessageBoxIcon.Warning)
@@ -674,8 +677,8 @@ Public Class FrmPsuedoSite
         TxtSiteName.Text = pSitePrefix & pSiteId
     End Sub
 
-    Private Sub SavePseudoSiteLog()
-        m_lastAnalysis = New PseudoSite(TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked)
+    Private Sub SavePseudoSiteLog(ByVal objectId As Integer)
+        m_lastAnalysis = New PseudoSite(objectId, TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked)
         'Save Elevation data
         If m_lastAnalysis.UseElevation Then
             Dim elevUnits As esriUnits = esriUnits.esriMeters
@@ -697,49 +700,63 @@ Public Class FrmPsuedoSite
         m_lastAnalysis.Save(xmlOutputPath)
     End Sub
 
-    Private Sub ReloadLastAnalysis(ByVal lastAnalysis As PseudoSite)
-        If lastAnalysis IsNot Nothing Then
-            TxtSiteName.Text = lastAnalysis.SiteName
-            If lastAnalysis.UseElevation Then
+    Private Sub ReloadLastAnalysis(ByVal scenarioTimeStamp As DateTime)
+        If m_lastAnalysis IsNot Nothing Then
+            Dim sb As StringBuilder = New StringBuilder()
+            If m_lastAnalysis.DateCreated < scenarioTimeStamp Then
+                'Don't reload form because represented area could be wrong for previous analysis
+                Exit Sub
+            Else
+                sb.Append("BAGIS has loaded details for the previously generated pseudo-site. Use the ‘map’ button to view the pseudo-site and its supporting layers. ")
+                sb.Append(vbCrLf + vbCrLf)
+                sb.Append("If you wish to generate another pseudo-site, close this window and return to the Site Scenario Analysis tool. ")
+                sb.Append("Check the checkbox for this pseudo-site in the Scenario 1 grid on the form to include the site in future calculations. ")
+                sb.Append("Click the calculate button to generate a new analysis for the represented area.")
+            End If
+            TxtSiteName.Text = m_lastAnalysis.SiteName
+            If m_lastAnalysis.UseElevation Then
                 CkElev.Checked = True
-                If lastAnalysis.ElevUnits = esriUnits.esriFeet Then
+                If m_lastAnalysis.ElevUnits = esriUnits.esriFeet Then
                     LblElevRange.Text = "Desired Range (Feet)"
                 End If
-                txtLower.Text = CStr(lastAnalysis.LowerElev)
-                TxtUpperRange.Text = CStr(lastAnalysis.UpperElev)
+                txtLower.Text = CStr(m_lastAnalysis.LowerElev)
+                TxtUpperRange.Text = CStr(m_lastAnalysis.UpperElev)
             End If
-            If lastAnalysis.UsePrism Then
+            If m_lastAnalysis.UsePrism Then
                 CkPrecip.Checked = True
-                CmboxPrecipType.SelectedIndex = lastAnalysis.PrecipTypeIdx
+                CmboxPrecipType.SelectedIndex = m_lastAnalysis.PrecipTypeIdx
                 If CmboxPrecipType.SelectedIndex = 5 Then
                     lblBeginMonth.Enabled = True
                     CmboxBegin.Enabled = True
-                    CmboxBegin.SelectedIndex = lastAnalysis.PrecipBeginIdx
+                    CmboxBegin.SelectedIndex = m_lastAnalysis.PrecipBeginIdx
                     lblEndMonth.Enabled = True
                     CmboxEnd.Enabled = True
-                    CmboxEnd.SelectedIndex = lastAnalysis.PrecipEndIdx
+                    CmboxEnd.SelectedIndex = m_lastAnalysis.PrecipEndIdx
                 Else
                     lblBeginMonth.Enabled = False
                     CmboxBegin.Enabled = False
                     lblEndMonth.Enabled = False
                     CmboxEnd.Enabled = False
                 End If
-                TxtPrecipLower.Text = CStr(lastAnalysis.LowerPrecip)
-                TxtPrecipUpper.Text = CStr(lastAnalysis.UpperPrecip)
+                TxtPrecipLower.Text = CStr(m_lastAnalysis.LowerPrecip)
+                TxtPrecipUpper.Text = CStr(m_lastAnalysis.UpperPrecip)
                 CmdPrism_Click(Me, EventArgs.Empty)
             End If
-            If lastAnalysis.UseProximity = True Then
+            If m_lastAnalysis.UseProximity = True Then
                 CkProximity.Checked = True
                 For Each item As LayerListItem In LstVectors.Items
-                    If item.Name.Equals(lastAnalysis.ProximityLayer) Then
+                    If item.Name.Equals(m_lastAnalysis.ProximityLayer) Then
                         LstVectors.SelectedItem = item
                         Exit For
                     End If
                 Next
-                If lastAnalysis.BufferUnits = esriUnits.esriFeet Then
+                If m_lastAnalysis.BufferUnits = esriUnits.esriFeet Then
                     LblElevRange.Text = "Buffer Distance (Feet):"
                 End If
-                txtBufferDistance.Text = CStr(lastAnalysis.BufferDistance)
+                txtBufferDistance.Text = CStr(m_lastAnalysis.BufferDistance)
+            End If
+            If sb.Length > 0 Then
+                MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.Information)
             End If
         End If
     End Sub
