@@ -22,6 +22,7 @@ Public Class FrmPsuedoSite
     Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
     Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
     Private m_lastAnalysis As PseudoSite = Nothing
+    Private m_formLoaded As Boolean = False
 
     Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits, _
                    ByVal siteScenarioToolTimeStamp As DateTime)
@@ -128,6 +129,7 @@ Public Class FrmPsuedoSite
             BtnFindSite.Enabled = False
         End If
 
+        m_formLoaded = True
     End Sub
 
     Private Sub BtnFindSite_Click(sender As System.Object, e As System.EventArgs) Handles BtnFindSite.Click
@@ -279,7 +281,7 @@ Public Class FrmPsuedoSite
                 MessageBox.Show("An error occurred while trying to process the new pseudo-site layer!")
             End If
 
-            BtnMap.Enabled = True
+
 
             'Delete the layers we don't need to keep for the map
             BA_Remove_ShapefileFromGDB(m_analysisFolder, unionFileName)
@@ -297,7 +299,7 @@ Public Class FrmPsuedoSite
             progressDialog2.HideDialog()
         End If
         MessageBox.Show("The new pseudo-site has been added to Scenario 1 in the Site Scenario Tool")
-        BtnFindSite.Enabled = True
+        BtnMap.Enabled = True
         progressDialog2 = Nothing
         pStepProg = Nothing
     End Sub
@@ -873,11 +875,6 @@ Public Class FrmPsuedoSite
         BtnFindSite.Enabled = True
     End Sub
 
-    Private Sub TxtSiteName_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtSiteName.Validating
-
-        RaiseEvent FormInputChanged()
-    End Sub
-
     Private Sub CmboxBegin_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles CmboxBegin.SelectedIndexChanged
         RaiseEvent FormInputChanged()
     End Sub
@@ -947,5 +944,11 @@ Public Class FrmPsuedoSite
         CkProximity.Checked = False
         LstVectors.ClearSelected()
         txtBufferDistance.Text = Nothing
+    End Sub
+
+    Private Sub TxtSiteName_TextChanged(sender As Object, e As System.EventArgs) Handles TxtSiteName.TextChanged
+        If m_formLoaded = True Then
+            RaiseEvent FormInputChanged()
+        End If
     End Sub
 End Class
