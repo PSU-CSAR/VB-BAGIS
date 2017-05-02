@@ -625,6 +625,11 @@ Public Class frmSiteScenario
                 Dim res As DialogResult = MessageBox.Show(sb.ToString, "Delete site(s)", MessageBoxButtons.YesNo, _
                                                           MessageBoxIcon.Question)
                 If res = DialogResult.Yes Then
+                    Dim PsXmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
+                    Dim lastAutoSite As PseudoSite = Nothing
+                    If BA_File_ExistsWindowsIO(PsXmlOutputPath) Then
+                        lastAutoSite = BA_LoadPseudoSiteFromXml(AOIFolderBase)
+                    End If
                     Dim layersGdbPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers)
                     Dim success As BA_ReturnCode
                     For Each pSite As Site In deleteList
@@ -636,6 +641,10 @@ Public Class frmSiteScenario
                                 success = BA_DeleteSite(layersGdbPath, BA_EnumDescription(MapsFileName.SnowCourse), pSite)
                             Case SiteType.Pseudo
                                 success = BA_DeleteSite(layersGdbPath, BA_EnumDescription(MapsFileName.Pseudo), pSite)
+                                If lastAutoSite IsNot Nothing AndAlso _
+                                    pSite.ObjectId = lastAutoSite.ObjectId Then
+                                    BA_Remove_File(PsXmlOutputPath)
+                                End If
                         End Select
                         If success = BA_ReturnCode.Success Then
                             'Remove the site from Scenario 1 DataGridView

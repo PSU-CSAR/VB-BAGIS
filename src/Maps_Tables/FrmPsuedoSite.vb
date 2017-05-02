@@ -176,9 +176,16 @@ Public Class FrmPsuedoSite
         End If
 
         If CkProximity.Checked = True Then
-            success = GenerateProximityLayer(pStepProg)
-            If success = BA_ReturnCode.Success Then
-                sb.Append(m_analysisFolder + "\" + m_proximityLayer + "; ")
+            Dim errorMsg As String = ValidBufferDistance()
+            If Not String.IsNullOrEmpty(errorMsg) Then
+                txtBufferDistance.Select(0, txtBufferDistance.Text.Length)
+                errorMsg = errorMsg + " The proximity layer will not be used in analysis."
+                MessageBox.Show(errorMsg)
+            Else
+                success = GenerateProximityLayer(pStepProg)
+                If success = BA_ReturnCode.Success Then
+                    sb.Append(m_analysisFolder + "\" + m_proximityLayer + "; ")
+                End If
             End If
         End If
 
@@ -280,18 +287,19 @@ Public Class FrmPsuedoSite
             BA_RemoveRasterFromGDB(m_analysisFolder, furthestPixelFileName)
         End If
 
-            If success = BA_ReturnCode.Success Then
-                pStepProg.Message = "Saving pseudo-site log"
-                pStepProg.Step()
+        If success = BA_ReturnCode.Success Then
+            pStepProg.Message = "Saving pseudo-site log"
+            pStepProg.Step()
             SavePseudoSiteLog(siteObjectId)
-            End If
+        End If
 
-            If progressDialog2 IsNot Nothing Then
-                progressDialog2.HideDialog()
-            End If
-            BtnFindSite.Enabled = True
-            progressDialog2 = Nothing
-            pStepProg = Nothing
+        If progressDialog2 IsNot Nothing Then
+            progressDialog2.HideDialog()
+        End If
+        MessageBox.Show("The new pseudo-site has been added to Scenario 1 in the Site Scenario Tool")
+        BtnFindSite.Enabled = True
+        progressDialog2 = Nothing
+        pStepProg = Nothing
     End Sub
 
     Private Sub CkElev_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkElev.CheckedChanged
@@ -626,7 +634,12 @@ Public Class FrmPsuedoSite
         pStepProg.Step()
 
         '--- Calculate correct buffer distance based on XY units ---
-        Dim bufferDistance As Double = Convert.ToDouble(txtBufferDistance.Text)
+        Dim comps As Double = -1
+        Dim bufferDistance As Double = 0
+        Dim isNumber As Boolean = Double.TryParse(txtBufferDistance.Text, comps)
+        If isNumber Then
+            bufferDistance = comps
+        End If
         Dim strBuffer As String = Convert.ToString(bufferDistance) + " "
         Select Case m_usingXYUnits
             Case esriUnits.esriFeet
@@ -694,7 +707,13 @@ Public Class FrmPsuedoSite
         'Save Proximity settings
         If m_lastAnalysis.UseProximity Then
             Dim item As LayerListItem = LstVectors.SelectedItem
-            m_lastAnalysis.ProximityProperties(m_usingXYUnits, item.Name, CDbl(txtBufferDistance.Text))
+            Dim comps As Double = -1
+            Dim isNumber As Boolean = Double.TryParse(txtBufferDistance.Text, comps)
+            If isNumber Then
+                m_lastAnalysis.ProximityProperties(m_usingXYUnits, item.Name, comps)
+            Else
+                m_lastAnalysis.ProximityProperties(m_usingXYUnits, item.Name, 0)
+            End If
         End If
         Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
         m_lastAnalysis.Save(xmlOutputPath)
@@ -881,7 +900,36 @@ Public Class FrmPsuedoSite
 
     Private Sub txtBufferDistance_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtBufferDistance.Validating
         RaiseEvent FormInputChanged()
+        If CkProximity.Checked Then
+            Dim errorMsg As String = ValidBufferDistance()
+            If Not String.IsNullOrEmpty(errorMsg) Then
+                e.Cancel = True
+                txtBufferDistance.Select(0, txtBufferDistance.Text.Length)
+                MessageBox.Show(errorMsg)
+            End If
+        End If
     End Sub
+
+    Private Function ValidBufferDistance() As String
+        Dim item As LayerListItem = LstVectors.SelectedItem
+        Dim sb As StringBuilder = New StringBuilder
+        If item IsNot Nothing Then
+            Dim fClass As IFeatureClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), item.Name)
+            If fClass IsNot Nothing Then
+                If Not fClass.ShapeType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon Then
+                    Dim comps As Double = -1
+                    If Double.TryParse(txtBufferDistance.Text, comps) Then
+                        If comps < 1 Then
+                            sb.Append("Value greater than 0 required for features that are not polygons!")
+                        End If
+                    Else
+                        sb.Append("Numeric value required for features that are not polygons!")
+                    End If
+                End If
+            End If
+        End If
+        Return sb.ToString
+    End Function
 
     Private Sub BtnClear_Click(sender As System.Object, e As System.EventArgs) Handles BtnClear.Click
         SuggestSiteName()
