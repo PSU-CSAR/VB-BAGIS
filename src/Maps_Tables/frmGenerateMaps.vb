@@ -158,6 +158,13 @@ Public Class frmGenerateMaps
             nsubinterval = Subdivide_IntervalList(rvalues_arr, Elev_Interval, _
                 subrvalues_arr, Elev_Subdivision)
             Display_ElevationRange(rvalues_arr)
+            'Check for existence of elev-precip AOI table; If it doesn't exist, disable elevation-precip tool
+            'This isn't perfect but we will assume if the maps config file was saved and the table doesn't exist,
+            'Then the previous run didn't include elev-precip
+            If Not BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" _
+                      + BA_TablePrecMeanElev, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
+                ChkRepresentedPrecip.Checked = False
+            End If
         End If
 
         If AOI_DEMMax > 30000 Then 'elevation range value error
@@ -805,7 +812,8 @@ Public Class frmGenerateMaps
 
         'number of data layers, determined by the program developer
         'layers to be checked
-        Dim ndata As Integer = 8
+        'Note: If you add layers,make sure AOI_hasSNotel on line 891 still works; Based on the position in array
+        Dim ndata As Integer = 7
 
         'prepare list
         Dim datastatus(ndata) As String
@@ -823,20 +831,17 @@ Public Class frmGenerateMaps
         datadesc(2) = BA_MapElevationZone
         DataName(2) = BA_SubElevationZones
 
-        datadesc(3) = BA_MapPrecipMeanElevation
-        DataName(3) = BA_RasterPrecMeanElev
+        datadesc(3) = BA_MapSNOTELZone
+        DataName(3) = BA_RasterSNOTELZones
 
-        datadesc(4) = BA_MapSNOTELZone
-        DataName(4) = BA_RasterSNOTELZones
+        datadesc(4) = BA_MapSnowCourseZone
+        DataName(4) = BA_RasterSnowCourseZones
 
-        datadesc(5) = BA_MapSnowCourseZone
-        DataName(5) = BA_RasterSnowCourseZones
+        datadesc(5) = BA_MapAspect
+        DataName(5) = BA_RasterAspectZones
 
-        datadesc(6) = BA_MapAspect
-        DataName(6) = BA_RasterAspectZones
-
-        datadesc(7) = BA_MapSlope
-        DataName(7) = BA_RasterSlopeZones
+        datadesc(6) = BA_MapSlope
+        DataName(6) = BA_RasterSlopeZones
 
         Dim i As Long
 
@@ -883,14 +888,14 @@ Public Class frmGenerateMaps
 
             'check snotel and snow course data, tables and maps are still allowed
             'to be generated without the presence of these layers
-            If datastatus(4) = " ?" Then 'snotel
+            If datastatus(3) = " ?" Then 'snotel
                 AOI_HasSNOTEL = False
                 ndata = ndata - 1
             Else
                 AOI_HasSNOTEL = True
             End If
 
-            If datastatus(5) = " ?" Then 'snow course
+            If datastatus(4) = " ?" Then 'snow course
                 AOI_HasSnowCourse = False
                 ndata = ndata - 1
             Else
@@ -912,32 +917,34 @@ Public Class frmGenerateMaps
                 'Disable Elevation-Precipitation Correlation if no sites
                 FrameRepresentedPrecipitation.Enabled = False
             Else
-                If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" _
-                                      + BA_TablePrecMeanElev, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
-                    ChkPrecipAoiTable.Checked = True
+                'Only run this path if using Elevation/Precip Correlation
+                If ChkRepresentedPrecip.Checked Then
+                    If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" _
+                                          + BA_TablePrecMeanElev, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
+                        ChkPrecipAoiTable.Checked = True
+                    End If
+                    If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + _
+                                      BA_VectorSnotelPrec, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                        ChkPrecipSitesLayer.Checked = True
+                    End If
+                    If ChkPrecipAoiTable.Checked = True AndAlso ChkPrecipSitesLayer.Checked = True Then
+                        ElevPrecipLayersReady = True
+                    Else
+                        ElevPrecipLayersReady = False
+                    End If
+                    Dim partitionFileName As String = FindElevPrecipRasterName(BA_RasterPartPrefix)
+                    If Not String.IsNullOrEmpty(partitionFileName) Then
+                        LblPartitionLayer.Text = partitionFileName.Substring(BA_RasterPartPrefix.Length)
+                        m_partitionRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName
+                    End If
+                    Dim zonesFileName As String = FindElevPrecipRasterName(BA_ZonesRasterPrefix)
+                    If Not String.IsNullOrEmpty(zonesFileName) Then
+                        m_zoneRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + zonesFileName
+                        OptAggZone.Checked = True
+                    Else
+                        OptAggPrism.Checked = True
+                    End If
                 End If
-                If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + _
-                                  BA_VectorSnotelPrec, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                    ChkPrecipSitesLayer.Checked = True
-                End If
-                If ChkPrecipAoiTable.Checked = True AndAlso ChkPrecipSitesLayer.Checked = True Then
-                    ElevPrecipLayersReady = True
-                Else
-                    ElevPrecipLayersReady = False
-                End If
-                Dim partitionFileName As String = FindElevPrecipRasterName(BA_RasterPartPrefix)
-                If Not String.IsNullOrEmpty(partitionFileName) Then
-                    LblPartitionLayer.Text = partitionFileName.Substring(BA_RasterPartPrefix.Length)
-                    m_partitionRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName
-                End If
-                Dim zonesFileName As String = FindElevPrecipRasterName(BA_ZonesRasterPrefix)
-                If Not String.IsNullOrEmpty(zonesFileName) Then
-                    m_zoneRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + zonesFileName
-                    OptAggZone.Checked = True
-                Else
-                    OptAggPrism.Checked = True
-                End If
-
             End If
 
             'set UI control
