@@ -358,7 +358,7 @@ Public Class frmCreateAOIfromExistingBND
                     response = BA_ClipAOIRaster(UserAOIFolderBase, inputraster, originalDem, destSurfGDB, AOIClipFile.BufferedAOIExtentCoverage, False)
                 End If
                 Dim ptempDEM As IGeoDataset2 = BA_OpenRasterFromGDB(destSurfGDB, originalDem)
-                pClippedDEM = Smooth(ptempDEM, Val(txtHeight.Text), Val(txtWidth.Text))
+                pClippedDEM = Smooth(ptempDEM, Val(txtHeight.Text), Val(txtWidth.Text), UserAOIFolderBase)
                 ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(ptempDEM)
 
                 If pClippedDEM Is Nothing Then 'no dem within the selected area

@@ -115,7 +115,6 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_MapPRISMElevation = "PRISM Elevation Zones"
     Public Const BA_MapActualRepresentation = "Actual Represented Area"
     Public Const BA_MapPseudoRepresentation = "Pseudo Represented Area"
-    Public Const BA_MapPrecipMeanElevation = "Precipitation Mean Elevation"
 
     'Excel chart
     Public Const BA_ChartWidth = 600
