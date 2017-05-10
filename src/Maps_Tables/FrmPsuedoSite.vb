@@ -674,7 +674,7 @@ Public Class FrmPsuedoSite
 
     Private Sub SuggestSiteName()
         Dim psuedoList As IList(Of Site) = BA_ReadSiteAttributes(SiteType.Pseudo)
-        Dim pSitePrefix As String = "pseudo_site_"
+        Dim pSitePrefix As String = "auto_site_"
         Dim pSiteId As Short = 0
         Dim bName As Boolean = False
         If psuedoList.Count > 0 Then
@@ -688,6 +688,8 @@ Public Class FrmPsuedoSite
                     End If
                 Next
             Loop
+        Else
+            pSiteId += 1
         End If
         TxtSiteName.Text = pSitePrefix & pSiteId
     End Sub
@@ -730,9 +732,12 @@ Public Class FrmPsuedoSite
             Else
                 sb.Append("BAGIS has loaded details for the previously generated pseudo-site. Use the ‘map’ button to view the pseudo-site and its supporting layers. ")
                 sb.Append(vbCrLf + vbCrLf)
-                sb.Append("If you wish to generate another pseudo-site, close this window and return to the Site Scenario Analysis tool. ")
-                sb.Append("Check the checkbox for this pseudo-site in the Scenario 1 grid on the form to include the site in future calculations. ")
-                sb.Append("Click the calculate button to generate a new analysis for the represented area.")
+                sb.Append("If you wish to generate another auto pseudo-site, close this window and return to the Site Scenario Analysis tool. ")
+                sb.Append("You must select the sites to be included in Scenario 1 based on your preferences and click the calculate button ")
+                sb.Append("to generate a new analysis for the represented area, then rerun the auto pseudo site tool.")
+                sb.Append(vbCrLf + vbCrLf)
+                sb.Append("Check the checkbox for this pseudo-site in the Scenario 1 grid in the Site Scenario Analysis tool ")
+                sb.Append("to include the newly generated site in future calculations.")
             End If
             TxtSiteName.Text = m_lastAnalysis.SiteName
             If m_lastAnalysis.UseElevation Then

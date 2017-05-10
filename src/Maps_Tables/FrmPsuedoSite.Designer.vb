@@ -70,6 +70,7 @@ Partial Class FrmPsuedoSite
         Me.Label2 = New System.Windows.Forms.Label()
         Me.TxtSiteName = New System.Windows.Forms.TextBox()
         Me.BtnClear = New System.Windows.Forms.Button()
+        Me.TextBox1 = New System.Windows.Forms.TextBox()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
@@ -120,7 +121,7 @@ Partial Class FrmPsuedoSite
         '
         Me.CkElev.AutoSize = True
         Me.CkElev.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CkElev.Location = New System.Drawing.Point(19, 87)
+        Me.CkElev.Location = New System.Drawing.Point(19, 137)
         Me.CkElev.Name = "CkElev"
         Me.CkElev.Size = New System.Drawing.Size(15, 14)
         Me.CkElev.TabIndex = 74
@@ -130,7 +131,7 @@ Partial Class FrmPsuedoSite
         '
         Me.Label7.AutoSize = True
         Me.Label7.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label7.Location = New System.Drawing.Point(0, 47)
+        Me.Label7.Location = New System.Drawing.Point(0, 97)
         Me.Label7.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(58, 16)
@@ -142,7 +143,7 @@ Partial Class FrmPsuedoSite
         Me.CkPrecip.AutoSize = True
         Me.CkPrecip.Enabled = False
         Me.CkPrecip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CkPrecip.Location = New System.Drawing.Point(19, 194)
+        Me.CkPrecip.Location = New System.Drawing.Point(19, 244)
         Me.CkPrecip.Name = "CkPrecip"
         Me.CkPrecip.Size = New System.Drawing.Size(15, 14)
         Me.CkPrecip.TabIndex = 77
@@ -163,7 +164,7 @@ Partial Class FrmPsuedoSite
         Me.GrpElevation.Controls.Add(Me.LblElevRange)
         Me.GrpElevation.Controls.Add(Me.TxtUpperRange)
         Me.GrpElevation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.GrpElevation.Location = New System.Drawing.Point(57, 62)
+        Me.GrpElevation.Location = New System.Drawing.Point(57, 112)
         Me.GrpElevation.Name = "GrpElevation"
         Me.GrpElevation.Size = New System.Drawing.Size(487, 80)
         Me.GrpElevation.TabIndex = 79
@@ -332,7 +333,7 @@ Partial Class FrmPsuedoSite
         Me.GrpPrecipitation.Controls.Add(Me.Label8)
         Me.GrpPrecipitation.Enabled = False
         Me.GrpPrecipitation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.GrpPrecipitation.Location = New System.Drawing.Point(57, 148)
+        Me.GrpPrecipitation.Location = New System.Drawing.Point(57, 198)
         Me.GrpPrecipitation.Name = "GrpPrecipitation"
         Me.GrpPrecipitation.Size = New System.Drawing.Size(487, 146)
         Me.GrpPrecipitation.TabIndex = 80
@@ -557,7 +558,7 @@ Partial Class FrmPsuedoSite
         Me.GrpProximity.Controls.Add(Me.txtBufferDistance)
         Me.GrpProximity.Controls.Add(Me.LblBufferDistance)
         Me.GrpProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.GrpProximity.Location = New System.Drawing.Point(57, 309)
+        Me.GrpProximity.Location = New System.Drawing.Point(57, 359)
         Me.GrpProximity.Name = "GrpProximity"
         Me.GrpProximity.Size = New System.Drawing.Size(487, 100)
         Me.GrpProximity.TabIndex = 81
@@ -568,7 +569,7 @@ Partial Class FrmPsuedoSite
         '
         Me.CkProximity.AutoSize = True
         Me.CkProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CkProximity.Location = New System.Drawing.Point(19, 338)
+        Me.CkProximity.Location = New System.Drawing.Point(19, 388)
         Me.CkProximity.Name = "CkProximity"
         Me.CkProximity.Size = New System.Drawing.Size(15, 14)
         Me.CkProximity.TabIndex = 82
@@ -577,7 +578,7 @@ Partial Class FrmPsuedoSite
         'BtnFindSite
         '
         Me.BtnFindSite.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnFindSite.Location = New System.Drawing.Point(260, 423)
+        Me.BtnFindSite.Location = New System.Drawing.Point(260, 473)
         Me.BtnFindSite.Name = "BtnFindSite"
         Me.BtnFindSite.Size = New System.Drawing.Size(93, 23)
         Me.BtnFindSite.TabIndex = 83
@@ -587,7 +588,7 @@ Partial Class FrmPsuedoSite
         'BtnClose
         '
         Me.BtnClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClose.Location = New System.Drawing.Point(441, 423)
+        Me.BtnClose.Location = New System.Drawing.Point(441, 473)
         Me.BtnClose.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClose.Name = "BtnClose"
         Me.BtnClose.Size = New System.Drawing.Size(65, 22)
@@ -599,7 +600,7 @@ Partial Class FrmPsuedoSite
         '
         Me.BtnMap.Enabled = False
         Me.BtnMap.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnMap.Location = New System.Drawing.Point(155, 423)
+        Me.BtnMap.Location = New System.Drawing.Point(155, 473)
         Me.BtnMap.Name = "BtnMap"
         Me.BtnMap.Size = New System.Drawing.Size(93, 23)
         Me.BtnMap.TabIndex = 84
@@ -610,7 +611,7 @@ Partial Class FrmPsuedoSite
         '
         Me.Label2.AutoSize = True
         Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label2.Location = New System.Drawing.Point(0, 19)
+        Me.Label2.Location = New System.Drawing.Point(0, 69)
         Me.Label2.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(81, 16)
@@ -620,7 +621,7 @@ Partial Class FrmPsuedoSite
         'TxtSiteName
         '
         Me.TxtSiteName.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TxtSiteName.Location = New System.Drawing.Point(85, 17)
+        Me.TxtSiteName.Location = New System.Drawing.Point(85, 67)
         Me.TxtSiteName.Margin = New System.Windows.Forms.Padding(2)
         Me.TxtSiteName.MaxLength = 49
         Me.TxtSiteName.Name = "TxtSiteName"
@@ -630,7 +631,7 @@ Partial Class FrmPsuedoSite
         'BtnClear
         '
         Me.BtnClear.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClear.Location = New System.Drawing.Point(365, 423)
+        Me.BtnClear.Location = New System.Drawing.Point(365, 473)
         Me.BtnClear.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClear.Name = "BtnClear"
         Me.BtnClear.Size = New System.Drawing.Size(65, 22)
@@ -638,11 +639,26 @@ Partial Class FrmPsuedoSite
         Me.BtnClear.Text = "Clear"
         Me.BtnClear.UseVisualStyleBackColor = True
         '
+        'TextBox1
+        '
+        Me.TextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.TextBox1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TextBox1.Location = New System.Drawing.Point(3, 8)
+        Me.TextBox1.Multiline = True
+        Me.TextBox1.Name = "TextBox1"
+        Me.TextBox1.ReadOnly = True
+        Me.TextBox1.Size = New System.Drawing.Size(541, 60)
+        Me.TextBox1.TabIndex = 88
+        Me.TextBox1.Text = "The auto Pseudo Site tool finds the most desirable site in the non-represented ar" & _
+    "eas depicted in Scenario 1. Users can specify additional search constraints list" & _
+    "ed below to narrow the search domain"
+        '
         'FrmPsuedoSite
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(561, 472)
+        Me.ClientSize = New System.Drawing.Size(561, 512)
+        Me.Controls.Add(Me.TextBox1)
         Me.Controls.Add(Me.BtnClear)
         Me.Controls.Add(Me.TxtSiteName)
         Me.Controls.Add(Me.Label2)
@@ -718,4 +734,5 @@ Partial Class FrmPsuedoSite
     Friend WithEvents Label2 As System.Windows.Forms.Label
     Friend WithEvents TxtSiteName As System.Windows.Forms.TextBox
     Friend WithEvents BtnClear As System.Windows.Forms.Button
+    Friend WithEvents TextBox1 As System.Windows.Forms.TextBox
 End Class
