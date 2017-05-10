@@ -50,11 +50,11 @@ Partial Class FrmPsuedoSite
         Me.Label12 = New System.Windows.Forms.Label()
         Me.Label13 = New System.Windows.Forms.Label()
         Me.txtMaxPrecip = New System.Windows.Forms.TextBox()
-        Me.TxtPrecipUpper = New System.Windows.Forms.TextBox()
+        Me.TxtPrecipLower = New System.Windows.Forms.TextBox()
         Me.txtRangePrecip = New System.Windows.Forms.TextBox()
         Me.Label14 = New System.Windows.Forms.Label()
         Me.Label15 = New System.Windows.Forms.Label()
-        Me.TxtPrecipLower = New System.Windows.Forms.TextBox()
+        Me.TxtPrecipUpper = New System.Windows.Forms.TextBox()
         Me.CmdPrism = New System.Windows.Forms.Button()
         Me.CmboxEnd = New System.Windows.Forms.ComboBox()
         Me.CmboxBegin = New System.Windows.Forms.ComboBox()
@@ -141,7 +141,6 @@ Partial Class FrmPsuedoSite
         'CkPrecip
         '
         Me.CkPrecip.AutoSize = True
-        Me.CkPrecip.Enabled = False
         Me.CkPrecip.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CkPrecip.Location = New System.Drawing.Point(19, 244)
         Me.CkPrecip.Name = "CkPrecip"
@@ -319,11 +318,11 @@ Partial Class FrmPsuedoSite
         Me.GrpPrecipitation.Controls.Add(Me.Label12)
         Me.GrpPrecipitation.Controls.Add(Me.Label13)
         Me.GrpPrecipitation.Controls.Add(Me.txtMaxPrecip)
-        Me.GrpPrecipitation.Controls.Add(Me.TxtPrecipUpper)
+        Me.GrpPrecipitation.Controls.Add(Me.TxtPrecipLower)
         Me.GrpPrecipitation.Controls.Add(Me.txtRangePrecip)
         Me.GrpPrecipitation.Controls.Add(Me.Label14)
         Me.GrpPrecipitation.Controls.Add(Me.Label15)
-        Me.GrpPrecipitation.Controls.Add(Me.TxtPrecipLower)
+        Me.GrpPrecipitation.Controls.Add(Me.TxtPrecipUpper)
         Me.GrpPrecipitation.Controls.Add(Me.CmdPrism)
         Me.GrpPrecipitation.Controls.Add(Me.CmboxEnd)
         Me.GrpPrecipitation.Controls.Add(Me.CmboxBegin)
@@ -402,7 +401,7 @@ Partial Class FrmPsuedoSite
         '
         Me.Label13.AutoSize = True
         Me.Label13.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label13.Location = New System.Drawing.Point(245, 119)
+        Me.Label13.Location = New System.Drawing.Point(169, 117)
         Me.Label13.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label13.Name = "Label13"
         Me.Label13.Size = New System.Drawing.Size(47, 16)
@@ -423,16 +422,16 @@ Partial Class FrmPsuedoSite
         Me.txtMaxPrecip.TabIndex = 86
         Me.txtMaxPrecip.Text = "-"
         '
-        'TxtPrecipUpper
+        'TxtPrecipLower
         '
-        Me.TxtPrecipUpper.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TxtPrecipUpper.Location = New System.Drawing.Point(294, 117)
-        Me.TxtPrecipUpper.Margin = New System.Windows.Forms.Padding(2)
-        Me.TxtPrecipUpper.Name = "TxtPrecipUpper"
-        Me.TxtPrecipUpper.Size = New System.Drawing.Size(41, 20)
-        Me.TxtPrecipUpper.TabIndex = 91
-        Me.TxtPrecipUpper.Text = "30.0"
-        Me.TxtPrecipUpper.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.TxtPrecipLower.Enabled = False
+        Me.TxtPrecipLower.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TxtPrecipLower.Location = New System.Drawing.Point(214, 115)
+        Me.TxtPrecipLower.Margin = New System.Windows.Forms.Padding(2)
+        Me.TxtPrecipLower.Name = "TxtPrecipLower"
+        Me.TxtPrecipLower.Size = New System.Drawing.Size(41, 20)
+        Me.TxtPrecipLower.TabIndex = 91
+        Me.TxtPrecipLower.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'txtRangePrecip
         '
@@ -452,7 +451,7 @@ Partial Class FrmPsuedoSite
         '
         Me.Label14.AutoSize = True
         Me.Label14.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label14.Location = New System.Drawing.Point(134, 117)
+        Me.Label14.Location = New System.Drawing.Point(279, 117)
         Me.Label14.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label14.Name = "Label14"
         Me.Label14.Size = New System.Drawing.Size(49, 16)
@@ -466,20 +465,20 @@ Partial Class FrmPsuedoSite
         Me.Label15.Location = New System.Drawing.Point(7, 117)
         Me.Label15.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label15.Name = "Label15"
-        Me.Label15.Size = New System.Drawing.Size(100, 16)
+        Me.Label15.Size = New System.Drawing.Size(150, 16)
         Me.Label15.TabIndex = 88
-        Me.Label15.Text = "Desired Range"
+        Me.Label15.Text = "Desired Range (Inches)"
         '
-        'TxtPrecipLower
+        'TxtPrecipUpper
         '
-        Me.TxtPrecipLower.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TxtPrecipLower.Location = New System.Drawing.Point(182, 116)
-        Me.TxtPrecipLower.Margin = New System.Windows.Forms.Padding(2)
-        Me.TxtPrecipLower.Name = "TxtPrecipLower"
-        Me.TxtPrecipLower.Size = New System.Drawing.Size(41, 20)
-        Me.TxtPrecipLower.TabIndex = 89
-        Me.TxtPrecipLower.Text = "45.0"
-        Me.TxtPrecipLower.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.TxtPrecipUpper.Enabled = False
+        Me.TxtPrecipUpper.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TxtPrecipUpper.Location = New System.Drawing.Point(325, 115)
+        Me.TxtPrecipUpper.Margin = New System.Windows.Forms.Padding(2)
+        Me.TxtPrecipUpper.Name = "TxtPrecipUpper"
+        Me.TxtPrecipUpper.Size = New System.Drawing.Size(41, 20)
+        Me.TxtPrecipUpper.TabIndex = 89
+        Me.TxtPrecipUpper.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'CmdPrism
         '
@@ -720,11 +719,11 @@ Partial Class FrmPsuedoSite
     Friend WithEvents Label12 As System.Windows.Forms.Label
     Friend WithEvents Label13 As System.Windows.Forms.Label
     Friend WithEvents txtMaxPrecip As System.Windows.Forms.TextBox
-    Friend WithEvents TxtPrecipUpper As System.Windows.Forms.TextBox
+    Friend WithEvents TxtPrecipLower As System.Windows.Forms.TextBox
     Friend WithEvents txtRangePrecip As System.Windows.Forms.TextBox
     Friend WithEvents Label14 As System.Windows.Forms.Label
     Friend WithEvents Label15 As System.Windows.Forms.Label
-    Friend WithEvents TxtPrecipLower As System.Windows.Forms.TextBox
+    Friend WithEvents TxtPrecipUpper As System.Windows.Forms.TextBox
     Friend WithEvents CmdPrism As System.Windows.Forms.Button
     Friend WithEvents GrpProximity As System.Windows.Forms.GroupBox
     Friend WithEvents CkProximity As System.Windows.Forms.CheckBox

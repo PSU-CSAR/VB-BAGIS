@@ -148,8 +148,23 @@ Public Class FrmPsuedoSite
                                                       "find a site without using the Proximity option ?", "Missing layer", MessageBoxButtons.YesNo, _
                                                       MessageBoxIcon.Question)
             If res <> Windows.Forms.DialogResult.Yes Then
-                CkProximity.Checked = False
                 Exit Sub
+            Else
+                CkProximity.Checked = False
+            End If
+        End If
+
+        'If user selected PRISM layer, did they enter a range?
+        If CkPrecip.Checked Then
+            If String.IsNullOrEmpty(TxtPrecipUpper.Text) Or String.IsNullOrEmpty(TxtPrecipLower.Text) Then
+                Dim res As DialogResult = MessageBox.Show("You selected the Precipitation option but failed to completely enter the desired range. Do you wish to " + _
+                                          "find a site without using the Precipitation option ?", "Missing range", MessageBoxButtons.YesNo, _
+                                          MessageBoxIcon.Question)
+                If res <> Windows.Forms.DialogResult.Yes Then
+                    Exit Sub
+                Else
+                    CkPrecip.Checked = False
+                End If
             End If
         End If
 
@@ -706,7 +721,7 @@ Public Class FrmPsuedoSite
         'Save Prism settings
         If m_lastAnalysis.UsePrism Then
             m_lastAnalysis.PrismProperties(CmboxPrecipType.SelectedIndex, CmboxBegin.SelectedIndex, CmboxEnd.SelectedIndex, _
-                                  CDbl(TxtPrecipLower.Text), CDbl(TxtPrecipUpper.Text))
+                                  CDbl(TxtPrecipUpper.Text), CDbl(TxtPrecipLower.Text))
         End If
         'Save Proximity settings
         If m_lastAnalysis.UseProximity Then
@@ -764,8 +779,8 @@ Public Class FrmPsuedoSite
                     lblEndMonth.Enabled = False
                     CmboxEnd.Enabled = False
                 End If
-                TxtPrecipLower.Text = CStr(m_lastAnalysis.LowerPrecip)
-                TxtPrecipUpper.Text = CStr(m_lastAnalysis.UpperPrecip)
+                TxtPrecipUpper.Text = CStr(m_lastAnalysis.LowerPrecip)
+                TxtPrecipLower.Text = CStr(m_lastAnalysis.UpperPrecip)
                 CmdPrism_Click(Me, EventArgs.Empty)
             End If
             If m_lastAnalysis.UseProximity = True Then
@@ -890,10 +905,54 @@ Public Class FrmPsuedoSite
 
     Private Sub TxtPrecipUpper_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtPrecipUpper.Validating
         RaiseEvent FormInputChanged()
+        Dim sb As StringBuilder = New StringBuilder()
+        Dim comps As Double
+        Dim maxPrecip As Double = CDbl(txtMaxPrecip.Text)
+        Dim lowerRange As Double = 0
+        If Not String.IsNullOrEmpty(TxtPrecipLower.Text) Then
+            lowerRange = CDbl(TxtPrecipLower.Text)
+        End If
+        'tryparse fails, doesn't get into comps < 0 comparison
+        If Double.TryParse(TxtPrecipUpper.Text, comps) Then
+            If comps < lowerRange Then
+                sb.Append("Value greater than the lower desired range is required!")
+            ElseIf comps > maxPrecip Then
+                sb.Append("Value less than maximum precipitation is required!")
+            End If
+        Else
+            sb.Append("Numeric value required!")
+        End If
+        If sb.Length > 0 Then
+            e.Cancel = True
+            txtMaxPrecip.Select(0, txtMaxPrecip.Text.Length)
+            MessageBox.Show(sb.ToString)
+        End If
     End Sub
 
     Private Sub TxtPrecipLower_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtPrecipLower.Validating
         RaiseEvent FormInputChanged()
+        Dim sb As StringBuilder = New StringBuilder()
+        Dim comps As Double
+        Dim minPrecip As Double = CDbl(txtMinPrecip.Text)
+        Dim upperPrecip As Double = 99999
+        If Not String.IsNullOrEmpty(TxtPrecipUpper.Text) Then
+            upperPrecip = CDbl(TxtPrecipUpper.Text)
+        End If
+        'tryparse fails, doesn't get into comps < 0 comparison
+        If Double.TryParse(TxtPrecipLower.Text, comps) Then
+            If comps < minPrecip Then
+                sb.Append("Value greater than minimum precipitation is required!")
+            ElseIf comps > upperPrecip Then
+                sb.Append("Value less than upper desired range is required!")
+            End If
+        Else
+            sb.Append("Numeric value required!")
+        End If
+        If sb.Length > 0 Then
+            e.Cancel = True
+            TxtPrecipLower.Select(0, TxtPrecipLower.Text.Length)
+            MessageBox.Show(sb.ToString)
+        End If
     End Sub
 
     Private Sub LstVectors_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstVectors.SelectedIndexChanged
@@ -944,8 +1003,8 @@ Public Class FrmPsuedoSite
         CmboxEnd.SelectedIndex = 0
         txtMinPrecip.Text = "-"
         txtMaxPrecip.Text = "-"
-        TxtPrecipLower.Text = Nothing
         TxtPrecipUpper.Text = Nothing
+        TxtPrecipLower.Text = Nothing
         CkProximity.Checked = False
         LstVectors.ClearSelected()
         txtBufferDistance.Text = Nothing
@@ -956,4 +1015,29 @@ Public Class FrmPsuedoSite
             RaiseEvent FormInputChanged()
         End If
     End Sub
+
+    Private Sub txtMinPrecip_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtMinPrecip.TextChanged
+        ManagePrecipRange()
+    End Sub
+
+    Private Sub txtMaxPrecip_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtMaxPrecip.TextChanged
+        ManagePrecipRange()
+    End Sub
+
+    Private Sub ManagePrecipRange()
+        Dim comps As Double = -1
+        If Double.TryParse(txtMinPrecip.Text, comps) Then
+            If Double.TryParse(txtMaxPrecip.Text, comps) Then
+                TxtPrecipUpper.Enabled = True
+                TxtPrecipLower.Enabled = True
+            Else
+                TxtPrecipUpper.Enabled = False
+                TxtPrecipLower.Enabled = False
+            End If
+        Else
+            TxtPrecipUpper.Enabled = False
+            TxtPrecipLower.Enabled = False
+        End If
+    End Sub
+
 End Class
