@@ -17,6 +17,7 @@ Public Class FrmPsuedoSite
     Private m_elevLayer As String = "ps_elev"
     Private m_siteFileName As String = "ps_site"
     Private m_proximityLayer As String = "ps_proximity"
+    Private m_precipLayer As String = "ps_precip"
     Private m_demInMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
@@ -189,6 +190,13 @@ Public Class FrmPsuedoSite
             success = GenerateElevationLayer(pStepProg, snapRasterPath)
             If success = BA_ReturnCode.Success Then
                 sb.Append(m_analysisFolder + "\" + m_elevLayer + "; ")
+            End If
+        End If
+
+        If CkPrecip.Checked = True Then
+            success = GeneratePrecipitationLayer(pStepProg, snapRasterPath)
+            If success = BA_ReturnCode.Success Then
+                sb.Append(m_analysisFolder + "\" + m_precipLayer + "; ")
             End If
         End If
 
@@ -392,6 +400,60 @@ Public Class FrmPsuedoSite
         Return success
     End Function
 
+    Private Function GeneratePrecipitationLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
+        '1. Reclass precip raster according to upper and lower ranges
+        pStepProg.Message = "Reclass precipitation layer"
+        pStepProg.Step()
+        Dim sb As StringBuilder = New StringBuilder()
+        Dim strMinPrecip As String = txtMinPrecip.Text
+        Dim strLowerRange As String = TxtPrecipLower.Text
+        Dim strUpperRange As String = TxtPrecipUpper.Text
+        Dim strMaxPrecip As String = txtMaxPrecip.Text
+        sb.Append(strMinPrecip + " " + strLowerRange + " 1;")
+        sb.Append(strLowerRange + " " + strUpperRange + " 2;")
+        sb.Append(strUpperRange + " " + strMaxPrecip + " 3 ")
+
+        Dim inputFolder As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True)
+        Dim prismRasterName As String = AOIPrismFolderNames.annual.ToString    'read direct Annual PRISM raster 
+        If CmboxPrecipType.SelectedIndex > 0 And CmboxPrecipType.SelectedIndex < 5 Then 'read directly Quarterly PRISM raster
+            prismRasterName = BA_GetPrismFolderName(CmboxPrecipType.SelectedIndex + 12)
+        Else 'sum individual monthly PRISM rasters
+            Dim response As Integer = BA_PRISMCustom(My.Document, AOIFolderBase, Val(CmboxBegin.SelectedItem), Val(CmboxEnd.SelectedItem))
+            If response = 0 Then
+                MsgBox("Unable to generate custom PRISM layer! Program stopped.")
+                Return BA_ReturnCode.UnknownError
+            End If
+            inputFolder = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
+            prismRasterName = BA_TEMP_PRISM
+        End If
+        Dim inputPath As String = inputFolder + prismRasterName
+        Dim reclassPrismFile As String = "reclpris"
+        Dim reclassPrismPath As String = m_analysisFolder & "\" & reclassPrismFile
+        Dim success As BA_ReturnCode = BA_ReclassifyRasterFromStringWithMask(inputPath, BA_FIELD_VALUE, sb.ToString, _
+                                                                             reclassPrismPath, snapRasterPath, snapRasterPath)
+        pStepProg.Message = "Convert precipitation raster to feature class"
+        pStepProg.Step()
+        '2. Convert raster to polygon
+        Dim reclassPrecFc As String = "prisrecl_v"
+        Dim reclassPrecFcPath As String = m_analysisFolder & "\" & reclassPrecFc
+        If success = BA_ReturnCode.Success Then
+            success = BA_Raster2Polygon_GP(reclassPrismPath, reclassPrecFcPath, snapRasterPath)
+        End If
+
+        '3. Dissolve on grid code
+        Dim precipLayerPath As String = m_analysisFolder & "\" & m_precipLayer
+        If success = BA_ReturnCode.Success Then
+            success = BA_Dissolve(reclassPrecFcPath, BA_FIELD_GRIDCODE, precipLayerPath)
+        End If
+
+        '4. Delete the polygon in the desired precipitation range; This should always be #2
+        If success = BA_ReturnCode.Success Then
+            Dim selectQuery As String = " " + BA_FIELD_GRIDCODE + " = 2"
+            success = BA_DeleteFeatures(m_analysisFolder, m_precipLayer, selectQuery)
+        End If
+        Return success
+    End Function
+
     Private Sub txtLower_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtLower.Validating
         RaiseEvent FormInputChanged()
         Dim sb As StringBuilder = New StringBuilder()
@@ -532,8 +594,17 @@ Public Class FrmPsuedoSite
         Dim retVal As Integer = -1
 
         Try
+            'Precipitation if used
+            Dim filepathname As String = m_analysisFolder & "\" & m_precipLayer
+            If m_lastAnalysis.UsePrism Then
+                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                    pColor.RGB = RGB(65, 105, 225) 'royal blue
+                    success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_PRECIPITATION, pColor, 30)
+                End If
+            End If
+
             'Elevation if it exists
-            Dim filepathname As String = m_analysisFolder & "\" & m_elevLayer
+            filepathname = m_analysisFolder & "\" & m_elevLayer
             If m_lastAnalysis.UseElevation Then
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
                     pColor.RGB = RGB(115, 178, 115) 'green

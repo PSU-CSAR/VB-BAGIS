@@ -162,6 +162,7 @@ Partial Class FrmPsuedoSite
         Me.GrpElevation.Controls.Add(Me.Label3)
         Me.GrpElevation.Controls.Add(Me.LblElevRange)
         Me.GrpElevation.Controls.Add(Me.TxtUpperRange)
+        Me.GrpElevation.Enabled = False
         Me.GrpElevation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpElevation.Location = New System.Drawing.Point(57, 112)
         Me.GrpElevation.Name = "GrpElevation"
@@ -556,6 +557,7 @@ Partial Class FrmPsuedoSite
         Me.GrpProximity.Controls.Add(Me.LstVectors)
         Me.GrpProximity.Controls.Add(Me.txtBufferDistance)
         Me.GrpProximity.Controls.Add(Me.LblBufferDistance)
+        Me.GrpProximity.Enabled = False
         Me.GrpProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpProximity.Location = New System.Drawing.Point(57, 359)
         Me.GrpProximity.Name = "GrpProximity"
