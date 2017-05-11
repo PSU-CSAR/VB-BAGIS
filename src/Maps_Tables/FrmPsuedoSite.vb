@@ -266,9 +266,11 @@ Public Class FrmPsuedoSite
             If numSites < 1 Then
                 MessageBox.Show("No psuedo-sites were found. Please double-check your selection criteria")
             ElseIf numSites > 1 Then
-                MessageBox.Show(numSites & " pseudo-sites were found. Right now BAGIS only knows how to deal with one so it will pick the first one.")
+                MessageBox.Show(numSites & " pseudo-sites were found. Currently BAGIS only knows how to deal with one, so it will randomly pick one.")
+                Dim r As New Random()
+                Dim keepSite As Integer = r.Next(1, numSites + 1)
                 'Delete all sites except the first one
-                Dim strSelect As String = " " + BA_FIELD_OBJECT_ID + " > 1"
+                Dim strSelect As String = " " & BA_FIELD_OBJECT_ID & " != " & keepSite
                 success = BA_DeleteFeatures(m_analysisFolder, m_siteFileName, strSelect)
             End If
 
@@ -429,8 +431,8 @@ Public Class FrmPsuedoSite
         Dim inputPath As String = inputFolder + prismRasterName
         Dim reclassPrismFile As String = "reclpris"
         Dim reclassPrismPath As String = m_analysisFolder & "\" & reclassPrismFile
-        Dim success As BA_ReturnCode = BA_ReclassifyRasterFromStringWithMask(inputPath, BA_FIELD_VALUE, sb.ToString, _
-                                                                             reclassPrismPath, snapRasterPath, snapRasterPath)
+        Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
+                                                                             reclassPrismPath, snapRasterPath)
         pStepProg.Message = "Convert precipitation raster to feature class"
         pStepProg.Step()
         '2. Convert raster to polygon
@@ -585,6 +587,9 @@ Public Class FrmPsuedoSite
         BA_MapUpdateSubTitle(My.Document, mapTitle, subtitle, UnitText)
         Dim keyLayerName As String = Nothing
         BA_SetLegendFormat(My.Document, keyLayerName)
+
+        'Clip data frame to aoi border
+        ClipDataFrameToAoiBorder()
     End Sub
 
     Private Sub AddLayersToMapFrame(ByVal pApplication As ESRI.ArcGIS.Framework.IApplication, _
@@ -630,10 +635,6 @@ Public Class FrmPsuedoSite
                     success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_PROXIMITY, pColor, 30)
                 End If
             End If
-
-            'add aoi boundary and zoom to AOI
-            filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + m_aoiBoundary
-            success = BA_AddExtentLayer(pMxDoc, filepathname, Nothing, BA_MAPS_AOI_BOUNDARY, 0, 1.2, 2.0)
 
             'add pseudo site
             filepathname = m_analysisFolder & "\" & m_siteFileName
@@ -1109,6 +1110,35 @@ Public Class FrmPsuedoSite
             TxtPrecipUpper.Enabled = False
             TxtPrecipLower.Enabled = False
         End If
+    End Sub
+
+    Private Sub ClipDataFrameToAoiBorder()
+        Try
+            Dim clipFc As IFeatureClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi), m_aoiBoundary)
+            Dim clipCursor As IFeatureCursor = clipFc.Search(Nothing, True)
+            Dim clipFeature As IFeature = clipCursor.NextFeature
+            If clipFeature IsNot Nothing Then
+                Dim mOptions As IMapClipOptions = CType(My.Document.FocusMap, IMapClipOptions)
+                mOptions.ClipGeometry = clipFeature.Shape
+                'Create border object
+                Dim pBorder As IBorder = New SymbolBorder
+                Dim pStyleGallery As IStyleGallery = My.Document.StyleGallery
+                Dim pEnumStyleGallery As IEnumStyleGalleryItem = pStyleGallery.Items("Borders", "ESRI.style", "Default")
+                pEnumStyleGallery.Reset()
+                Dim pStyleItem As IStyleGalleryItem2 = pEnumStyleGallery.Next
+                Do Until pStyleItem Is Nothing
+                    If pStyleItem.Name = "3.0 Point" Then
+                        pBorder = pStyleItem.Item
+                        'Apply border object
+                        mOptions.ClipBorder = pBorder
+                        Exit Do
+                    End If
+                    pStyleItem = pEnumStyleGallery.Next
+                Loop
+            End If
+        Catch ex As Exception
+            Debug.Print("ClipDataFrameToAoiBorder Exception: " & ex.Message)
+        End Try
     End Sub
 
 End Class
