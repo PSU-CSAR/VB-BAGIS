@@ -549,15 +549,11 @@ Module BAGIS_MapModule
                     If BA_File_Exists(outputFolder & "\" & outputFile, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
                         BA_Remove_ShapefileFromGDB(outputFolder, outputFile)
                     End If
-                    Dim reclRaster As IGeoDataset = BA_OpenRasterFromFile(bufferFolder, tempOutputFile)
-                    Dim retVal As Integer = BA_Raster2PolygonShapefile(outputFolder, outputFile, reclRaster)
+
+                    success = BA_Raster2Polygon_GP(bufferFolder & "\" & tempOutputFile, _
+                                                   outputFolder & "\" & outputFile, snapRasterPath)
                     'success = BA_ReplaceNoDataCellsGDB(outputFolder, tempOutputFile, outputFolder, outputFile, BA_ValNonRepresentedOutside, _
                     '                                   BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi), BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage))
-                    If retVal = 1 Then
-                        success = BA_ReturnCode.Success
-                    Else
-                        success = BA_ReturnCode.UnknownError
-                    End If
                     If success = BA_ReturnCode.Success Then
                         'Remove the masked raster
                         If BA_File_Exists(bufferFolder & "\" & rasBufferPath, WorkspaceType.Raster, esriDatasetType.esriDTRasterDataset) Then
