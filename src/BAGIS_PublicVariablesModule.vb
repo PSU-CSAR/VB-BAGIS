@@ -100,7 +100,6 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_ValNonRepresentedOutside As Double = 4
     Public Const BA_ValNonRepresented As Double = 5
     'mapframe
-    Public Const BA_DefaultMapName = "Basin Analysis"
     Public Const BA_MapAOI = "AOI Boundary"
     Public Const BA_MapElevationZone = "Elevation Zones"
     Public Const BA_MapSNOTELZone = "SNOTEL Elevation Zones"

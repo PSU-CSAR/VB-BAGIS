@@ -384,8 +384,8 @@ Public Class frmBasin_Tool
 
         BA_SetDefaultProjection(My.ArcMap.Application)
         'set mapframe name to default name
-        response = BA_SetDefaultMapFrameName(BA_DefaultMapName)
-        Dim response1 As Integer = BA_SetMapFrameDimension(BA_DefaultMapName, 1, 2, 7.5, 9, True)
+        response = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
+        Dim response1 As Integer = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)
 
         Try
             'reset aoi information
