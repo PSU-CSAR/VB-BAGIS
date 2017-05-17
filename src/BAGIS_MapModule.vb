@@ -13,28 +13,6 @@ Imports ESRI.ArcGIS.DataSourcesRaster
 Imports ESRI.ArcGIS.esriSystem
 
 Module BAGIS_MapModule
-    Public Function BA_SetDefaultMapFrameName(ByVal mapname As String) As Integer
-        Dim return_value As Integer
-        Dim response As Integer
-
-        Dim pMap As IMap
-        Dim pMxDocument As IMxDocument
-
-        return_value = 0
-        response = BA_ActivateMapFrame(mapname)
-        If response < 0 Then 'mapname map frame does not exist
-            pMxDocument = My.ArcMap.Document
-            pMap = pMxDocument.FocusMap
-
-            pMap.Name = mapname
-            pMxDocument.UpdateContents()
-            pMxDocument.ActivatedView.PartialRefresh(esriViewDrawPhase.esriViewGeography, Nothing, Nothing)
-            return_value = 1
-        End If
-
-        BA_SetDefaultMapFrameName = return_value
-    End Function
-
     'resize the mapframe on the pagelayout
     Public Function BA_SetMapFrameDimension(ByVal mapname As String, ByVal xmin As Double, ByVal ymin As Double, ByVal xmax As Double, ByVal ymax As Double, ByVal No_Border As Boolean) As Integer
         Dim return_value As Integer
@@ -94,47 +72,6 @@ Module BAGIS_MapModule
         pFProp = Nothing
         pElem = Nothing
         BA_SetMapFrameDimension = return_value
-    End Function
-
-    'activate a map frame by its name
-    'return values: 0, map is already activated, nothing happened
-    '               1, map is activated
-    '               -1, error
-    Public Function BA_ActivateMapFrame(ByVal mapname As String) As Integer
-        Dim return_value As Integer
-        return_value = -1
-
-        Dim pMap As IMap
-        Dim pMaps As IMaps
-        Dim pMxDocument As IMxDocument
-
-        pMxDocument = My.ArcMap.Document
-        pMaps = pMxDocument.Maps
-        pMap = pMxDocument.FocusMap
-
-        Dim activatemapframe As String
-        Dim i As Integer
-        activatemapframe = pMap.Name
-
-        If activatemapframe = mapname Then 'do nothing
-            return_value = 0
-        End If
-
-        If return_value < 0 Then 'the targeted mapframe is not currently activated
-            For i = 1 To pMaps.Count
-                pMap = pMaps.Item(i - 1)
-                If pMap.Name = mapname Then 'data frame exists
-                    pMxDocument.ActiveView = pMap
-                    pMxDocument.ActiveView.Refresh()
-                    return_value = 1
-                    Exit For
-                End If
-            Next
-        End If
-
-        pMap = Nothing
-        pMaps = Nothing
-        BA_ActivateMapFrame = return_value
     End Function
 
     Public Function BA_ReadSiteAttributes(ByVal sType As SiteType) As IList(Of Site)
