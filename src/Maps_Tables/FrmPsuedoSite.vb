@@ -568,6 +568,9 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub BtnMap_Click(sender As System.Object, e As System.EventArgs) Handles BtnMap.Click
+        'Ensure default map frame name is set before trying to build map
+        Dim response As Integer = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
+        response = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)
         AddLayersToMapFrame(My.ThisApplication, My.Document)
         Dim Basin_Name As String
         Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)

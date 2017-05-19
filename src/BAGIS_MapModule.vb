@@ -673,7 +673,7 @@ Module BAGIS_MapModule
         FileName = BA_EnumDescription(MapsFileName.PseudoRepresentedArea)
         filepathname = filepath & FileName
         If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-            success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_SCENARIO2_REPRESENTATION, pColor)
+            success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_SCENARIO2_REPRESENTATION, pColor, 0)
         End If
 
         'Both scenarios
@@ -681,7 +681,7 @@ Module BAGIS_MapModule
         filepathname = filepath & FileName
         pColor.RGB = RGB(48, 95, 207) 'red
         If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-            success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_BOTH_REPRESENTATION, pColor)
+            success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_BOTH_REPRESENTATION, pColor, 0)
         End If
         Dim response As Integer = -1
 
@@ -2013,6 +2013,53 @@ Module BAGIS_MapModule
             Windows.Forms.MessageBox.Show(errorMsg, "Error loading map", Windows.Forms.MessageBoxButtons.OK, Windows.Forms.MessageBoxIcon.Information)
         End If
         Return validMap
+    End Function
+
+    Public Function BA_BuildRendererForPoints(ByVal markerColor As IColor, ByVal size As Integer) As ISimpleRenderer
+        Dim pFillColor As IColor = New RgbColor
+        'Dim pMSymbol As IMarkerSymbol = Nothing
+        Dim pMSymbol As ISimpleMarkerSymbol = New SimpleMarkerSymbol
+        Dim pMask As IMask = Nothing
+        Dim pRenderer As ISimpleRenderer = New SimpleRenderer
+
+        Try
+            pMSymbol.Style = esriSimpleMarkerStyle.esriSMSCircle
+            pMSymbol.Size = size
+            pMSymbol.OutlineColor = markerColor
+            pMSymbol.Outline = True
+            pMSymbol.OutlineSize = 3.0
+            pFillColor.NullColor = True
+            pMSymbol.Color = pFillColor
+            pRenderer.Symbol = pMSymbol
+            Return pRenderer
+        Catch ex As Exception
+            Debug.Print("BA_BuildRendererForPoints Exception: " & ex.Message)
+            Return Nothing
+        Finally
+            pRenderer = Nothing
+            pMSymbol = Nothing
+        End Try
+    End Function
+
+    ' Populates an PseudoSite object from an XML file
+    Public Function BA_LoadPseudoSiteFromXml(ByVal aoiPath As String) As PseudoSite
+        Try
+            Dim xmlInputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
+            If BA_File_ExistsWindowsIO(xmlInputPath) Then
+                Dim obj As Object = SerializableData.Load(xmlInputPath, GetType(PseudoSite))
+                If obj IsNot Nothing Then
+                    Dim analysis As PseudoSite = CType(obj, PseudoSite)
+                    Return analysis
+                Else
+                    Return Nothing
+                End If
+            Else
+                Return Nothing
+            End If
+        Catch ex As Exception
+            Debug.Print("BA_LoadPseudoSiteFromXml Exception: " & ex.Message)
+            Return Nothing
+        End Try
     End Function
 
 End Module
