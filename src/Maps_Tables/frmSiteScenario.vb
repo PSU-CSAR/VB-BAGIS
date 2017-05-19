@@ -1624,6 +1624,8 @@ Public Class frmSiteScenario
 
     Private Sub BtnMaps_Click(sender As System.Object, e As System.EventArgs) Handles BtnMaps.Click
         Try
+            'Ensure default map frame name is set before trying to build map
+            Dim response As Integer = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
             BA_AddScenarioLayersToMapFrame(My.ThisApplication, My.Document, AOIFolderBase)
             SymbolizeSelectedSites()
             Scenario1Map_Flag = True

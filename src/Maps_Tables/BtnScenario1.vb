@@ -22,8 +22,11 @@ Public Class BtnScenario1
             Dim redColor As IRgbColor = New RgbColor
             redColor.RGB = RGB(255, 0, 0)
             Dim pMap As IMap = My.Document.FocusMap
-            Dim pTempLayer As ILayer
+            If BA_SiteScenarioValidMap(pMap) = False Then
+                Exit Sub
+            End If
             Dim changeColor As Boolean = True
+            Dim pTempLayer As ILayer
             For i = 0 To pMap.LayerCount - 1
                 pTempLayer = pMap.Layer(i)
                 If BA_MAPS_SCENARIO1_REPRESENTATION = pTempLayer.Name Then 'move the layer
@@ -69,7 +72,7 @@ Public Class BtnScenario1
             Basin_Name = cboSelectedBasin.getValue
         End If
         BA_RemoveLayersfromLegend(My.Document)
-        BAGIS_ClassLibrary.BA_DisplayMap(My.Document, 7, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
+        BA_DisplayMap(My.Document, 7, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                          Trim(frmSiteScenario.TxtScenario1.Text))
         BA_ZoomToAOI(My.Document, AOIFolderBase)
     End Sub

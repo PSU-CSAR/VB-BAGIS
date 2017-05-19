@@ -406,6 +406,10 @@ Public Class frmSiteRepresentations
         Dim aRow As DataGridViewRow = GrdExistingSites.Rows(e.RowIndex)
         Dim selected As Boolean = Convert.ToBoolean(aRow.Cells(idxSelected).Value)
         If selected = True Then
+            Dim pMap As IMap = My.Document.FocusMap
+            If BA_SiteScenarioValidMap(pMap) = False Then
+                Exit Sub
+            End If
             Dim fileName As String = Convert.ToString(aRow.Cells(idxRasterName).Value)
             Dim objectId As Integer = Convert.ToInt32(aRow.Cells(idxObjectId).Value)
             Dim strType As String = Convert.ToString(aRow.Cells(idxSiteType).Value)

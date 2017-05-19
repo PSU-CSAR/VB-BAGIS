@@ -2227,11 +2227,13 @@ Public Class frmGenerateMaps
         Dim response As Integer = BA_AddLayerstoMapFrame(My.ThisApplication, My.Document, AOIFolderBase, AOI_HasSNOTEL, AOI_HasSnowCourse, Scenario1Map_Flag, Scenario2Map_Flag)
         BA_AddMapElements(My.Document, cboSelectedAoi.getValue & Basin_Name, "Subtitle BAGIS")
         response = BA_DisplayMap(My.Document, 1, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
-                                 "Elevation Distribution")
-        BA_RemoveLayersfromLegend(My.Document)
+                                  "Elevation Distribution")
+        'BA_RemoveLayersfromLegend(My.Document)
     End Sub
 
     Private Sub CmdMaps_Click(sender As System.Object, e As System.EventArgs) Handles CmdMaps.Click
+        'Ensure default map frame name is set before trying to build map
+        Dim response As Integer = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
         AddLayersToMap()
         Call BA_Enable_MapFlags(True)
         MsgBox("Please use the menu items to view maps!")

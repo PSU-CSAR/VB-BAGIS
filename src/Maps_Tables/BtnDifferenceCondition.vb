@@ -10,6 +10,10 @@ Public Class BtnDifferenceCondition
 
     Protected Overrides Sub OnClick()
         Try
+            Dim pMap As ESRI.ArcGIS.Carto.IMap = My.Document.FocusMap
+            If BA_SiteScenarioValidMap(pMap) = False Then
+                Exit Sub
+            End If
             'Need to re-display the scenario vectors so we can change the color
             Dim filepath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
             Dim FileName As String = BA_EnumDescription(MapsFileName.ActualRepresentedArea)
@@ -39,7 +43,7 @@ Public Class BtnDifferenceCondition
             Basin_Name = cboSelectedBasin.getValue
         End If
         BA_RemoveLayersfromLegend(My.Document)
-        BAGIS_ClassLibrary.BA_DisplayMap(My.Document, 9, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
+        BA_DisplayMap(My.Document, 9, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                          "Difference of Representations")
         BA_ZoomToAOI(My.Document, AOIFolderBase)
     End Sub
