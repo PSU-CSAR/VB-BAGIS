@@ -2234,6 +2234,7 @@ Public Class frmGenerateMaps
     Private Sub CmdMaps_Click(sender As System.Object, e As System.EventArgs) Handles CmdMaps.Click
         'Ensure default map frame name is set before trying to build map
         Dim response As Integer = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
+        response = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)
         AddLayersToMap()
         Call BA_Enable_MapFlags(True)
         MsgBox("Please use the menu items to view maps!")

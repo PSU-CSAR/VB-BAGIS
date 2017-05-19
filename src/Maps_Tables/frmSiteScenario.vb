@@ -2001,6 +2001,7 @@ Public Class frmSiteScenario
         Try
             'Ensure default map frame name is set before trying to build map
             Dim response As Integer = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
+            response = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)
             BA_AddScenarioLayersToMapFrame(My.ThisApplication, My.Document, AOIFolderBase)
             SymbolizeSelectedSites()
             Scenario1Map_Flag = True
