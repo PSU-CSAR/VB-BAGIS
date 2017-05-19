@@ -15,6 +15,9 @@ Public Class BtnScenario2
             Dim redColor As IRgbColor = New RgbColor
             redColor.RGB = RGB(255, 0, 0)
             Dim pMap As IMap = My.Document.FocusMap
+            If BA_SiteScenarioValidMap(pMap) = False Then
+                Exit Sub
+            End If
             Dim pTempLayer As ILayer
             Dim changeColor As Boolean = True
             For i = 0 To pMap.LayerCount - 1
@@ -62,7 +65,7 @@ Public Class BtnScenario2
             Basin_Name = cboSelectedBasin.getValue
         End If
         BA_RemoveLayersfromLegend(My.Document)
-        BAGIS_ClassLibrary.BA_DisplayMap(My.Document, 8, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
+        BA_DisplayMap(My.Document, 8, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                          Trim(frmSiteScenario.TxtScenario2.Text))
         Dim scenarioText As String = "Scenario 2 sites are circled in gold"
         BA_MapUpdateSubTitle(My.Document, cboSelectedAoi.getValue & Basin_Name, Trim(frmSiteScenario.TxtScenario2.Text), scenarioText)

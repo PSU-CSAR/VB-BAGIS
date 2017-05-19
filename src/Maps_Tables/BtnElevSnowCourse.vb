@@ -14,8 +14,8 @@
         Else
             Basin_Name = cboSelectedBasin.getValue
         End If
-        BAGIS_ClassLibrary.BA_DisplayMap(My.Document, 3, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
-                                         "ELEVATION - SNOW COURSES")
+        BA_DisplayMap(My.Document, 3, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
+                      "ELEVATION - SNOW COURSES")
     End Sub
 
     Public WriteOnly Property SelectedProperty As Boolean

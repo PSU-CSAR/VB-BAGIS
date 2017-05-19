@@ -22,8 +22,11 @@ Public Class BtnScenario1
             Dim redColor As IRgbColor = New RgbColor
             redColor.RGB = RGB(255, 0, 0)
             Dim pMap As IMap = My.Document.FocusMap
-            Dim pTempLayer As ILayer
+            If BA_SiteScenarioValidMap(pMap) = False Then
+                Exit Sub
+            End If
             Dim changeColor As Boolean = True
+            Dim pTempLayer As ILayer
             For i = 0 To pMap.LayerCount - 1
                 pTempLayer = pMap.Layer(i)
                 If BA_MAPS_SCENARIO1_REPRESENTATION = pTempLayer.Name Then 'move the layer
@@ -45,15 +48,15 @@ Public Class BtnScenario1
                     Exit For
                 End If
             Next
-            If changeColor = True Then
-                'If not, re-add it as red
-                Dim filepath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
-                Dim FileName As String = BA_EnumDescription(MapsFileName.ActualRepresentedArea)
-                Dim filepathname As String = filepath & FileName
-                Dim success As BA_ReturnCode = BA_MapDisplayPolygon(My.Document, filepathname, BA_MAPS_SCENARIO1_REPRESENTATION, redColor)
-                'Reorder scenario layers so things are visible
-                BA_MoveScenarioLayers()
-            End If
+                    If changeColor = True Then
+                        'If not, re-add it as red
+                        Dim filepath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
+                        Dim FileName As String = BA_EnumDescription(MapsFileName.ActualRepresentedArea)
+                        Dim filepathname As String = filepath & FileName
+                        Dim success As BA_ReturnCode = BA_MapDisplayPolygon(My.Document, filepathname, BA_MAPS_SCENARIO1_REPRESENTATION, redColor)
+                        'Reorder scenario layers so things are visible
+                        BA_MoveScenarioLayers()
+                    End If
         Catch ex As Exception
             Windows.Forms.MessageBox.Show("An error occurred while trying to display the scenario 1 map.", "Error", Windows.Forms.MessageBoxButtons.OK)
             Debug.Print("OnClick" & ex.Message)
@@ -69,7 +72,7 @@ Public Class BtnScenario1
             Basin_Name = cboSelectedBasin.getValue
         End If
         BA_RemoveLayersfromLegend(My.Document)
-        BAGIS_ClassLibrary.BA_DisplayMap(My.Document, 7, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
+        BA_DisplayMap(My.Document, 7, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                          Trim(frmSiteScenario.TxtScenario1.Text))
         BA_ZoomToAOI(My.Document, AOIFolderBase)
     End Sub

@@ -464,62 +464,31 @@ ErrorHandler:
     End Sub
 
     Public Sub BA_Enable_ScenarioMapFlags(ByVal BValue As Boolean)
-        'Basin Analysis Tools
-        'ElevDistMap_Flag = BValue
-        'Dim ElevDistButton = AddIn.FromID(Of BtnElevationDist)(My.ThisAddIn.IDs.BtnElevationDist)
-        'ElevDistButton.SelectedProperty = BValue
-
-        'Dim ElevSNOTELButton = AddIn.FromID(Of BtnElevationSNOTEL)(My.ThisAddIn.IDs.BtnElevationSNOTEL)
-        'Dim ElevSnowCourse = AddIn.FromID(Of BtnElevSnowCourse)(My.ThisAddIn.IDs.BtnElevSnowCourse)
-
-        'If BValue Then 'enable flags
-        '    'If AOI_HasSNOTEL Then ElevSNOTELMap_Flag = BValue
-        '    'If AOI_HasSnowCourse Then ElevSnowCourseMap_Flag = BValue
-
-        '    If AOI_HasSNOTEL Then ElevSNOTELButton.SelectedProperty = BValue
-        '    If AOI_HasSnowCourse Then ElevSnowCourse.SelectedProperty = BValue
-
-        'Else 'disable flags
-        '    'ElevSNOTELMap_Flag = BValue
-        '    'ElevSnowCourseMap_Flag = BValue
-        '    ElevSNOTELButton.SelectedProperty = BValue
-        '    ElevSnowCourse.SelectedProperty = BValue
-
-        'End If
-        'Dim PrecipDistMapButton = AddIn.FromID(Of BtnPrecipitationDist)(My.ThisAddIn.IDs.BtnPrecipitationDist)
-        'Dim SlopeDistMapButton = AddIn.FromID(Of BtnSlopeDist)(My.ThisAddIn.IDs.BtnSlopeDist)
-        'Dim AspectDistMapButton = AddIn.FromID(Of BtnAspectDist)(My.ThisAddIn.IDs.BtnAspectDist)
-        'PrecipDistMapButton.SelectedProperty = BValue
-        'SlopeDistMapButton.SelectedProperty = BValue
-        'AspectDistMapButton.SelectedProperty = BValue
-        'PrecipDistMap_Flag = BValue
-        'SlopeDistMap_Flag = BValue
-        'AspectDistMap_Flag = BValue
         Dim SiteScenario1RepButton = AddIn.FromID(Of BtnScenario1)(My.ThisAddIn.IDs.BtnScenario1)
         Dim SiteScenario2RepButton = AddIn.FromID(Of BtnScenario2)(My.ThisAddIn.IDs.BtnScenario2)
         Dim RefDifferenceButton = AddIn.FromID(Of BtnDifferenceCondition)(My.ThisAddIn.IDs.BtnDifferenceCondition)
         Dim SiteRepresentationButton = AddIn.FromID(Of BtnSiteRepresentation)(My.ThisAddIn.IDs.BtnSiteRepresentation)
 
         If Scenario1Map_Flag = True Then
-            SiteScenario1RepButton.SelectedProperty = True
+            SiteScenario1RepButton.SelectedProperty = BValue
         Else
             SiteScenario1RepButton.SelectedProperty = False
         End If
 
         If Scenario2Map_Flag = True Then
-            SiteScenario2RepButton.SelectedProperty = True
+            SiteScenario2RepButton.SelectedProperty = BValue
         Else
             SiteScenario2RepButton.SelectedProperty = False
         End If
 
         If RepDifferenceMap_Flag = True Then
-            RefDifferenceButton.SelectedProperty = True
+            RefDifferenceButton.SelectedProperty = BValue
         Else
             RefDifferenceButton.SelectedProperty = False
         End If
 
         If SiteRepresentationMap_Flag = True Then
-            SiteRepresentationButton.selectedProperty = True
+            SiteRepresentationButton.selectedProperty = BValue
         Else
             SiteRepresentationButton.selectedProperty = False
         End If

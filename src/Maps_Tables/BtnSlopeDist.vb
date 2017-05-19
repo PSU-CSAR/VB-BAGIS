@@ -14,7 +14,7 @@
         Else
             Basin_Name = cboSelectedBasin.getValue
         End If
-        BAGIS_ClassLibrary.BA_DisplayMap(My.Document, 6, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
+        BA_DisplayMap(My.Document, 6, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                          "SLOPE DISTRIBUTION")
     End Sub
 
