@@ -748,13 +748,13 @@ Public Class FrmPsuedoSite
         Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
         Dim outFeaturesPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + "tmpBuffer"
         If item IsNot Nothing Then
-            success = BA_Buffer(item.Value, outFeaturesPath, strBuffer)
+            success = BA_Buffer(item.Value, outFeaturesPath, strBuffer, "ALL")
         End If
         If success = BA_ReturnCode.Success Then
             success = BA_Erase(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + m_aoiBoundary, _
                                outFeaturesPath, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & _
                                m_proximityLayer)
-            BA_Remove_ShapefileFromGDB(m_analysisFolder, "tmpBuffer")
+            'BA_Remove_ShapefileFromGDB(m_analysisFolder, "tmpBuffer")
         End If
         If Not success = BA_ReturnCode.Success Then
             MessageBox.Show("An error occurred while generating the proximity layer. It will not be used in analysis")
