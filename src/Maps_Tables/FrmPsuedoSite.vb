@@ -145,6 +145,56 @@ Public Class FrmPsuedoSite
             Exit Sub
         End If
 
+        If CkElev.Checked Then
+            Dim sbElev As StringBuilder = New StringBuilder()
+            Dim comps As Double
+            Dim minElev As Double = CDbl(txtMinElev.Text)
+            Dim upperElev As Double = 99999
+            If Not String.IsNullOrEmpty(TxtUpperRange.Text) Then
+                upperElev = CDbl(TxtUpperRange.Text)
+            End If
+            If String.IsNullOrEmpty(txtLower.Text) Then
+                sbElev.Append("Desired range lower: Value required!" + vbCrLf)
+            End If
+            'tryparse fails, doesn't get into comps < 0 comparison
+            If Double.TryParse(txtLower.Text, comps) Then
+                If comps < minElev Then
+                    sbElev.Append("Desired range lower: Value greater than minimum elevation is required!" + vbCrLf)
+                ElseIf comps > upperElev Then
+                    sbElev.Append("Desired range lower: Value less than upper desired range is required!" + vbCrLf)
+                End If
+            Else
+                sbElev.Append("Desired range lower: Numeric value required!")
+            End If
+            Dim maxElev As Double = CDbl(TxtMaxElev.Text)
+            Dim lowerRange As Double = 0
+            If Not String.IsNullOrEmpty(txtLower.Text) Then
+                lowerRange = CDbl(txtLower.Text)
+            End If
+            'tryparse fails, doesn't get into comps < 0 comparison
+            If Double.TryParse(TxtUpperRange.Text, comps) Then
+                If comps < lowerRange Then
+                    sbElev.Append("Desired range upper: Value greater than the lower desired range is required!" + vbCrLf)
+                ElseIf comps > maxElev Then
+                    sbElev.Append("Desired range upper: Value less than maximum elevation is required!" + vbCrLf)
+                End If
+            Else
+                sbElev.Append("Desired range upper: Numeric value required!" + vbCrLf)
+            End If
+
+            If sbElev.Length > 0 Then
+                Dim errMsg As String = "You selected the Elevation option but one or more of the parameters are invalid: " + _
+                    sbElev.ToString +
+                    " Click 'No' to fix the parameters, or 'Yes' to find a site without using the Elevation option ?"
+                Dim res As DialogResult = MessageBox.Show(sbElev.ToString, "Invalid validation", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
+                If res <> Windows.Forms.DialogResult.Yes Then
+                    Exit Sub
+                Else
+                    CkElev.Checked = False
+                End If
+            End If
+        End If
+
         'If user selected proximity layer, did they choose a layer?
         If CkProximity.Checked AndAlso LstVectors.SelectedItem Is Nothing Then
             Dim res As DialogResult = MessageBox.Show("You selected the Proximity option but failed to select a layer. Do you wish to " + _
@@ -460,54 +510,10 @@ Public Class FrmPsuedoSite
 
     Private Sub txtLower_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtLower.Validating
         RaiseEvent FormInputChanged()
-        Dim sb As StringBuilder = New StringBuilder()
-        Dim comps As Double
-        Dim minElev As Double = CDbl(txtMinElev.Text)
-        Dim upperElev As Double = 99999
-        If Not String.IsNullOrEmpty(TxtUpperRange.Text) Then
-            upperElev = CDbl(TxtUpperRange.Text)
-        End If
-        'tryparse fails, doesn't get into comps < 0 comparison
-        If Double.TryParse(txtLower.Text, comps) Then
-            If comps < minElev Then
-                sb.Append("Value greater than minimum elevation is required!")
-            ElseIf comps > upperElev Then
-                sb.Append("Value less than upper desired range is required!")
-            End If
-        Else
-            sb.Append("Numeric value required!")
-        End If
-        If sb.Length > 0 Then
-            e.Cancel = True
-            txtLower.Select(0, txtLower.Text.Length)
-            MessageBox.Show(sb.ToString)
-        End If
     End Sub
 
     Private Sub TxtUpperRange_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtUpperRange.Validating
         RaiseEvent FormInputChanged()
-        Dim sb As StringBuilder = New StringBuilder()
-        Dim comps As Double
-        Dim maxElev As Double = CDbl(TxtMaxElev.Text)
-        Dim lowerRange As Double = 0
-        If Not String.IsNullOrEmpty(txtLower.Text) Then
-            lowerRange = CDbl(txtLower.Text)
-        End If
-        'tryparse fails, doesn't get into comps < 0 comparison
-        If Double.TryParse(TxtUpperRange.Text, comps) Then
-            If comps < lowerRange Then
-                sb.Append("Value greater than the lower desired range is required!")
-            ElseIf comps > maxElev Then
-                sb.Append("Value less than maximum elevation is required!")
-            End If
-        Else
-            sb.Append("Numeric value required!")
-        End If
-        If sb.Length > 0 Then
-            e.Cancel = True
-            TxtUpperRange.Select(0, TxtUpperRange.Text.Length)
-            MessageBox.Show(sb.ToString)
-        End If
     End Sub
 
     Private Sub CmdPrism_Click(sender As System.Object, e As System.EventArgs) Handles CmdPrism.Click
@@ -1059,7 +1065,7 @@ Public Class FrmPsuedoSite
                 If Not fClass.ShapeType = ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPolygon Then
                     Dim comps As Double = -1
                     If Double.TryParse(txtBufferDistance.Text, comps) Then
-                        If comps < 1 Then
+                        If comps <= 0 Then
                             sb.Append("Value greater than 0 required for features that are not polygons!")
                         End If
                     Else
