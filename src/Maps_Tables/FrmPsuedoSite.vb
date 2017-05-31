@@ -21,7 +21,7 @@ Public Class FrmPsuedoSite
     Private m_demInMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
-    Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
+    Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
     Private m_lastAnalysis As PseudoSite = Nothing
     Private m_formLoaded As Boolean = False
 
@@ -95,6 +95,8 @@ Public Class FrmPsuedoSite
         txtMinElev.Text = Convert.ToString(AOI_DEMMin)
         TxtMaxElev.Text = Convert.ToString(AOI_DEMMax)
         TxtRange.Text = Val(TxtMaxElev.Text) - Val(txtMinElev.Text)
+        txtLower.Text = txtMinElev.Text
+        TxtUpperRange.Text = TxtMaxElev.Text
 
         'Set DEM label; Default is meters when form loads
         If m_usingElevMeters = False Then
@@ -538,6 +540,8 @@ Public Class FrmPsuedoSite
         txtMinPrecip.Text = Math.Round(pRasterStats.Minimum - 0.005, 2)
         txtMaxPrecip.Text = Math.Round(pRasterStats.Maximum + 0.005, 2)
         txtRangePrecip.Text = Val(txtMaxPrecip.Text) - Val(txtMinPrecip.Text)
+        TxtPrecipLower.Text = txtMinPrecip.Text
+        TxtPrecipUpper.Text = txtMaxPrecip.Text
 
         If progressDialog2 IsNot Nothing Then
             progressDialog2.HideDialog()
@@ -1070,8 +1074,8 @@ Public Class FrmPsuedoSite
     Private Sub BtnClear_Click(sender As System.Object, e As System.EventArgs) Handles BtnClear.Click
         SuggestSiteName()
         CkElev.Checked = False
-        txtLower.Text = Nothing
-        TxtUpperRange.Text = Nothing
+        txtLower.Text = txtMinElev.Text
+        TxtUpperRange.Text = TxtMaxElev.Text
         CkPrecip.Checked = False
         CmboxPrecipType.SelectedIndex = 0
         CmboxBegin.SelectedIndex = 0

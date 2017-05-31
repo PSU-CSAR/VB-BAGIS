@@ -113,7 +113,7 @@ Partial Class FrmPsuedoSite
         Me.txtBufferDistance.Location = New System.Drawing.Point(372, 42)
         Me.txtBufferDistance.Margin = New System.Windows.Forms.Padding(2)
         Me.txtBufferDistance.Name = "txtBufferDistance"
-        Me.txtBufferDistance.Size = New System.Drawing.Size(41, 20)
+        Me.txtBufferDistance.Size = New System.Drawing.Size(75, 20)
         Me.txtBufferDistance.TabIndex = 71
         Me.txtBufferDistance.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -260,7 +260,7 @@ Partial Class FrmPsuedoSite
         Me.txtLower.Location = New System.Drawing.Point(218, 46)
         Me.txtLower.Margin = New System.Windows.Forms.Padding(2)
         Me.txtLower.Name = "txtLower"
-        Me.txtLower.Size = New System.Drawing.Size(41, 20)
+        Me.txtLower.Size = New System.Drawing.Size(75, 20)
         Me.txtLower.TabIndex = 79
         Me.txtLower.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -282,7 +282,7 @@ Partial Class FrmPsuedoSite
         '
         Me.Label3.AutoSize = True
         Me.Label3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label3.Location = New System.Drawing.Point(279, 47)
+        Me.Label3.Location = New System.Drawing.Point(303, 47)
         Me.Label3.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(49, 16)
@@ -303,10 +303,10 @@ Partial Class FrmPsuedoSite
         'TxtUpperRange
         '
         Me.TxtUpperRange.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TxtUpperRange.Location = New System.Drawing.Point(332, 46)
+        Me.TxtUpperRange.Location = New System.Drawing.Point(356, 46)
         Me.TxtUpperRange.Margin = New System.Windows.Forms.Padding(2)
         Me.TxtUpperRange.Name = "TxtUpperRange"
-        Me.TxtUpperRange.Size = New System.Drawing.Size(41, 20)
+        Me.TxtUpperRange.Size = New System.Drawing.Size(75, 20)
         Me.TxtUpperRange.TabIndex = 77
         Me.TxtUpperRange.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -430,7 +430,7 @@ Partial Class FrmPsuedoSite
         Me.TxtPrecipLower.Location = New System.Drawing.Point(214, 115)
         Me.TxtPrecipLower.Margin = New System.Windows.Forms.Padding(2)
         Me.TxtPrecipLower.Name = "TxtPrecipLower"
-        Me.TxtPrecipLower.Size = New System.Drawing.Size(41, 20)
+        Me.TxtPrecipLower.Size = New System.Drawing.Size(75, 20)
         Me.TxtPrecipLower.TabIndex = 91
         Me.TxtPrecipLower.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
@@ -452,7 +452,7 @@ Partial Class FrmPsuedoSite
         '
         Me.Label14.AutoSize = True
         Me.Label14.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label14.Location = New System.Drawing.Point(279, 117)
+        Me.Label14.Location = New System.Drawing.Point(310, 118)
         Me.Label14.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label14.Name = "Label14"
         Me.Label14.Size = New System.Drawing.Size(49, 16)
@@ -474,10 +474,10 @@ Partial Class FrmPsuedoSite
         '
         Me.TxtPrecipUpper.Enabled = False
         Me.TxtPrecipUpper.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TxtPrecipUpper.Location = New System.Drawing.Point(325, 115)
+        Me.TxtPrecipUpper.Location = New System.Drawing.Point(356, 116)
         Me.TxtPrecipUpper.Margin = New System.Windows.Forms.Padding(2)
         Me.TxtPrecipUpper.Name = "TxtPrecipUpper"
-        Me.TxtPrecipUpper.Size = New System.Drawing.Size(41, 20)
+        Me.TxtPrecipUpper.Size = New System.Drawing.Size(75, 20)
         Me.TxtPrecipUpper.TabIndex = 89
         Me.TxtPrecipUpper.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
