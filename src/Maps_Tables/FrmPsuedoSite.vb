@@ -146,15 +146,13 @@ Public Class FrmPsuedoSite
         End If
 
         If CkElev.Checked Then
+            'Validate lower and upper elevations
             Dim sbElev As StringBuilder = New StringBuilder()
             Dim comps As Double
             Dim minElev As Double = CDbl(txtMinElev.Text)
             Dim upperElev As Double = 99999
             If Not String.IsNullOrEmpty(TxtUpperRange.Text) Then
-                upperElev = CDbl(TxtUpperRange.Text)
-            End If
-            If String.IsNullOrEmpty(txtLower.Text) Then
-                sbElev.Append("Desired range lower: Value required!" + vbCrLf)
+                Double.TryParse(TxtUpperRange.Text, upperElev)
             End If
             'tryparse fails, doesn't get into comps < 0 comparison
             If Double.TryParse(txtLower.Text, comps) Then
@@ -164,12 +162,12 @@ Public Class FrmPsuedoSite
                     sbElev.Append("Desired range lower: Value less than upper desired range is required!" + vbCrLf)
                 End If
             Else
-                sbElev.Append("Desired range lower: Numeric value required!")
+                sbElev.Append("Desired range lower: Numeric value required!" + vbCrLf)
             End If
             Dim maxElev As Double = CDbl(TxtMaxElev.Text)
             Dim lowerRange As Double = 0
             If Not String.IsNullOrEmpty(txtLower.Text) Then
-                lowerRange = CDbl(txtLower.Text)
+                Double.TryParse(txtLower.Text, lowerRange)
             End If
             'tryparse fails, doesn't get into comps < 0 comparison
             If Double.TryParse(TxtUpperRange.Text, comps) Then
@@ -183,10 +181,10 @@ Public Class FrmPsuedoSite
             End If
 
             If sbElev.Length > 0 Then
-                Dim errMsg As String = "You selected the Elevation option but one or more of the parameters are invalid: " + _
-                    sbElev.ToString +
-                    " Click 'No' to fix the parameters, or 'Yes' to find a site without using the Elevation option ?"
-                Dim res As DialogResult = MessageBox.Show(sbElev.ToString, "Invalid validation", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
+                Dim errMsg As String = "You selected the Elevation option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
+                    sbElev.ToString + vbCrLf +
+                    "Click 'No' to fix the parameters, or 'Yes' to find a site without using the Elevation option ?"
+                Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid elevation values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
                 If res <> Windows.Forms.DialogResult.Yes Then
                     Exit Sub
                 Else
@@ -196,14 +194,32 @@ Public Class FrmPsuedoSite
         End If
 
         'If user selected proximity layer, did they choose a layer?
-        If CkProximity.Checked AndAlso LstVectors.SelectedItem Is Nothing Then
-            Dim res As DialogResult = MessageBox.Show("You selected the Proximity option but failed to select a layer. Do you wish to " + _
-                                                      "find a site without using the Proximity option ?", "Missing layer", MessageBoxButtons.YesNo, _
-                                                      MessageBoxIcon.Question)
-            If res <> Windows.Forms.DialogResult.Yes Then
-                Exit Sub
-            Else
-                CkProximity.Checked = False
+        If CkProximity.Checked Then
+            If LstVectors.SelectedItem Is Nothing Then
+                Dim res As DialogResult = MessageBox.Show("You selected the Proximity option but failed to select a layer. Do you wish to " + _
+                                                          "find a site without using the Proximity option ?", "Missing layer", MessageBoxButtons.YesNo, _
+                                                          MessageBoxIcon.Question)
+                If res <> Windows.Forms.DialogResult.Yes Then
+                    Exit Sub
+                Else
+                    CkProximity.Checked = False
+                End If
+            End If
+            'If proximity still selected, validate buffer distance
+            If CkProximity.Checked Then
+                Dim errorMsg As String = ValidBufferDistance()
+                If Not String.IsNullOrEmpty(errorMsg) Then
+                    txtBufferDistance.Select(0, txtBufferDistance.Text.Length)
+                    Dim errorMsg2 As String = "You selected the Proximity option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
+                                              errorMsg + vbCrLf +
+                                             "Click 'No' to fix the parameter, or 'Yes' to find a site without using the Proximity option ?"
+                    Dim res As DialogResult = MessageBox.Show(errorMsg2, "Invalid proximity buffer", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
+                    If res <> Windows.Forms.DialogResult.Yes Then
+                        Exit Sub
+                    Else
+                        CkProximity.Checked = False
+                    End If
+                End If
             End If
         End If
 
@@ -1046,14 +1062,6 @@ Public Class FrmPsuedoSite
 
     Private Sub txtBufferDistance_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtBufferDistance.Validating
         RaiseEvent FormInputChanged()
-        If CkProximity.Checked Then
-            Dim errorMsg As String = ValidBufferDistance()
-            If Not String.IsNullOrEmpty(errorMsg) Then
-                e.Cancel = True
-                txtBufferDistance.Select(0, txtBufferDistance.Text.Length)
-                MessageBox.Show(errorMsg)
-            End If
-        End If
     End Sub
 
     Private Function ValidBufferDistance() As String
@@ -1066,10 +1074,10 @@ Public Class FrmPsuedoSite
                     Dim comps As Double = -1
                     If Double.TryParse(txtBufferDistance.Text, comps) Then
                         If comps <= 0 Then
-                            sb.Append("Value greater than 0 required for features that are not polygons!")
+                            sb.Append("Value greater than 0 required for features that are not polygons!" + vbCrLf)
                         End If
                     Else
-                        sb.Append("Numeric value required for features that are not polygons!")
+                        sb.Append("Numeric value required for features that are not polygons!" + vbCrLf)
                     End If
                 End If
             End If
