@@ -730,6 +730,16 @@ Public Class FrmPsuedoSite
                 End If
             Next
 
+            'Remove previous circle if it exists
+            For i = nlayers To 1 Step -1
+                tempLayer = CType(pMxDoc.FocusMap.Layer(i - 1), ILayer)
+                If tempLayer.Name = BA_MAPS_PS_INDICATOR Then
+                    pMxDoc.FocusMap.DeleteLayer(tempLayer)
+                    nlayers = pMxDoc.FocusMap.LayerCount
+                    Exit For
+                End If
+            Next
+
             Dim pActualColor As IColor = New RgbColor
             pActualColor.RGB = RGB(169, 0, 230)    'Purple
             Dim actualRenderer As ISimpleRenderer = BA_BuildRendererForPoints(pActualColor, 25)

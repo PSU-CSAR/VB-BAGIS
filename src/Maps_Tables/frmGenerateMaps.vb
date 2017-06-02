@@ -2228,7 +2228,7 @@ Public Class frmGenerateMaps
         BA_AddMapElements(My.Document, cboSelectedAoi.getValue & Basin_Name, "Subtitle BAGIS")
         response = BA_DisplayMap(My.Document, 1, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                   "Elevation Distribution")
-        'BA_RemoveLayersfromLegend(My.Document)
+        BA_RemoveLayersfromLegend(My.Document)
     End Sub
 
     Private Sub CmdMaps_Click(sender As System.Object, e As System.EventArgs) Handles CmdMaps.Click

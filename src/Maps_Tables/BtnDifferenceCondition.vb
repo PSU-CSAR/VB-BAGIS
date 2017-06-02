@@ -1,5 +1,6 @@
 ﻿Imports BAGIS_ClassLibrary
 Imports ESRI.ArcGIS.Display
+Imports ESRI.ArcGIS.Carto
 
 Public Class BtnDifferenceCondition
     Inherits ESRI.ArcGIS.Desktop.AddIns.Button
@@ -14,26 +15,64 @@ Public Class BtnDifferenceCondition
             If BA_SiteScenarioValidMap(pMap) = False Then
                 Exit Sub
             End If
-            'Need to re-display the scenario vectors so we can change the color
-            Dim filepath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
-            Dim FileName As String = BA_EnumDescription(MapsFileName.ActualRepresentedArea)
-            Dim filepathname As String = filepath & FileName
             Dim pColor As IColor = New RgbColor
             pColor.RGB = RGB(232, 157, 116)
-            Dim success As BA_ReturnCode = BA_MapDisplayPolygon(My.Document, filepathname, BA_MAPS_SCENARIO1_REPRESENTATION, pColor, 0)
-
-            FileName = BA_EnumDescription(MapsFileName.PseudoRepresentedArea)
-            filepathname = filepath & FileName
+            Dim pTempLayer As ILayer
+            'Scenario 1 Representation
+            For i = 0 To pMap.LayerCount - 1
+                pTempLayer = pMap.Layer(i)
+                If BA_MAPS_SCENARIO1_REPRESENTATION = pTempLayer.Name Then 'we have the right layer
+                    If TypeOf pTempLayer Is IFeatureLayer Then
+                        Dim gfLayer As IGeoFeatureLayer = CType(pTempLayer, IGeoFeatureLayer)
+                        Dim renderer As IFeatureRenderer = gfLayer.Renderer
+                        If TypeOf renderer Is ISimpleRenderer Then
+                            Dim sRenderer As ISimpleRenderer = CType(renderer, ISimpleRenderer)
+                            Dim pSymbol As ISymbol = sRenderer.Symbol
+                            If TypeOf pSymbol Is ISimpleFillSymbol Then
+                                Dim fSymbol As ISimpleFillSymbol = CType(pSymbol, ISimpleFillSymbol)
+                                Dim fColor As IColor = fSymbol.Color
+                                'Change display color to red, if it isn't already
+                                If fColor.RGB <> pColor.RGB Then
+                                    fSymbol.Color = pColor
+                                    sRenderer.Symbol = pSymbol
+                                End If
+                            End If
+                        End If
+                    End If
+                    Exit For
+                End If
+            Next
+            'Scenario 2 representation
             pColor.RGB = RGB(159, 167, 201)
-            success = BA_MapDisplayPolygon(My.Document, filepathname, BA_MAPS_SCENARIO2_REPRESENTATION, pColor, 0)
+            For i = 0 To pMap.LayerCount - 1
+                pTempLayer = pMap.Layer(i)
+                If BA_MAPS_SCENARIO2_REPRESENTATION = pTempLayer.Name Then 'move the layer
+                    If TypeOf pTempLayer Is IFeatureLayer Then
+                        Dim gfLayer As IGeoFeatureLayer = CType(pTempLayer, IGeoFeatureLayer)
+                        Dim renderer As IFeatureRenderer = gfLayer.Renderer
+                        If TypeOf renderer Is ISimpleRenderer Then
+                            Dim sRenderer As ISimpleRenderer = CType(renderer, ISimpleRenderer)
+                            Dim pSymbol As ISymbol = sRenderer.Symbol
+                            If TypeOf pSymbol Is ISimpleFillSymbol Then
+                                Dim fSymbol As ISimpleFillSymbol = CType(pSymbol, ISimpleFillSymbol)
+                                Dim fColor As IColor = fSymbol.Color
+                                'Change display color to red, if it isn't already
+                                If fColor.RGB <> pColor.RGB Then
+                                    fSymbol.Color = pColor
+                                    sRenderer.Symbol = pSymbol
+                                End If
+                            End If
+                        End If
+                    End If
+                    Exit For
+                End If
+            Next
             'Reorder scenario layers so things are visible
             BA_MoveScenarioLayers()
         Catch ex As Exception
             Windows.Forms.MessageBox.Show("An error occurred while trying to display the difference map.", "Error", Windows.Forms.MessageBoxButtons.OK)
             Debug.Print("OnClick" & ex.Message)
         End Try
-
-
         Dim Basin_Name As String
         Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
         Dim cboSelectedAoi = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
@@ -42,7 +81,6 @@ Public Class BtnDifferenceCondition
         Else
             Basin_Name = cboSelectedBasin.getValue
         End If
-        BA_RemoveLayersfromLegend(My.Document)
         BA_DisplayMap(My.Document, 9, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                          "Difference of Representations")
         BA_ZoomToAOI(My.Document, AOIFolderBase)
