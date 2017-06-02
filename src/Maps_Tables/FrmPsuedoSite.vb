@@ -183,7 +183,7 @@ Public Class FrmPsuedoSite
             If sbElev.Length > 0 Then
                 Dim errMsg As String = "You selected the Elevation option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
                     sbElev.ToString + vbCrLf +
-                    "Click 'No' to fix the parameters, or 'Yes' to find a site without using the Elevation option ?"
+                    "Click 'No' to fix the parameters, or 'Yes' to find a site without using the Elevation option"
                 Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid elevation values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
                 If res <> Windows.Forms.DialogResult.Yes Then
                     Exit Sub
@@ -197,7 +197,7 @@ Public Class FrmPsuedoSite
         If CkProximity.Checked Then
             If LstVectors.SelectedItem Is Nothing Then
                 Dim res As DialogResult = MessageBox.Show("You selected the Proximity option but failed to select a layer. Do you wish to " + _
-                                                          "find a site without using the Proximity option ?", "Missing layer", MessageBoxButtons.YesNo, _
+                                                          "find a site without using the Proximity option", "Missing layer", MessageBoxButtons.YesNo, _
                                                           MessageBoxIcon.Question)
                 If res <> Windows.Forms.DialogResult.Yes Then
                     Exit Sub
@@ -223,16 +223,59 @@ Public Class FrmPsuedoSite
             End If
         End If
 
-        'If user selected PRISM layer, did they enter a range?
+        'If user selected PRISM layer, did they enter a valid range?
         If CkPrecip.Checked Then
-            If String.IsNullOrEmpty(TxtPrecipUpper.Text) Or String.IsNullOrEmpty(TxtPrecipLower.Text) Then
-                Dim res As DialogResult = MessageBox.Show("You selected the Precipitation option but failed to completely enter the desired range. Do you wish to " + _
-                                          "find a site without using the Precipitation option ?", "Missing range", MessageBoxButtons.YesNo, _
-                                          MessageBoxIcon.Question)
+            Dim sbPrism As StringBuilder = New StringBuilder()
+            Dim comps As Double
+            If Not Double.TryParse(txtMinPrecip.Text, comps) Then
+                Dim errMsg As String = "You selected the Precipitation option but have not configured a valid range." + vbCrLf + vbCrLf + _
+                    "Click 'No' to add the desired range, or 'Yes' to find a site without using the Precipitation option."
+                Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid precipitation values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
                 If res <> Windows.Forms.DialogResult.Yes Then
                     Exit Sub
                 Else
                     CkPrecip.Checked = False
+                End If
+            End If
+            'Is Precip option still selected?
+            If CkPrecip.Checked Then
+                Dim minPrecip As Double = CDbl(txtMinPrecip.Text)
+                Dim upperPrecip As Double = 99999
+                If Not String.IsNullOrEmpty(TxtPrecipUpper.Text) Then
+                    Double.TryParse(TxtPrecipUpper.Text, upperPrecip)
+                End If
+                'tryparse fails, doesn't get into comps < 0 comparison
+                If Double.TryParse(TxtPrecipLower.Text, comps) Then
+                    If comps < minPrecip Then
+                        sbPrism.Append("Desired range lower: Value greater than minimum precipitation is required!" + vbCrLf)
+                    ElseIf comps > upperPrecip Then
+                        sbPrism.Append("Desired range lower: Value less than upper desired range is required!" + vbCrLf)
+                    End If
+                Else
+                    sbPrism.Append("Desired range lower: Numeric value required!" + vbCrLf)
+                End If
+                Dim maxPrecip As Double = CDbl(txtMaxPrecip.Text)
+                Dim lowerRange As Double = comps
+                'tryparse fails, doesn't get into comps < 0 comparison
+                If Double.TryParse(TxtPrecipUpper.Text, comps) Then
+                    If comps < lowerRange Then
+                        sbPrism.Append("Desired range upper: Value greater than the lower desired range is required!" + vbCrLf)
+                    ElseIf comps > maxPrecip Then
+                        sbPrism.Append("Desired range upper: Value less than maximum precipitation is required!" + vbCrLf)
+                    End If
+                Else
+                    sbPrism.Append("Desired range upper: Numeric value required!" + vbCrLf)
+                End If
+                If sbPrism.Length > 0 Then
+                    Dim errMsg As String = "You selected the Precipitation option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
+                        sbPrism.ToString + vbCrLf +
+                        "Click 'No' to fix the parameters, or 'Yes' to find a site without using the Precipitation option."
+                    Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid precipitation values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
+                    If res <> Windows.Forms.DialogResult.Yes Then
+                        Exit Sub
+                    Else
+                        CkPrecip.Checked = False
+                    End If
                 End If
             End If
         End If
@@ -1006,54 +1049,10 @@ Public Class FrmPsuedoSite
 
     Private Sub TxtPrecipUpper_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtPrecipUpper.Validating
         RaiseEvent FormInputChanged()
-        Dim sb As StringBuilder = New StringBuilder()
-        Dim comps As Double
-        Dim maxPrecip As Double = CDbl(txtMaxPrecip.Text)
-        Dim lowerRange As Double = 0
-        If Not String.IsNullOrEmpty(TxtPrecipLower.Text) Then
-            lowerRange = CDbl(TxtPrecipLower.Text)
-        End If
-        'tryparse fails, doesn't get into comps < 0 comparison
-        If Double.TryParse(TxtPrecipUpper.Text, comps) Then
-            If comps < lowerRange Then
-                sb.Append("Value greater than the lower desired range is required!")
-            ElseIf comps > maxPrecip Then
-                sb.Append("Value less than maximum precipitation is required!")
-            End If
-        Else
-            sb.Append("Numeric value required!")
-        End If
-        If sb.Length > 0 Then
-            e.Cancel = True
-            txtMaxPrecip.Select(0, txtMaxPrecip.Text.Length)
-            MessageBox.Show(sb.ToString)
-        End If
     End Sub
 
     Private Sub TxtPrecipLower_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtPrecipLower.Validating
         RaiseEvent FormInputChanged()
-        Dim sb As StringBuilder = New StringBuilder()
-        Dim comps As Double
-        Dim minPrecip As Double = CDbl(txtMinPrecip.Text)
-        Dim upperPrecip As Double = 99999
-        If Not String.IsNullOrEmpty(TxtPrecipUpper.Text) Then
-            upperPrecip = CDbl(TxtPrecipUpper.Text)
-        End If
-        'tryparse fails, doesn't get into comps < 0 comparison
-        If Double.TryParse(TxtPrecipLower.Text, comps) Then
-            If comps < minPrecip Then
-                sb.Append("Value greater than minimum precipitation is required!")
-            ElseIf comps > upperPrecip Then
-                sb.Append("Value less than upper desired range is required!")
-            End If
-        Else
-            sb.Append("Numeric value required!")
-        End If
-        If sb.Length > 0 Then
-            e.Cancel = True
-            TxtPrecipLower.Select(0, TxtPrecipLower.Text.Length)
-            MessageBox.Show(sb.ToString)
-        End If
     End Sub
 
     Private Sub LstVectors_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstVectors.SelectedIndexChanged
