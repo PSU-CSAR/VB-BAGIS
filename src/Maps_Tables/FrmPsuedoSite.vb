@@ -24,6 +24,7 @@ Public Class FrmPsuedoSite
     Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
     Private m_lastAnalysis As PseudoSite = Nothing
     Private m_formLoaded As Boolean = False
+    Private m_cellSize As Double
 
     Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits, _
                    ByVal siteScenarioToolTimeStamp As DateTime)
@@ -303,9 +304,9 @@ Public Class FrmPsuedoSite
             pStepProg.Message = "Executing Euclidean distance tool"
             pStepProg.Step()
             '@ToDo: Verify what cell size should be
-            Dim cellSize As Double = BA_CellSize(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces), BA_EnumDescription(MapsFileName.filled_dem_gdb))
+            m_cellSize = BA_CellSize(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces), BA_EnumDescription(MapsFileName.filled_dem_gdb))
             success = BA_EuclideanDistance(m_analysisFolder + "\" + m_representedArea, m_analysisFolder + "\" + distanceFileName, _
-                                           CStr(cellSize), maskPath, snapRasterPath, maskPath)
+                                           CStr(m_cellSize), maskPath, snapRasterPath, maskPath)
         End If
         If CkElev.Checked = True Then
             success = GenerateElevationLayer(pStepProg, snapRasterPath)
@@ -328,7 +329,7 @@ Public Class FrmPsuedoSite
                 errorMsg = errorMsg + " The proximity layer will not be used in analysis."
                 MessageBox.Show(errorMsg)
             Else
-                success = GenerateProximityLayer(pStepProg)
+                success = GenerateProximityLayer(pStepProg, snapRasterPath)
                 If success = BA_ReturnCode.Success Then
                     sb.Append(m_analysisFolder + "\" + m_proximityLayer + "; ")
                 End If
@@ -343,6 +344,17 @@ Public Class FrmPsuedoSite
             sb.Remove(sb.ToString().LastIndexOf("; "), "; ".Length)
             success = BA_GetCellStatistics(sb.ToString, snapRasterPath, "MINIMUM", _
                                            m_analysisFolder + "\" + cellStatFileName, "false")
+        End If
+
+        If BA_IsRasterEmpty(m_analysisFolder, cellStatFileName) Then
+            Dim errMsg As String = "The entire area of the AOI was excluded using the constraints you selected. " +
+                "No suitable site location could be found. "
+            MessageBox.Show(errMsg, "No site location found", MessageBoxButtons.OK, MessageBoxIcon.Hand)
+            If progressDialog2 IsNot Nothing Then
+                progressDialog2.HideDialog()
+            End If
+            BtnFindSite.Enabled = True
+            Exit Sub
         End If
 
         Dim timesFileName As String = "ps_times"
@@ -497,7 +509,7 @@ Public Class FrmPsuedoSite
         Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
                                                                      reclassElevPath, snapRasterPath)
         'Add 'NAME' field to be used as label for map
-        success = BA_AddFieldToRaster(m_analysisFolder, m_elevLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+        success = BA_AddUserFieldToRaster(m_analysisFolder, m_elevLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
                                       100, BA_MAPS_PS_ELEVATION)
         Return success
     End Function
@@ -511,13 +523,15 @@ Public Class FrmPsuedoSite
         Dim strLowerRange As String = TxtPrecipLower.Text
         Dim strUpperRange As String = TxtPrecipUpper.Text
         Dim strMaxPrecip As String = txtMaxPrecip.Text
-        sb.Append(strMinPrecip + " " + strLowerRange + " 0;")
+        sb.Append(strMinPrecip + " " + strLowerRange + " NoData;")
         sb.Append(strLowerRange + " " + strUpperRange + " 1;")
-        sb.Append(strUpperRange + " " + strMaxPrecip + " 0 ")
+        sb.Append(strUpperRange + " " + strMaxPrecip + " NoData ")
 
         Dim inputFolder As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True)
-        Dim prismRasterName As String = AOIPrismFolderNames.annual.ToString    'read direct Annual PRISM raster 
-        If CmboxPrecipType.SelectedIndex > 0 And CmboxPrecipType.SelectedIndex < 5 Then 'read directly Quarterly PRISM raster
+        Dim prismRasterName As String
+        If CmboxPrecipType.SelectedIndex = 0 Then
+            prismRasterName = AOIPrismFolderNames.annual.ToString    'read direct Annual PRISM raster
+        ElseIf CmboxPrecipType.SelectedIndex > 0 And CmboxPrecipType.SelectedIndex < 5 Then 'read directly Quarterly PRISM raster
             prismRasterName = BA_GetPrismFolderName(CmboxPrecipType.SelectedIndex + 12)
         Else 'sum individual monthly PRISM rasters
             Dim response As Integer = BA_PRISMCustom(My.Document, AOIFolderBase, Val(CmboxBegin.SelectedItem), Val(CmboxEnd.SelectedItem))
@@ -529,30 +543,12 @@ Public Class FrmPsuedoSite
             prismRasterName = BA_TEMP_PRISM
         End If
         Dim inputPath As String = inputFolder + prismRasterName
-        Dim reclassPrismFile As String = "reclpris"
-        Dim reclassPrismPath As String = m_analysisFolder & "\" & reclassPrismFile
+        Dim reclassPrismPath As String = m_analysisFolder & "\" & m_precipLayer
         Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
                                                                              reclassPrismPath, snapRasterPath)
-        pStepProg.Message = "Convert precipitation raster to feature class"
-        pStepProg.Step()
-        '2. Convert raster to polygon
-        Dim reclassPrecFc As String = "prisrecl_v"
-        Dim reclassPrecFcPath As String = m_analysisFolder & "\" & reclassPrecFc
-        If success = BA_ReturnCode.Success Then
-            success = BA_Raster2Polygon_GP(reclassPrismPath, reclassPrecFcPath, snapRasterPath)
-        End If
-
-        '3. Dissolve on grid code
-        Dim precipLayerPath As String = m_analysisFolder & "\" & m_precipLayer
-        If success = BA_ReturnCode.Success Then
-            success = BA_Dissolve(reclassPrecFcPath, BA_FIELD_GRIDCODE, precipLayerPath)
-        End If
-
-        '4. Delete the polygon in the desired precipitation range; This should always be #2
-        If success = BA_ReturnCode.Success Then
-            Dim selectQuery As String = " " + BA_FIELD_GRIDCODE + " = 2"
-            success = BA_DeleteFeatures(m_analysisFolder, m_precipLayer, selectQuery)
-        End If
+        'Add 'NAME' field to be used as label for map
+        success = BA_AddUserFieldToRaster(m_analysisFolder, m_precipLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                                      100, BA_MAPS_PS_PRECIPITATION)
         Return success
     End Function
 
@@ -660,17 +656,8 @@ Public Class FrmPsuedoSite
         Dim retVal As Integer = -1
 
         Try
-            'Precipitation if used
-            Dim filepathname As String = m_analysisFolder & "\" & m_precipLayer
-            If m_lastAnalysis.UsePrism Then
-                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                    pColor.RGB = RGB(65, 105, 225) 'royal blue
-                    success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_PRECIPITATION, pColor, 30)
-                End If
-            End If
-
             'Scenario 2 Represented area
-            filepathname = m_analysisFolder & "\" & m_representedArea
+            Dim filepathname As String = m_analysisFolder & "\" & m_representedArea
             If Not BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
                 MessageBox.Show("Unable to locate the represented area from the site scenario tool. Cannot load map.", "Error", _
                      MessageBoxButtons.OK, MessageBoxIcon.Warning)
@@ -750,6 +737,16 @@ Public Class FrmPsuedoSite
                 End If
             End If
 
+            'Precipitation if used
+            filepathname = m_analysisFolder & "\" & m_precipLayer
+            If m_lastAnalysis.UsePrism Then
+                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                    success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_PRECIPITATION, pColor, 30)
+                    retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PRECIPITATION, _
+                                MapsDisplayStyle.Purple_Blues, 30, WorkspaceType.Geodatabase)
+                End If
+            End If
+
             'add hillshade
             filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) & _
                 BA_GetBareName(BA_EnumDescription(PublicPath.Hillshade))
@@ -789,7 +786,7 @@ Public Class FrmPsuedoSite
         End If
     End Sub
 
-    Private Function GenerateProximityLayer(ByVal pStepProg As IStepProgressor) As BA_ReturnCode
+    Private Function GenerateProximityLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
         pStepProg.Message = "Generating proximity layer"
         pStepProg.Step()
 
@@ -814,15 +811,18 @@ Public Class FrmPsuedoSite
 
         Dim item As LayerListItem = LstVectors.SelectedItem
         Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
-        Dim outFeaturesPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + "tmpBuffer"
+        Dim tempProximity As String = "ps_prox_v"
+        Dim outFeaturesPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tempProximity
         If item IsNot Nothing Then
             success = BA_Buffer(item.Value, outFeaturesPath, strBuffer, "ALL")
         End If
         If success = BA_ReturnCode.Success Then
-            success = BA_Erase(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + m_aoiBoundary, _
-                               outFeaturesPath, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & _
-                               m_proximityLayer)
-            'BA_Remove_ShapefileFromGDB(m_analysisFolder, "tmpBuffer")
+            success = BA_AddUserFieldToVector(m_analysisFolder, tempProximity, BA_FIELD_PSITE, esriFieldType.esriFieldTypeInteger, _
+                                              -1, "1")
+        End If
+        If success = BA_ReturnCode.Success Then
+            success = BA_Feature2RasterGP(outFeaturesPath, m_analysisFolder + "\" + m_proximityLayer, BA_FIELD_PSITE, m_cellSize, snapRasterPath)
+            BA_Remove_ShapefileFromGDB(m_analysisFolder, tempProximity)
         End If
         If Not success = BA_ReturnCode.Success Then
             MessageBox.Show("An error occurred while generating the proximity layer. It will not be used in analysis")
