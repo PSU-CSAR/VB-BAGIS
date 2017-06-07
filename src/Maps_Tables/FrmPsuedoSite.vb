@@ -285,9 +285,8 @@ Public Class FrmPsuedoSite
 
         BtnFindSite.Enabled = False
 
-        'Use this to hold the list of layers that we send to the union tool
+        'Use this to hold the list of layers that we send to the cell statistics tool
         Dim sb As StringBuilder = New StringBuilder()
-        sb.Append(m_analysisFolder + "\" + m_representedArea + "; ")
 
         ' Create/configure a step progressor
         Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 15)
@@ -297,6 +296,17 @@ Public Class FrmPsuedoSite
         progressDialog2.ShowDialog()
 
         Dim success As BA_ReturnCode = BA_ReturnCode.Success
+
+        '2. Identify cells that are furthest from the represented area (Euclidean distance tool)
+        Dim distanceFileName As String = "ps_distance"
+        If success = BA_ReturnCode.Success Then
+            pStepProg.Message = "Executing Euclidean distance tool"
+            pStepProg.Step()
+            '@ToDo: Verify what cell size should be
+            Dim cellSize As Double = BA_CellSize(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces), BA_EnumDescription(MapsFileName.filled_dem_gdb))
+            success = BA_EuclideanDistance(m_analysisFolder + "\" + m_representedArea, m_analysisFolder + "\" + distanceFileName, _
+                                           CStr(cellSize), maskPath, snapRasterPath, maskPath)
+        End If
         If CkElev.Checked = True Then
             success = GenerateElevationLayer(pStepProg, snapRasterPath)
             If success = BA_ReturnCode.Success Then
@@ -325,24 +335,22 @@ Public Class FrmPsuedoSite
             End If
         End If
 
-        Dim unionFileName As String = "ps_union"
+        Dim cellStatFileName As String = "ps_cellStat"
         If success = BA_ReturnCode.Success Then
-            'union all our layers to prepare for Euclidean distance tool
-            pStepProg.Message = "Union all participating layers"
+            '6. Get minimum for all of the constraint layers
+            pStepProg.Message = "Calculating cell statistics for all constraint layers"
             pStepProg.Step()
             sb.Remove(sb.ToString().LastIndexOf("; "), "; ".Length)
-            success = BA_Union(sb.ToString, m_analysisFolder + "\" + unionFileName)
+            success = BA_GetCellStatistics(sb.ToString, snapRasterPath, "MINIMUM", _
+                                           m_analysisFolder + "\" + cellStatFileName, "false")
         End If
 
-        Dim distanceFileName As String = "ps_distance"
+        Dim timesFileName As String = "ps_times"
         If success = BA_ReturnCode.Success Then
-            'Run the Euclidean distance tool
-            pStepProg.Message = "Executing Euclidean distance tool"
+            pStepProg.Message = "Executing Times tool with distance and cell statistics layers"
             pStepProg.Step()
-            '@ToDo: Verify what cell size should be
-            Dim cellSize As Double = BA_CellSize(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces), BA_EnumDescription(MapsFileName.filled_dem_gdb))
-            success = BA_EuclideanDistance(m_analysisFolder + "\" + unionFileName, m_analysisFolder + "\" + distanceFileName, _
-                                           CStr(cellSize), maskPath, snapRasterPath)
+            success = BA_Times(m_analysisFolder + "\" + distanceFileName, m_analysisFolder + "\" + cellStatFileName, _
+                m_analysisFolder + "\" + timesFileName)
         End If
 
         Dim furthestPixelFileName As String = "ps_furthest"
@@ -353,11 +361,11 @@ Public Class FrmPsuedoSite
             'Set everything to null that is smaller than that; should leave one pixel
             'Expression can be more precise; Rounding down works for now
             Dim cellSize As Double = -1
-            Dim pRasterStats As IRasterStatistics = BA_GetRasterStatsGDB(m_analysisFolder + "\" + distanceFileName, cellSize)
+            Dim pRasterStats As IRasterStatistics = BA_GetRasterStatsGDB(m_analysisFolder + "\" + timesFileName, cellSize)
             Dim pExpression As String = Nothing
             If pRasterStats IsNot Nothing Then
                 'sample expression: SetNull('C:\Docs\Lesley\animas_AOI_prms_3\analysis.gdb\ps_distance' < 6259,'C:\Docs\Lesley\animas_AOI_prms_3\analysis.gdb\ps_distance')
-                Dim targetPath As String = m_analysisFolder + "\" + distanceFileName
+                Dim targetPath As String = m_analysisFolder + "\" + timesFileName
                 pExpression = "SetNull('" + targetPath + "' < " + _
                     CStr(Math.Floor(pRasterStats.Maximum)) + _
                     ",'" + targetPath + "')"
@@ -381,7 +389,7 @@ Public Class FrmPsuedoSite
                 Dim r As New Random()
                 Dim keepSite As Integer = r.Next(1, numSites + 1)
                 'Delete all sites except the first one
-                Dim strSelect As String = " " & BA_FIELD_OBJECT_ID & " != " & keepSite
+                Dim strSelect As String = " " & BA_FIELD_OBJECT_ID & " <> " & keepSite
                 success = BA_DeleteFeatures(m_analysisFolder, m_siteFileName, strSelect)
             End If
 
@@ -420,7 +428,6 @@ Public Class FrmPsuedoSite
 
 
             'Delete the layers we don't need to keep for the map
-            BA_Remove_ShapefileFromGDB(m_analysisFolder, unionFileName)
             BA_RemoveRasterFromGDB(m_analysisFolder, distanceFileName)
             BA_RemoveRasterFromGDB(m_analysisFolder, furthestPixelFileName)
         End If
@@ -482,34 +489,16 @@ Public Class FrmPsuedoSite
             strUpperRange = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(TxtUpperRange.Text), fromElevUnits, toElevUnits)))
             strMaxElev = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(TxtMaxElev.Text), fromElevUnits, toElevUnits)))
         End If
-        sb.Append(strMinElev + " " + strLower + " 1;")
-        sb.Append(strLower + " " + strUpperRange + " 2;")
-        sb.Append(strUpperRange + " " + strMaxElev + " 3 ")
+        sb.Append(strMinElev + " " + strLower + " NoData;")
+        sb.Append(strLower + " " + strUpperRange + " 1;")
+        sb.Append(strUpperRange + " " + strMaxElev + " NoData ")
         Dim inputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
-        Dim reclassElevFile As String = "elevrecl"
-        Dim reclassElevPath As String = m_analysisFolder & "\" & reclassElevFile
+        Dim reclassElevPath As String = m_analysisFolder & "\" & m_elevLayer
         Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
                                                                      reclassElevPath, snapRasterPath)
-        pStepProg.Message = "Convert elevation raster to feature class"
-        pStepProg.Step()
-        '2. Convert raster to polygon
-        Dim reclassElevFc As String = "elevrecl_v"
-        Dim reclassElevFcPath As String = m_analysisFolder & "\" & reclassElevFc
-        If success = BA_ReturnCode.Success Then
-            success = BA_Raster2Polygon_GP(reclassElevPath, reclassElevFcPath, snapRasterPath)
-        End If
-
-        '3. Dissolve on grid code
-        Dim elevLayerPath As String = m_analysisFolder & "\" & m_elevLayer
-        If success = BA_ReturnCode.Success Then
-            success = BA_Dissolve(reclassElevFcPath, BA_FIELD_GRIDCODE, elevLayerPath)
-        End If
-
-        '4. Delete the polygon in the desired elevation range; This should always be #2
-        If success = BA_ReturnCode.Success Then
-            Dim selectQuery As String = " " + BA_FIELD_GRIDCODE + " = 2"
-            success = BA_DeleteFeatures(m_analysisFolder, m_elevLayer, selectQuery)
-        End If
+        'Add 'NAME' field to be used as label for map
+        success = BA_AddFieldToRaster(m_analysisFolder, m_elevLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                                      100, BA_MAPS_PS_ELEVATION)
         Return success
     End Function
 
@@ -522,9 +511,9 @@ Public Class FrmPsuedoSite
         Dim strLowerRange As String = TxtPrecipLower.Text
         Dim strUpperRange As String = TxtPrecipUpper.Text
         Dim strMaxPrecip As String = txtMaxPrecip.Text
-        sb.Append(strMinPrecip + " " + strLowerRange + " 1;")
-        sb.Append(strLowerRange + " " + strUpperRange + " 2;")
-        sb.Append(strUpperRange + " " + strMaxPrecip + " 3 ")
+        sb.Append(strMinPrecip + " " + strLowerRange + " 0;")
+        sb.Append(strLowerRange + " " + strUpperRange + " 1;")
+        sb.Append(strUpperRange + " " + strMaxPrecip + " 0 ")
 
         Dim inputFolder As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True)
         Dim prismRasterName As String = AOIPrismFolderNames.annual.ToString    'read direct Annual PRISM raster 
@@ -680,15 +669,6 @@ Public Class FrmPsuedoSite
                 End If
             End If
 
-            'Elevation if it exists
-            filepathname = m_analysisFolder & "\" & m_elevLayer
-            If m_lastAnalysis.UseElevation Then
-                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                    pColor.RGB = RGB(115, 178, 115) 'green
-                    success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, pColor, 30)
-                End If
-            End If
-
             'Scenario 2 Represented area
             filepathname = m_analysisFolder & "\" & m_representedArea
             If Not BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
@@ -758,8 +738,17 @@ Public Class FrmPsuedoSite
 
             'add aoib as base layer for difference of representation maps
             filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BufferedAOIExtentRaster
-            retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_INCLUDE, _
+            retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_BASEMAP, _
                                                 MapsDisplayStyle.Cyan_Light_to_Blue_Dark, 30, WorkspaceType.Geodatabase)
+
+            'Elevation if it exists
+            filepathname = m_analysisFolder & "\" & m_elevLayer
+            If m_lastAnalysis.UseElevation Then
+                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                    retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, _
+                                   MapsDisplayStyle.Condition_Number, 30, WorkspaceType.Geodatabase)
+                End If
+            End If
 
             'add hillshade
             filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) & _
