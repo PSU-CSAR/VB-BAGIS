@@ -659,6 +659,7 @@ Module BAGIS_MapModule
     Public Sub BA_AddScenarioLayersToMapFrame(ByVal pApplication As ESRI.ArcGIS.Framework.IApplication, ByVal pMxDoc As IMxDocument, _
                                               ByVal aoiPath As String)
         BA_RemoveScenarioLayersfromMapFrame(pMxDoc)
+        BA_RemoveAutoSiteLayersfromMapFrame(pMxDoc)
         'add vector layers first
 
         'Scenario 1
@@ -750,7 +751,7 @@ Module BAGIS_MapModule
         filepath = BA_GeodatabasePath(aoiPath, GeodatabaseNames.Aoi, True)
         FileName = BA_BufferedAOIExtentRaster
         filepathname = filepath & FileName
-        response = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_NOT_REPRESENTED, MapsDisplayStyle.Red_to_Blue_Diverging, 30, WorkspaceType.Geodatabase)
+        response = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_AOI_BASEMAP, MapsDisplayStyle.Red_to_Blue_Diverging, 30, WorkspaceType.Geodatabase)
 
         'add elevation representation scenario outputs if they exist
         'FileName = BA_EnumDescription(MapsFileName.DifferenceRepresentedArea)
@@ -769,7 +770,7 @@ Module BAGIS_MapModule
     End Sub
 
     Public Function BA_RemoveScenarioLayersfromMapFrame(ByVal pMxDoc As IMxDocument) As Integer
-        Dim LayerNames(0 To 13) As String
+        Dim LayerNames(0 To 14) As String
         LayerNames(1) = BA_MAPS_SNOTEL_SITES
         LayerNames(2) = BA_MAPS_SNOW_COURSE_SITES
         LayerNames(3) = BA_MAPS_PSEUDO_SITES
@@ -782,9 +783,10 @@ Module BAGIS_MapModule
         LayerNames(10) = BA_MAPS_SNOW_COURSE_SCENARIO2
         LayerNames(11) = BA_MAPS_PSEUDO_SCENARIO1
         LayerNames(12) = BA_MAPS_PSEUDO_SCENARIO2
-        LayerNames(13) = BA_MAPS_NOT_REPRESENTED
+        LayerNames(13) = BA_MAPS_AOI_BASEMAP
+        LayerNames(14) = BA_MAPS_ELEVATION_ZONES
 
-        For j = 1 To 13
+        For j = 1 To 14
             BA_RemoveLayers(pMxDoc, LayerNames(j))
         Next
 
@@ -1963,7 +1965,7 @@ Module BAGIS_MapModule
                 LayerNames(13) = BA_MAPS_SCENARIO1_REPRESENTATION
                 LayerNames(14) = BA_MAPS_SCENARIO2_REPRESENTATION
                 LayerNames(15) = BA_MAPS_BOTH_REPRESENTATION
-                LayerNames(16) = BA_MAPS_NOT_REPRESENTED
+                LayerNames(16) = BA_MAPS_AOI_BASEMAP
                 KeyLayerName = Nothing
                 UnitText = "Scenario 1 and scenario 2 sites are circled" & vbCrLf & "in black and gold respectively"
             Case Else
@@ -2060,6 +2062,39 @@ Module BAGIS_MapModule
             Debug.Print("BA_LoadPseudoSiteFromXml Exception: " & ex.Message)
             Return Nothing
         End Try
+    End Function
+
+    Public Function BA_RemoveAutoSiteLayersfromMapFrame(ByVal pMxDoc As IMxDocument) As Integer
+        Dim LayerNames(0 To 7) As String
+        LayerNames(1) = BA_MAPS_PS_REPRESENTED
+        LayerNames(2) = BA_EnumDescription(MapsLayerName.NewPseudoSite)
+        LayerNames(3) = BA_MAPS_PS_INDICATOR
+        LayerNames(4) = BA_MAPS_AOI_BASEMAP
+        LayerNames(5) = BA_MAPS_PS_PROXIMITY
+        LayerNames(6) = BA_MAPS_PS_ELEVATION
+        LayerNames(7) = BA_MAPS_PS_PRECIPITATION
+
+        For j = 1 To 7
+            BA_RemoveLayers(pMxDoc, LayerNames(j))
+        Next
+
+        'Remove any representation layers
+        Dim pMap As IMap = pMxDoc.FocusMap
+        Dim pTempLayer As ILayer
+        Dim nlayers As Integer = pMap.LayerCount
+        For i = nlayers To 1 Step -1
+            pTempLayer = pMap.Layer(i - 1)
+            Dim suffix As String = Right(pTempLayer.Name, 4)
+            If suffix = "_Rep" Then 'remove the layer
+                If TypeOf pTempLayer Is IRasterLayer Then 'disconnect a rasterlayer before removing it
+                    Dim pDLayer As IDataLayer2 = CType(pTempLayer, IDataLayer2)
+                    pDLayer.Disconnect()
+                End If
+                pMap.DeleteLayer(pTempLayer)
+            End If
+        Next
+
+        Return 1
     End Function
 
 End Module

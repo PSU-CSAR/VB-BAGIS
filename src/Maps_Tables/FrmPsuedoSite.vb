@@ -437,8 +437,6 @@ Public Class FrmPsuedoSite
                 MessageBox.Show("An error occurred while trying to process the new pseudo-site layer!")
             End If
 
-
-
             'Delete the layers we don't need to keep for the map
             BA_RemoveRasterFromGDB(m_analysisFolder, distanceFileName)
             BA_RemoveRasterFromGDB(m_analysisFolder, furthestPixelFileName)
@@ -625,6 +623,9 @@ Public Class FrmPsuedoSite
         'Ensure default map frame name is set before trying to build map
         Dim response As Integer = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
         response = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)
+        'Remove site scenario map layers (just in case)
+        BA_RemoveScenarioLayersfromMapFrame(My.Document)
+        BA_RemoveAutoSiteLayersfromMapFrame(My.Document)
         AddLayersToMapFrame(My.ThisApplication, My.Document)
         Dim Basin_Name As String
         Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
@@ -647,6 +648,8 @@ Public Class FrmPsuedoSite
 
         'Clip data frame to aoi border
         ClipDataFrameToAoiBorder()
+
+        MessageBox.Show("Use ArcMap Table of Contents to view map.", "Map", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
 
     Private Sub AddLayersToMapFrame(ByVal pApplication As ESRI.ArcGIS.Framework.IApplication, _
@@ -665,15 +668,6 @@ Public Class FrmPsuedoSite
             End If
             pColor.RGB = RGB(255, 0, 0) 'red
             success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_REPRESENTED, pColor, 30)
-
-            'Proximity if it exists
-            If m_lastAnalysis.UseProximity Then
-                filepathname = m_analysisFolder & "\" & m_proximityLayer
-                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                    pColor.RGB = RGB(255, 165, 0) 'orange
-                    success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_PROXIMITY, pColor, 30)
-                End If
-            End If
 
             'add pseudo site
             filepathname = m_analysisFolder & "\" & m_siteFileName
@@ -697,16 +691,6 @@ Public Class FrmPsuedoSite
                 End If
             Next
 
-            'Remove previous circle if it exists
-            For i = nlayers To 1 Step -1
-                tempLayer = CType(pMxDoc.FocusMap.Layer(i - 1), ILayer)
-                If tempLayer.Name = BA_MAPS_PS_INDICATOR Then
-                    pMxDoc.FocusMap.DeleteLayer(tempLayer)
-                    nlayers = pMxDoc.FocusMap.LayerCount
-                    Exit For
-                End If
-            Next
-
             Dim pActualColor As IColor = New RgbColor
             pActualColor.RGB = RGB(169, 0, 230)    'Purple
             Dim actualRenderer As ISimpleRenderer = BA_BuildRendererForPoints(pActualColor, 25)
@@ -725,15 +709,24 @@ Public Class FrmPsuedoSite
 
             'add aoib as base layer for difference of representation maps
             filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BufferedAOIExtentRaster
-            retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_BASEMAP, _
+            retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_AOI_BASEMAP, _
                                                 MapsDisplayStyle.Cyan_Light_to_Blue_Dark, 30, WorkspaceType.Geodatabase)
+
+            'Proximity if it exists
+            If m_lastAnalysis.UseProximity Then
+                filepathname = m_analysisFolder & "\" & m_proximityLayer
+                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                    retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PROXIMITY, _
+                                                        MapsDisplayStyle.Yellows, 30, WorkspaceType.Geodatabase)
+                End If
+            End If
 
             'Elevation if it exists
             filepathname = m_analysisFolder & "\" & m_elevLayer
             If m_lastAnalysis.UseElevation Then
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
                     retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, _
-                                   MapsDisplayStyle.Condition_Number, 30, WorkspaceType.Geodatabase)
+                                   MapsDisplayStyle.Slope, 30, WorkspaceType.Geodatabase)
                 End If
             End If
 
@@ -741,7 +734,6 @@ Public Class FrmPsuedoSite
             filepathname = m_analysisFolder & "\" & m_precipLayer
             If m_lastAnalysis.UsePrism Then
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-                    success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_PRECIPITATION, pColor, 30)
                     retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PRECIPITATION, _
                                 MapsDisplayStyle.Purple_Blues, 30, WorkspaceType.Geodatabase)
                 End If
@@ -824,6 +816,12 @@ Public Class FrmPsuedoSite
             success = BA_Feature2RasterGP(outFeaturesPath, m_analysisFolder + "\" + m_proximityLayer, BA_FIELD_PSITE, m_cellSize, snapRasterPath)
             BA_Remove_ShapefileFromGDB(m_analysisFolder, tempProximity)
         End If
+        If success = BA_ReturnCode.Success Then
+            'Add 'NAME' field to be used as label for map
+            success = BA_AddUserFieldToRaster(m_analysisFolder, m_proximityLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                                          100, BA_MAPS_PS_PROXIMITY)
+        End If
+
         If Not success = BA_ReturnCode.Success Then
             MessageBox.Show("An error occurred while generating the proximity layer. It will not be used in analysis")
         End If
