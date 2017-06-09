@@ -412,15 +412,11 @@ Public Class frmAOIInfo
                             Dim webServiceUrl As String = InPRISMPath & "/" & prismServices(j).ToString & _
                                  "/" & BA_Url_ImageServer
                             Dim newFilePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True) & DataName
-                            If BA_ClipImageServiceToVector(clipFilePath, webServiceUrl, newFilePath) = BA_ReturnCode.Success Then
-                                response = 1
-                            Else
-                                response = -1
-                            End If
+                            response = BA_ClipAOIImageServer(AOIFolderBase, webServiceUrl, newFilePath, AOIClipFile.PrismClipAOIExtentCoverage)
                         Else
-                            'input PRISM raster is in GRID format, output is in FGDB format 
-                            Dim outputFolder As String = m_aoi.FilePath & "\" & BA_EnumDescription(GeodatabaseNames.Prism)
-                            response = BA_ClipAOIRaster(AOIFolderBase, InPRISMPath & "\" & DataName & "\grid", DataName, outputFolder, AOIClipFile.PrismClipAOIExtentCoverage)
+                        'input PRISM raster is in GRID format, output is in FGDB format 
+                        Dim outputFolder As String = m_aoi.FilePath & "\" & BA_EnumDescription(GeodatabaseNames.Prism)
+                        response = BA_ClipAOIRaster(AOIFolderBase, InPRISMPath & "\" & DataName & "\grid", DataName, outputFolder, AOIClipFile.PrismClipAOIExtentCoverage)
                         End If
 
                         If response <= 0 Then
