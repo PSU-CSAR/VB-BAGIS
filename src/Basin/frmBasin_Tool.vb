@@ -507,7 +507,7 @@ Public Class frmBasin_Tool
 
         If BA_File_Exists(strPathname & "\" & vectorName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             Dim success As BA_ReturnCode = BA_AddExtentLayer(My.ArcMap.Document, strPathname & "\" & vectorName, _
-                                                            RgbColor, vectorName, actionCode, 1.5)
+                                                            RgbColor, False, vectorName, actionCode, 1.5)
         Else
             Exit Sub
         End If

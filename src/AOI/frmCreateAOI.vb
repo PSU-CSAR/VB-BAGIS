@@ -206,7 +206,7 @@ Public Class frmCreateAOI
 
         'add AOI extent (aoi_v) to map
         Dim pColor As IRgbColor = pDisplayColor
-        response = BA_AddExtentLayer(My.ArcMap.Document, destAOIGDB & "\" & BA_AOIExtentCoverage, pColor, DisplayName, 0, 2)
+        response = BA_AddExtentLayer(My.ArcMap.Document, destAOIGDB & "\" & BA_AOIExtentCoverage, pColor, False, DisplayName, 0, 2)
         If response < 0 Then 'error occurred
             pProgD.HideDialog()
             ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pProgD)

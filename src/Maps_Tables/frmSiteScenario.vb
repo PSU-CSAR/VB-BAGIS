@@ -1866,7 +1866,7 @@ Public Class frmSiteScenario
                         lineWidth = 4.5
                         pDisplayColor.RGB = RGB(255, 0, 0)  'Red for scenario 2
                     End If
-                    BA_AddExtentLayer(My.Document, analysisFolder & "\" & bufferFile(i), pDisplayColor, layerName(i), 1, 0, lineWidth)
+                    BA_AddExtentLayer(My.Document, analysisFolder & "\" & bufferFile(i), pDisplayColor, False, layerName(i), 1, 0, lineWidth)
                     layerNamesList.Add(layerName(i))
                 End If
             Next
@@ -1874,7 +1874,7 @@ Public Class frmSiteScenario
             Dim filepath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True)
             Dim FileName As String = BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
             'Add the aoi boundary which zooms to the correct extent
-            BA_AddExtentLayer(My.Document, filepath & FileName, Nothing, BA_MAPS_AOI_BOUNDARY, 0, 1.2, 2)
+            BA_AddExtentLayer(My.Document, filepath & FileName, Nothing, False, BA_MAPS_AOI_BOUNDARY, 0, 1.2, 2)
             Dim aoiLayer As ILayer = My.Document.FocusMap.Layer(0)
             'Move the layer to the right place in the stack
             My.Document.FocusMap.MoveLayer(aoiLayer, My.Document.FocusMap.LayerCount - 2)

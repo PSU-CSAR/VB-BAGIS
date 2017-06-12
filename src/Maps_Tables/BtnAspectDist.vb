@@ -15,6 +15,7 @@
             Basin_Name = cboSelectedBasin.getValue
         End If
         BA_DisplayMap(My.Document, 5, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, "ASPECT DISTRIBUTION")
+        BAGIS_ClassLibrary.BA_ZoomToAOI(My.Document, AOIFolderBase)
     End Sub
 
     Public WriteOnly Property SelectedProperty As Boolean

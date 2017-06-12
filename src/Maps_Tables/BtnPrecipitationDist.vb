@@ -17,6 +17,7 @@
         End If
         BA_DisplayMap(My.Document, 4, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                          "PRECIPITATION DISTRIBUTION")
+        BAGIS_ClassLibrary.BA_ZoomToAOI(My.Document, AOIFolderBase)
     End Sub
 
     Public WriteOnly Property SelectedProperty As Boolean

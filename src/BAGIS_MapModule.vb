@@ -690,7 +690,7 @@ Module BAGIS_MapModule
         filepath = BA_GeodatabasePath(aoiPath, GeodatabaseNames.Aoi, True)
         FileName = BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
         filepathname = filepath & FileName
-        response = BA_AddExtentLayer(pMxDoc, filepathname, Nothing, BA_MAPS_AOI_BOUNDARY, 0, 1.2, 2.0)
+        response = BA_AddExtentLayer(pMxDoc, filepathname, Nothing, False, BA_MAPS_AOI_BOUNDARY, 0, 1.2, 2.0)
 
         'add aoi streams layer
         filepath = BA_GeodatabasePath(aoiPath, GeodatabaseNames.Layers, True)

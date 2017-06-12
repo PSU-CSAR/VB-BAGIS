@@ -284,7 +284,7 @@ Public Class frmCreateAOIfromExistingBND
                 Dim strPathandName As String = destAOIGDB & "\" & BA_DEMExtentShapefile
                 Dim pDColor As IRgbColor = New RgbColor
                 pDColor.RGB = RGB(255, 0, 0)
-                Dim mysuccess As BA_ReturnCode = BA_AddExtentLayer(My.ArcMap.Document, strPathandName, pDColor) ' BasinLayerDisplayNames(1), 0, 2)
+                Dim mysuccess As BA_ReturnCode = BA_AddExtentLayer(My.ArcMap.Document, strPathandName, pDColor, False) ' BasinLayerDisplayNames(1), 0, 2)
                 If mysuccess <> BA_ReturnCode.Success Then
                     pStepProg.Hide()
                     progressDialog2.HideDialog()

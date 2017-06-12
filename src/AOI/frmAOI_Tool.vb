@@ -73,7 +73,7 @@ Public Class frmAOI_Tool
         strPathandName = BasinFolderBase & "\" & lstAOIList.SelectedItem & "\" & _
             BA_EnumDescription(GeodatabaseNames.Aoi) & "\" & BA_AOIExtentCoverage
         Dim pColor As IRgbColor = pDisplayColor
-        response = BA_AddExtentLayer(My.ArcMap.Document, strPathandName, pColor, "AOI " & lstAOIList.SelectedItem, 0, 2)
+        response = BA_AddExtentLayer(My.ArcMap.Document, strPathandName, pColor, False, "AOI " & lstAOIList.SelectedItem, 0, 2)
         pColor = Nothing
         'Me.Show()
     End Sub
