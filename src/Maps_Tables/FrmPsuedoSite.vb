@@ -25,6 +25,9 @@ Public Class FrmPsuedoSite
     Private m_lastAnalysis As PseudoSite = Nothing
     Private m_formLoaded As Boolean = False
     Private m_cellSize As Double
+    Private m_idxLocation As Int16 = 0
+    Private m_idxValues As Int16 = 1
+    Private m_idxFullPaths As Int16 = 2
 
     Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits, _
                    ByVal siteScenarioToolTimeStamp As DateTime)
@@ -119,7 +122,7 @@ Public Class FrmPsuedoSite
         Me.Text = "Add Pseudo Site: " + BA_GetBareName(AOIFolderBase)
 
         SuggestSiteName()
-        LoadLstLayers()
+        LoadLayers()
         BA_SetDefaultProjection(My.ArcMap.Application)
 
         'Check for previously saved scenario and load those values as defaults
@@ -761,7 +764,7 @@ Public Class FrmPsuedoSite
 
     End Sub
 
-    Private Sub LoadLstLayers()
+    Private Sub LoadLayers()
         Dim AOIVectorList() As String = Nothing
         Dim AOIRasterList() As String = Nothing
         Dim layerPath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers)
@@ -776,6 +779,35 @@ Public Class FrmPsuedoSite
                 LstVectors.Items.Add(item)
             Next
         End If
+
+        'display raster layers
+        Dim rasterCount As Integer = UBound(AOIRasterList)
+        If rasterCount > 0 Then
+            For i = 1 To rasterCount
+                Dim fullLayerPath As String = layerPath & "\" & AOIVectorList(i)
+                If BA_IsIntegerRasterGDB(fullLayerPath) Then
+                    Dim item As LayerListItem = New LayerListItem(AOIRasterList(i), fullLayerPath, LayerType.Raster, True)
+                    LstRasters.Items.Add(item)
+                End If
+            Next
+        End If
+
+        'display zonal layers
+        Dim lstZoneLayers As IList(Of String) = New List(Of String)
+        lstZoneLayers.Add(BA_RasterElevationZones)
+        lstZoneLayers.Add(BA_RasterPrecipitationZones)
+        lstZoneLayers.Add(BA_RasterSlopeZones)
+        lstZoneLayers.Add(BA_RasterAspectZones)
+        lstZoneLayers.Add(BA_RasterSNOTELZones)
+        lstZoneLayers.Add(BA_RasterSnowCourseZones)
+        For Each zoneLayer As String In lstZoneLayers
+            Dim zonePath As String = m_analysisFolder + "\" + zoneLayer
+            If BA_File_Exists(zonePath, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                Dim item As LayerListItem = New LayerListItem(zoneLayer, zonePath, LayerType.Raster, True)
+                LstRasters.Items.Add(item)
+            End If
+        Next
+
     End Sub
 
     Private Function GenerateProximityLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
@@ -1096,6 +1128,7 @@ Public Class FrmPsuedoSite
         TxtPrecipLower.Text = Nothing
         CkProximity.Checked = False
         LstVectors.ClearSelected()
+        LstRasters.ClearSelected()
         txtBufferDistance.Text = Nothing
     End Sub
 
@@ -1158,4 +1191,84 @@ Public Class FrmPsuedoSite
         End Try
     End Sub
 
+    Private Sub CkLocation_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkLocation.CheckedChanged
+        GrpLocation.Enabled = CkProximity.Checked
+        RaiseEvent FormInputChanged()
+    End Sub
+
+    Private Sub LstRasters_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstRasters.SelectedIndexChanged
+        LstValues.Items.Clear()
+        If LstRasters.SelectedIndex > -1 Then
+            Dim item As LayerListItem = LstRasters.SelectedItem
+            Dim folderName As String = "PleaseReturn"
+            Dim fileName As String = BA_GetBareName(item.Value, folderName)
+            Dim pEnum As IEnumerator = BA_QueryUniqueValuesFromRasterGDB(folderName, fileName, BA_FIELD_VALUE)
+            If pEnum IsNot Nothing Then
+                While pEnum.MoveNext
+                    LstValues.Items.Add(Convert.ToString(pEnum.Current))
+                End While
+            End If
+        End If
+    End Sub
+
+    Private Sub ToggleLocationButtons(ByVal enabled As Boolean)
+        BtnAddLocation.Enabled = enabled
+        BtnDeleteLocation.Enabled = enabled
+        BtnEditLocation.Enabled = enabled
+        If GrdLocation.SelectedRows.Count = 0 Then
+            BtnDeleteLocation.Enabled = False
+            BtnEditLocation.Enabled = False
+        End If
+    End Sub
+
+    Private Sub BtnAddLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnAddLocation.Click
+        PnlLocation.Visible = True
+    End Sub
+
+    Private Sub PnlLocation_VisibleChanged(sender As Object, e As System.EventArgs) Handles PnlLocation.VisibleChanged
+        ToggleLocationButtons(Not PnlLocation.Visible)
+    End Sub
+
+    Private Sub BtnCancelLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnCancelLocation.Click
+        PnlLocation.Visible = False
+        LstRasters.ClearSelected()
+    End Sub
+
+    Private Sub BtnSaveLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnSaveLocation.Click
+        Dim valueCount As Integer = LstValues.SelectedItems.Count
+        Dim sb As StringBuilder = New StringBuilder()
+        If valueCount < 1 Then
+            MessageBox.Show("You must select at least one value to use this layer in the analysis")
+            Exit Sub
+        Else
+            For i As Integer = 0 To valueCount - 1
+                sb.Append(LstValues.SelectedItems(i) + ",")
+            Next
+            sb.Remove(sb.ToString().LastIndexOf(","), ",".Length)
+        End If
+        Dim item As New DataGridViewRow
+        item.CreateCells(GrdLocation)
+        Dim listItem As LayerListItem = LstRasters.SelectedItem
+        With item
+            .Cells(m_idxLocation).Value = listItem.Name
+            .Cells(m_idxValues).Value = sb.ToString
+            .Cells(m_idxFullPaths).Value = listItem.Value
+        End With
+        '---add the row---
+        GrdLocation.Rows.Add(item)
+        LstRasters.ClearSelected()
+    End Sub
+
+    Private Sub GrdLocation_SelectionChanged(sender As Object, e As System.EventArgs) Handles GrdLocation.SelectionChanged
+        ToggleLocationButtons(True)
+    End Sub
+
+    Private Sub BtnDeleteLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnDeleteLocation.Click
+        Dim res As DialogResult = MessageBox.Show("You are about to delete a row from the Location constraint list. " + _
+                                                  "This cannot be undone." + vbCrLf + vbCrLf + "Do you wish to continue ?",
+                                                  "Delete", MessageBoxButtons.YesNo)
+        If res = Windows.Forms.DialogResult.Yes Then
+            GrdLocation.Rows.Remove(GrdLocation.SelectedRows(0))
+        End If
+    End Sub
 End Class

@@ -22,6 +22,8 @@ Partial Class FrmPsuedoSite
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.LstVectors = New System.Windows.Forms.ListBox()
         Me.LblBufferDistance = New System.Windows.Forms.Label()
@@ -71,9 +73,26 @@ Partial Class FrmPsuedoSite
         Me.TxtSiteName = New System.Windows.Forms.TextBox()
         Me.BtnClear = New System.Windows.Forms.Button()
         Me.TextBox1 = New System.Windows.Forms.TextBox()
+        Me.CkLocation = New System.Windows.Forms.CheckBox()
+        Me.GrpLocation = New System.Windows.Forms.GroupBox()
+        Me.BtnEditLocation = New System.Windows.Forms.Button()
+        Me.PnlLocation = New System.Windows.Forms.Panel()
+        Me.BtnSaveLocation = New System.Windows.Forms.Button()
+        Me.BtnCancelLocation = New System.Windows.Forms.Button()
+        Me.LstValues = New System.Windows.Forms.ListBox()
+        Me.LstRasters = New System.Windows.Forms.ListBox()
+        Me.BtnDeleteLocation = New System.Windows.Forms.Button()
+        Me.BtnAddLocation = New System.Windows.Forms.Button()
+        Me.GrdLocation = New System.Windows.Forms.DataGridView()
+        Me.Layer = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Values = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.FullPath = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
+        Me.GrpLocation.SuspendLayout()
+        Me.PnlLocation.SuspendLayout()
+        CType(Me.GrdLocation, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'Label5
@@ -89,11 +108,13 @@ Partial Class FrmPsuedoSite
         '
         'LstVectors
         '
+        Me.LstVectors.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.LstVectors.FormattingEnabled = True
         Me.LstVectors.ItemHeight = 16
         Me.LstVectors.Location = New System.Drawing.Point(12, 40)
         Me.LstVectors.Name = "LstVectors"
         Me.LstVectors.Size = New System.Drawing.Size(197, 52)
+        Me.LstVectors.Sorted = True
         Me.LstVectors.TabIndex = 70
         '
         'LblBufferDistance
@@ -494,6 +515,7 @@ Partial Class FrmPsuedoSite
         '
         Me.CmboxEnd.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.CmboxEnd.Enabled = False
+        Me.CmboxEnd.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CmboxEnd.FormattingEnabled = True
         Me.CmboxEnd.Location = New System.Drawing.Point(224, 54)
         Me.CmboxEnd.Name = "CmboxEnd"
@@ -504,6 +526,7 @@ Partial Class FrmPsuedoSite
         '
         Me.CmboxBegin.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.CmboxBegin.Enabled = False
+        Me.CmboxBegin.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CmboxBegin.FormattingEnabled = True
         Me.CmboxBegin.Location = New System.Drawing.Point(96, 54)
         Me.CmboxBegin.Name = "CmboxBegin"
@@ -513,6 +536,7 @@ Partial Class FrmPsuedoSite
         'CmboxPrecipType
         '
         Me.CmboxPrecipType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.CmboxPrecipType.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CmboxPrecipType.FormattingEnabled = True
         Me.CmboxPrecipType.Location = New System.Drawing.Point(96, 22)
         Me.CmboxPrecipType.Name = "CmboxPrecipType"
@@ -579,7 +603,7 @@ Partial Class FrmPsuedoSite
         'BtnFindSite
         '
         Me.BtnFindSite.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnFindSite.Location = New System.Drawing.Point(260, 473)
+        Me.BtnFindSite.Location = New System.Drawing.Point(285, 640)
         Me.BtnFindSite.Name = "BtnFindSite"
         Me.BtnFindSite.Size = New System.Drawing.Size(93, 23)
         Me.BtnFindSite.TabIndex = 83
@@ -589,7 +613,7 @@ Partial Class FrmPsuedoSite
         'BtnClose
         '
         Me.BtnClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClose.Location = New System.Drawing.Point(441, 473)
+        Me.BtnClose.Location = New System.Drawing.Point(466, 640)
         Me.BtnClose.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClose.Name = "BtnClose"
         Me.BtnClose.Size = New System.Drawing.Size(65, 22)
@@ -601,7 +625,7 @@ Partial Class FrmPsuedoSite
         '
         Me.BtnMap.Enabled = False
         Me.BtnMap.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnMap.Location = New System.Drawing.Point(155, 473)
+        Me.BtnMap.Location = New System.Drawing.Point(180, 640)
         Me.BtnMap.Name = "BtnMap"
         Me.BtnMap.Size = New System.Drawing.Size(93, 23)
         Me.BtnMap.TabIndex = 84
@@ -632,7 +656,7 @@ Partial Class FrmPsuedoSite
         'BtnClear
         '
         Me.BtnClear.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClear.Location = New System.Drawing.Point(365, 473)
+        Me.BtnClear.Location = New System.Drawing.Point(390, 640)
         Me.BtnClear.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClear.Name = "BtnClear"
         Me.BtnClear.Size = New System.Drawing.Size(65, 22)
@@ -654,11 +678,167 @@ Partial Class FrmPsuedoSite
     "eas depicted in Scenario 1. Users can specify additional search constraints list" & _
     "ed below to narrow the search domain"
         '
+        'CkLocation
+        '
+        Me.CkLocation.AutoSize = True
+        Me.CkLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CkLocation.Location = New System.Drawing.Point(19, 516)
+        Me.CkLocation.Name = "CkLocation"
+        Me.CkLocation.Size = New System.Drawing.Size(15, 14)
+        Me.CkLocation.TabIndex = 89
+        Me.CkLocation.UseVisualStyleBackColor = True
+        '
+        'GrpLocation
+        '
+        Me.GrpLocation.Controls.Add(Me.BtnEditLocation)
+        Me.GrpLocation.Controls.Add(Me.PnlLocation)
+        Me.GrpLocation.Controls.Add(Me.BtnDeleteLocation)
+        Me.GrpLocation.Controls.Add(Me.BtnAddLocation)
+        Me.GrpLocation.Controls.Add(Me.GrdLocation)
+        Me.GrpLocation.Enabled = False
+        Me.GrpLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.GrpLocation.Location = New System.Drawing.Point(57, 465)
+        Me.GrpLocation.Name = "GrpLocation"
+        Me.GrpLocation.Size = New System.Drawing.Size(487, 137)
+        Me.GrpLocation.TabIndex = 90
+        Me.GrpLocation.TabStop = False
+        Me.GrpLocation.Text = "Location"
+        '
+        'BtnEditLocation
+        '
+        Me.BtnEditLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnEditLocation.Location = New System.Drawing.Point(382, 59)
+        Me.BtnEditLocation.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnEditLocation.Name = "BtnEditLocation"
+        Me.BtnEditLocation.Size = New System.Drawing.Size(65, 22)
+        Me.BtnEditLocation.TabIndex = 90
+        Me.BtnEditLocation.Text = "Edit"
+        Me.BtnEditLocation.UseVisualStyleBackColor = True
+        '
+        'PnlLocation
+        '
+        Me.PnlLocation.Controls.Add(Me.BtnSaveLocation)
+        Me.PnlLocation.Controls.Add(Me.BtnCancelLocation)
+        Me.PnlLocation.Controls.Add(Me.LstValues)
+        Me.PnlLocation.Controls.Add(Me.LstRasters)
+        Me.PnlLocation.Location = New System.Drawing.Point(6, 21)
+        Me.PnlLocation.Name = "PnlLocation"
+        Me.PnlLocation.Size = New System.Drawing.Size(362, 100)
+        Me.PnlLocation.TabIndex = 73
+        Me.PnlLocation.Visible = False
+        '
+        'BtnSaveLocation
+        '
+        Me.BtnSaveLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnSaveLocation.Location = New System.Drawing.Point(290, 72)
+        Me.BtnSaveLocation.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnSaveLocation.Name = "BtnSaveLocation"
+        Me.BtnSaveLocation.Size = New System.Drawing.Size(65, 22)
+        Me.BtnSaveLocation.TabIndex = 89
+        Me.BtnSaveLocation.Text = "Add"
+        Me.BtnSaveLocation.UseVisualStyleBackColor = True
+        '
+        'BtnCancelLocation
+        '
+        Me.BtnCancelLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnCancelLocation.Location = New System.Drawing.Point(219, 72)
+        Me.BtnCancelLocation.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnCancelLocation.Name = "BtnCancelLocation"
+        Me.BtnCancelLocation.Size = New System.Drawing.Size(65, 22)
+        Me.BtnCancelLocation.TabIndex = 74
+        Me.BtnCancelLocation.Text = "Cancel"
+        Me.BtnCancelLocation.UseVisualStyleBackColor = True
+        '
+        'LstValues
+        '
+        Me.LstValues.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LstValues.FormattingEnabled = True
+        Me.LstValues.ItemHeight = 16
+        Me.LstValues.Location = New System.Drawing.Point(212, 11)
+        Me.LstValues.Name = "LstValues"
+        Me.LstValues.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple
+        Me.LstValues.Size = New System.Drawing.Size(96, 52)
+        Me.LstValues.TabIndex = 72
+        '
+        'LstRasters
+        '
+        Me.LstRasters.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LstRasters.FormattingEnabled = True
+        Me.LstRasters.ItemHeight = 16
+        Me.LstRasters.Location = New System.Drawing.Point(6, 11)
+        Me.LstRasters.Name = "LstRasters"
+        Me.LstRasters.Size = New System.Drawing.Size(197, 52)
+        Me.LstRasters.Sorted = True
+        Me.LstRasters.TabIndex = 71
+        '
+        'BtnDeleteLocation
+        '
+        Me.BtnDeleteLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnDeleteLocation.Location = New System.Drawing.Point(382, 87)
+        Me.BtnDeleteLocation.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnDeleteLocation.Name = "BtnDeleteLocation"
+        Me.BtnDeleteLocation.Size = New System.Drawing.Size(65, 22)
+        Me.BtnDeleteLocation.TabIndex = 89
+        Me.BtnDeleteLocation.Text = "Delete"
+        Me.BtnDeleteLocation.UseVisualStyleBackColor = True
+        '
+        'BtnAddLocation
+        '
+        Me.BtnAddLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnAddLocation.Location = New System.Drawing.Point(382, 31)
+        Me.BtnAddLocation.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnAddLocation.Name = "BtnAddLocation"
+        Me.BtnAddLocation.Size = New System.Drawing.Size(65, 22)
+        Me.BtnAddLocation.TabIndex = 88
+        Me.BtnAddLocation.Text = "Add"
+        Me.BtnAddLocation.UseVisualStyleBackColor = True
+        '
+        'GrdLocation
+        '
+        Me.GrdLocation.AllowUserToAddRows = False
+        Me.GrdLocation.AllowUserToDeleteRows = False
+        Me.GrdLocation.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.GrdLocation.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Layer, Me.Values, Me.FullPath})
+        Me.GrdLocation.Location = New System.Drawing.Point(9, 31)
+        Me.GrdLocation.MultiSelect = False
+        Me.GrdLocation.Name = "GrdLocation"
+        Me.GrdLocation.ReadOnly = True
+        Me.GrdLocation.Size = New System.Drawing.Size(356, 83)
+        Me.GrdLocation.TabIndex = 70
+        '
+        'Layer
+        '
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Layer.DefaultCellStyle = DataGridViewCellStyle3
+        Me.Layer.HeaderText = "Layer"
+        Me.Layer.Name = "Layer"
+        Me.Layer.ReadOnly = True
+        Me.Layer.Resizable = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.Layer.Width = 200
+        '
+        'Values
+        '
+        DataGridViewCellStyle4.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Values.DefaultCellStyle = DataGridViewCellStyle4
+        Me.Values.HeaderText = "Values"
+        Me.Values.Name = "Values"
+        Me.Values.ReadOnly = True
+        '
+        'FullPath
+        '
+        Me.FullPath.HeaderText = "FullPath"
+        Me.FullPath.Name = "FullPath"
+        Me.FullPath.ReadOnly = True
+        Me.FullPath.Visible = False
+        Me.FullPath.Width = 5
+        '
         'FrmPsuedoSite
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(561, 512)
+        Me.ClientSize = New System.Drawing.Size(567, 673)
+        Me.Controls.Add(Me.GrpLocation)
+        Me.Controls.Add(Me.CkLocation)
         Me.Controls.Add(Me.TextBox1)
         Me.Controls.Add(Me.BtnClear)
         Me.Controls.Add(Me.TxtSiteName)
@@ -683,6 +863,9 @@ Partial Class FrmPsuedoSite
         Me.GrpPrecipitation.PerformLayout()
         Me.GrpProximity.ResumeLayout(False)
         Me.GrpProximity.PerformLayout()
+        Me.GrpLocation.ResumeLayout(False)
+        Me.PnlLocation.ResumeLayout(False)
+        CType(Me.GrdLocation, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -736,4 +919,18 @@ Partial Class FrmPsuedoSite
     Friend WithEvents TxtSiteName As System.Windows.Forms.TextBox
     Friend WithEvents BtnClear As System.Windows.Forms.Button
     Friend WithEvents TextBox1 As System.Windows.Forms.TextBox
+    Friend WithEvents CkLocation As System.Windows.Forms.CheckBox
+    Friend WithEvents GrpLocation As System.Windows.Forms.GroupBox
+    Friend WithEvents GrdLocation As System.Windows.Forms.DataGridView
+    Friend WithEvents BtnEditLocation As System.Windows.Forms.Button
+    Friend WithEvents PnlLocation As System.Windows.Forms.Panel
+    Friend WithEvents LstValues As System.Windows.Forms.ListBox
+    Friend WithEvents LstRasters As System.Windows.Forms.ListBox
+    Friend WithEvents BtnDeleteLocation As System.Windows.Forms.Button
+    Friend WithEvents BtnAddLocation As System.Windows.Forms.Button
+    Friend WithEvents BtnSaveLocation As System.Windows.Forms.Button
+    Friend WithEvents BtnCancelLocation As System.Windows.Forms.Button
+    Friend WithEvents Layer As System.Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents Values As System.Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents FullPath As System.Windows.Forms.DataGridViewTextBoxColumn
 End Class
