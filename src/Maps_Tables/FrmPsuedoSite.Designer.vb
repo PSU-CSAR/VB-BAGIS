@@ -22,8 +22,8 @@ Partial Class FrmPsuedoSite
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.LstVectors = New System.Windows.Forms.ListBox()
         Me.LblBufferDistance = New System.Windows.Forms.Label()
@@ -78,7 +78,7 @@ Partial Class FrmPsuedoSite
         Me.BtnEditLocation = New System.Windows.Forms.Button()
         Me.PnlLocation = New System.Windows.Forms.Panel()
         Me.BtnSaveLocation = New System.Windows.Forms.Button()
-        Me.BtnCancelLocation = New System.Windows.Forms.Button()
+        Me.BtnDoneLocation = New System.Windows.Forms.Button()
         Me.LstValues = New System.Windows.Forms.ListBox()
         Me.LstRasters = New System.Windows.Forms.ListBox()
         Me.BtnDeleteLocation = New System.Windows.Forms.Button()
@@ -87,6 +87,7 @@ Partial Class FrmPsuedoSite
         Me.Layer = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Values = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.FullPath = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Label6 = New System.Windows.Forms.Label()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
@@ -699,7 +700,7 @@ Partial Class FrmPsuedoSite
         Me.GrpLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpLocation.Location = New System.Drawing.Point(57, 465)
         Me.GrpLocation.Name = "GrpLocation"
-        Me.GrpLocation.Size = New System.Drawing.Size(487, 137)
+        Me.GrpLocation.Size = New System.Drawing.Size(487, 157)
         Me.GrpLocation.TabIndex = 90
         Me.GrpLocation.TabStop = False
         Me.GrpLocation.Text = "Location"
@@ -717,20 +718,21 @@ Partial Class FrmPsuedoSite
         '
         'PnlLocation
         '
+        Me.PnlLocation.Controls.Add(Me.Label6)
         Me.PnlLocation.Controls.Add(Me.BtnSaveLocation)
-        Me.PnlLocation.Controls.Add(Me.BtnCancelLocation)
+        Me.PnlLocation.Controls.Add(Me.BtnDoneLocation)
         Me.PnlLocation.Controls.Add(Me.LstValues)
         Me.PnlLocation.Controls.Add(Me.LstRasters)
         Me.PnlLocation.Location = New System.Drawing.Point(6, 21)
         Me.PnlLocation.Name = "PnlLocation"
-        Me.PnlLocation.Size = New System.Drawing.Size(362, 100)
+        Me.PnlLocation.Size = New System.Drawing.Size(362, 131)
         Me.PnlLocation.TabIndex = 73
         Me.PnlLocation.Visible = False
         '
         'BtnSaveLocation
         '
         Me.BtnSaveLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnSaveLocation.Location = New System.Drawing.Point(290, 72)
+        Me.BtnSaveLocation.Location = New System.Drawing.Point(290, 97)
         Me.BtnSaveLocation.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnSaveLocation.Name = "BtnSaveLocation"
         Me.BtnSaveLocation.Size = New System.Drawing.Size(65, 22)
@@ -738,23 +740,23 @@ Partial Class FrmPsuedoSite
         Me.BtnSaveLocation.Text = "Add"
         Me.BtnSaveLocation.UseVisualStyleBackColor = True
         '
-        'BtnCancelLocation
+        'BtnDoneLocation
         '
-        Me.BtnCancelLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnCancelLocation.Location = New System.Drawing.Point(219, 72)
-        Me.BtnCancelLocation.Margin = New System.Windows.Forms.Padding(2)
-        Me.BtnCancelLocation.Name = "BtnCancelLocation"
-        Me.BtnCancelLocation.Size = New System.Drawing.Size(65, 22)
-        Me.BtnCancelLocation.TabIndex = 74
-        Me.BtnCancelLocation.Text = "Cancel"
-        Me.BtnCancelLocation.UseVisualStyleBackColor = True
+        Me.BtnDoneLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnDoneLocation.Location = New System.Drawing.Point(219, 97)
+        Me.BtnDoneLocation.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnDoneLocation.Name = "BtnDoneLocation"
+        Me.BtnDoneLocation.Size = New System.Drawing.Size(65, 22)
+        Me.BtnDoneLocation.TabIndex = 74
+        Me.BtnDoneLocation.Text = "Done"
+        Me.BtnDoneLocation.UseVisualStyleBackColor = True
         '
         'LstValues
         '
         Me.LstValues.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.LstValues.FormattingEnabled = True
         Me.LstValues.ItemHeight = 16
-        Me.LstValues.Location = New System.Drawing.Point(212, 11)
+        Me.LstValues.Location = New System.Drawing.Point(212, 36)
         Me.LstValues.Name = "LstValues"
         Me.LstValues.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple
         Me.LstValues.Size = New System.Drawing.Size(96, 52)
@@ -765,7 +767,7 @@ Partial Class FrmPsuedoSite
         Me.LstRasters.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.LstRasters.FormattingEnabled = True
         Me.LstRasters.ItemHeight = 16
-        Me.LstRasters.Location = New System.Drawing.Point(6, 11)
+        Me.LstRasters.Location = New System.Drawing.Point(6, 36)
         Me.LstRasters.Name = "LstRasters"
         Me.LstRasters.Size = New System.Drawing.Size(197, 52)
         Me.LstRasters.Sorted = True
@@ -808,8 +810,8 @@ Partial Class FrmPsuedoSite
         '
         'Layer
         '
-        DataGridViewCellStyle3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Layer.DefaultCellStyle = DataGridViewCellStyle3
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Layer.DefaultCellStyle = DataGridViewCellStyle1
         Me.Layer.HeaderText = "Layer"
         Me.Layer.Name = "Layer"
         Me.Layer.ReadOnly = True
@@ -818,8 +820,8 @@ Partial Class FrmPsuedoSite
         '
         'Values
         '
-        DataGridViewCellStyle4.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Values.DefaultCellStyle = DataGridViewCellStyle4
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Values.DefaultCellStyle = DataGridViewCellStyle2
         Me.Values.HeaderText = "Values"
         Me.Values.Name = "Values"
         Me.Values.ReadOnly = True
@@ -831,6 +833,17 @@ Partial Class FrmPsuedoSite
         Me.FullPath.ReadOnly = True
         Me.FullPath.Visible = False
         Me.FullPath.Width = 5
+        '
+        'Label6
+        '
+        Me.Label6.AutoSize = True
+        Me.Label6.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label6.Location = New System.Drawing.Point(5, 6)
+        Me.Label6.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label6.Name = "Label6"
+        Me.Label6.Size = New System.Drawing.Size(222, 16)
+        Me.Label6.TabIndex = 91
+        Me.Label6.Text = "Limit search to selected values"
         '
         'FrmPsuedoSite
         '
@@ -865,6 +878,7 @@ Partial Class FrmPsuedoSite
         Me.GrpProximity.PerformLayout()
         Me.GrpLocation.ResumeLayout(False)
         Me.PnlLocation.ResumeLayout(False)
+        Me.PnlLocation.PerformLayout()
         CType(Me.GrdLocation, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
@@ -929,8 +943,9 @@ Partial Class FrmPsuedoSite
     Friend WithEvents BtnDeleteLocation As System.Windows.Forms.Button
     Friend WithEvents BtnAddLocation As System.Windows.Forms.Button
     Friend WithEvents BtnSaveLocation As System.Windows.Forms.Button
-    Friend WithEvents BtnCancelLocation As System.Windows.Forms.Button
+    Friend WithEvents BtnDoneLocation As System.Windows.Forms.Button
     Friend WithEvents Layer As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents Values As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents FullPath As System.Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents Label6 As System.Windows.Forms.Label
 End Class

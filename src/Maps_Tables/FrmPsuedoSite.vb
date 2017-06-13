@@ -18,6 +18,7 @@ Public Class FrmPsuedoSite
     Private m_siteFileName As String = "ps_site"
     Private m_proximityLayer As String = "ps_proximity"
     Private m_precipLayer As String = "ps_precip"
+    Private m_locationLayer As String = "ps_location"
     Private m_demInMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
@@ -25,9 +26,14 @@ Public Class FrmPsuedoSite
     Private m_lastAnalysis As PseudoSite = Nothing
     Private m_formLoaded As Boolean = False
     Private m_cellSize As Double
-    Private m_idxLocation As Int16 = 0
+    Private m_idxLayer As Int16 = 0
     Private m_idxValues As Int16 = 1
     Private m_idxFullPaths As Int16 = 2
+    Private m_sep As String = ","
+    'These 2 collections hold the values for the location layer(s) in memory; The key is the layer path which should be unique
+    Private m_dictLocationAllValues As IDictionary(Of String, IList(Of String))
+    Private m_dictLocationIncludeValues As IDictionary(Of String, IList(Of String))
+
 
     Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits, _
                    ByVal siteScenarioToolTimeStamp As DateTime)
@@ -284,6 +290,40 @@ Public Class FrmPsuedoSite
             End If
         End If
 
+        'User selected location layer; Are required fields populated?
+        If CkLocation.Checked Then
+            Dim sbLoc As StringBuilder = New StringBuilder()
+            If GrdLocation.Rows.Count = 0 Then
+                sbLoc.Append("No layers have been configured")
+            End If
+            For Each row As DataGridViewRow In GrdLocation.Rows
+                Dim layerName As String = Convert.ToString(row.Cells(m_idxLayer).Value)
+                Dim layerLocation As String = Convert.ToString(row.Cells(m_idxFullPaths).Value)
+                If row.Cells(m_idxFullPaths).Value Is Nothing Then
+                    sbLoc.Append("Missing layer path for layer " + layerName + vbCrLf)
+                End If
+                If row.Cells(m_idxValues).Value Is Nothing Then
+                    sbLoc.Append("Missing selected values for layer " + layerName + vbCrLf)
+                Else
+                    Dim lstValues As IList(Of String) = m_dictLocationIncludeValues(layerLocation)
+                    If lstValues.Count < 1 Then
+                        sbLoc.Append("Missing selected values for layer " + layerName + vbCrLf)
+                    End If
+                End If
+            Next
+            If sbLoc.Length > 0 Then
+                Dim errMsg As String = "You selected the Location option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
+                    sbLoc.ToString + vbCrLf +
+                    "Click 'No' to fix the parameters, or 'Yes' to find a site without using the Location option."
+                Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid location values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
+                If res <> Windows.Forms.DialogResult.Yes Then
+                    Exit Sub
+                Else
+                    CkLocation.Checked = False
+                End If
+            End If
+        End If
+
         Dim snapRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi) & BA_EnumDescription(PublicPath.AoiGrid)
         Dim maskPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & m_aoiBoundary
 
@@ -303,6 +343,7 @@ Public Class FrmPsuedoSite
 
         '2. Identify cells that are furthest from the represented area (Euclidean distance tool)
         Dim distanceFileName As String = "ps_distance"
+        Dim furthestPixelInputFile As String = distanceFileName
         If success = BA_ReturnCode.Success Then
             pStepProg.Message = "Executing Euclidean distance tool"
             pStepProg.Step()
@@ -339,33 +380,43 @@ Public Class FrmPsuedoSite
             End If
         End If
 
-        Dim cellStatFileName As String = "ps_cellStat"
-        If success = BA_ReturnCode.Success Then
-            '6. Get minimum for all of the constraint layers
-            pStepProg.Message = "Calculating cell statistics for all constraint layers"
-            pStepProg.Step()
-            sb.Remove(sb.ToString().LastIndexOf("; "), "; ".Length)
-            success = BA_GetCellStatistics(sb.ToString, snapRasterPath, "MINIMUM", _
-                                           m_analysisFolder + "\" + cellStatFileName, "false")
-        End If
-
-        If BA_IsRasterEmpty(m_analysisFolder, cellStatFileName) Then
-            Dim errMsg As String = "The entire area of the AOI was excluded using the constraints you selected. " +
-                "No suitable site location could be found. "
-            MessageBox.Show(errMsg, "No site location found", MessageBoxButtons.OK, MessageBoxIcon.Hand)
-            If progressDialog2 IsNot Nothing Then
-                progressDialog2.HideDialog()
+        If CkLocation.Checked = True Then
+            success = GenerateLocationLayer(pStepProg, snapRasterPath)
+            If success = BA_ReturnCode.Success Then
+                sb.Append(m_analysisFolder + "\" + m_locationLayer + "; ")
             End If
-            BtnFindSite.Enabled = True
-            Exit Sub
         End If
 
-        Dim timesFileName As String = "ps_times"
-        If success = BA_ReturnCode.Success Then
-            pStepProg.Message = "Executing Times tool with distance and cell statistics layers"
-            pStepProg.Step()
-            success = BA_Times(m_analysisFolder + "\" + distanceFileName, m_analysisFolder + "\" + cellStatFileName, _
-                m_analysisFolder + "\" + timesFileName)
+        If sb.Length > 0 Then
+            Dim cellStatFileName As String = "ps_cellStat"
+            If success = BA_ReturnCode.Success Then
+                '6. Get minimum for all of the constraint layers
+                pStepProg.Message = "Calculating cell statistics for all constraint layers"
+                pStepProg.Step()
+                sb.Remove(sb.ToString().LastIndexOf("; "), "; ".Length)
+                success = BA_GetCellStatistics(sb.ToString, snapRasterPath, "MINIMUM", _
+                                               m_analysisFolder + "\" + cellStatFileName, "false")
+            End If
+
+            If BA_IsRasterEmpty(m_analysisFolder, cellStatFileName) Then
+                Dim errMsg As String = "The entire area of the AOI was excluded using the constraints you selected. " +
+                    "No suitable site location could be found. "
+                MessageBox.Show(errMsg, "No site location found", MessageBoxButtons.OK, MessageBoxIcon.Hand)
+                If progressDialog2 IsNot Nothing Then
+                    progressDialog2.HideDialog()
+                End If
+                BtnFindSite.Enabled = True
+                Exit Sub
+            End If
+
+            Dim timesFileName As String = "ps_times"
+            furthestPixelInputFile = timesFileName
+            If success = BA_ReturnCode.Success Then
+                pStepProg.Message = "Executing Times tool with distance and cell statistics layers"
+                pStepProg.Step()
+                success = BA_Times(m_analysisFolder + "\" + distanceFileName, m_analysisFolder + "\" + cellStatFileName, _
+                    m_analysisFolder + "\" + timesFileName)
+            End If
         End If
 
         Dim furthestPixelFileName As String = "ps_furthest"
@@ -376,11 +427,11 @@ Public Class FrmPsuedoSite
             'Set everything to null that is smaller than that; should leave one pixel
             'Expression can be more precise; Rounding down works for now
             Dim cellSize As Double = -1
-            Dim pRasterStats As IRasterStatistics = BA_GetRasterStatsGDB(m_analysisFolder + "\" + timesFileName, cellSize)
+            Dim pRasterStats As IRasterStatistics = BA_GetRasterStatsGDB(m_analysisFolder + "\" + furthestPixelInputFile, cellSize)
             Dim pExpression As String = Nothing
             If pRasterStats IsNot Nothing Then
                 'sample expression: SetNull('C:\Docs\Lesley\animas_AOI_prms_3\analysis.gdb\ps_distance' < 6259,'C:\Docs\Lesley\animas_AOI_prms_3\analysis.gdb\ps_distance')
-                Dim targetPath As String = m_analysisFolder + "\" + timesFileName
+                Dim targetPath As String = m_analysisFolder + "\" + furthestPixelInputFile
                 pExpression = "SetNull('" + targetPath + "' < " + _
                     CStr(Math.Floor(pRasterStats.Maximum)) + _
                     ",'" + targetPath + "')"
@@ -551,6 +602,49 @@ Public Class FrmPsuedoSite
         success = BA_AddUserFieldToRaster(m_analysisFolder, m_precipLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
                                       100, BA_MAPS_PS_PRECIPITATION)
         Return success
+    End Function
+
+    Private Function GenerateLocationLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
+        Dim layerCount As Int16 = GrdLocation.Rows.Count
+        Dim success As BA_ReturnCode
+        Dim outputFolderPath As String = m_analysisFolder + "\" + m_locationLayer
+        Dim outputFolderPathPrev As String
+        Dim timesOutputFolderPath As String = Nothing
+        For i As Int16 = 0 To layerCount - 1
+            pStepProg.Message = "Processing location layer " + Convert.ToString(GrdLocation.Rows(i).Cells(m_idxLayer).Value)
+            pStepProg.Step()
+            'Build reclassItem array
+            Dim layerLocation As String = Convert.ToString(GrdLocation.Rows(i).Cells(m_idxFullPaths).Value)
+            Dim lstAllValues As IList(Of String) = m_dictLocationAllValues(layerLocation)
+            Dim lstIncludeValues As IList(Of String) = m_dictLocationIncludeValues(layerLocation)
+            Dim reclassItems(lstAllValues.Count - 1) As ReclassItem
+            For j As Integer = 0 To lstAllValues.Count - 1
+                Dim nextItem As ReclassItem = New ReclassItem()
+                Dim pValue As String = lstAllValues(j)
+                nextItem.FromValue = pValue
+                nextItem.ToValue = pValue
+                If lstIncludeValues.Contains(pValue) Then
+                    nextItem.OutputValue = 1
+                Else
+                    nextItem.OutputValue = -9999
+                End If
+                reclassItems(j) = nextItem
+            Next
+            '@ToDo: Need to track layer names better
+            If layerCount > 1 Then
+                outputFolderPath = m_analysisFolder + "\tempLocation" + CStr(i)
+                timesOutputFolderPath = m_analysisFolder + "\timesLocation" + CStr(i)
+            End If
+            success = BA_ReclassifyRasterFromTableWithNoData(layerLocation, BA_FIELD_VALUE, reclassItems, _
+                                                             outputFolderPath, snapRasterPath)
+            If i > 0 AndAlso success = BA_ReturnCode.Success Then
+                outputFolderPathPrev = m_analysisFolder + "\timesLocation" + CStr(i - 1)
+                success = BA_Times(outputFolderPath, outputFolderPathPrev, timesOutputFolderPath)
+            End If
+            If success <> BA_ReturnCode.Success Then
+                Return success
+            End If
+        Next
     End Function
 
     Private Sub txtLower_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtLower.Validating
@@ -1192,7 +1286,7 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub CkLocation_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkLocation.CheckedChanged
-        GrpLocation.Enabled = CkProximity.Checked
+        GrpLocation.Enabled = CkLocation.Checked
         RaiseEvent FormInputChanged()
     End Sub
 
@@ -1229,30 +1323,42 @@ Public Class FrmPsuedoSite
         ToggleLocationButtons(Not PnlLocation.Visible)
     End Sub
 
-    Private Sub BtnCancelLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnCancelLocation.Click
+    Private Sub BtnCancelLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnDoneLocation.Click
         PnlLocation.Visible = False
         LstRasters.ClearSelected()
     End Sub
 
-    Private Sub BtnSaveLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnSaveLocation.Click
-        Dim valueCount As Integer = LstValues.SelectedItems.Count
+    Private Sub BtnDoneLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnSaveLocation.Click
         Dim sb As StringBuilder = New StringBuilder()
-        If valueCount < 1 Then
+        Dim lstAllValues As IList(Of String) = New List(Of String)
+        Dim lstSelectValues As IList(Of String) = New List(Of String)
+        Dim rasterItem As LayerListItem = LstRasters.SelectedItem
+        If LstValues.SelectedItems.Count < 1 Then
             MessageBox.Show("You must select at least one value to use this layer in the analysis")
             Exit Sub
         Else
-            For i As Integer = 0 To valueCount - 1
-                sb.Append(LstValues.SelectedItems(i) + ",")
+            For i As Integer = 0 To LstValues.Items.Count - 1
+                lstAllValues.Add(LstValues.Items(i))
+                If LstValues.GetSelected(i) Then
+                    sb.Append(LstValues.SelectedItems(i) + m_sep)
+                    lstSelectValues.Add(LstValues.Items(i))
+                End If
             Next
-            sb.Remove(sb.ToString().LastIndexOf(","), ",".Length)
+            sb.Remove(sb.ToString().LastIndexOf(m_sep), m_sep.Length)
+            If m_dictLocationAllValues Is Nothing Then
+                m_dictLocationAllValues = New Dictionary(Of String, IList(Of String))
+                m_dictLocationIncludeValues = New Dictionary(Of String, IList(Of String))
+            End If
+            '@ToDo: Need to make sure only one row per layer location, otherwise this will fail
+            m_dictLocationAllValues.Add(rasterItem.Value, lstAllValues)
+            m_dictLocationIncludeValues.Add(rasterItem.Value, lstSelectValues)
         End If
         Dim item As New DataGridViewRow
         item.CreateCells(GrdLocation)
-        Dim listItem As LayerListItem = LstRasters.SelectedItem
         With item
-            .Cells(m_idxLocation).Value = listItem.Name
+            .Cells(m_idxLayer).Value = rasterItem.Name
             .Cells(m_idxValues).Value = sb.ToString
-            .Cells(m_idxFullPaths).Value = listItem.Value
+            .Cells(m_idxFullPaths).Value = rasterItem.Value
         End With
         '---add the row---
         GrdLocation.Rows.Add(item)
@@ -1260,7 +1366,9 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub GrdLocation_SelectionChanged(sender As Object, e As System.EventArgs) Handles GrdLocation.SelectionChanged
-        ToggleLocationButtons(True)
+        If PnlLocation.Visible = False Then
+            ToggleLocationButtons(True)
+        End If
     End Sub
 
     Private Sub BtnDeleteLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnDeleteLocation.Click
