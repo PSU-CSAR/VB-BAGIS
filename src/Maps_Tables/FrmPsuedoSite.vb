@@ -608,8 +608,9 @@ Public Class FrmPsuedoSite
         Dim layerCount As Int16 = GrdLocation.Rows.Count
         Dim success As BA_ReturnCode
         Dim outputFolderPath As String = m_analysisFolder + "\" + m_locationLayer
-        Dim outputFolderPathPrev As String
+        Dim inRasterPath2 As String = Nothing
         Dim timesOutputFolderPath As String = Nothing
+        Dim lstRastersToDelete As IList(Of String) = New List(Of String)
         For i As Int16 = 0 To layerCount - 1
             pStepProg.Message = "Processing location layer " + Convert.ToString(GrdLocation.Rows(i).Cells(m_idxLayer).Value)
             pStepProg.Step()
@@ -630,21 +631,46 @@ Public Class FrmPsuedoSite
                 End If
                 reclassItems(j) = nextItem
             Next
-            '@ToDo: Need to track layer names better
             If layerCount > 1 Then
                 outputFolderPath = m_analysisFolder + "\tempLocation" + CStr(i)
+                lstRastersToDelete.Add(outputFolderPath)
                 timesOutputFolderPath = m_analysisFolder + "\timesLocation" + CStr(i)
             End If
             success = BA_ReclassifyRasterFromTableWithNoData(layerLocation, BA_FIELD_VALUE, reclassItems, _
                                                              outputFolderPath, snapRasterPath)
-            If i > 0 AndAlso success = BA_ReturnCode.Success Then
-                outputFolderPathPrev = m_analysisFolder + "\timesLocation" + CStr(i - 1)
-                success = BA_Times(outputFolderPath, outputFolderPathPrev, timesOutputFolderPath)
+            If success = BA_ReturnCode.Success AndAlso i > 0 Then
+                'inRasterPath1 always outputFolderPath
+                'inRasterPath2 see case statement below
+                'outRasterPath always timesOutputFolderPath
+                Select Case i
+                    Case 1
+                        'Multiplying first 2 reclass layers
+                        inRasterPath2 = m_analysisFolder + "\tempLocation" + CStr(i - 1)
+                    Case Is > 1
+                        'Multiplying by previous times output layer
+                        inRasterPath2 = m_analysisFolder + "\timesLocation" + CStr(i - 1)
+                End Select
+                success = BA_Times(outputFolderPath, inRasterPath2, timesOutputFolderPath)
+                lstRastersToDelete.Add(timesOutputFolderPath)
             End If
+            ' Stop processing if there is an error
             If success <> BA_ReturnCode.Success Then
                 Return success
             End If
         Next
+        ' Need to rename the final layer to the location output layer
+        If layerCount > 1 Then
+            success = BA_RenameRasterInGDB(m_analysisFolder, timesOutputFolderPath, m_locationLayer)
+        End If
+        If success = BA_ReturnCode.Success Then
+            For Each layerPath As String In lstRastersToDelete
+                Dim layerFolder As String = "PleaseReturn"
+                Dim layerName As String = BA_GetBareName(layerPath, layerFolder)
+                Dim retVal As Short = BA_RemoveRasterFromGDB(layerFolder, layerName)
+            Next
+        End If
+        '@ToDo: Add the layer name to the raster for display
+        Return success
     End Function
 
     Private Sub txtLower_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtLower.Validating
@@ -1340,7 +1366,7 @@ Public Class FrmPsuedoSite
             For i As Integer = 0 To LstValues.Items.Count - 1
                 lstAllValues.Add(LstValues.Items(i))
                 If LstValues.GetSelected(i) Then
-                    sb.Append(LstValues.SelectedItems(i) + m_sep)
+                    sb.Append(LstValues.Items(i) + m_sep)
                     lstSelectValues.Add(LstValues.Items(i))
                 End If
             Next
