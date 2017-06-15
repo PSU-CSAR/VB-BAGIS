@@ -561,8 +561,10 @@ Public Class FrmPsuedoSite
         Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
                                                                      reclassElevPath, snapRasterPath)
         'Add 'NAME' field to be used as label for map
-        success = BA_AddUserFieldToRaster(m_analysisFolder, m_elevLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
-                                      100, BA_MAPS_PS_ELEVATION)
+        If success = BA_ReturnCode.Success Then
+            success = BA_AddUserFieldToRaster(m_analysisFolder, m_elevLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                                          100, BA_MAPS_PS_ELEVATION)
+        End If
         Return success
     End Function
 
@@ -599,8 +601,10 @@ Public Class FrmPsuedoSite
         Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
                                                                              reclassPrismPath, snapRasterPath)
         'Add 'NAME' field to be used as label for map
-        success = BA_AddUserFieldToRaster(m_analysisFolder, m_precipLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
-                                      100, BA_MAPS_PS_PRECIPITATION)
+        If success = BA_ReturnCode.Success Then
+            success = BA_AddUserFieldToRaster(m_analysisFolder, m_precipLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                                          100, BA_MAPS_PS_PRECIPITATION)
+        End If
         Return success
     End Function
 
@@ -1003,7 +1007,8 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub SavePseudoSiteLog(ByVal objectId As Integer)
-        m_lastAnalysis = New PseudoSite(objectId, TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked)
+        m_lastAnalysis = New PseudoSite(objectId, TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked, _
+                                        CkLocation.Checked)
         'Save Elevation data
         If m_lastAnalysis.UseElevation Then
             Dim elevUnits As esriUnits = esriUnits.esriMeters
@@ -1026,6 +1031,13 @@ Public Class FrmPsuedoSite
             Else
                 m_lastAnalysis.ProximityProperties(m_usingXYUnits, item.Name, 0)
             End If
+        End If
+        'Save Location settings
+        If m_lastAnalysis.UseLocation Then
+            For Each pRow As DataGridViewRow In GrdLocation.Rows
+                Dim filePath As String = Convert.ToString(pRow.Cells(m_idxFullPaths).Value)
+                Dim selectedList As IList(Of String) = m_dictLocationIncludeValues(filePath)
+            Next
         End If
         Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
         m_lastAnalysis.Save(xmlOutputPath)

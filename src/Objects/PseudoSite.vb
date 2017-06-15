@@ -22,8 +22,8 @@ Public Class PseudoSite
     Dim m_precipEndIdx As Short
     Dim m_upperPrecip As Double
     Dim m_lowerPrecip As Double
-    Dim m_useDistance As Boolean
-    Dim m_distanceLayers As List(Of PseudoSiteLayer)
+    Dim m_useLocation As Boolean
+    Dim m_locationLayers As List(Of PseudoSiteLayer)
 
     ' Required for de-serialization. Do not use.
     Sub New()
@@ -31,12 +31,13 @@ Public Class PseudoSite
     End Sub
 
     Sub New(ByVal objectId As Integer, ByVal siteName As String, ByVal useElevation As Boolean, ByVal usePrism As Boolean, _
-            ByVal useProximity As Boolean)
+            ByVal useProximity As Boolean, ByVal useDistance As Boolean)
         m_objectId = objectId
         m_siteName = siteName
         m_useElev = useElevation
         m_usePrism = usePrism
         m_useProximity = useProximity
+        m_useLocation = useDistance
         m_dateCreated = DateAndTime.Now
     End Sub
 
@@ -251,22 +252,31 @@ Public Class PseudoSite
         m_bufferDistance = proximityDistance
     End Sub
 
-    Public Property UseDistance() As Boolean
+    Public Sub AddLocationProperties(ByVal layerName As String, ByVal layerPath As String, ByVal valueField As String, _
+                                     ByVal lstValues As List(Of String))
+        If m_locationLayers Is Nothing Then
+            m_locationLayers = New List(Of PseudoSiteLayer)
+        End If
+        Dim psiteLayer As PseudoSiteLayer = New PseudoSiteLayer(layerName, layerPath, valueField, lstValues)
+        m_locationLayers.Add(psiteLayer)
+    End Sub
+
+    Public Property UseLocation() As Boolean
         Get
-            Return m_useDistance
+            Return m_useLocation
         End Get
         Set(value As Boolean)
-            m_useDistance = value
+            m_useLocation = value
         End Set
     End Property
 
-    Public Property DistanceLayers() As List(Of PseudoSiteLayer)
+    Public Property LocationLayers() As List(Of PseudoSiteLayer)
         Get
-            Return m_distanceLayers
+            Return m_locationLayers
         End Get
         Set(value As List(Of PseudoSiteLayer))
-            m_distanceLayers = New List(Of PseudoSiteLayer)
-            m_distanceLayers.AddRange(value)
+            m_locationLayers = New List(Of PseudoSiteLayer)
+            m_locationLayers.AddRange(value)
         End Set
     End Property
 
