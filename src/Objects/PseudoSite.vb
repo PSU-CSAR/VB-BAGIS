@@ -23,6 +23,7 @@ Public Class PseudoSite
     Dim m_upperPrecip As Double
     Dim m_lowerPrecip As Double
     Dim m_useDistance As Boolean
+    Dim m_distanceLayers As List(Of PseudoSiteLayer)
 
     ' Required for de-serialization. Do not use.
     Sub New()
@@ -256,6 +257,16 @@ Public Class PseudoSite
         End Get
         Set(value As Boolean)
             m_useDistance = value
+        End Set
+    End Property
+
+    Public Property DistanceLayers() As List(Of PseudoSiteLayer)
+        Get
+            Return m_distanceLayers
+        End Get
+        Set(value As List(Of PseudoSiteLayer))
+            m_distanceLayers = New List(Of PseudoSiteLayer)
+            m_distanceLayers.AddRange(value)
         End Set
     End Property
 
