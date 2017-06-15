@@ -22,6 +22,7 @@ Public Class PseudoSite
     Dim m_precipEndIdx As Short
     Dim m_upperPrecip As Double
     Dim m_lowerPrecip As Double
+    Dim m_useDistance As Boolean
 
     ' Required for de-serialization. Do not use.
     Sub New()
@@ -248,5 +249,14 @@ Public Class PseudoSite
         m_proximityLayer = proximityLayer
         m_bufferDistance = proximityDistance
     End Sub
+
+    Public Property UseDistance() As Boolean
+        Get
+            Return m_useDistance
+        End Get
+        Set(value As Boolean)
+            m_useDistance = value
+        End Set
+    End Property
 
 End Class
