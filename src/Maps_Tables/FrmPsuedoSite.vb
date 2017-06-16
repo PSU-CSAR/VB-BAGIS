@@ -26,6 +26,8 @@ Public Class FrmPsuedoSite
     Private m_lastAnalysis As PseudoSite = Nothing
     Private m_formLoaded As Boolean = False
     Private m_cellSize As Double
+    Private m_demMax As Double
+    Private m_demMin As Double
     Private m_idxLayer As Int16 = 0
     Private m_idxValues As Int16 = 1
     Private m_idxFullPaths As Int16 = 2
@@ -94,16 +96,20 @@ Public Class FrmPsuedoSite
 
         'read dem min, max everytime the form is activated
         'display dem elevation stats
-        Dim pRasterStats As IRasterStatistics = BA_GetDemStatsGDB(AOIFolderBase)
+        Dim inputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
+        Dim pRasterStats As IRasterStatistics2 = BA_GetRasterStatsGDB(inputPath, m_cellSize)
         'Determine if Display ZUnit is the same as DEM ZUnit
         'AOI_DEMMin and AOI_DEMMax use internal system unit, i.e., meters
         Dim Conversion_Factor As Double = BA_SetConversionFactor(m_usingElevMeters, m_demInMeters) 'i.e., meters to meters
-        AOI_DEMMin = Math.Round(pRasterStats.Minimum * Conversion_Factor - 0.005, 2)
-        AOI_DEMMax = Math.Round(pRasterStats.Maximum * Conversion_Factor + 0.005, 2)
+        m_demMin = Math.Round(pRasterStats.Minimum * Conversion_Factor - 0.005, 2)
+        m_demMax = Math.Round(pRasterStats.Maximum * Conversion_Factor + 0.005, 2)
+        'Store actual (not rounded) DEM min and max so it can be used later in DEM reclass
+        'm_demMin = pRasterStats.Minimum
+        'm_demMax = pRasterStats.Maximum
 
         'Populate Boxes
-        txtMinElev.Text = Convert.ToString(AOI_DEMMin)
-        TxtMaxElev.Text = Convert.ToString(AOI_DEMMax)
+        txtMinElev.Text = Convert.ToString(m_demMin)
+        TxtMaxElev.Text = Convert.ToString(m_demMax)
         TxtRange.Text = Val(TxtMaxElev.Text) - Val(txtMinElev.Text)
         txtLower.Text = txtMinElev.Text
         TxtUpperRange.Text = TxtMaxElev.Text
@@ -347,8 +353,7 @@ Public Class FrmPsuedoSite
         If success = BA_ReturnCode.Success Then
             pStepProg.Message = "Executing Euclidean distance tool"
             pStepProg.Step()
-            '@ToDo: Verify what cell size should be
-            m_cellSize = BA_CellSize(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces), BA_EnumDescription(MapsFileName.filled_dem_gdb))
+            '@ToDo: Verify what cell size should be; Currently comes from filled_dem
             success = BA_EuclideanDistance(m_analysisFolder + "\" + m_representedArea, m_analysisFolder + "\" + distanceFileName, _
                                            CStr(m_cellSize), maskPath, snapRasterPath, maskPath)
         End If
@@ -535,6 +540,7 @@ Public Class FrmPsuedoSite
         pStepProg.Message = "Reclass DEM for elevation layer"
         pStepProg.Step()
         Dim sb As StringBuilder = New StringBuilder()
+        'Set min/max of reclass to actual dem values
         Dim strMinElev As String = txtMinElev.Text
         Dim strLower As String = txtLower.Text
         Dim strUpperRange As String = TxtUpperRange.Text
@@ -555,7 +561,7 @@ Public Class FrmPsuedoSite
         End If
         sb.Append(strMinElev + " " + strLower + " NoData;")
         sb.Append(strLower + " " + strUpperRange + " 1;")
-        sb.Append(strUpperRange + " " + strMaxElev + " NoData ")
+        sb.Append(strUpperRange + " " + strMaxElev + " NoData")
         Dim inputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
         Dim reclassElevPath As String = m_analysisFolder & "\" & m_elevLayer
         Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
@@ -579,7 +585,7 @@ Public Class FrmPsuedoSite
         Dim strMaxPrecip As String = txtMaxPrecip.Text
         sb.Append(strMinPrecip + " " + strLowerRange + " NoData;")
         sb.Append(strLowerRange + " " + strUpperRange + " 1;")
-        sb.Append(strUpperRange + " " + strMaxPrecip + " NoData ")
+        sb.Append(strUpperRange + " " + strMaxPrecip + " NoData")
 
         Dim inputFolder As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True)
         Dim prismRasterName As String
