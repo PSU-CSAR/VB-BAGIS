@@ -659,7 +659,6 @@ Module BAGIS_MapModule
     Public Sub BA_AddScenarioLayersToMapFrame(ByVal pApplication As ESRI.ArcGIS.Framework.IApplication, ByVal pMxDoc As IMxDocument, _
                                               ByVal aoiPath As String)
         BA_RemoveScenarioLayersfromMapFrame(pMxDoc)
-        BA_RemoveAutoSiteLayersfromMapFrame(pMxDoc)
         'add vector layers first
 
         'Scenario 1
@@ -746,18 +745,6 @@ Module BAGIS_MapModule
         FileName = BA_EnumDescription(MapsFileName.ElevationZone)
         filepathname = filepath & FileName
         response = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_ELEVATION_ZONES, MapsDisplayStyle.Elevation, 30, WorkspaceType.Geodatabase)
-
-        'add aoib as base layer for difference of representation maps
-        filepath = BA_GeodatabasePath(aoiPath, GeodatabaseNames.Aoi, True)
-        FileName = BA_BufferedAOIExtentRaster
-        filepathname = filepath & FileName
-        response = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_AOI_BASEMAP, MapsDisplayStyle.Red_to_Blue_Diverging, 30, WorkspaceType.Geodatabase)
-
-        'add elevation representation scenario outputs if they exist
-        'FileName = BA_EnumDescription(MapsFileName.DifferenceRepresentedArea)
-        'filepathname = filepath & FileName
-        'success = BA_DisplayRasterWithSymbolByField(pMxDoc, filepathname, BA_MAPS_DIFFERENCE_REPRESENTATION, MapsDisplayStyle.Red_to_Blue_Diverging, 50, _
-        '                                                                 WorkspaceType.Geodatabase, BA_FIELD_NAME)
 
         'If response < 0 Then
         '    ActualRepMap_Flag = False
@@ -1953,19 +1940,19 @@ Module BAGIS_MapModule
                 LayerNames(1) = BA_MAPS_AOI_BOUNDARY
                 LayerNames(2) = BA_MAPS_STREAMS
                 LayerNames(3) = BA_MAPS_HILLSHADE
-                LayerNames(4) = BA_MAPS_SNOTEL_SITES
-                LayerNames(5) = BA_MAPS_SNOTEL_SCENARIO1
-                LayerNames(6) = BA_MAPS_SNOTEL_SCENARIO2
-                LayerNames(7) = BA_MAPS_SNOW_COURSE_SCENARIO1
-                LayerNames(8) = BA_MAPS_SNOW_COURSE_SCENARIO2
-                LayerNames(9) = BA_MAPS_PSEUDO_SCENARIO1
-                LayerNames(10) = BA_MAPS_PSEUDO_SCENARIO2
-                LayerNames(11) = BA_MAPS_SNOW_COURSE_SITES
-                LayerNames(12) = BA_MAPS_PSEUDO_SITES
-                LayerNames(13) = BA_MAPS_SCENARIO1_REPRESENTATION
-                LayerNames(14) = BA_MAPS_SCENARIO2_REPRESENTATION
-                LayerNames(15) = BA_MAPS_BOTH_REPRESENTATION
-                LayerNames(16) = BA_MAPS_AOI_BASEMAP
+                LayerNames(4) = BA_MAPS_ELEVATION_ZONES
+                LayerNames(5) = BA_MAPS_SNOTEL_SITES
+                LayerNames(6) = BA_MAPS_SNOTEL_SCENARIO1
+                LayerNames(7) = BA_MAPS_SNOTEL_SCENARIO2
+                LayerNames(8) = BA_MAPS_SNOW_COURSE_SCENARIO1
+                LayerNames(9) = BA_MAPS_SNOW_COURSE_SCENARIO2
+                LayerNames(10) = BA_MAPS_PSEUDO_SCENARIO1
+                LayerNames(11) = BA_MAPS_PSEUDO_SCENARIO2
+                LayerNames(12) = BA_MAPS_SNOW_COURSE_SITES
+                LayerNames(13) = BA_MAPS_PSEUDO_SITES
+                LayerNames(14) = BA_MAPS_SCENARIO1_REPRESENTATION
+                LayerNames(15) = BA_MAPS_SCENARIO2_REPRESENTATION
+                LayerNames(16) = BA_MAPS_BOTH_REPRESENTATION
                 KeyLayerName = Nothing
                 UnitText = "Scenario 1 and scenario 2 sites are circled" & vbCrLf & "in black and gold respectively"
             Case Else
