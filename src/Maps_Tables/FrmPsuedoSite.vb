@@ -1043,6 +1043,8 @@ Public Class FrmPsuedoSite
             For Each pRow As DataGridViewRow In GrdLocation.Rows
                 Dim filePath As String = Convert.ToString(pRow.Cells(m_idxFullPaths).Value)
                 Dim selectedList As IList(Of String) = m_dictLocationIncludeValues(filePath)
+                Dim layerName As String = Convert.ToString(pRow.Cells(m_idxLayer).Value)
+                m_lastAnalysis.AddLocationProperties(layerName, filePath, BA_FIELD_VALUE, selectedList)
             Next
         End If
         Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)

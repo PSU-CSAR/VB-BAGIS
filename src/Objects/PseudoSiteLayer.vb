@@ -52,45 +52,45 @@ Public Class PseudoSiteLayer
         End Set
     End Property
 
-    Public Property SelectedValues() As IList(Of String)
-        Get
-            Return m_selectedValues
-        End Get
-        Set(value As IList(Of String))
-            m_selectedValues = New List(Of String)
-            m_selectedValues.AddRange(value)
-        End Set
-    End Property
+    'Public Property SelectedValues() As IList(Of String)
+    '    Get
+    '        Return m_selectedValues
+    '    End Get
+    '    Set(value As IList(Of String))
+    '        m_selectedValues = New List(Of String)
+    '        m_selectedValues.AddRange(value)
+    '    End Set
+    'End Property
 
-    Public Property BufferDistance() As Double
-        Get
-            Return m_bufferDistance
-        End Get
-        Set(value As Double)
-            m_bufferDistance = value
-        End Set
-    End Property
+    'Public Property BufferDistance() As Double
+    '    Get
+    '        Return m_bufferDistance
+    '    End Get
+    '    Set(value As Double)
+    '        m_bufferDistance = value
+    '    End Set
+    'End Property
 
-    <XmlIgnore()> Public Property BufferUnits() As esriUnits
-        Get
-            Return m_bufferUnits
-        End Get
-        Set(value As esriUnits)
-            m_bufferUnits = value
-        End Set
-    End Property
+    '<XmlIgnore()> Public Property BufferUnits() As esriUnits
+    '    Get
+    '        Return m_bufferUnits
+    '    End Get
+    '    Set(value As esriUnits)
+    '        m_bufferUnits = value
+    '    End Set
+    'End Property
 
-    Public Property BufferUnitsText() As String
-        Get
-            Dim unitsText As String = m_bufferUnits.ToString
-            If Left(unitsText, 4).ToLower = "esri" Then
-                unitsText = unitsText.Remove(0, Len("esri"))
-            End If
-            Return unitsText
-        End Get
-        Set(ByVal value As String)
-            m_bufferUnits = BA_GetEsriUnits(value)
-        End Set
-    End Property
+    'Public Property BufferUnitsText() As String
+    '    Get
+    '        Dim unitsText As String = m_bufferUnits.ToString
+    '        If Left(unitsText, 4).ToLower = "esri" Then
+    '            unitsText = unitsText.Remove(0, Len("esri"))
+    '        End If
+    '        Return unitsText
+    '    End Get
+    '    Set(ByVal value As String)
+    '        m_bufferUnits = BA_GetEsriUnits(value)
+    '    End Set
+    'End Property
 
 End Class
