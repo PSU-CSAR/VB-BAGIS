@@ -101,15 +101,14 @@ Public Class FrmPsuedoSite
         'Determine if Display ZUnit is the same as DEM ZUnit
         'AOI_DEMMin and AOI_DEMMax use internal system unit, i.e., meters
         Dim Conversion_Factor As Double = BA_SetConversionFactor(m_usingElevMeters, m_demInMeters) 'i.e., meters to meters
-        m_demMin = Math.Round(pRasterStats.Minimum * Conversion_Factor - 0.005, 2)
-        m_demMax = Math.Round(pRasterStats.Maximum * Conversion_Factor + 0.005, 2)
-        'Store actual (not rounded) DEM min and max so it can be used later in DEM reclass
-        'm_demMin = pRasterStats.Minimum
-        'm_demMax = pRasterStats.Maximum
+        'm_demMin = Math.Round(pRasterStats.Minimum * Conversion_Factor - 0.005, 2)
+        'Cheat up so min is never outside of the actual range
+        m_demMin = pRasterStats.Minimum * Conversion_Factor - 0.005
+        m_demMax = pRasterStats.Maximum * Conversion_Factor + 0.005
 
         'Populate Boxes
-        txtMinElev.Text = Convert.ToString(m_demMin)
-        TxtMaxElev.Text = Convert.ToString(m_demMax)
+        txtMinElev.Text = Convert.ToString(Math.Ceiling(m_demMin))
+        TxtMaxElev.Text = Convert.ToString(Math.Floor(m_demMax))
         TxtRange.Text = Val(TxtMaxElev.Text) - Val(txtMinElev.Text)
         txtLower.Text = txtMinElev.Text
         TxtUpperRange.Text = TxtMaxElev.Text
@@ -137,6 +136,8 @@ Public Class FrmPsuedoSite
         LoadLayers()
         BA_SetDefaultProjection(My.ArcMap.Application)
 
+        'Only reload previous run if it completed successfully and ps_site exists
+        If BA_File_Exists(m_analysisFolder + "\" + m_siteFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
         'Check for previously saved scenario and load those values as defaults
         Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
 
@@ -146,6 +147,7 @@ Public Class FrmPsuedoSite
             ReloadLastAnalysis(siteScenarioToolTimeStamp)
             BtnMap.Enabled = True
             BtnFindSite.Enabled = False
+        End If
         End If
 
         m_formLoaded = True
@@ -160,6 +162,9 @@ Public Class FrmPsuedoSite
                             "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Exit Sub
         End If
+
+        ' Delete any layers from the previous run
+        DeletePreviousRun()
 
         If CkElev.Checked Then
             'Validate lower and upper elevations
@@ -392,8 +397,9 @@ Public Class FrmPsuedoSite
             End If
         End If
 
+        Dim cellStatFileName As String = "ps_cellStat"
+        Dim timesFileName As String = "ps_times"
         If sb.Length > 0 Then
-            Dim cellStatFileName As String = "ps_cellStat"
             If success = BA_ReturnCode.Success Then
                 '6. Get minimum for all of the constraint layers
                 pStepProg.Message = "Calculating cell statistics for all constraint layers"
@@ -414,7 +420,6 @@ Public Class FrmPsuedoSite
                 Exit Sub
             End If
 
-            Dim timesFileName As String = "ps_times"
             furthestPixelInputFile = timesFileName
             If success = BA_ReturnCode.Success Then
                 pStepProg.Message = "Executing Times tool with distance and cell statistics layers"
@@ -498,6 +503,12 @@ Public Class FrmPsuedoSite
 
             'Delete the layers we don't need to keep for the map
             BA_RemoveRasterFromGDB(m_analysisFolder, distanceFileName)
+            If BA_File_Exists(m_analysisFolder + "\" + cellStatFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                BA_RemoveRasterFromGDB(m_analysisFolder, cellStatFileName)
+            End If
+            If BA_File_Exists(m_analysisFolder + "\" + timesFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                BA_RemoveRasterFromGDB(m_analysisFolder, timesFileName)
+            End If
             BA_RemoveRasterFromGDB(m_analysisFolder, furthestPixelFileName)
         End If
 
@@ -541,10 +552,10 @@ Public Class FrmPsuedoSite
         pStepProg.Step()
         Dim sb As StringBuilder = New StringBuilder()
         'Set min/max of reclass to actual dem values
-        Dim strMinElev As String = txtMinElev.Text
+        Dim strMinElev As String = Convert.ToString(m_demMin)
         Dim strLower As String = txtLower.Text
         Dim strUpperRange As String = TxtUpperRange.Text
-        Dim strMaxElev As String = TxtMaxElev.Text
+        Dim strMaxElev As String = Convert.ToString(m_demMax)
         'Convert the values to the DEM value, before composing the reclass string, if we need to
         If m_demInMeters <> m_usingElevMeters Then
             Dim converter As IUnitConverter = New UnitConverter
@@ -554,10 +565,10 @@ Public Class FrmPsuedoSite
             Dim fromElevUnits As esriUnits = esriUnits.esriFeet
             If m_usingElevMeters Then _
                 fromElevUnits = esriUnits.esriMeters
-            strMinElev = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(txtMinElev.Text), fromElevUnits, toElevUnits)))
+            strMinElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMin, fromElevUnits, toElevUnits)))
             strLower = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(txtLower.Text), fromElevUnits, toElevUnits)))
             strUpperRange = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(TxtUpperRange.Text), fromElevUnits, toElevUnits)))
-            strMaxElev = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(TxtMaxElev.Text), fromElevUnits, toElevUnits)))
+            strMaxElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMax, fromElevUnits, toElevUnits)))
         End If
         sb.Append(strMinElev + " " + strLower + " NoData;")
         sb.Append(strLower + " " + strUpperRange + " 1;")
@@ -756,8 +767,6 @@ Public Class FrmPsuedoSite
         'Ensure default map frame name is set before trying to build map
         Dim response As Integer = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
         response = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)
-        'Remove site scenario map layers (just in case)
-        BA_RemoveScenarioLayersfromMapFrame(My.Document)
         BA_RemoveAutoSiteLayersfromMapFrame(My.Document)
         AddLayersToMapFrame(My.ThisApplication, My.Document)
         Dim Basin_Name As String
@@ -770,6 +779,19 @@ Public Class FrmPsuedoSite
         Dim aoiName As String = BA_GetBareName(AOIFolderBase)
         Dim mapTitle As String = aoiName & Basin_Name
         BA_AddMapElements(My.Document, mapTitle, "Subtitle BAGIS")
+
+        'Toggle the layers we want to see
+        Dim LayerNames(10) As String
+        LayerNames(1) = BA_MAPS_PS_REPRESENTED
+        LayerNames(2) = BA_EnumDescription(MapsLayerName.NewPseudoSite)
+        LayerNames(3) = BA_MAPS_PS_INDICATOR
+        LayerNames(4) = BA_MAPS_AOI_BASEMAP
+        LayerNames(5) = BA_MAPS_PS_PROXIMITY
+        LayerNames(6) = BA_MAPS_PS_ELEVATION
+        LayerNames(7) = BA_MAPS_PS_PRECIPITATION
+        LayerNames(8) = BA_MAPS_PS_LOCATION
+        LayerNames(9) = BA_MAPS_HILLSHADE
+        response = BA_ToggleLayersinMapFrame(My.Document, LayerNames)
 
         BA_RemoveLayersfromLegend(My.Document)
         'Note: these functions are called in BA_DisplayMap if we end up adding buttons
@@ -792,7 +814,7 @@ Public Class FrmPsuedoSite
         Dim retVal As Integer = -1
 
         Try
-            'Scenario 2 Represented area
+            'Scenario 1 Represented area
             Dim filepathname As String = m_analysisFolder & "\" & m_representedArea
             If Not BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
                 MessageBox.Show("Unable to locate the represented area from the site scenario tool. Cannot load map.", "Error", _
@@ -1423,6 +1445,26 @@ Public Class FrmPsuedoSite
                                                   "Delete", MessageBoxButtons.YesNo)
         If res = Windows.Forms.DialogResult.Yes Then
             GrdLocation.Rows.Remove(GrdLocation.SelectedRows(0))
+        End If
+    End Sub
+
+    Private Sub DeletePreviousRun()
+        Dim fileToDelete As String = m_analysisFolder + "\" + m_elevLayer
+        If BA_File_Exists(fileToDelete, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+            BA_RemoveRasterFromGDB(m_analysisFolder, m_elevLayer)
+        End If
+        fileToDelete = m_analysisFolder + "\" + m_precipLayer
+        If BA_File_Exists(fileToDelete, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+            BA_RemoveRasterFromGDB(m_analysisFolder, m_precipLayer)
+        End If
+        fileToDelete = m_analysisFolder + "\" + m_proximityLayer
+        If BA_File_Exists(fileToDelete, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+            BA_RemoveRasterFromGDB(m_analysisFolder, m_proximityLayer)
+        End If
+        '@ToDo: Delete location rasters when they are added
+        fileToDelete = m_analysisFolder + "\" + m_siteFileName
+        If BA_File_Exists(fileToDelete, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+            BA_Remove_ShapefileFromGDB(m_analysisFolder, m_siteFileName)
         End If
     End Sub
 End Class

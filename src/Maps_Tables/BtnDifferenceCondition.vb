@@ -16,7 +16,7 @@ Public Class BtnDifferenceCondition
                 Exit Sub
             End If
             Dim pColor As IColor = New RgbColor
-            pColor.RGB = RGB(232, 157, 116)
+            pColor.RGB = RGB(197, 0, 255)   'Purple
             Dim pTempLayer As ILayer
             'Scenario 1 Representation
             For i = 0 To pMap.LayerCount - 1
@@ -43,7 +43,7 @@ Public Class BtnDifferenceCondition
                 End If
             Next
             'Scenario 2 representation
-            pColor.RGB = RGB(159, 167, 201)
+            pColor.RGB = RGB(255, 255, 0)   'Yellow
             For i = 0 To pMap.LayerCount - 1
                 pTempLayer = pMap.Layer(i)
                 If BA_MAPS_SCENARIO2_REPRESENTATION = pTempLayer.Name Then 'move the layer
