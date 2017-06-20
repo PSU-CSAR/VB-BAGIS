@@ -681,7 +681,7 @@ Public Class FrmPsuedoSite
         Next
         ' Need to rename the final layer to the location output layer
         If layerCount > 1 Then
-            success = BA_RenameRasterInGDB(m_analysisFolder, timesOutputFolderPath, m_locationLayer)
+            success = BA_Copy(timesOutputFolderPath, m_analysisFolder + "\" + m_locationLayer)
         End If
         If success = BA_ReturnCode.Success Then
             For Each layerPath As String In lstRastersToDelete
@@ -1064,9 +1064,10 @@ Public Class FrmPsuedoSite
         If m_lastAnalysis.UseLocation Then
             For Each pRow As DataGridViewRow In GrdLocation.Rows
                 Dim filePath As String = Convert.ToString(pRow.Cells(m_idxFullPaths).Value)
-                Dim selectedList As IList(Of String) = m_dictLocationIncludeValues(filePath)
+                Dim selectedList As List(Of String) = m_dictLocationIncludeValues(filePath)
+                Dim allValuesList As List(Of String) = m_dictLocationAllValues(filePath)
                 Dim layerName As String = Convert.ToString(pRow.Cells(m_idxLayer).Value)
-                m_lastAnalysis.AddLocationProperties(layerName, filePath, BA_FIELD_VALUE, selectedList)
+                m_lastAnalysis.AddLocationProperties(layerName, filePath, BA_FIELD_VALUE, selectedList, allValuesList)
             Next
         End If
         Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
@@ -1130,6 +1131,33 @@ Public Class FrmPsuedoSite
                     LblElevRange.Text = "Buffer Distance (Feet):"
                 End If
                 txtBufferDistance.Text = CStr(m_lastAnalysis.BufferDistance)
+            End If
+            If m_lastAnalysis.UseLocation = True Then
+                CkLocation.Checked = True
+                If m_lastAnalysis.LocationLayers IsNot Nothing AndAlso m_lastAnalysis.LocationLayers.Count > 0 Then
+                    If m_dictLocationAllValues Is Nothing Then
+                        m_dictLocationAllValues = New Dictionary(Of String, IList(Of String))
+                        m_dictLocationIncludeValues = New Dictionary(Of String, IList(Of String))
+                    End If
+                    For Each pLayer As PseudoSiteLayer In m_lastAnalysis.LocationLayers
+                        m_dictLocationAllValues.Add(pLayer.LayerPath, pLayer.AllValues)
+                        m_dictLocationIncludeValues.Add(pLayer.LayerPath, pLayer.SelectedValues)
+                        Dim valSb As StringBuilder = New StringBuilder()
+                        For Each strValue As String In pLayer.SelectedValues
+                            valSb.Append(strValue + m_sep)
+                        Next
+                        valSb.Remove(valSb.ToString().LastIndexOf(m_sep), m_sep.Length)
+                        Dim item As New DataGridViewRow
+                        item.CreateCells(GrdLocation)
+                        With item
+                            .Cells(m_idxLayer).Value = pLayer.LayerName
+                            .Cells(m_idxValues).Value = valSb.ToString
+                            .Cells(m_idxFullPaths).Value = pLayer.LayerPath
+                        End With
+                        '---add the row---
+                        GrdLocation.Rows.Add(item)
+                    Next
+                End If
             End If
             If sb.Length > 0 Then
                 MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.Information)
@@ -1292,6 +1320,7 @@ Public Class FrmPsuedoSite
         LstVectors.ClearSelected()
         LstRasters.ClearSelected()
         txtBufferDistance.Text = Nothing
+        CkLocation.Checked = False
     End Sub
 
     Private Sub TxtSiteName_TextChanged(sender As Object, e As System.EventArgs) Handles TxtSiteName.TextChanged
@@ -1355,6 +1384,13 @@ Public Class FrmPsuedoSite
 
     Private Sub CkLocation_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkLocation.CheckedChanged
         GrpLocation.Enabled = CkLocation.Checked
+        If CkLocation.Checked = False Then
+            If m_dictLocationAllValues IsNot Nothing Then
+                m_dictLocationAllValues.Clear()
+                m_dictLocationIncludeValues.Clear()
+            End If
+            GrdLocation.Rows.Clear()
+        End If
         RaiseEvent FormInputChanged()
     End Sub
 
@@ -1396,7 +1432,7 @@ Public Class FrmPsuedoSite
         LstRasters.ClearSelected()
     End Sub
 
-    Private Sub BtnDoneLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnSaveLocation.Click
+    Private Sub BtnSaveLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnSaveLocation.Click
         Dim sb As StringBuilder = New StringBuilder()
         Dim lstAllValues As IList(Of String) = New List(Of String)
         Dim lstSelectValues As IList(Of String) = New List(Of String)
@@ -1461,7 +1497,10 @@ Public Class FrmPsuedoSite
         If BA_File_Exists(fileToDelete, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
             BA_RemoveRasterFromGDB(m_analysisFolder, m_proximityLayer)
         End If
-        '@ToDo: Delete location rasters when they are added
+        fileToDelete = m_analysisFolder + "\" + m_locationLayer
+        If BA_File_Exists(fileToDelete, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+            BA_RemoveRasterFromGDB(m_analysisFolder, m_locationLayer)
+        End If
         fileToDelete = m_analysisFolder + "\" + m_siteFileName
         If BA_File_Exists(fileToDelete, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             BA_Remove_ShapefileFromGDB(m_analysisFolder, m_siteFileName)

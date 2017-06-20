@@ -253,11 +253,11 @@ Public Class PseudoSite
     End Sub
 
     Public Sub AddLocationProperties(ByVal layerName As String, ByVal layerPath As String, ByVal valueField As String, _
-                                     ByVal lstValues As List(Of String))
+                                     ByVal lstSelValues As List(Of String), ByVal lstAllValues As List(Of String))
         If m_locationLayers Is Nothing Then
             m_locationLayers = New List(Of PseudoSiteLayer)
         End If
-        Dim psiteLayer As PseudoSiteLayer = New PseudoSiteLayer(layerName, layerPath, valueField, lstValues)
+        Dim psiteLayer As PseudoSiteLayer = New PseudoSiteLayer(layerName, layerPath, valueField, lstSelValues, lstAllValues)
         m_locationLayers.Add(psiteLayer)
     End Sub
 
