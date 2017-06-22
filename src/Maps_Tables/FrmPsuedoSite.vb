@@ -689,8 +689,9 @@ Public Class FrmPsuedoSite
                 Dim layerName As String = BA_GetBareName(layerPath, layerFolder)
                 Dim retVal As Short = BA_RemoveRasterFromGDB(layerFolder, layerName)
             Next
+            success = BA_AddUserFieldToRaster(m_analysisFolder, m_locationLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                              100, BA_MAPS_PS_LOCATION)
         End If
-        '@ToDo: Add the layer name to the raster for display
         Return success
     End Function
 
@@ -891,6 +892,15 @@ Public Class FrmPsuedoSite
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
                     retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PRECIPITATION, _
                                 MapsDisplayStyle.Purple_Blues, 30, WorkspaceType.Geodatabase)
+                End If
+            End If
+
+            'Location if used
+            filepathname = m_analysisFolder & "\" & m_locationLayer
+            If m_lastAnalysis.UseLocation Then
+                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                    retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_LOCATION, _
+                                MapsDisplayStyle.Brown_to_Blue_Green, 30, WorkspaceType.Geodatabase)
                 End If
             End If
 
@@ -1436,7 +1446,22 @@ Public Class FrmPsuedoSite
         Dim sb As StringBuilder = New StringBuilder()
         Dim lstAllValues As IList(Of String) = New List(Of String)
         Dim lstSelectValues As IList(Of String) = New List(Of String)
+        If m_dictLocationAllValues Is Nothing Then
+            m_dictLocationAllValues = New Dictionary(Of String, IList(Of String))
+            m_dictLocationIncludeValues = New Dictionary(Of String, IList(Of String))
+        End If
         Dim rasterItem As LayerListItem = LstRasters.SelectedItem
+        Dim overwriteExisting As Boolean = False
+        If m_dictLocationAllValues.ContainsKey(rasterItem.Value) Then
+            Dim strMsg As String = "Selected values have already been configured for this Location layer. Do you " + _
+            "wish to overwrite that configuration ?"
+            Dim res As DialogResult = MessageBox.Show(strMsg, "Location exists", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+            If res <> Windows.Forms.DialogResult.Yes Then
+                Exit Sub
+            Else
+                overwriteExisting = True
+            End If
+        End If
         If LstValues.SelectedItems.Count < 1 Then
             MessageBox.Show("You must select at least one value to use this layer in the analysis")
             Exit Sub
@@ -1449,24 +1474,35 @@ Public Class FrmPsuedoSite
                 End If
             Next
             sb.Remove(sb.ToString().LastIndexOf(m_sep), m_sep.Length)
-            If m_dictLocationAllValues Is Nothing Then
-                m_dictLocationAllValues = New Dictionary(Of String, IList(Of String))
-                m_dictLocationIncludeValues = New Dictionary(Of String, IList(Of String))
+            If overwriteExisting = False Then
+                m_dictLocationAllValues.Add(rasterItem.Value, lstAllValues)
+                m_dictLocationIncludeValues.Add(rasterItem.Value, lstSelectValues)
+            Else
+                m_dictLocationAllValues(rasterItem.Value) = lstAllValues
+                m_dictLocationIncludeValues(rasterItem.Value) = lstSelectValues
             End If
-            '@ToDo: Need to make sure only one row per layer location, otherwise this will fail
-            m_dictLocationAllValues.Add(rasterItem.Value, lstAllValues)
-            m_dictLocationIncludeValues.Add(rasterItem.Value, lstSelectValues)
+            Dim item As New DataGridViewRow
+            If overwriteExisting = True Then
+                For Each aRow As DataGridViewRow In GrdLocation.Rows
+                    Dim fullPath As String = Convert.ToString(aRow.Cells(m_idxFullPaths).Value)
+                    If fullPath.Equals(rasterItem.Value) Then
+                        item = aRow
+                        Exit For
+                    End If
+                Next
+            End If
+            If item.Cells.Count = 0 Then _
+                item.CreateCells(GrdLocation)
+            With item
+                .Cells(m_idxLayer).Value = rasterItem.Name
+                .Cells(m_idxValues).Value = sb.ToString
+                .Cells(m_idxFullPaths).Value = rasterItem.Value
+            End With
+            '---add the row---
+            If Not GrdLocation.Rows.Contains(item) Then _
+                GrdLocation.Rows.Add(item)
+            LstRasters.ClearSelected()
         End If
-        Dim item As New DataGridViewRow
-        item.CreateCells(GrdLocation)
-        With item
-            .Cells(m_idxLayer).Value = rasterItem.Name
-            .Cells(m_idxValues).Value = sb.ToString
-            .Cells(m_idxFullPaths).Value = rasterItem.Value
-        End With
-        '---add the row---
-        GrdLocation.Rows.Add(item)
-        LstRasters.ClearSelected()
     End Sub
 
     Private Sub GrdLocation_SelectionChanged(sender As Object, e As System.EventArgs) Handles GrdLocation.SelectionChanged
@@ -1476,12 +1512,21 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub BtnDeleteLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnDeleteLocation.Click
-        Dim res As DialogResult = MessageBox.Show("You are about to delete a row from the Location constraint list. " + _
-                                                  "This cannot be undone." + vbCrLf + vbCrLf + "Do you wish to continue ?",
-                                                  "Delete", MessageBoxButtons.YesNo)
-        If res = Windows.Forms.DialogResult.Yes Then
-            GrdLocation.Rows.Remove(GrdLocation.SelectedRows(0))
-        End If
+        If GrdLocation.SelectedRows.Count > 0 Then
+            Dim res As DialogResult = MessageBox.Show("You are about to delete a row from the Location constraint list. " + _
+                                                      "This cannot be undone." + vbCrLf + vbCrLf + "Do you wish to continue ?",
+                                                      "Delete", MessageBoxButtons.YesNo)
+            If res = Windows.Forms.DialogResult.Yes Then
+                Dim dRow As DataGridViewRow = GrdLocation.SelectedRows(0)
+                Dim fullPath As String = Convert.ToString(dRow.Cells(m_idxFullPaths).Value)
+                If m_dictLocationAllValues.ContainsKey(fullPath) Then _
+                    m_dictLocationAllValues.Remove(fullPath)
+                m_dictLocationIncludeValues.Remove(fullPath)
+                GrdLocation.Rows.Remove(GrdLocation.SelectedRows(0))
+            End If
+            Else
+                MessageBox.Show("You must select a row to delete")
+            End If
     End Sub
 
     Private Sub DeletePreviousRun()
@@ -1504,6 +1549,32 @@ Public Class FrmPsuedoSite
         fileToDelete = m_analysisFolder + "\" + m_siteFileName
         If BA_File_Exists(fileToDelete, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             BA_Remove_ShapefileFromGDB(m_analysisFolder, m_siteFileName)
+        End If
+    End Sub
+
+    Private Sub BtnEditLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnEditLocation.Click
+        If GrdLocation.SelectedRows.Count > 0 Then
+            Dim dRow As DataGridViewRow = GrdLocation.SelectedRows(0)
+            Dim fullPath As String = Convert.ToString(dRow.Cells(m_idxFullPaths).Value)
+            LstRasters.ClearSelected()
+            For i As Int16 = 0 To LstRasters.Items.Count - 1
+                Dim item As LayerListItem = LstRasters.Items(i)
+                If item.Value.Equals(fullPath) Then
+                    LstRasters.SelectedIndex = i
+                    Exit For
+                End If
+            Next
+            If LstRasters.SelectedIndex > -1 Then
+                Dim lstSelectValues As List(Of String) = m_dictLocationIncludeValues(fullPath)
+                For j As Int16 = 0 To LstValues.Items.Count - 1
+                    If lstSelectValues.Contains(LstValues.Items(j)) Then
+                        LstValues.SetSelected(j, True)
+                    End If
+                Next
+            End If
+            PnlLocation.Visible = True
+        Else
+            MessageBox.Show("You must select a row to edit")
         End If
     End Sub
 End Class

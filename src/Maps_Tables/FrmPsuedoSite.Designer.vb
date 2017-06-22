@@ -22,8 +22,8 @@ Partial Class FrmPsuedoSite
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.LstVectors = New System.Windows.Forms.ListBox()
         Me.LblBufferDistance = New System.Windows.Forms.Label()
@@ -77,6 +77,7 @@ Partial Class FrmPsuedoSite
         Me.GrpLocation = New System.Windows.Forms.GroupBox()
         Me.BtnEditLocation = New System.Windows.Forms.Button()
         Me.PnlLocation = New System.Windows.Forms.Panel()
+        Me.Label6 = New System.Windows.Forms.Label()
         Me.BtnSaveLocation = New System.Windows.Forms.Button()
         Me.BtnDoneLocation = New System.Windows.Forms.Button()
         Me.LstValues = New System.Windows.Forms.ListBox()
@@ -87,7 +88,6 @@ Partial Class FrmPsuedoSite
         Me.Layer = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Values = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.FullPath = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.Label6 = New System.Windows.Forms.Label()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
@@ -729,6 +729,17 @@ Partial Class FrmPsuedoSite
         Me.PnlLocation.TabIndex = 73
         Me.PnlLocation.Visible = False
         '
+        'Label6
+        '
+        Me.Label6.AutoSize = True
+        Me.Label6.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label6.Location = New System.Drawing.Point(5, 6)
+        Me.Label6.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label6.Name = "Label6"
+        Me.Label6.Size = New System.Drawing.Size(222, 16)
+        Me.Label6.TabIndex = 91
+        Me.Label6.Text = "Limit search to selected values"
+        '
         'BtnSaveLocation
         '
         Me.BtnSaveLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
@@ -737,7 +748,7 @@ Partial Class FrmPsuedoSite
         Me.BtnSaveLocation.Name = "BtnSaveLocation"
         Me.BtnSaveLocation.Size = New System.Drawing.Size(65, 22)
         Me.BtnSaveLocation.TabIndex = 89
-        Me.BtnSaveLocation.Text = "Add"
+        Me.BtnSaveLocation.Text = "Save"
         Me.BtnSaveLocation.UseVisualStyleBackColor = True
         '
         'BtnDoneLocation
@@ -810,8 +821,8 @@ Partial Class FrmPsuedoSite
         '
         'Layer
         '
-        DataGridViewCellStyle1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Layer.DefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Layer.DefaultCellStyle = DataGridViewCellStyle3
         Me.Layer.HeaderText = "Layer"
         Me.Layer.Name = "Layer"
         Me.Layer.ReadOnly = True
@@ -820,8 +831,8 @@ Partial Class FrmPsuedoSite
         '
         'Values
         '
-        DataGridViewCellStyle2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Values.DefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle4.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Values.DefaultCellStyle = DataGridViewCellStyle4
         Me.Values.HeaderText = "Values"
         Me.Values.Name = "Values"
         Me.Values.ReadOnly = True
@@ -833,17 +844,6 @@ Partial Class FrmPsuedoSite
         Me.FullPath.ReadOnly = True
         Me.FullPath.Visible = False
         Me.FullPath.Width = 5
-        '
-        'Label6
-        '
-        Me.Label6.AutoSize = True
-        Me.Label6.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label6.Location = New System.Drawing.Point(5, 6)
-        Me.Label6.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
-        Me.Label6.Name = "Label6"
-        Me.Label6.Size = New System.Drawing.Size(222, 16)
-        Me.Label6.TabIndex = 91
-        Me.Label6.Text = "Limit search to selected values"
         '
         'FrmPsuedoSite
         '

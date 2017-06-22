@@ -2052,7 +2052,7 @@ Module BAGIS_MapModule
     End Function
 
     Public Function BA_RemoveAutoSiteLayersfromMapFrame(ByVal pMxDoc As IMxDocument) As Integer
-        Dim LayerNames(0 To 7) As String
+        Dim LayerNames(0 To 8) As String
         LayerNames(1) = BA_MAPS_PS_REPRESENTED
         LayerNames(2) = BA_EnumDescription(MapsLayerName.NewPseudoSite)
         LayerNames(3) = BA_MAPS_PS_INDICATOR
@@ -2060,8 +2060,9 @@ Module BAGIS_MapModule
         LayerNames(5) = BA_MAPS_PS_PROXIMITY
         LayerNames(6) = BA_MAPS_PS_ELEVATION
         LayerNames(7) = BA_MAPS_PS_PRECIPITATION
+        LayerNames(8) = BA_MAPS_PS_LOCATION
 
-        For j = 1 To 7
+        For j = 1 To 8
             BA_RemoveLayers(pMxDoc, LayerNames(j))
         Next
 
