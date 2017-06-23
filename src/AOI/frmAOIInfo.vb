@@ -608,7 +608,7 @@ Public Class frmAOIInfo
                         Dim symbology As BA_Map_Symbology = BA_GetPointMapSymbology(strFileName)
                         BA_MapDisplayPointMarkers(My.ArcMap.Application, item.Value, symbology.DisplayName, symbology.Color, symbology.MarkerType)
                     Else
-                        BA_DisplayVector(My.ArcMap.Document, item.Value)
+                        BA_DisplayVector(My.ArcMap.Document, item.Value, "", 1)
                     End If
                 Next
             End If
