@@ -28,6 +28,8 @@ Public Class FrmPsuedoSite
     Private m_cellSize As Double
     Private m_demMax As Double
     Private m_demMin As Double
+    Private m_precipMax As Double
+    Private m_precipMin As Double
     Private m_idxLayer As Int16 = 0
     Private m_idxValues As Int16 = 1
     Private m_idxFullPaths As Int16 = 2
@@ -366,6 +368,10 @@ Public Class FrmPsuedoSite
             success = GenerateElevationLayer(pStepProg, snapRasterPath)
             If success = BA_ReturnCode.Success Then
                 sb.Append(m_analysisFolder + "\" + m_elevLayer + "; ")
+            Else
+                MessageBox.Show("An error occurred while generating the Elevation layer. Analysis stopped.")
+                CleanUpAfterAnalysis(pStepProg, progressDialog2)
+                Exit Sub
             End If
         End If
 
@@ -373,6 +379,10 @@ Public Class FrmPsuedoSite
             success = GeneratePrecipitationLayer(pStepProg, snapRasterPath)
             If success = BA_ReturnCode.Success Then
                 sb.Append(m_analysisFolder + "\" + m_precipLayer + "; ")
+            Else
+                MessageBox.Show("An error occurred while generating the Precipitation layer. Analysis stopped.")
+                CleanUpAfterAnalysis(pStepProg, progressDialog2)
+                Exit Sub
             End If
         End If
 
@@ -386,6 +396,10 @@ Public Class FrmPsuedoSite
                 success = GenerateProximityLayer(pStepProg, snapRasterPath)
                 If success = BA_ReturnCode.Success Then
                     sb.Append(m_analysisFolder + "\" + m_proximityLayer + "; ")
+                Else
+                    MessageBox.Show("An error occurred while generating the Proximity layer. Analysis stopped.")
+                    CleanUpAfterAnalysis(pStepProg, progressDialog2)
+                    Exit Sub
                 End If
             End If
         End If
@@ -394,6 +408,10 @@ Public Class FrmPsuedoSite
             success = GenerateLocationLayer(pStepProg, snapRasterPath)
             If success = BA_ReturnCode.Success Then
                 sb.Append(m_analysisFolder + "\" + m_locationLayer + "; ")
+            Else
+                MessageBox.Show("An error occurred while generating the Location layer. Analysis stopped.")
+                CleanUpAfterAnalysis(pStepProg, progressDialog2)
+                Exit Sub
             End If
         End If
 
@@ -500,16 +518,6 @@ Public Class FrmPsuedoSite
             Else
                 MessageBox.Show("An error occurred while trying to process the new pseudo-site layer!")
             End If
-
-            'Delete the layers we don't need to keep for the map
-            BA_RemoveRasterFromGDB(m_analysisFolder, distanceFileName)
-            If BA_File_Exists(m_analysisFolder + "\" + cellStatFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-                BA_RemoveRasterFromGDB(m_analysisFolder, cellStatFileName)
-            End If
-            If BA_File_Exists(m_analysisFolder + "\" + timesFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-                BA_RemoveRasterFromGDB(m_analysisFolder, timesFileName)
-            End If
-            BA_RemoveRasterFromGDB(m_analysisFolder, furthestPixelFileName)
         End If
 
         If success = BA_ReturnCode.Success Then
@@ -517,11 +525,14 @@ Public Class FrmPsuedoSite
             pStepProg.Step()
             SavePseudoSiteLog(siteObjectId)
         End If
+        CleanUpAfterAnalysis(pStepProg, progressDialog2)
+        MessageBox.Show("The new pseudo-site has been added to Scenario 1 in the Site Scenario Tool")
+    End Sub
 
+    Private Sub CleanUpAfterAnalysis(ByVal pStepProg As IStepProgressor, ByVal progressDialog2 As IProgressDialog2)
         If progressDialog2 IsNot Nothing Then
             progressDialog2.HideDialog()
         End If
-        MessageBox.Show("The new pseudo-site has been added to Scenario 1 in the Site Scenario Tool")
         BtnMap.Enabled = True
         progressDialog2 = Nothing
         pStepProg = Nothing
@@ -590,10 +601,10 @@ Public Class FrmPsuedoSite
         pStepProg.Message = "Reclass precipitation layer"
         pStepProg.Step()
         Dim sb As StringBuilder = New StringBuilder()
-        Dim strMinPrecip As String = txtMinPrecip.Text
+        Dim strMinPrecip As String = Convert.ToString(m_precipMin)
         Dim strLowerRange As String = TxtPrecipLower.Text
         Dim strUpperRange As String = TxtPrecipUpper.Text
-        Dim strMaxPrecip As String = txtMaxPrecip.Text
+        Dim strMaxPrecip As String = Convert.ToString(m_precipMax)
         sb.Append(strMinPrecip + " " + strLowerRange + " NoData;")
         sb.Append(strLowerRange + " " + strUpperRange + " 1;")
         sb.Append(strUpperRange + " " + strMaxPrecip + " NoData")
@@ -730,8 +741,10 @@ Public Class FrmPsuedoSite
         Dim pRasterStats As IRasterStatistics = BA_GetRasterStatsGDB(m_precipFolder & m_precipFile, raster_res)
 
         'Populate Boxes
-        txtMinPrecip.Text = Math.Round(pRasterStats.Minimum - 0.005, 2)
-        txtMaxPrecip.Text = Math.Round(pRasterStats.Maximum + 0.005, 2)
+        m_precipMin = pRasterStats.Minimum - 0.005
+        m_precipMax = pRasterStats.Maximum + 0.005
+        txtMinPrecip.Text = Math.Ceiling((pRasterStats.Minimum - 0.005) * 100) / 100
+        txtMaxPrecip.Text = Math.Floor((pRasterStats.Maximum - 0.005) * 100) / 100
         txtRangePrecip.Text = Val(txtMaxPrecip.Text) - Val(txtMinPrecip.Text)
         TxtPrecipLower.Text = txtMinPrecip.Text
         TxtPrecipUpper.Text = txtMaxPrecip.Text
@@ -920,8 +933,6 @@ Public Class FrmPsuedoSite
         Catch ex As Exception
             Debug.Print("AddLayersToMapFrame Exception: " & ex.Message)
             MessageBox.Show("An error occurred while trying to load the map!")
-        Finally
-
         End Try
 
     End Sub
