@@ -88,6 +88,7 @@ Partial Class FrmPsuedoSite
         Me.Layer = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.Values = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.FullPath = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.BtnToggle = New System.Windows.Forms.Button()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
@@ -691,11 +692,11 @@ Partial Class FrmPsuedoSite
         '
         'GrpLocation
         '
-        Me.GrpLocation.Controls.Add(Me.BtnEditLocation)
         Me.GrpLocation.Controls.Add(Me.PnlLocation)
         Me.GrpLocation.Controls.Add(Me.BtnDeleteLocation)
         Me.GrpLocation.Controls.Add(Me.BtnAddLocation)
         Me.GrpLocation.Controls.Add(Me.GrdLocation)
+        Me.GrpLocation.Controls.Add(Me.BtnEditLocation)
         Me.GrpLocation.Enabled = False
         Me.GrpLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpLocation.Location = New System.Drawing.Point(57, 465)
@@ -718,6 +719,7 @@ Partial Class FrmPsuedoSite
         '
         'PnlLocation
         '
+        Me.PnlLocation.Controls.Add(Me.BtnToggle)
         Me.PnlLocation.Controls.Add(Me.Label6)
         Me.PnlLocation.Controls.Add(Me.BtnSaveLocation)
         Me.PnlLocation.Controls.Add(Me.BtnDoneLocation)
@@ -725,7 +727,7 @@ Partial Class FrmPsuedoSite
         Me.PnlLocation.Controls.Add(Me.LstRasters)
         Me.PnlLocation.Location = New System.Drawing.Point(6, 21)
         Me.PnlLocation.Name = "PnlLocation"
-        Me.PnlLocation.Size = New System.Drawing.Size(362, 131)
+        Me.PnlLocation.Size = New System.Drawing.Size(427, 131)
         Me.PnlLocation.TabIndex = 73
         Me.PnlLocation.Visible = False
         '
@@ -743,10 +745,10 @@ Partial Class FrmPsuedoSite
         'BtnSaveLocation
         '
         Me.BtnSaveLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnSaveLocation.Location = New System.Drawing.Point(290, 97)
+        Me.BtnSaveLocation.Location = New System.Drawing.Point(329, 97)
         Me.BtnSaveLocation.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnSaveLocation.Name = "BtnSaveLocation"
-        Me.BtnSaveLocation.Size = New System.Drawing.Size(65, 22)
+        Me.BtnSaveLocation.Size = New System.Drawing.Size(65, 25)
         Me.BtnSaveLocation.TabIndex = 89
         Me.BtnSaveLocation.Text = "Save"
         Me.BtnSaveLocation.UseVisualStyleBackColor = True
@@ -754,10 +756,10 @@ Partial Class FrmPsuedoSite
         'BtnDoneLocation
         '
         Me.BtnDoneLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnDoneLocation.Location = New System.Drawing.Point(219, 97)
+        Me.BtnDoneLocation.Location = New System.Drawing.Point(258, 97)
         Me.BtnDoneLocation.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnDoneLocation.Name = "BtnDoneLocation"
-        Me.BtnDoneLocation.Size = New System.Drawing.Size(65, 22)
+        Me.BtnDoneLocation.Size = New System.Drawing.Size(65, 25)
         Me.BtnDoneLocation.TabIndex = 74
         Me.BtnDoneLocation.Text = "Done"
         Me.BtnDoneLocation.UseVisualStyleBackColor = True
@@ -767,10 +769,10 @@ Partial Class FrmPsuedoSite
         Me.LstValues.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.LstValues.FormattingEnabled = True
         Me.LstValues.ItemHeight = 16
-        Me.LstValues.Location = New System.Drawing.Point(212, 36)
+        Me.LstValues.Location = New System.Drawing.Point(212, 38)
         Me.LstValues.Name = "LstValues"
         Me.LstValues.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple
-        Me.LstValues.Size = New System.Drawing.Size(96, 52)
+        Me.LstValues.Size = New System.Drawing.Size(182, 52)
         Me.LstValues.TabIndex = 72
         '
         'LstRasters
@@ -778,7 +780,7 @@ Partial Class FrmPsuedoSite
         Me.LstRasters.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.LstRasters.FormattingEnabled = True
         Me.LstRasters.ItemHeight = 16
-        Me.LstRasters.Location = New System.Drawing.Point(6, 36)
+        Me.LstRasters.Location = New System.Drawing.Point(6, 38)
         Me.LstRasters.Name = "LstRasters"
         Me.LstRasters.Size = New System.Drawing.Size(197, 52)
         Me.LstRasters.Sorted = True
@@ -844,6 +846,18 @@ Partial Class FrmPsuedoSite
         Me.FullPath.ReadOnly = True
         Me.FullPath.Visible = False
         Me.FullPath.Width = 5
+        '
+        'BtnToggle
+        '
+        Me.BtnToggle.Enabled = False
+        Me.BtnToggle.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnToggle.Location = New System.Drawing.Point(259, 6)
+        Me.BtnToggle.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnToggle.Name = "BtnToggle"
+        Me.BtnToggle.Size = New System.Drawing.Size(135, 25)
+        Me.BtnToggle.TabIndex = 92
+        Me.BtnToggle.Text = "Toggle Selection"
+        Me.BtnToggle.UseVisualStyleBackColor = True
         '
         'FrmPsuedoSite
         '
@@ -948,4 +962,5 @@ Partial Class FrmPsuedoSite
     Friend WithEvents Values As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents FullPath As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents Label6 As System.Windows.Forms.Label
+    Friend WithEvents BtnToggle As System.Windows.Forms.Button
 End Class

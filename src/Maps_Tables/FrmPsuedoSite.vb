@@ -1416,18 +1416,7 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub LstRasters_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstRasters.SelectedIndexChanged
-        LstValues.Items.Clear()
-        If LstRasters.SelectedIndex > -1 Then
-            Dim item As LayerListItem = LstRasters.SelectedItem
-            Dim folderName As String = "PleaseReturn"
-            Dim fileName As String = BA_GetBareName(item.Value, folderName)
-            Dim pEnum As IEnumerator = BA_QueryUniqueValuesFromRasterGDB(folderName, fileName, BA_FIELD_VALUE)
-            If pEnum IsNot Nothing Then
-                While pEnum.MoveNext
-                    LstValues.Items.Add(Convert.ToString(pEnum.Current))
-                End While
-            End If
-        End If
+        PopulateValuesList()
     End Sub
 
     Private Sub ToggleLocationButtons(ByVal enabled As Boolean)
@@ -1478,10 +1467,11 @@ Public Class FrmPsuedoSite
             Exit Sub
         Else
             For i As Integer = 0 To LstValues.Items.Count - 1
-                lstAllValues.Add(LstValues.Items(i))
+                Dim listItem As LayerListItem = LstValues.Items(i)
+                lstAllValues.Add(listItem.Value)
                 If LstValues.GetSelected(i) Then
-                    sb.Append(LstValues.Items(i) + m_sep)
-                    lstSelectValues.Add(LstValues.Items(i))
+                    sb.Append(listItem.Value + m_sep)
+                    lstSelectValues.Add(listItem.Value)
                 End If
             Next
             sb.Remove(sb.ToString().LastIndexOf(m_sep), m_sep.Length)
@@ -1578,7 +1568,8 @@ Public Class FrmPsuedoSite
             If LstRasters.SelectedIndex > -1 Then
                 Dim lstSelectValues As List(Of String) = m_dictLocationIncludeValues(fullPath)
                 For j As Int16 = 0 To LstValues.Items.Count - 1
-                    If lstSelectValues.Contains(LstValues.Items(j)) Then
+                    Dim listItem As LayerListItem = LstValues.Items(j)
+                    If lstSelectValues.Contains(listItem.Value) Then
                         LstValues.SetSelected(j, True)
                     End If
                 Next
@@ -1586,6 +1577,79 @@ Public Class FrmPsuedoSite
             PnlLocation.Visible = True
         Else
             MessageBox.Show("You must select a row to edit")
+        End If
+    End Sub
+
+    Private Sub PopulateValuesList()
+        LstValues.Items.Clear()
+        Dim pGeodataset As IGeoDataset = Nothing
+        Dim pRasterBandCollection As IRasterBandCollection = Nothing
+        Dim pRasterBand As IRasterBand = Nothing
+        Dim pTable As ITable = Nothing
+        Dim valuesCursor As ICursor = Nothing
+        Dim pRow As IRow = Nothing
+        Try
+            If LstRasters.SelectedIndex > -1 Then
+                Dim selItem As LayerListItem = LstRasters.SelectedItem
+                Dim folderName As String = "PleaseReturn"
+                Dim fileName As String = BA_GetBareName(selItem.Value, folderName)
+                pGeodataset = BA_OpenRasterFromGDB(folderName, fileName)
+                If pGeodataset IsNot Nothing Then
+                    pRasterBandCollection = CType(pGeodataset, IRasterBandCollection)
+                    pRasterBand = pRasterBandCollection.Item(0)
+                    pTable = pRasterBand.AttributeTable
+                    If pTable IsNot Nothing Then
+                        Dim idxName As Int16 = pTable.FindField(BA_FIELD_NAME)
+                        Dim idxValue As Int16 = pTable.FindField(BA_FIELD_VALUE)
+                        If idxValue < 0 Then
+                            MessageBox.Show("The layer you selected does not have a 'value' field. It cannot be used as a Location constraint")
+                            Exit Sub
+                        End If
+                        Dim item As LayerListItem = Nothing
+                        valuesCursor = pTable.Search(Nothing, False)
+                        pRow = valuesCursor.NextRow
+                        Do While pRow IsNot Nothing
+                            Dim strName As String = Nothing
+                            Dim strValue As String = Nothing
+                            If idxName > -1 Then _
+                                strName = Convert.ToString(pRow.Value(idxName))
+                            If idxValue > -1 Then _
+                                strValue = Convert.ToString(pRow.Value(idxValue))
+                            If Not String.IsNullOrEmpty(strName) Then
+                                item = New LayerListItem(strValue + ": " + strName, strValue, LayerType.Raster, True)
+                            Else
+                                item = New LayerListItem(strValue, strValue, LayerType.Raster, True)
+                            End If
+                            LstValues.Items.Add(item)
+                            pRow = valuesCursor.NextRow
+                        Loop
+                    End If
+                End If
+            End If
+        Catch ex As Exception
+            Debug.Print("PopulateValuesList Exception: " & ex.Message)
+        Finally
+            pGeodataset = Nothing
+            pRasterBandCollection = Nothing
+            pRasterBand = Nothing
+            pTable = Nothing
+            valuesCursor = Nothing
+            pRow = Nothing
+        End Try
+    End Sub
+
+    Private Sub BtnToggle_Click(sender As System.Object, e As System.EventArgs) Handles BtnToggle.Click
+        For i = LstValues.Items.Count - 1 To 0 Step -1
+            Dim newValue As Boolean = Not LstValues.GetSelected(i)
+            LstValues.SetSelected(i, newValue)
+        Next i
+    End Sub
+
+    Private Sub LstValues_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstValues.SelectedIndexChanged
+        If LstValues.SelectedItems.Count > 0 Then
+            BtnToggle.Enabled = True
+        Else
+            BtnToggle.Enabled = False
         End If
     End Sub
 End Class
