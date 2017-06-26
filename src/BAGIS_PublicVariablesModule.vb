@@ -249,4 +249,9 @@ Module BAGIS_PublicVariablesModule
     'Values for json payload that loads default settings
     Public Const BA_Settings_dem30 As String = "dem30"
     Public Const BA_Settings_dem10 As String = "dem10"
+
+    'Used to serialize psuedo site layer
+    Public Const BA_PS_LOCATION As String = "LOCATION"
+    Public Const BA_PS_PROXIMITY As String = "PROXIMITY"
+
 End Module

@@ -32,6 +32,7 @@ Public Class FrmPsuedoSite
     Private m_precipMin As Double
     Private m_idxLayer As Int16 = 0
     Private m_idxValues As Int16 = 1
+    Private m_idxBufferDistance As Int16 = 1
     Private m_idxFullPaths As Int16 = 2
     Private m_sep As String = ","
     'These 2 collections hold the values for the location layer(s) in memory; The key is the layer path which should be unique
@@ -124,11 +125,14 @@ Public Class FrmPsuedoSite
         'Set proximity label; Default is meters when form loads
         Select Case m_usingXYUnits
             Case esriUnits.esriFeet
-                LblBufferDistance.Text = "Buffer Distance (Feet):"
+                LblBufferDistance.Text = "Feet"
+                LblAddBufferDistance.Text = "Buffer Distance (Feet):"
             Case esriUnits.esriKilometers
-                LblBufferDistance.Text = "Buffer Distance (Km):"
+                LblBufferDistance.Text = "Kilometers"
+                LblAddBufferDistance.Text = "Buffer Distance (Km):"
             Case esriUnits.esriMiles
-                LblBufferDistance.Text = "Buffer Distance (Miles):"
+                LblBufferDistance.Text = "Miles"
+                LblAddBufferDistance.Text = "Buffer Distance (Miles):"
         End Select
 
         'Set label of form
@@ -155,6 +159,9 @@ Public Class FrmPsuedoSite
         'Locate location panel
         PnlLocation.Left = 6
         PnlLocation.Top = 21
+        'Locate proximity panel
+        PnlProximity.Left = 6
+        PnlProximity.Top = 21
 
         m_formLoaded = True
     End Sub
@@ -222,7 +229,7 @@ Public Class FrmPsuedoSite
 
         'If user selected proximity layer, did they choose a layer?
         If CkProximity.Checked Then
-            If LstVectors.SelectedItem Is Nothing Then
+            If LstRasters.SelectedItem Is Nothing Then
                 Dim res As DialogResult = MessageBox.Show("You selected the Proximity option but failed to select a layer. Do you wish to " + _
                                                           "find a site without using the Proximity option", "Missing layer", MessageBoxButtons.YesNo, _
                                                           MessageBoxIcon.Question)
@@ -1010,7 +1017,7 @@ Public Class FrmPsuedoSite
                 strBuffer = strBuffer + MeasurementUnit.Meters.ToString
         End Select
 
-        Dim item As LayerListItem = LstVectors.SelectedItem
+        Dim item As LayerListItem = LstRasters.SelectedItem
         Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
         Dim tempProximity As String = "ps_prox_v"
         Dim outFeaturesPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tempProximity
@@ -1076,13 +1083,13 @@ Public Class FrmPsuedoSite
         End If
         'Save Proximity settings
         If m_lastAnalysis.UseProximity Then
-            Dim item As LayerListItem = LstVectors.SelectedItem
+            Dim item As LayerListItem = LstRasters.SelectedItem
             Dim comps As Double = -1
             Dim isNumber As Boolean = Double.TryParse(txtBufferDistance.Text, comps)
             If isNumber Then
-                m_lastAnalysis.ProximityProperties(m_usingXYUnits, item.Name, comps)
+                m_lastAnalysis.AddProximityProperties(item.Name, item.Value, comps, m_usingXYUnits)
             Else
-                m_lastAnalysis.ProximityProperties(m_usingXYUnits, item.Name, 0)
+                m_lastAnalysis.AddProximityProperties(item.Name, item.Value, 0, m_usingXYUnits)
             End If
         End If
         'Save Location settings
@@ -1092,7 +1099,8 @@ Public Class FrmPsuedoSite
                 Dim selectedList As List(Of String) = m_dictLocationIncludeValues(filePath)
                 Dim allValuesList As List(Of String) = m_dictLocationAllValues(filePath)
                 Dim layerName As String = Convert.ToString(pRow.Cells(m_idxLayer).Value)
-                m_lastAnalysis.AddLocationProperties(layerName, filePath, BA_FIELD_VALUE, selectedList, allValuesList)
+                m_lastAnalysis.AddLocationProperties(layerName, filePath, BA_FIELD_VALUE, selectedList, allValuesList, _
+                                                     BA_PS_LOCATION)
             Next
         End If
         Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
@@ -1146,52 +1154,60 @@ Public Class FrmPsuedoSite
             End If
             If m_lastAnalysis.UseProximity = True Then
                 CkProximity.Checked = True
-                For Each item As LayerListItem In LstVectors.Items
-                    If item.Name.Equals(m_lastAnalysis.ProximityLayer) Then
-                        LstVectors.SelectedItem = item
-                        Exit For
-                    End If
-                Next
-                If m_lastAnalysis.BufferUnits = esriUnits.esriFeet Then
-                    LblElevRange.Text = "Buffer Distance (Feet):"
-                End If
-                txtBufferDistance.Text = CStr(m_lastAnalysis.BufferDistance)
-            End If
-            If m_lastAnalysis.UseLocation = True Then
-                CkLocation.Checked = True
-                If m_lastAnalysis.LocationLayers IsNot Nothing AndAlso m_lastAnalysis.LocationLayers.Count > 0 Then
-                    If m_dictLocationAllValues Is Nothing Then
-                        m_dictLocationAllValues = New Dictionary(Of String, IList(Of String))
-                        m_dictLocationIncludeValues = New Dictionary(Of String, IList(Of String))
-                    End If
-                    For Each pLayer As PseudoSiteLayer In m_lastAnalysis.LocationLayers
-                        m_dictLocationAllValues.Add(pLayer.LayerPath, pLayer.AllValues)
-                        m_dictLocationIncludeValues.Add(pLayer.LayerPath, pLayer.SelectedValues)
-                        Dim valSb As StringBuilder = New StringBuilder()
-                        For Each strValue As String In pLayer.SelectedValues
-                            valSb.Append(strValue + m_sep)
-                        Next
-                        valSb.Remove(valSb.ToString().LastIndexOf(m_sep), m_sep.Length)
+                If m_lastAnalysis.ProximityLayers IsNot Nothing AndAlso m_lastAnalysis.ProximityLayers.Count > 0 Then
+                    For Each pLayer As PseudoSiteLayer In m_lastAnalysis.ProximityLayers
                         Dim item As New DataGridViewRow
                         item.CreateCells(GrdLocation)
                         With item
                             .Cells(m_idxLayer).Value = pLayer.LayerName
-                            .Cells(m_idxValues).Value = valSb.ToString
+                            .Cells(m_idxBufferDistance).Value = pLayer.BufferDistance
                             .Cells(m_idxFullPaths).Value = pLayer.LayerPath
                         End With
                         '---add the row---
-                        GrdLocation.Rows.Add(item)
+                        GrdProximity.Rows.Add(item)
                     Next
                     'Clear selection on grid
-                    If GrdLocation.Rows.Count > 0 Then
-                        GrdLocation(1, 0).Selected = True
-                        GrdLocation.ClearSelection()
+                    If GrdProximity.Rows.Count > 0 Then
+                        GrdProximity(1, 0).Selected = True
+                        GrdProximity.ClearSelection()
                     End If
                 End If
+        End If
+        If m_lastAnalysis.UseLocation = True Then
+            CkLocation.Checked = True
+            If m_lastAnalysis.LocationLayers IsNot Nothing AndAlso m_lastAnalysis.LocationLayers.Count > 0 Then
+                If m_dictLocationAllValues Is Nothing Then
+                    m_dictLocationAllValues = New Dictionary(Of String, IList(Of String))
+                    m_dictLocationIncludeValues = New Dictionary(Of String, IList(Of String))
+                End If
+                For Each pLayer As PseudoSiteLayer In m_lastAnalysis.LocationLayers
+                    m_dictLocationAllValues.Add(pLayer.LayerPath, pLayer.AllValues)
+                    m_dictLocationIncludeValues.Add(pLayer.LayerPath, pLayer.SelectedValues)
+                    Dim valSb As StringBuilder = New StringBuilder()
+                    For Each strValue As String In pLayer.SelectedValues
+                        valSb.Append(strValue + m_sep)
+                    Next
+                    valSb.Remove(valSb.ToString().LastIndexOf(m_sep), m_sep.Length)
+                    Dim item As New DataGridViewRow
+                    item.CreateCells(GrdLocation)
+                    With item
+                        .Cells(m_idxLayer).Value = pLayer.LayerName
+                        .Cells(m_idxValues).Value = valSb.ToString
+                        .Cells(m_idxFullPaths).Value = pLayer.LayerPath
+                    End With
+                    '---add the row---
+                    GrdLocation.Rows.Add(item)
+                Next
+                'Clear selection on grid
+                If GrdLocation.Rows.Count > 0 Then
+                    GrdLocation(1, 0).Selected = True
+                    GrdLocation.ClearSelection()
+                End If
             End If
-            If sb.Length > 0 Then
-                MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.Information)
-            End If
+        End If
+        If sb.Length > 0 Then
+            MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        End If
         End If
     End Sub
 
@@ -1305,15 +1321,16 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub LstVectors_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstVectors.SelectedIndexChanged
+        txtBufferDistance.Text = Nothing
         RaiseEvent FormInputChanged()
     End Sub
 
-    Private Sub txtBufferDistance_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtBufferDistance.Validating
+    Private Sub txtBufferDistance_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs)
         RaiseEvent FormInputChanged()
     End Sub
 
     Private Function ValidBufferDistance() As String
-        Dim item As LayerListItem = LstVectors.SelectedItem
+        Dim item As LayerListItem = LstRasters.SelectedItem
         Dim sb As StringBuilder = New StringBuilder
         If item IsNot Nothing Then
             Dim fClass As IFeatureClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), item.Name)
@@ -1347,7 +1364,7 @@ Public Class FrmPsuedoSite
         TxtPrecipUpper.Text = Nothing
         TxtPrecipLower.Text = Nothing
         CkProximity.Checked = False
-        LstVectors.ClearSelected()
+        LstRasters.ClearSelected()
         LstRasters.ClearSelected()
         txtBufferDistance.Text = Nothing
         CkLocation.Checked = False
@@ -1446,7 +1463,7 @@ Public Class FrmPsuedoSite
         ToggleLocationButtons(Not PnlLocation.Visible)
     End Sub
 
-    Private Sub BtnCancelLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnDoneLocation.Click
+    Private Sub BtnDoneLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnDoneLocation.Click
         PnlLocation.Visible = False
         LstRasters.ClearSelected()
     End Sub
@@ -1535,9 +1552,9 @@ Public Class FrmPsuedoSite
                 m_dictLocationIncludeValues.Remove(fullPath)
                 GrdLocation.Rows.Remove(GrdLocation.SelectedRows(0))
             End If
-            Else
-                MessageBox.Show("You must select a row to delete")
-            End If
+        Else
+            MessageBox.Show("You must select a row to delete")
+        End If
     End Sub
 
     Private Sub DeletePreviousRun()
@@ -1660,6 +1677,70 @@ Public Class FrmPsuedoSite
             BtnToggle.Enabled = True
         Else
             BtnToggle.Enabled = False
+        End If
+    End Sub
+
+    Private Sub BtnDoneProximity_Click(sender As Object, e As System.EventArgs) Handles BtnDoneProximity.Click
+        PnlProximity.Visible = False
+        LstVectors.ClearSelected()
+        txtBufferDistance.Text = Nothing
+    End Sub
+
+    Private Sub BtnAddProximity_Click(sender As System.Object, e As System.EventArgs) Handles BtnAddProximity.Click
+        PnlProximity.Visible = True
+    End Sub
+
+    Private Sub PnlProximity_VisibleChanged(sender As Object, e As System.EventArgs) Handles PnlProximity.VisibleChanged
+        ToggleProximityButtons(Not PnlProximity.Visible)
+    End Sub
+
+    Private Sub ToggleProximityButtons(ByVal enabled As Boolean)
+        BtnAddProximity.Enabled = enabled
+        BtnDeleteProximity.Enabled = enabled
+        BtnEditProximity.Enabled = enabled
+        If GrdProximity.SelectedRows.Count = 0 Then
+            BtnDeleteProximity.Enabled = False
+            BtnEditProximity.Enabled = False
+        End If
+    End Sub
+
+    Private Sub GrdProximity_SelectionChanged(sender As Object, e As System.EventArgs) Handles GrdProximity.SelectionChanged
+        If PnlProximity.Visible = False Then
+            ToggleProximityButtons(True)
+        End If
+    End Sub
+
+    Private Sub BtnEditProximity_Click(sender As System.Object, e As System.EventArgs) Handles BtnEditProximity.Click
+        If GrdProximity.SelectedRows.Count > 0 Then
+            Dim dRow As DataGridViewRow = GrdProximity.SelectedRows(0)
+            Dim fullPath As String = Convert.ToString(dRow.Cells(m_idxFullPaths).Value)
+            LstVectors.ClearSelected()
+            For i As Int16 = 0 To LstVectors.Items.Count - 1
+                Dim item As LayerListItem = LstVectors.Items(i)
+                If item.Value.Equals(fullPath) Then
+                    LstVectors.SelectedIndex = i
+                    Exit For
+                End If
+            Next
+            txtBufferDistance.Text = dRow.Cells(m_idxBufferDistance).Value
+            PnlProximity.Visible = True
+        Else
+            MessageBox.Show("You must select a row to edit")
+        End If
+    End Sub
+
+    Private Sub BtnDeleteProximity_Click(sender As System.Object, e As System.EventArgs) Handles BtnDeleteProximity.Click
+        If GrdProximity.SelectedRows.Count > 0 Then
+            Dim res As DialogResult = MessageBox.Show("You are about to delete a row from the Proximity constraint list. " + _
+                                                      "This cannot be undone." + vbCrLf + vbCrLf + "Do you wish to continue ?",
+                                                      "Delete", MessageBoxButtons.YesNo)
+            If res = Windows.Forms.DialogResult.Yes Then
+                Dim dRow As DataGridViewRow = GrdProximity.SelectedRows(0)
+                Dim fullPath As String = Convert.ToString(dRow.Cells(m_idxFullPaths).Value)
+                GrdProximity.Rows.Remove(GrdProximity.SelectedRows(0))
+            End If
+        Else
+            MessageBox.Show("You must select a row to delete")
         End If
     End Sub
 End Class

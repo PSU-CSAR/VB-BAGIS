@@ -12,12 +12,14 @@ Public Class PseudoSiteLayer
     Dim m_selectedValues As List(Of String)
     Dim m_allValues As List(Of String)
     Dim m_bufferUnits As MeasurementUnit
+    Dim m_layerType As String
 
     ' Required for de-serialization. Do not use.
     Sub New()
         MyBase.New()
     End Sub
 
+    'Constructor for location layer
     Sub New(ByVal layerName As String, ByVal layerPath As String, ByVal valueField As String, _
             ByVal selectedValues As List(Of String), ByVal allValues As List(Of String))
         m_layerName = layerName
@@ -25,6 +27,17 @@ Public Class PseudoSiteLayer
         m_valueField = valueField
         m_selectedValues = selectedValues
         m_allValues = allValues
+        m_layerType = BA_PS_LOCATION
+    End Sub
+
+    'Constructor for proximity layer
+    Sub New(ByVal layerName As String, ByVal layerPath As String, ByVal bufferDistance As Double, _
+            ByVal bufferUnits As MeasurementUnit)
+        m_layerName = layerName
+        m_layerPath = layerPath
+        m_bufferDistance = bufferDistance
+        m_bufferUnits = bufferUnits
+        m_layerType = BA_PS_PROXIMITY
     End Sub
 
     Public Property LayerName() As String
@@ -74,7 +87,7 @@ Public Class PseudoSiteLayer
         End Set
     End Property
 
-    Public Property BufferDistance As Double
+    Public Property BufferDistance() As Double
         Get
             Return m_bufferDistance
         End Get
@@ -104,6 +117,15 @@ Public Class PseudoSiteLayer
         End Get
         Set(ByVal value As String)
             m_bufferUnits = BA_GetEsriUnits(value)
+        End Set
+    End Property
+
+    Public Property LayerType() As String
+        Get
+            Return m_layerType
+        End Get
+        Set(value As String)
+            m_layerType = value
         End Set
     End Property
 

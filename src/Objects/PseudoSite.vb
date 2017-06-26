@@ -13,9 +13,6 @@ Public Class PseudoSite
     Dim m_upperElev As Double
     Dim m_elevUnits As esriUnits
     Dim m_useProximity As Boolean
-    Dim m_bufferDistance As Double
-    Dim m_bufferUnits As esriUnits
-    Dim m_proximityLayer As String
     Dim m_usePrism As Boolean
     Dim m_precipTypeIdx As Short
     Dim m_precipBeginIdx As Short
@@ -24,6 +21,7 @@ Public Class PseudoSite
     Dim m_lowerPrecip As Double
     Dim m_useLocation As Boolean
     Dim m_locationLayers As List(Of PseudoSiteLayer)
+    Dim m_proximityLayers As List(Of PseudoSiteLayer)
 
     ' Required for de-serialization. Do not use.
     Sub New()
@@ -112,46 +110,6 @@ Public Class PseudoSite
         End Get
         Set(value As Boolean)
             m_useProximity = value
-        End Set
-    End Property
-
-    Public Property BufferDistance() As Double
-        Get
-            Return m_bufferDistance
-        End Get
-        Set(value As Double)
-            m_bufferDistance = value
-        End Set
-    End Property
-
-    <XmlIgnore()> Public Property BufferUnits() As esriUnits
-        Get
-            Return m_bufferUnits
-        End Get
-        Set(value As esriUnits)
-            m_bufferUnits = value
-        End Set
-    End Property
-
-    Public Property BufferUnitsText() As String
-        Get
-            Dim unitsText As String = m_bufferUnits.ToString
-            If Left(unitsText, 4).ToLower = "esri" Then
-                unitsText = unitsText.Remove(0, Len("esri"))
-            End If
-            Return unitsText
-        End Get
-        Set(ByVal value As String)
-            m_bufferUnits = BA_GetEsriUnits(value)
-        End Set
-    End Property
-
-    Public Property ProximityLayer() As String
-        Get
-            Return m_proximityLayer
-        End Get
-        Set(value As String)
-            m_proximityLayer = value
         End Set
     End Property
 
@@ -246,19 +204,24 @@ Public Class PseudoSite
         m_upperPrecip = precipUpper
     End Sub
 
-    Public Sub ProximityProperties(ByVal usingXYUnits As esriUnits, ByVal proximityLayer As String, ByVal proximityDistance As Double)
-        m_bufferUnits = usingXYUnits
-        m_proximityLayer = proximityLayer
-        m_bufferDistance = proximityDistance
-    End Sub
-
     Public Sub AddLocationProperties(ByVal layerName As String, ByVal layerPath As String, ByVal valueField As String, _
-                                     ByVal lstSelValues As List(Of String), ByVal lstAllValues As List(Of String))
+                                     ByVal lstSelValues As List(Of String), ByVal lstAllValues As List(Of String), _
+                                     ByVal layerType As String)
         If m_locationLayers Is Nothing Then
             m_locationLayers = New List(Of PseudoSiteLayer)
         End If
-        Dim psiteLayer As PseudoSiteLayer = New PseudoSiteLayer(layerName, layerPath, valueField, lstSelValues, lstAllValues)
+        Dim psiteLayer As PseudoSiteLayer = New PseudoSiteLayer(layerName, layerPath, valueField, lstSelValues, _
+                                                                lstAllValues)
         m_locationLayers.Add(psiteLayer)
+    End Sub
+
+    Public Sub AddProximityProperties(ByVal layerName As String, ByVal layerPath As String, ByVal buffer As Double, _
+                                      ByVal bufferUnits As MeasurementUnit)
+        If m_proximityLayers Is Nothing Then
+            m_proximityLayers = New List(Of PseudoSiteLayer)
+        End If
+        Dim psiteLayer As PseudoSiteLayer = New PseudoSiteLayer(layerName, layerPath, buffer, bufferUnits)
+        m_proximityLayers.Add(psiteLayer)
     End Sub
 
     Public Property UseLocation() As Boolean
@@ -277,6 +240,16 @@ Public Class PseudoSite
         Set(value As List(Of PseudoSiteLayer))
             m_locationLayers = New List(Of PseudoSiteLayer)
             m_locationLayers.AddRange(value)
+        End Set
+    End Property
+
+    Public Property ProximityLayers() As List(Of PseudoSiteLayer)
+        Get
+            Return m_proximityLayers
+        End Get
+        Set(value As List(Of PseudoSiteLayer))
+            m_proximityLayers = New List(Of PseudoSiteLayer)
+            m_proximityLayers.AddRange(value)
         End Set
     End Property
 

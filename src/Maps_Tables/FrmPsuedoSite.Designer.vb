@@ -22,13 +22,12 @@ Partial Class FrmPsuedoSite
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Dim DataGridViewCellStyle9 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle10 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(FrmPsuedoSite))
         Dim DataGridViewCellStyle11 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle12 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Me.Label5 = New System.Windows.Forms.Label()
-        Me.LstVectors = New System.Windows.Forms.ListBox()
         Me.LblBufferDistance = New System.Windows.Forms.Label()
-        Me.txtBufferDistance = New System.Windows.Forms.TextBox()
         Me.CkElev = New System.Windows.Forms.CheckBox()
         Me.Label7 = New System.Windows.Forms.Label()
         Me.CkPrecip = New System.Windows.Forms.CheckBox()
@@ -66,6 +65,20 @@ Partial Class FrmPsuedoSite
         Me.lblBeginMonth = New System.Windows.Forms.Label()
         Me.Label8 = New System.Windows.Forms.Label()
         Me.GrpProximity = New System.Windows.Forms.GroupBox()
+        Me.PnlProximity = New System.Windows.Forms.Panel()
+        Me.LblAddBufferDistance = New System.Windows.Forms.Label()
+        Me.txtBufferDistance = New System.Windows.Forms.TextBox()
+        Me.Label5 = New System.Windows.Forms.Label()
+        Me.BtnSaveProximity = New System.Windows.Forms.Button()
+        Me.BtnDoneProximity = New System.Windows.Forms.Button()
+        Me.LstVectors = New System.Windows.Forms.ListBox()
+        Me.BtnDeleteProximity = New System.Windows.Forms.Button()
+        Me.BtnAddProximity = New System.Windows.Forms.Button()
+        Me.GrdProximity = New System.Windows.Forms.DataGridView()
+        Me.DataGridViewTextBoxColumn1 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.DataGridViewTextBoxColumn2 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.DataGridViewTextBoxColumn3 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.BtnEditProximity = New System.Windows.Forms.Button()
         Me.CkProximity = New System.Windows.Forms.CheckBox()
         Me.BtnFindSite = New System.Windows.Forms.Button()
         Me.BtnClose = New System.Windows.Forms.Button()
@@ -93,53 +106,23 @@ Partial Class FrmPsuedoSite
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
+        Me.PnlProximity.SuspendLayout()
+        CType(Me.GrdProximity, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.GrpLocation.SuspendLayout()
         Me.PnlLocation.SuspendLayout()
         CType(Me.GrdLocation, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
-        'Label5
-        '
-        Me.Label5.AutoSize = True
-        Me.Label5.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label5.Location = New System.Drawing.Point(9, 18)
-        Me.Label5.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
-        Me.Label5.Name = "Label5"
-        Me.Label5.Size = New System.Drawing.Size(77, 16)
-        Me.Label5.TabIndex = 69
-        Me.Label5.Text = "Data Layer:"
-        '
-        'LstVectors
-        '
-        Me.LstVectors.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.LstVectors.FormattingEnabled = True
-        Me.LstVectors.ItemHeight = 16
-        Me.LstVectors.Location = New System.Drawing.Point(12, 40)
-        Me.LstVectors.Name = "LstVectors"
-        Me.LstVectors.Size = New System.Drawing.Size(197, 52)
-        Me.LstVectors.Sorted = True
-        Me.LstVectors.TabIndex = 70
-        '
         'LblBufferDistance
         '
         Me.LblBufferDistance.AutoSize = True
         Me.LblBufferDistance.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.LblBufferDistance.Location = New System.Drawing.Point(215, 42)
+        Me.LblBufferDistance.Location = New System.Drawing.Point(256, 18)
         Me.LblBufferDistance.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.LblBufferDistance.Name = "LblBufferDistance"
-        Me.LblBufferDistance.Size = New System.Drawing.Size(153, 16)
+        Me.LblBufferDistance.Size = New System.Drawing.Size(49, 16)
         Me.LblBufferDistance.TabIndex = 72
-        Me.LblBufferDistance.Text = "Buffer Distance (Meters):"
-        '
-        'txtBufferDistance
-        '
-        Me.txtBufferDistance.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.txtBufferDistance.Location = New System.Drawing.Point(372, 42)
-        Me.txtBufferDistance.Margin = New System.Windows.Forms.Padding(2)
-        Me.txtBufferDistance.Name = "txtBufferDistance"
-        Me.txtBufferDistance.Size = New System.Drawing.Size(75, 20)
-        Me.txtBufferDistance.TabIndex = 71
-        Me.txtBufferDistance.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.LblBufferDistance.Text = "Meters"
         '
         'CkElev
         '
@@ -580,18 +563,173 @@ Partial Class FrmPsuedoSite
         '
         'GrpProximity
         '
-        Me.GrpProximity.Controls.Add(Me.Label5)
-        Me.GrpProximity.Controls.Add(Me.LstVectors)
-        Me.GrpProximity.Controls.Add(Me.txtBufferDistance)
+        Me.GrpProximity.Controls.Add(Me.PnlProximity)
+        Me.GrpProximity.Controls.Add(Me.BtnDeleteProximity)
+        Me.GrpProximity.Controls.Add(Me.BtnAddProximity)
+        Me.GrpProximity.Controls.Add(Me.GrdProximity)
+        Me.GrpProximity.Controls.Add(Me.BtnEditProximity)
         Me.GrpProximity.Controls.Add(Me.LblBufferDistance)
         Me.GrpProximity.Enabled = False
         Me.GrpProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.GrpProximity.Location = New System.Drawing.Point(57, 371)
         Me.GrpProximity.Name = "GrpProximity"
-        Me.GrpProximity.Size = New System.Drawing.Size(487, 100)
+        Me.GrpProximity.Size = New System.Drawing.Size(487, 149)
         Me.GrpProximity.TabIndex = 81
         Me.GrpProximity.TabStop = False
-        Me.GrpProximity.Text = "Proximity"
+        Me.GrpProximity.Text = "Proximity - Search limited to intersection of conditions listed below"
+        '
+        'PnlProximity
+        '
+        Me.PnlProximity.Controls.Add(Me.LblAddBufferDistance)
+        Me.PnlProximity.Controls.Add(Me.txtBufferDistance)
+        Me.PnlProximity.Controls.Add(Me.Label5)
+        Me.PnlProximity.Controls.Add(Me.BtnSaveProximity)
+        Me.PnlProximity.Controls.Add(Me.BtnDoneProximity)
+        Me.PnlProximity.Controls.Add(Me.LstVectors)
+        Me.PnlProximity.Location = New System.Drawing.Point(461, 29)
+        Me.PnlProximity.Name = "PnlProximity"
+        Me.PnlProximity.Size = New System.Drawing.Size(475, 131)
+        Me.PnlProximity.TabIndex = 95
+        Me.PnlProximity.Visible = False
+        '
+        'LblAddBufferDistance
+        '
+        Me.LblAddBufferDistance.AutoSize = True
+        Me.LblAddBufferDistance.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LblAddBufferDistance.Location = New System.Drawing.Point(234, 40)
+        Me.LblAddBufferDistance.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.LblAddBufferDistance.Name = "LblAddBufferDistance"
+        Me.LblAddBufferDistance.Size = New System.Drawing.Size(153, 16)
+        Me.LblAddBufferDistance.TabIndex = 94
+        Me.LblAddBufferDistance.Text = "Buffer Distance (Meters):"
+        '
+        'txtBufferDistance
+        '
+        Me.txtBufferDistance.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtBufferDistance.Location = New System.Drawing.Point(388, 39)
+        Me.txtBufferDistance.Margin = New System.Windows.Forms.Padding(2)
+        Me.txtBufferDistance.Name = "txtBufferDistance"
+        Me.txtBufferDistance.Size = New System.Drawing.Size(75, 20)
+        Me.txtBufferDistance.TabIndex = 93
+        Me.txtBufferDistance.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'Label5
+        '
+        Me.Label5.AutoSize = True
+        Me.Label5.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label5.Location = New System.Drawing.Point(5, 6)
+        Me.Label5.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
+        Me.Label5.Name = "Label5"
+        Me.Label5.Size = New System.Drawing.Size(222, 16)
+        Me.Label5.TabIndex = 91
+        Me.Label5.Text = "Limit search to selected values"
+        '
+        'BtnSaveProximity
+        '
+        Me.BtnSaveProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnSaveProximity.Location = New System.Drawing.Point(329, 97)
+        Me.BtnSaveProximity.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnSaveProximity.Name = "BtnSaveProximity"
+        Me.BtnSaveProximity.Size = New System.Drawing.Size(65, 25)
+        Me.BtnSaveProximity.TabIndex = 89
+        Me.BtnSaveProximity.Text = "Save"
+        Me.BtnSaveProximity.UseVisualStyleBackColor = True
+        '
+        'BtnDoneProximity
+        '
+        Me.BtnDoneProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnDoneProximity.Location = New System.Drawing.Point(258, 97)
+        Me.BtnDoneProximity.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnDoneProximity.Name = "BtnDoneProximity"
+        Me.BtnDoneProximity.Size = New System.Drawing.Size(65, 25)
+        Me.BtnDoneProximity.TabIndex = 74
+        Me.BtnDoneProximity.Text = "Done"
+        Me.BtnDoneProximity.UseVisualStyleBackColor = True
+        '
+        'LstVectors
+        '
+        Me.LstVectors.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.LstVectors.FormattingEnabled = True
+        Me.LstVectors.ItemHeight = 16
+        Me.LstVectors.Location = New System.Drawing.Point(6, 38)
+        Me.LstVectors.Name = "LstVectors"
+        Me.LstVectors.Size = New System.Drawing.Size(197, 52)
+        Me.LstVectors.Sorted = True
+        Me.LstVectors.TabIndex = 71
+        '
+        'BtnDeleteProximity
+        '
+        Me.BtnDeleteProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnDeleteProximity.Location = New System.Drawing.Point(383, 93)
+        Me.BtnDeleteProximity.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnDeleteProximity.Name = "BtnDeleteProximity"
+        Me.BtnDeleteProximity.Size = New System.Drawing.Size(65, 22)
+        Me.BtnDeleteProximity.TabIndex = 93
+        Me.BtnDeleteProximity.Text = "Delete"
+        Me.BtnDeleteProximity.UseVisualStyleBackColor = True
+        '
+        'BtnAddProximity
+        '
+        Me.BtnAddProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnAddProximity.Location = New System.Drawing.Point(383, 37)
+        Me.BtnAddProximity.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnAddProximity.Name = "BtnAddProximity"
+        Me.BtnAddProximity.Size = New System.Drawing.Size(65, 22)
+        Me.BtnAddProximity.TabIndex = 92
+        Me.BtnAddProximity.Text = "Add"
+        Me.BtnAddProximity.UseVisualStyleBackColor = True
+        '
+        'GrdProximity
+        '
+        Me.GrdProximity.AllowUserToAddRows = False
+        Me.GrdProximity.AllowUserToDeleteRows = False
+        Me.GrdProximity.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        Me.GrdProximity.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.DataGridViewTextBoxColumn1, Me.DataGridViewTextBoxColumn2, Me.DataGridViewTextBoxColumn3})
+        Me.GrdProximity.Location = New System.Drawing.Point(10, 37)
+        Me.GrdProximity.MultiSelect = False
+        Me.GrdProximity.Name = "GrdProximity"
+        Me.GrdProximity.ReadOnly = True
+        Me.GrdProximity.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
+        Me.GrdProximity.Size = New System.Drawing.Size(356, 83)
+        Me.GrdProximity.TabIndex = 91
+        Me.GrdProximity.TabStop = False
+        '
+        'DataGridViewTextBoxColumn1
+        '
+        DataGridViewCellStyle9.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.DataGridViewTextBoxColumn1.DefaultCellStyle = DataGridViewCellStyle9
+        Me.DataGridViewTextBoxColumn1.HeaderText = "Layer"
+        Me.DataGridViewTextBoxColumn1.Name = "DataGridViewTextBoxColumn1"
+        Me.DataGridViewTextBoxColumn1.ReadOnly = True
+        Me.DataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.DataGridViewTextBoxColumn1.Width = 200
+        '
+        'DataGridViewTextBoxColumn2
+        '
+        DataGridViewCellStyle10.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.DataGridViewTextBoxColumn2.DefaultCellStyle = DataGridViewCellStyle10
+        Me.DataGridViewTextBoxColumn2.HeaderText = "Buffer"
+        Me.DataGridViewTextBoxColumn2.Name = "DataGridViewTextBoxColumn2"
+        Me.DataGridViewTextBoxColumn2.ReadOnly = True
+        '
+        'DataGridViewTextBoxColumn3
+        '
+        Me.DataGridViewTextBoxColumn3.HeaderText = "FullPath"
+        Me.DataGridViewTextBoxColumn3.Name = "DataGridViewTextBoxColumn3"
+        Me.DataGridViewTextBoxColumn3.ReadOnly = True
+        Me.DataGridViewTextBoxColumn3.Visible = False
+        Me.DataGridViewTextBoxColumn3.Width = 5
+        '
+        'BtnEditProximity
+        '
+        Me.BtnEditProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnEditProximity.Location = New System.Drawing.Point(383, 65)
+        Me.BtnEditProximity.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnEditProximity.Name = "BtnEditProximity"
+        Me.BtnEditProximity.Size = New System.Drawing.Size(65, 22)
+        Me.BtnEditProximity.TabIndex = 94
+        Me.BtnEditProximity.Text = "Edit"
+        Me.BtnEditProximity.UseVisualStyleBackColor = True
         '
         'CkProximity
         '
@@ -606,7 +744,7 @@ Partial Class FrmPsuedoSite
         'BtnFindSite
         '
         Me.BtnFindSite.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnFindSite.Location = New System.Drawing.Point(285, 652)
+        Me.BtnFindSite.Location = New System.Drawing.Point(285, 696)
         Me.BtnFindSite.Name = "BtnFindSite"
         Me.BtnFindSite.Size = New System.Drawing.Size(93, 23)
         Me.BtnFindSite.TabIndex = 83
@@ -616,7 +754,7 @@ Partial Class FrmPsuedoSite
         'BtnClose
         '
         Me.BtnClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClose.Location = New System.Drawing.Point(466, 652)
+        Me.BtnClose.Location = New System.Drawing.Point(466, 696)
         Me.BtnClose.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClose.Name = "BtnClose"
         Me.BtnClose.Size = New System.Drawing.Size(65, 22)
@@ -628,7 +766,7 @@ Partial Class FrmPsuedoSite
         '
         Me.BtnMap.Enabled = False
         Me.BtnMap.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnMap.Location = New System.Drawing.Point(180, 652)
+        Me.BtnMap.Location = New System.Drawing.Point(180, 696)
         Me.BtnMap.Name = "BtnMap"
         Me.BtnMap.Size = New System.Drawing.Size(93, 23)
         Me.BtnMap.TabIndex = 84
@@ -659,7 +797,7 @@ Partial Class FrmPsuedoSite
         'BtnClear
         '
         Me.BtnClear.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClear.Location = New System.Drawing.Point(390, 652)
+        Me.BtnClear.Location = New System.Drawing.Point(390, 696)
         Me.BtnClear.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClear.Name = "BtnClear"
         Me.BtnClear.Size = New System.Drawing.Size(65, 22)
@@ -683,7 +821,7 @@ Partial Class FrmPsuedoSite
         '
         Me.CkLocation.AutoSize = True
         Me.CkLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CkLocation.Location = New System.Drawing.Point(19, 528)
+        Me.CkLocation.Location = New System.Drawing.Point(19, 585)
         Me.CkLocation.Name = "CkLocation"
         Me.CkLocation.Size = New System.Drawing.Size(15, 14)
         Me.CkLocation.TabIndex = 89
@@ -698,7 +836,7 @@ Partial Class FrmPsuedoSite
         Me.GrpLocation.Controls.Add(Me.BtnEditLocation)
         Me.GrpLocation.Enabled = False
         Me.GrpLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.GrpLocation.Location = New System.Drawing.Point(57, 477)
+        Me.GrpLocation.Location = New System.Drawing.Point(57, 521)
         Me.GrpLocation.Name = "GrpLocation"
         Me.GrpLocation.Size = New System.Drawing.Size(487, 157)
         Me.GrpLocation.TabIndex = 90
@@ -713,7 +851,7 @@ Partial Class FrmPsuedoSite
         Me.PnlLocation.Controls.Add(Me.BtnDoneLocation)
         Me.PnlLocation.Controls.Add(Me.LstValues)
         Me.PnlLocation.Controls.Add(Me.LstRasters)
-        Me.PnlLocation.Location = New System.Drawing.Point(461, 21)
+        Me.PnlLocation.Location = New System.Drawing.Point(461, 41)
         Me.PnlLocation.Name = "PnlLocation"
         Me.PnlLocation.Size = New System.Drawing.Size(475, 131)
         Me.PnlLocation.TabIndex = 73
@@ -864,7 +1002,7 @@ Partial Class FrmPsuedoSite
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(567, 706)
+        Me.ClientSize = New System.Drawing.Size(567, 729)
         Me.Controls.Add(Me.GrpLocation)
         Me.Controls.Add(Me.CkLocation)
         Me.Controls.Add(Me.TextBox1)
@@ -891,6 +1029,9 @@ Partial Class FrmPsuedoSite
         Me.GrpPrecipitation.PerformLayout()
         Me.GrpProximity.ResumeLayout(False)
         Me.GrpProximity.PerformLayout()
+        Me.PnlProximity.ResumeLayout(False)
+        Me.PnlProximity.PerformLayout()
+        CType(Me.GrdProximity, System.ComponentModel.ISupportInitialize).EndInit()
         Me.GrpLocation.ResumeLayout(False)
         Me.PnlLocation.ResumeLayout(False)
         Me.PnlLocation.PerformLayout()
@@ -899,10 +1040,7 @@ Partial Class FrmPsuedoSite
         Me.PerformLayout()
 
     End Sub
-    Friend WithEvents Label5 As System.Windows.Forms.Label
-    Friend WithEvents LstVectors As System.Windows.Forms.ListBox
     Friend WithEvents LblBufferDistance As System.Windows.Forms.Label
-    Friend WithEvents txtBufferDistance As System.Windows.Forms.TextBox
     Friend WithEvents CkElev As System.Windows.Forms.CheckBox
     Friend WithEvents Label7 As System.Windows.Forms.Label
     Friend WithEvents CkPrecip As System.Windows.Forms.CheckBox
@@ -964,4 +1102,18 @@ Partial Class FrmPsuedoSite
     Friend WithEvents FullPath As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents Label6 As System.Windows.Forms.Label
     Friend WithEvents BtnToggle As System.Windows.Forms.Button
+    Friend WithEvents BtnDeleteProximity As System.Windows.Forms.Button
+    Friend WithEvents BtnAddProximity As System.Windows.Forms.Button
+    Friend WithEvents GrdProximity As System.Windows.Forms.DataGridView
+    Friend WithEvents DataGridViewTextBoxColumn1 As System.Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents DataGridViewTextBoxColumn2 As System.Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents DataGridViewTextBoxColumn3 As System.Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents BtnEditProximity As System.Windows.Forms.Button
+    Friend WithEvents PnlProximity As System.Windows.Forms.Panel
+    Friend WithEvents txtBufferDistance As System.Windows.Forms.TextBox
+    Friend WithEvents Label5 As System.Windows.Forms.Label
+    Friend WithEvents BtnSaveProximity As System.Windows.Forms.Button
+    Friend WithEvents BtnDoneProximity As System.Windows.Forms.Button
+    Friend WithEvents LstVectors As System.Windows.Forms.ListBox
+    Friend WithEvents LblAddBufferDistance As System.Windows.Forms.Label
 End Class
