@@ -957,7 +957,7 @@ Public Class FrmPsuedoSite
         Dim rasterCount As Integer = UBound(AOIRasterList)
         If rasterCount > 0 Then
             For i = 1 To rasterCount
-                Dim fullLayerPath As String = layerPath & "\" & AOIVectorList(i)
+                Dim fullLayerPath As String = layerPath & "\" & AOIRasterList(i)
                 If BA_IsIntegerRasterGDB(fullLayerPath) Then
                     Dim item As LayerListItem = New LayerListItem(AOIRasterList(i), fullLayerPath, LayerType.Raster, True)
                     LstRasters.Items.Add(item)
