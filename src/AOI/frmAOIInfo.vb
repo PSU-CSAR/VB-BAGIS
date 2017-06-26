@@ -595,7 +595,7 @@ Public Class frmAOIInfo
                         BA_DisplayRasterWithSymbol(My.ArcMap.Document, item.Value, symbology.DisplayName, _
                                                    symbology.DisplayStyle, symbology.Transparency, WorkspaceType.Geodatabase)
                     Else
-                        BA_DisplayRaster(My.ArcMap.Application, item.Value)
+                        BA_DisplayRaster(My.ArcMap.Application, item.Value, "", 1)
                     End If
                 Next
             End If
