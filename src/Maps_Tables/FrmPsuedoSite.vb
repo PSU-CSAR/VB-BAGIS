@@ -140,17 +140,21 @@ Public Class FrmPsuedoSite
 
         'Only reload previous run if it completed successfully and ps_site exists
         If BA_File_Exists(m_analysisFolder + "\" + m_siteFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-        'Check for previously saved scenario and load those values as defaults
-        Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
+            'Check for previously saved scenario and load those values as defaults
+            Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
 
-        ' Open analysis file if there is one
-        If BA_File_ExistsWindowsIO(xmlOutputPath) Then
-            m_lastAnalysis = BA_LoadPseudoSiteFromXml(AOIFolderBase)
-            ReloadLastAnalysis(siteScenarioToolTimeStamp)
-            BtnMap.Enabled = True
-            BtnFindSite.Enabled = False
+            ' Open analysis file if there is one
+            If BA_File_ExistsWindowsIO(xmlOutputPath) Then
+                m_lastAnalysis = BA_LoadPseudoSiteFromXml(AOIFolderBase)
+                ReloadLastAnalysis(siteScenarioToolTimeStamp)
+                BtnMap.Enabled = True
+                BtnFindSite.Enabled = False
+            End If
         End If
-        End If
+
+        'Locate location panel
+        PnlLocation.Left = 6
+        PnlLocation.Top = 21
 
         m_formLoaded = True
     End Sub
@@ -1178,6 +1182,11 @@ Public Class FrmPsuedoSite
                         '---add the row---
                         GrdLocation.Rows.Add(item)
                     Next
+                    'Clear selection on grid
+                    If GrdLocation.Rows.Count > 0 Then
+                        GrdLocation(1, 0).Selected = True
+                        GrdLocation.ClearSelection()
+                    End If
                 End If
             End If
             If sb.Length > 0 Then
@@ -1503,6 +1512,7 @@ Public Class FrmPsuedoSite
             If Not GrdLocation.Rows.Contains(item) Then _
                 GrdLocation.Rows.Add(item)
             LstRasters.ClearSelected()
+            GrdLocation.CurrentCell = Nothing
         End If
     End Sub
 
