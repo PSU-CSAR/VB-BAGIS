@@ -46,6 +46,12 @@ Public Class FrmPsuedoSite
         ' This call is required by the designer.
         InitializeComponent()
 
+        ' Slight chance form may be access if AOI not selected because site scenario is a dockable window
+        If String.IsNullOrEmpty(AOIFolderBase) Then
+            MessageBox.Show("You cannot run the auto-site tool without selecting an AOI first!")
+            Me.Close()
+        End If
+
         'Populate class-level variables
         m_usingElevMeters = useMeters
         m_demInMeters = demInMeters
@@ -229,30 +235,14 @@ Public Class FrmPsuedoSite
 
         'If user selected proximity layer, did they choose a layer?
         If CkProximity.Checked Then
-            If LstRasters.SelectedItem Is Nothing Then
-                Dim res As DialogResult = MessageBox.Show("You selected the Proximity option but failed to select a layer. Do you wish to " + _
+            If GrdProximity.Rows.Count = 0 Then
+                Dim res As DialogResult = MessageBox.Show("You selected the Proximity option but failed to configure any layers. Do you wish to " + _
                                                           "find a site without using the Proximity option", "Missing layer", MessageBoxButtons.YesNo, _
                                                           MessageBoxIcon.Question)
                 If res <> Windows.Forms.DialogResult.Yes Then
                     Exit Sub
                 Else
                     CkProximity.Checked = False
-                End If
-            End If
-            'If proximity still selected, validate buffer distance
-            If CkProximity.Checked Then
-                Dim errorMsg As String = ValidBufferDistance()
-                If Not String.IsNullOrEmpty(errorMsg) Then
-                    txtBufferDistance.Select(0, txtBufferDistance.Text.Length)
-                    Dim errorMsg2 As String = "You selected the Proximity option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
-                                              errorMsg + vbCrLf +
-                                             "Click 'No' to fix the parameter, or 'Yes' to find a site without using the Proximity option ?"
-                    Dim res As DialogResult = MessageBox.Show(errorMsg2, "Invalid proximity buffer", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
-                    If res <> Windows.Forms.DialogResult.Yes Then
-                        Exit Sub
-                    Else
-                        CkProximity.Checked = False
-                    End If
                 End If
             End If
         End If
@@ -398,20 +388,13 @@ Public Class FrmPsuedoSite
         End If
 
         If CkProximity.Checked = True Then
-            Dim errorMsg As String = ValidBufferDistance()
-            If Not String.IsNullOrEmpty(errorMsg) Then
-                txtBufferDistance.Select(0, txtBufferDistance.Text.Length)
-                errorMsg = errorMsg + " The proximity layer will not be used in analysis."
-                MessageBox.Show(errorMsg)
+            success = GenerateProximityLayer(pStepProg, snapRasterPath)
+            If success = BA_ReturnCode.Success Then
+                sb.Append(m_analysisFolder + "\" + m_proximityLayer + "; ")
             Else
-                success = GenerateProximityLayer(pStepProg, snapRasterPath)
-                If success = BA_ReturnCode.Success Then
-                    sb.Append(m_analysisFolder + "\" + m_proximityLayer + "; ")
-                Else
-                    MessageBox.Show("An error occurred while generating the Proximity layer. Analysis stopped.")
-                    CleanUpAfterAnalysis(pStepProg, progressDialog2)
-                    Exit Sub
-                End If
+                MessageBox.Show("An error occurred while generating the Proximity layer. Analysis stopped.")
+                CleanUpAfterAnalysis(pStepProg, progressDialog2)
+                Exit Sub
             End If
         End If
 
@@ -561,6 +544,8 @@ Public Class FrmPsuedoSite
 
     Private Sub CkProximity_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkProximity.CheckedChanged
         GrpProximity.Enabled = CkProximity.Checked
+        If Not CkProximity.Checked Then _
+            GrdProximity.Rows.Clear()
         RaiseEvent FormInputChanged()
     End Sub
 
@@ -998,44 +983,66 @@ Public Class FrmPsuedoSite
         pStepProg.Message = "Generating proximity layer"
         pStepProg.Step()
 
-        '--- Calculate correct buffer distance based on XY units ---
-        Dim comps As Double = -1
-        Dim bufferDistance As Double = 0
-        Dim isNumber As Boolean = Double.TryParse(txtBufferDistance.Text, comps)
-        If isNumber Then
-            bufferDistance = comps
-        End If
-        Dim strBuffer As String = Convert.ToString(bufferDistance) + " "
-        Select Case m_usingXYUnits
-            Case esriUnits.esriFeet
-                strBuffer = strBuffer + MeasurementUnit.Feet.ToString
-            Case esriUnits.esriKilometers
-                strBuffer = strBuffer + MeasurementUnit.Kilometers.ToString
-            Case esriUnits.esriMiles
-                strBuffer = strBuffer + MeasurementUnit.Miles.ToString
-            Case Else
-                strBuffer = strBuffer + MeasurementUnit.Meters.ToString
-        End Select
-
-        Dim item As LayerListItem = LstRasters.SelectedItem
         Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
-        Dim tempProximity As String = "ps_prox_v"
-        Dim outFeaturesPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tempProximity
-        If item IsNot Nothing Then
-            success = BA_Buffer(item.Value, outFeaturesPath, strBuffer, "ALL")
-        End If
-        If success = BA_ReturnCode.Success Then
-            success = BA_AddUserFieldToVector(m_analysisFolder, tempProximity, BA_FIELD_PSITE, esriFieldType.esriFieldTypeInteger, _
-                                              -1, "1")
+        Dim lstVectorsToDelete As IList(Of String) = New List(Of String)
+        Dim tempProximity As String = Nothing
+        Dim outFeaturesPath As String = Nothing
+        Dim count As Int16 = 0
+        'Use this to hold the list of layers that we send to the merge tool
+        Dim sb As StringBuilder = New StringBuilder()
+        For Each dRow As DataGridViewRow In GrdProximity.Rows
+            '--- Calculate correct buffer distance based on XY units ---
+            Dim comps As Double = -1
+            Dim bufferDistance As Double = 0
+            Dim strBuffer As String = Convert.ToString(dRow.Cells(m_idxBufferDistance).Value)
+            Dim isNumber As Boolean = Double.TryParse(strBuffer, comps)
+            If isNumber Then
+                bufferDistance = comps
+            End If
+            strBuffer = strBuffer + " "
+            Select Case m_usingXYUnits
+                Case esriUnits.esriFeet
+                    strBuffer = strBuffer + MeasurementUnit.Feet.ToString
+                Case esriUnits.esriKilometers
+                    strBuffer = strBuffer + MeasurementUnit.Kilometers.ToString
+                Case esriUnits.esriMiles
+                    strBuffer = strBuffer + MeasurementUnit.Miles.ToString
+                Case Else
+                    strBuffer = strBuffer + MeasurementUnit.Meters.ToString
+            End Select
+
+            tempProximity = "ps_prox_v" & count
+            outFeaturesPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tempProximity
+            success = BA_Buffer(Convert.ToString(dRow.Cells(m_idxFullPaths).Value), outFeaturesPath, strBuffer, "ALL")
+            If success = BA_ReturnCode.Success Then
+                success = BA_AddUserFieldToVector(m_analysisFolder, tempProximity, BA_FIELD_PSITE, esriFieldType.esriFieldTypeInteger, _
+                                                  -1, "1")
+                If success = BA_ReturnCode.Success Then
+                    sb.Append(outFeaturesPath + "; ")
+                End If
+            End If
+            lstVectorsToDelete.Add(outFeaturesPath)
+            count += 1
+        Next
+        If count > 1 AndAlso success = BA_ReturnCode.Success Then
+            'Merge all features
+            sb.Remove(sb.ToString().LastIndexOf("; "), "; ".Length)
+            outFeaturesPath = m_analysisFolder + "\tmpMerge"
+            lstVectorsToDelete.Add(outFeaturesPath)
+            success = BA_MergeFeatures(sb.ToString, outFeaturesPath, snapRasterPath)
         End If
         If success = BA_ReturnCode.Success Then
             success = BA_Feature2RasterGP(outFeaturesPath, m_analysisFolder + "\" + m_proximityLayer, BA_FIELD_PSITE, m_cellSize, snapRasterPath)
-            BA_Remove_ShapefileFromGDB(m_analysisFolder, tempProximity)
         End If
         If success = BA_ReturnCode.Success Then
             'Add 'NAME' field to be used as label for map
             success = BA_AddUserFieldToRaster(m_analysisFolder, m_proximityLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
                                           100, BA_MAPS_PS_PROXIMITY)
+            For Each aPath As String In lstVectorsToDelete
+                Dim folderName As String = "PleaseReturn"
+                Dim fileName As String = BA_GetBareName(outFeaturesPath, folderName)
+                Dim retVal As Int16 = BA_Remove_ShapefileFromGDB(folderName, fileName)
+            Next
         End If
 
         If Not success = BA_ReturnCode.Success Then
@@ -1083,14 +1090,17 @@ Public Class FrmPsuedoSite
         End If
         'Save Proximity settings
         If m_lastAnalysis.UseProximity Then
-            Dim item As LayerListItem = LstRasters.SelectedItem
-            Dim comps As Double = -1
-            Dim isNumber As Boolean = Double.TryParse(txtBufferDistance.Text, comps)
-            If isNumber Then
-                m_lastAnalysis.AddProximityProperties(item.Name, item.Value, comps, m_usingXYUnits)
-            Else
-                m_lastAnalysis.AddProximityProperties(item.Name, item.Value, 0, m_usingXYUnits)
-            End If
+            For Each pRow As DataGridViewRow In GrdProximity.Rows
+                Dim comps As Double = -1
+                Dim filePath As String = Convert.ToString(pRow.Cells(m_idxFullPaths).Value)
+                Dim layerName As String = Convert.ToString(pRow.Cells(m_idxLayer).Value)
+                Dim isNumber As Boolean = Double.TryParse(pRow.Cells(m_idxBufferDistance).Value, comps)
+                If isNumber Then
+                    m_lastAnalysis.AddProximityProperties(layerName, filePath, comps, m_usingXYUnits)
+                Else
+                    m_lastAnalysis.AddProximityProperties(layerName, filePath, 0, m_usingXYUnits)
+                End If
+            Next
         End If
         'Save Location settings
         If m_lastAnalysis.UseLocation Then
@@ -1330,7 +1340,7 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Function ValidBufferDistance() As String
-        Dim item As LayerListItem = LstRasters.SelectedItem
+        Dim item As LayerListItem = LstVectors.SelectedItem
         Dim sb As StringBuilder = New StringBuilder
         If item IsNot Nothing Then
             Dim fClass As IFeatureClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), item.Name)
@@ -1345,6 +1355,8 @@ Public Class FrmPsuedoSite
                         sb.Append("Numeric value required for features that are not polygons!" + vbCrLf)
                     End If
                 End If
+            Else
+                sb.Append("Unable to open selected feature class!" + vbCrLf)
             End If
         End If
         Return sb.ToString
@@ -1365,9 +1377,15 @@ Public Class FrmPsuedoSite
         TxtPrecipLower.Text = Nothing
         CkProximity.Checked = False
         LstRasters.ClearSelected()
-        LstRasters.ClearSelected()
+        LstVectors.ClearSelected()
         txtBufferDistance.Text = Nothing
         CkLocation.Checked = False
+        GrdProximity.Rows.Clear()
+        GrdLocation.Rows.Clear()
+        If m_dictLocationAllValues IsNot Nothing Then
+            m_dictLocationAllValues.Clear()
+            m_dictLocationIncludeValues.Clear()
+        End If
     End Sub
 
     Private Sub TxtSiteName_TextChanged(sender As Object, e As System.EventArgs) Handles TxtSiteName.TextChanged
@@ -1741,6 +1759,52 @@ Public Class FrmPsuedoSite
             End If
         Else
             MessageBox.Show("You must select a row to delete")
+        End If
+    End Sub
+
+    Private Sub BtnSaveProximity_Click(sender As System.Object, e As System.EventArgs) Handles BtnSaveProximity.Click
+        Dim rasterItem As LayerListItem = LstVectors.SelectedItem
+        Dim overwriteExisting As Boolean = False
+        For Each dRow As DataGridViewRow In GrdProximity.Rows
+            Dim filePath As String = Convert.ToString(dRow.Cells(m_idxFullPaths).Value)
+            If rasterItem.Value.Equals(filePath) Then
+                Dim strMsg As String = "Selected values have already been configured for this Proximity layer. Do you " + _
+"wish to overwrite that configuration ?"
+                Dim res As DialogResult = MessageBox.Show(strMsg, "Proximity exists", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                If res <> Windows.Forms.DialogResult.Yes Then
+                    Exit Sub
+                Else
+                    overwriteExisting = True
+                End If
+            End If
+        Next
+        Dim errorMessage As String = ValidBufferDistance()
+        If Not String.IsNullOrEmpty(errorMessage) Then
+            MessageBox.Show(errorMessage)
+            Exit Sub
+        Else
+            Dim item As New DataGridViewRow
+            If overwriteExisting = True Then
+                For Each aRow As DataGridViewRow In GrdProximity.Rows
+                    Dim fullPath As String = Convert.ToString(aRow.Cells(m_idxFullPaths).Value)
+                    If fullPath.Equals(rasterItem.Value) Then
+                        item = aRow
+                        Exit For
+                    End If
+                Next
+            End If
+            If item.Cells.Count = 0 Then _
+                item.CreateCells(GrdProximity)
+            With item
+                .Cells(m_idxLayer).Value = rasterItem.Name
+                .Cells(m_idxBufferDistance).Value = txtBufferDistance.Text
+                .Cells(m_idxFullPaths).Value = rasterItem.Value
+            End With
+            '---add the row---
+            If Not GrdProximity.Rows.Contains(item) Then _
+                GrdProximity.Rows.Add(item)
+            LstVectors.ClearSelected()
+            GrdProximity.CurrentCell = Nothing
         End If
     End Sub
 End Class
