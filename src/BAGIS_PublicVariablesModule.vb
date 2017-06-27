@@ -5,7 +5,7 @@ Module BAGIS_PublicVariablesModule
     'Basin Analyst GIS Version text
     Public Const BA_VersionText = "Basin Analysis GIS Ver 3.0 04/30/2016"
     Public Const BA_CompatibleVersion1Text = "Basin Analysis GIS Ver 2.0 11/30/2012"
-    Public Const BA_SubVersionText = " Release 3.0-b7 (6/23/2017)"
+    Public Const BA_SubVersionText = " Release 3.0-b7 (6/26/2017)"
 
     'Global variables
     Public BasinFolderBase As String 'need to append a back slash to form a path
