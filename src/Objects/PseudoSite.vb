@@ -254,3 +254,33 @@ Public Class PseudoSite
     End Property
 
 End Class
+
+Public Class PseudoSiteList
+    Inherits SerializableData
+
+    Dim m_pseudoSites As List(Of PseudoSite)
+
+    Public Property PseudoSites() As List(Of PseudoSite)
+        Get
+            Return m_pseudoSites
+        End Get
+        Set(value As List(Of PseudoSite))
+            m_pseudoSites = New List(Of PseudoSite)
+            m_pseudoSites.AddRange(value)
+        End Set
+    End Property
+
+    <XmlIgnore()> Public ReadOnly Property LastSite As PseudoSite
+        Get
+            Dim lastSiteId As Integer = -1
+            Dim returnSite As PseudoSite = Nothing
+            For Each pSite As PseudoSite In m_pseudoSites
+                If pSite.ObjectId > lastSiteId Then
+                    returnSite = pSite
+                End If
+            Next
+            Return returnSite
+        End Get
+    End Property
+
+End Class

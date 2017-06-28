@@ -23,6 +23,7 @@ Public Class FrmPsuedoSite
     Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
     Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
+    Private m_pseudoSitesList As PseudoSiteList = Nothing
     Private m_lastAnalysis As PseudoSite = Nothing
     Private m_formLoaded As Boolean = False
     Private m_cellSize As Double
@@ -151,14 +152,16 @@ Public Class FrmPsuedoSite
         'Only reload previous run if it completed successfully and ps_site exists
         If BA_File_Exists(m_analysisFolder + "\" + m_siteFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             'Check for previously saved scenario and load those values as defaults
-            Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
-
-            ' Open analysis file if there is one
+            Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSitesXml)
+            ' Open psuedo-site log if there is one, and load the newest site
             If BA_File_ExistsWindowsIO(xmlOutputPath) Then
-                m_lastAnalysis = BA_LoadPseudoSiteFromXml(AOIFolderBase)
-                ReloadLastAnalysis(siteScenarioToolTimeStamp)
-                BtnMap.Enabled = True
-                BtnFindSite.Enabled = False
+                m_pseudoSitesList = BA_LoadPseudoSitesFromXml(AOIFolderBase)
+                m_lastAnalysis = m_pseudoSitesList.LastSite()
+                If m_lastAnalysis IsNot Nothing Then
+                    ReloadLastAnalysis(siteScenarioToolTimeStamp)
+                    BtnMap.Enabled = True
+                    BtnFindSite.Enabled = False
+                End If
             End If
         End If
 
@@ -1113,8 +1116,13 @@ Public Class FrmPsuedoSite
                                                      BA_PS_LOCATION)
             Next
         End If
-        Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
-        m_lastAnalysis.Save(xmlOutputPath)
+        If m_pseudoSitesList Is Nothing Then
+            m_pseudoSitesList = New PseudoSiteList()
+            m_pseudoSitesList.PseudoSites = New List(Of PseudoSite)
+        End If
+        m_pseudoSitesList.PseudoSites.Add(m_lastAnalysis)
+        Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSitesXml)
+        m_pseudoSitesList.Save(xmlOutputPath)
     End Sub
 
     Private Sub ReloadLastAnalysis(ByVal scenarioTimeStamp As DateTime)

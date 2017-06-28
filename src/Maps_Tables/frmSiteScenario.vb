@@ -625,10 +625,14 @@ Public Class frmSiteScenario
                 Dim res As DialogResult = MessageBox.Show(sb.ToString, "Delete site(s)", MessageBoxButtons.YesNo, _
                                                           MessageBoxIcon.Question)
                 If res = DialogResult.Yes Then
-                    Dim PsXmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSiteXml)
+                    Dim PsXmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSitesXml)
                     Dim lastAutoSite As PseudoSite = Nothing
+                    Dim allAutoSites As PseudoSiteList = Nothing
                     If BA_File_ExistsWindowsIO(PsXmlOutputPath) Then
-                        lastAutoSite = BA_LoadPseudoSiteFromXml(AOIFolderBase)
+                        allAutoSites = BA_LoadPseudoSitesFromXml(AOIFolderBase)
+                        If allAutoSites IsNot Nothing Then
+                            lastAutoSite = allAutoSites.LastSite()
+                        End If
                     End If
                     Dim layersGdbPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers)
                     Dim success As BA_ReturnCode
