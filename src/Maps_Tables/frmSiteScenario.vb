@@ -2303,7 +2303,55 @@ Public Class frmSiteScenario
 
     Private Sub BtnAutoPseudo_Click(sender As System.Object, e As System.EventArgs) Handles BtnAutoPseudo.Click
         Dim frmPseudo As FrmPsuedoSite = New FrmPsuedoSite(m_demInMeters, OptZMeters.Checked, _
-                                                           m_oldBufferUnits, m_lastAnalysisTimeStamp)
+                                                           m_oldBufferUnits, m_lastAnalysisTimeStamp, Nothing)
         frmPseudo.ShowDialog()
+    End Sub
+
+    Private Sub BtnAutoLog_Click(sender As System.Object, e As System.EventArgs) Handles BtnAutoLog.Click
+        If GrdScenario1.SelectedRows.Count < 1 Then
+            MessageBox.Show("You need to select one auto-site to view its log", "Select site", MessageBoxButtons.OK, _
+                MessageBoxIcon.Information)
+            Exit Sub
+        ElseIf GrdScenario1.SelectedRows.Count > 1 Then
+            MessageBox.Show("BAGIS can only display the log for one auto-site at a time. BAGIS will display the log" + _
+                            " for the first valid auto-site you selected.", "Multiple sites selected", MessageBoxButtons.OK, _
+                MessageBoxIcon.Information)
+        End If
+        Dim AutoSites As PseudoSiteList = BA_LoadPseudoSitesFromXml(AOIFolderBase)
+        If AutoSites Is Nothing Then
+            MessageBox.Show("The auto-sites log for this AOI could not be found or loaded!", "Log unavailable", MessageBoxButtons.OK, _
+                MessageBoxIcon.Information)
+            Exit Sub
+        End If
+        Dim selObjId As Integer = -1
+        For Each nextRow As DataGridViewRow In GrdScenario1.SelectedRows()
+            Dim strSiteType As String = Convert.ToString(nextRow.Cells(idxSiteType).Value)
+            Dim strDescr As String = SiteType.Pseudo.ToString
+            If strSiteType.Equals(SiteType.Pseudo.ToString) Then
+                selObjId = Convert.ToInt32(nextRow.Cells(idxObjectId).Value)
+                Exit For
+            End If
+        Next
+        Dim foundSite As PseudoSite = Nothing
+        If selObjId < 0 Then
+            MessageBox.Show("You did not select any auto-sites", "No auto-sites selected", MessageBoxButtons.OK, _
+                MessageBoxIcon.Information)
+            Exit Sub
+        Else
+            For Each pSite As PseudoSite In AutoSites.PseudoSites
+                If pSite.ObjectId = selObjId Then
+                    foundSite = pSite
+                    Exit For
+                End If
+            Next
+        End If
+        If foundSite IsNot Nothing Then
+            Dim frmLog As FrmPsuedoSite = New FrmPsuedoSite(m_demInMeters, OptZMeters.Checked, _
+                                                            m_oldBufferUnits, m_lastAnalysisTimeStamp, foundSite)
+            frmLog.ShowDialog()
+        Else
+            MessageBox.Show("The log could not be found for the psuedo-site you selected", "Log not found", MessageBoxButtons.OK, _
+                MessageBoxIcon.Information)
+        End If
     End Sub
 End Class

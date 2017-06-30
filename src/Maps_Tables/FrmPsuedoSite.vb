@@ -42,7 +42,7 @@ Public Class FrmPsuedoSite
 
 
     Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits, _
-                   ByVal siteScenarioToolTimeStamp As DateTime)
+                   ByVal siteScenarioToolTimeStamp As DateTime, ByVal autoSiteLog As PseudoSite)
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -149,8 +149,11 @@ Public Class FrmPsuedoSite
         LoadLayers()
         BA_SetDefaultProjection(My.ArcMap.Application)
 
-        'Only reload previous run if it completed successfully and ps_site exists
-        If BA_File_Exists(m_analysisFolder + "\" + m_siteFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+        If autoSiteLog IsNot Nothing Then
+            'Use form as log in read-only mode
+            LoadAnalysisLog(autoSiteLog)
+            'Only reload previous run if it completed successfully and ps_site exists
+        ElseIf BA_File_Exists(m_analysisFolder + "\" + m_siteFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             'Check for previously saved scenario and load those values as defaults
             Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSitesXml)
             ' Open psuedo-site log if there is one, and load the newest site
@@ -1814,5 +1817,103 @@ Public Class FrmPsuedoSite
             LstVectors.ClearSelected()
             GrdProximity.CurrentCell = Nothing
         End If
+    End Sub
+
+    Private Sub LoadAnalysisLog(ByVal logSite As PseudoSite)
+        TxtSiteName.Text = logSite.SiteName
+        If logSite.UseElevation Then
+            CkElev.Checked = True
+            If logSite.ElevUnits = esriUnits.esriFeet Then
+                LblElevRange.Text = "Desired Range (Feet)"
+            End If
+            txtLower.Text = CStr(logSite.LowerElev)
+            TxtUpperRange.Text = CStr(logSite.UpperElev)
+        End If
+        If logSite.UsePrism Then
+            CkPrecip.Checked = True
+            CmboxPrecipType.SelectedIndex = logSite.PrecipTypeIdx
+            If CmboxPrecipType.SelectedIndex = 5 Then
+                lblBeginMonth.Enabled = True
+                CmboxBegin.Enabled = True
+                CmboxBegin.SelectedIndex = logSite.PrecipBeginIdx
+                lblEndMonth.Enabled = True
+                CmboxEnd.Enabled = True
+                CmboxEnd.SelectedIndex = logSite.PrecipEndIdx
+            Else
+                lblBeginMonth.Enabled = False
+                CmboxBegin.Enabled = False
+                lblEndMonth.Enabled = False
+                CmboxEnd.Enabled = False
+            End If
+            TxtPrecipUpper.Text = CStr(logSite.LowerPrecip)
+            TxtPrecipLower.Text = CStr(logSite.UpperPrecip)
+            CmdPrism_Click(Me, EventArgs.Empty)
+        End If
+        If logSite.UseProximity = True Then
+            CkProximity.Checked = True
+            If logSite.ProximityLayers IsNot Nothing AndAlso logSite.ProximityLayers.Count > 0 Then
+                For Each pLayer As PseudoSiteLayer In logSite.ProximityLayers
+                    Dim item As New DataGridViewRow
+                    item.CreateCells(GrdLocation)
+                    With item
+                        .Cells(m_idxLayer).Value = pLayer.LayerName
+                        .Cells(m_idxBufferDistance).Value = pLayer.BufferDistance
+                        .Cells(m_idxFullPaths).Value = pLayer.LayerPath
+                    End With
+                    '---add the row---
+                    GrdProximity.Rows.Add(item)
+                Next
+                'Clear selection on grid
+                If GrdProximity.Rows.Count > 0 Then
+                    GrdProximity(1, 0).Selected = True
+                    GrdProximity.ClearSelection()
+                End If
+            End If
+        End If
+        If logSite.UseLocation = True Then
+            CkLocation.Checked = True
+            If logSite.LocationLayers IsNot Nothing AndAlso logSite.LocationLayers.Count > 0 Then
+                If m_dictLocationAllValues Is Nothing Then
+                    m_dictLocationAllValues = New Dictionary(Of String, IList(Of String))
+                    m_dictLocationIncludeValues = New Dictionary(Of String, IList(Of String))
+                End If
+                For Each pLayer As PseudoSiteLayer In logSite.LocationLayers
+                    m_dictLocationAllValues.Add(pLayer.LayerPath, pLayer.AllValues)
+                    m_dictLocationIncludeValues.Add(pLayer.LayerPath, pLayer.SelectedValues)
+                    Dim valSb As StringBuilder = New StringBuilder()
+                    For Each strValue As String In pLayer.SelectedValues
+                        valSb.Append(strValue + m_sep)
+                    Next
+                    valSb.Remove(valSb.ToString().LastIndexOf(m_sep), m_sep.Length)
+                    Dim item As New DataGridViewRow
+                    item.CreateCells(GrdLocation)
+                    With item
+                        .Cells(m_idxLayer).Value = pLayer.LayerName
+                        .Cells(m_idxValues).Value = valSb.ToString
+                        .Cells(m_idxFullPaths).Value = pLayer.LayerPath
+                    End With
+                    '---add the row---
+                    GrdLocation.Rows.Add(item)
+                Next
+                'Clear selection on grid
+                If GrdLocation.Rows.Count > 0 Then
+                    GrdLocation(1, 0).Selected = True
+                    GrdLocation.ClearSelection()
+                End If
+            End If
+        End If
+        ' Disable/hide controls on read-only form
+        CmdPrism.Visible = False
+        BtnAddProximity.Visible = False
+        BtnDeleteProximity.Visible = False
+        BtnEditProximity.Visible = False
+        BtnAddLocation.Visible = False
+        BtnDeleteLocation.Visible = False
+        BtnEditLocation.Visible = False
+        BtnMap.Visible = False
+        BtnClear.Visible = False
+        BtnFindSite.Visible = False
+        TxtSiteName.Visible = False
+        '@ToDo: Work on read-only version of form; Disable checkboxes
     End Sub
 End Class

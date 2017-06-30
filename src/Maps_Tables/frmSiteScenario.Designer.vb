@@ -84,6 +84,7 @@ Partial Class frmSiteScenario
         Me.TxtScenario2 = New System.Windows.Forms.TextBox()
         Me.BtnMaps = New System.Windows.Forms.Button()
         Me.BtnAutoPseudo = New System.Windows.Forms.Button()
+        Me.BtnAutoLog = New System.Windows.Forms.Button()
         CType(Me.GrdScenario1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.GrdScenario2, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
@@ -114,6 +115,7 @@ Partial Class frmSiteScenario
         Me.GrdScenario1.Margin = New System.Windows.Forms.Padding(2)
         Me.GrdScenario1.Name = "GrdScenario1"
         Me.GrdScenario1.RowHeadersVisible = False
+        Me.GrdScenario1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
         Me.GrdScenario1.Size = New System.Drawing.Size(432, 147)
         Me.GrdScenario1.TabIndex = 0
         '
@@ -196,6 +198,7 @@ Partial Class frmSiteScenario
         Me.GrdScenario2.Margin = New System.Windows.Forms.Padding(2)
         Me.GrdScenario2.Name = "GrdScenario2"
         Me.GrdScenario2.RowHeadersVisible = False
+        Me.GrdScenario2.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
         Me.GrdScenario2.Size = New System.Drawing.Size(436, 147)
         Me.GrdScenario2.TabIndex = 1
         '
@@ -245,7 +248,7 @@ Partial Class frmSiteScenario
         'BtnAddSite
         '
         Me.BtnAddSite.Image = CType(resources.GetObject("BtnAddSite.Image"), System.Drawing.Image)
-        Me.BtnAddSite.Location = New System.Drawing.Point(165, 334)
+        Me.BtnAddSite.Location = New System.Drawing.Point(200, 334)
         Me.BtnAddSite.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnAddSite.Name = "BtnAddSite"
         Me.BtnAddSite.Size = New System.Drawing.Size(35, 35)
@@ -255,7 +258,7 @@ Partial Class frmSiteScenario
         'BtnRemoveSite
         '
         Me.BtnRemoveSite.Image = CType(resources.GetObject("BtnRemoveSite.Image"), System.Drawing.Image)
-        Me.BtnRemoveSite.Location = New System.Drawing.Point(204, 334)
+        Me.BtnRemoveSite.Location = New System.Drawing.Point(239, 334)
         Me.BtnRemoveSite.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnRemoveSite.Name = "BtnRemoveSite"
         Me.BtnRemoveSite.Size = New System.Drawing.Size(35, 35)
@@ -416,7 +419,7 @@ Partial Class frmSiteScenario
         'BtnPreview
         '
         Me.BtnPreview.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnPreview.Location = New System.Drawing.Point(156, 376)
+        Me.BtnPreview.Location = New System.Drawing.Point(191, 376)
         Me.BtnPreview.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnPreview.Name = "BtnPreview"
         Me.BtnPreview.Size = New System.Drawing.Size(165, 22)
@@ -427,7 +430,7 @@ Partial Class frmSiteScenario
         'BtnRemoveAll
         '
         Me.BtnRemoveAll.Image = CType(resources.GetObject("BtnRemoveAll.Image"), System.Drawing.Image)
-        Me.BtnRemoveAll.Location = New System.Drawing.Point(283, 334)
+        Me.BtnRemoveAll.Location = New System.Drawing.Point(318, 334)
         Me.BtnRemoveAll.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnRemoveAll.Name = "BtnRemoveAll"
         Me.BtnRemoveAll.Size = New System.Drawing.Size(35, 35)
@@ -437,7 +440,7 @@ Partial Class frmSiteScenario
         'BtnAddAll
         '
         Me.BtnAddAll.Image = CType(resources.GetObject("BtnAddAll.Image"), System.Drawing.Image)
-        Me.BtnAddAll.Location = New System.Drawing.Point(243, 334)
+        Me.BtnAddAll.Location = New System.Drawing.Point(278, 334)
         Me.BtnAddAll.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnAddAll.Name = "BtnAddAll"
         Me.BtnAddAll.Size = New System.Drawing.Size(35, 35)
@@ -611,7 +614,7 @@ Partial Class frmSiteScenario
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(37, 316)
+        Me.Label3.Location = New System.Drawing.Point(56, 316)
         Me.Label3.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(54, 13)
@@ -621,7 +624,7 @@ Partial Class frmSiteScenario
         'Label4
         '
         Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(199, 316)
+        Me.Label4.Location = New System.Drawing.Point(234, 316)
         Me.Label4.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(78, 13)
@@ -709,12 +712,22 @@ Partial Class frmSiteScenario
         'BtnAutoPseudo
         '
         Me.BtnAutoPseudo.Image = CType(resources.GetObject("BtnAutoPseudo.Image"), System.Drawing.Image)
-        Me.BtnAutoPseudo.Location = New System.Drawing.Point(86, 334)
+        Me.BtnAutoPseudo.Location = New System.Drawing.Point(123, 334)
         Me.BtnAutoPseudo.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnAutoPseudo.Name = "BtnAutoPseudo"
         Me.BtnAutoPseudo.Size = New System.Drawing.Size(35, 35)
         Me.BtnAutoPseudo.TabIndex = 82
         Me.BtnAutoPseudo.UseVisualStyleBackColor = True
+        '
+        'BtnAutoLog
+        '
+        Me.BtnAutoLog.Image = CType(resources.GetObject("BtnAutoLog.Image"), System.Drawing.Image)
+        Me.BtnAutoLog.Location = New System.Drawing.Point(85, 334)
+        Me.BtnAutoLog.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnAutoLog.Name = "BtnAutoLog"
+        Me.BtnAutoLog.Size = New System.Drawing.Size(35, 35)
+        Me.BtnAutoLog.TabIndex = 83
+        Me.BtnAutoLog.UseVisualStyleBackColor = True
         '
         'frmSiteScenario
         '
@@ -722,6 +735,7 @@ Partial Class frmSiteScenario
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink
+        Me.Controls.Add(Me.BtnAutoLog)
         Me.Controls.Add(Me.BtnAutoPseudo)
         Me.Controls.Add(Me.BtnMaps)
         Me.Controls.Add(Me.TxtScenario2)
@@ -836,5 +850,6 @@ Partial Class frmSiteScenario
     Friend WithEvents ScenarioLower_Elev As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents SDefaultElevation As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents BtnAutoPseudo As System.Windows.Forms.Button
+    Friend WithEvents BtnAutoLog As System.Windows.Forms.Button
 
 End Class
