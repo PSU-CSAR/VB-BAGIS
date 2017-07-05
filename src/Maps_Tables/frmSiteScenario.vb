@@ -2309,7 +2309,7 @@ Public Class frmSiteScenario
 
     Private Sub BtnAutoLog_Click(sender As System.Object, e As System.EventArgs) Handles BtnAutoLog.Click
         If GrdScenario1.SelectedRows.Count < 1 Then
-            MessageBox.Show("You need to select one auto-site to view its log", "Select site", MessageBoxButtons.OK, _
+            MessageBox.Show("You need to select one autoo-site to view its log", "Select site", MessageBoxButtons.OK, _
                 MessageBoxIcon.Information)
             Exit Sub
         ElseIf GrdScenario1.SelectedRows.Count > 1 Then
@@ -2350,7 +2350,7 @@ Public Class frmSiteScenario
                                                             m_oldBufferUnits, m_lastAnalysisTimeStamp, foundSite)
             frmLog.ShowDialog()
         Else
-            MessageBox.Show("The log could not be found for the psuedo-site you selected", "Log not found", MessageBoxButtons.OK, _
+            MessageBox.Show("The log could not be found for the site you selected. It is likely not an auto-site.", "Log not found", MessageBoxButtons.OK, _
                 MessageBoxIcon.Information)
         End If
     End Sub

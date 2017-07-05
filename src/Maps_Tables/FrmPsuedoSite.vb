@@ -1903,6 +1903,11 @@ Public Class FrmPsuedoSite
             End If
         End If
         ' Disable/hide controls on read-only form
+        Me.Text = "Auto-site log: " + BA_GetBareName(AOIFolderBase)
+        CkElev.Enabled = False
+        CkPrecip.Enabled = False
+        CkLocation.Enabled = False
+        CkProximity.Enabled = False
         CmdPrism.Visible = False
         BtnAddProximity.Visible = False
         BtnDeleteProximity.Visible = False
@@ -1913,7 +1918,12 @@ Public Class FrmPsuedoSite
         BtnMap.Visible = False
         BtnClear.Visible = False
         BtnFindSite.Visible = False
-        TxtSiteName.Visible = False
+        TxtSiteName.Enabled = False
+        txtLower.Enabled = False
+        TxtUpperRange.Enabled = False
+        CmboxPrecipType.Enabled = False
+        TxtPrecipLower.Enabled = False
+        TxtPrecipUpper.Enabled = False
         '@ToDo: Work on read-only version of form; Disable checkboxes
     End Sub
 End Class
