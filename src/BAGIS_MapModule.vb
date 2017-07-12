@@ -2051,38 +2051,4 @@ Module BAGIS_MapModule
         End Try
     End Function
 
-    Public Function BA_RemoveAutoSiteLayersfromMapFrame(ByVal pMxDoc As IMxDocument) As Integer
-        Dim LayerNames(0 To 8) As String
-        LayerNames(1) = BA_MAPS_PS_REPRESENTED
-        LayerNames(2) = BA_EnumDescription(MapsLayerName.NewPseudoSite)
-        LayerNames(3) = BA_MAPS_PS_INDICATOR
-        LayerNames(4) = BA_MAPS_AOI_BASEMAP
-        LayerNames(5) = BA_MAPS_PS_PROXIMITY
-        LayerNames(6) = BA_MAPS_PS_ELEVATION
-        LayerNames(7) = BA_MAPS_PS_PRECIPITATION
-        LayerNames(8) = BA_MAPS_PS_LOCATION
-
-        For j = 1 To 8
-            BA_RemoveLayers(pMxDoc, LayerNames(j))
-        Next
-
-        'Remove any representation layers
-        Dim pMap As IMap = pMxDoc.FocusMap
-        Dim pTempLayer As ILayer
-        Dim nlayers As Integer = pMap.LayerCount
-        For i = nlayers To 1 Step -1
-            pTempLayer = pMap.Layer(i - 1)
-            Dim suffix As String = Right(pTempLayer.Name, 4)
-            If suffix = "_Rep" Then 'remove the layer
-                If TypeOf pTempLayer Is IRasterLayer Then 'disconnect a rasterlayer before removing it
-                    Dim pDLayer As IDataLayer2 = CType(pTempLayer, IDataLayer2)
-                    pDLayer.Disconnect()
-                End If
-                pMap.DeleteLayer(pTempLayer)
-            End If
-        Next
-
-        Return 1
-    End Function
-
 End Module

@@ -783,7 +783,6 @@ Public Class FrmPsuedoSite
         'Ensure default map frame name is set before trying to build map
         Dim response As Integer = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
         response = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)
-        BA_RemoveAutoSiteLayersfromMapFrame(My.Document)
         AddLayersToMapFrame(My.ThisApplication, My.Document)
         Dim Basin_Name As String
         Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
@@ -798,7 +797,7 @@ Public Class FrmPsuedoSite
 
         'Toggle the layers we want to see
         Dim LayerNames(10) As String
-        LayerNames(1) = BA_MAPS_PS_REPRESENTED
+        LayerNames(1) = BA_MAPS_SCENARIO1_REPRESENTATION
         LayerNames(2) = BA_EnumDescription(MapsLayerName.NewPseudoSite)
         LayerNames(3) = BA_MAPS_PS_INDICATOR
         LayerNames(4) = BA_MAPS_AOI_BASEMAP
@@ -837,58 +836,68 @@ Public Class FrmPsuedoSite
                      MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 Exit Sub
             End If
+
+            'Re-adding the map so it is in the right position and transparent
             pColor.RGB = RGB(255, 0, 0) 'red
-            success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_PS_REPRESENTED, pColor, 30)
+            success = BA_MapDisplayPolygon(pMxDoc, filepathname, BA_MAPS_SCENARIO1_REPRESENTATION, pColor, 30)
 
             'add pseudo site
-            filepathname = m_analysisFolder & "\" & m_siteFileName
-            If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
-                pColor.RGB = RGB(169, 0, 230)    'Purple
-                success = BA_MapDisplayPointMarkers(pApplication, filepathname, MapsLayerName.NewPseudoSite, pColor, MapsMarkerType.PseudoSite)
+            If Not LayerIsOnMap(MapsLayerName.NewPseudoSite) Then
+                filepathname = m_analysisFolder & "\" & m_siteFileName
+                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
+                    pColor.RGB = RGB(169, 0, 230)    'Purple
+                    success = BA_MapDisplayPointMarkers(pApplication, filepathname, MapsLayerName.NewPseudoSite, pColor, MapsMarkerType.PseudoSite)
+                End If
             End If
 
             'draw circle around pseudo site
-            Dim siteLayerName As String = BA_EnumDescription(MapsLayerName.NewPseudoSite)
-            Dim tempLayer As ILayer
-            Dim pseudoSrc As IFeatureLayer = Nothing
-            'Reset layer count in case layers were removed
-            Dim nlayers As Int16 = pMxDoc.FocusMap.LayerCount
+            If Not LayerIsOnMap(BA_MAPS_PS_INDICATOR) Then
+                Dim siteLayerName As String = BA_EnumDescription(MapsLayerName.NewPseudoSite)
+                Dim tempLayer As ILayer
+                Dim pseudoSrc As IFeatureLayer = Nothing
+                'Reset layer count in case layers were removed
+                Dim nlayers As Int16 = pMxDoc.FocusMap.LayerCount
 
-            For i = nlayers To 1 Step -1
-                tempLayer = CType(pMxDoc.FocusMap.Layer(i - 1), ILayer)   'Explicit cast
-                If TypeOf tempLayer Is FeatureLayer AndAlso tempLayer.Name = siteLayerName Then
-                    pseudoSrc = CType(tempLayer, IFeatureLayer)
-                    Exit For
+                For i = nlayers To 1 Step -1
+                    tempLayer = CType(pMxDoc.FocusMap.Layer(i - 1), ILayer)   'Explicit cast
+                    If TypeOf tempLayer Is FeatureLayer AndAlso tempLayer.Name = siteLayerName Then
+                        pseudoSrc = CType(tempLayer, IFeatureLayer)
+                        Exit For
+                    End If
+                Next
+
+                Dim pActualColor As IColor = New RgbColor
+                pActualColor.RGB = RGB(169, 0, 230)    'Purple
+                Dim actualRenderer As ISimpleRenderer = BA_BuildRendererForPoints(pActualColor, 25)
+
+                If pseudoSrc IsNot Nothing Then
+                    Dim pFSele As IFeatureSelection = TryCast(pseudoSrc, IFeatureSelection)
+                    Dim pQFilter As IQueryFilter = New QueryFilter
+                    pFSele.SelectFeatures(pQFilter, esriSelectionResultEnum.esriSelectionResultNew, False)
+                    Dim fLayerDef As IFeatureLayerDefinition = CType(pseudoSrc, IFeatureLayerDefinition)
+                    Dim pseudoCopy As IFeatureLayer = fLayerDef.CreateSelectionLayer(BA_MAPS_PS_INDICATOR, True, Nothing, Nothing)
+                    Dim pGFLayer As IGeoFeatureLayer = CType(pseudoCopy, IGeoFeatureLayer)
+                    pGFLayer.Renderer = actualRenderer
+                    My.Document.FocusMap.AddLayer(pGFLayer)
+                    pFSele.Clear()
                 End If
-            Next
-
-            Dim pActualColor As IColor = New RgbColor
-            pActualColor.RGB = RGB(169, 0, 230)    'Purple
-            Dim actualRenderer As ISimpleRenderer = BA_BuildRendererForPoints(pActualColor, 25)
-
-            If pseudoSrc IsNot Nothing Then
-                Dim pFSele As IFeatureSelection = TryCast(pseudoSrc, IFeatureSelection)
-                Dim pQFilter As IQueryFilter = New QueryFilter
-                pFSele.SelectFeatures(pQFilter, esriSelectionResultEnum.esriSelectionResultNew, False)
-                Dim fLayerDef As IFeatureLayerDefinition = CType(pseudoSrc, IFeatureLayerDefinition)
-                Dim pseudoCopy As IFeatureLayer = fLayerDef.CreateSelectionLayer(BA_MAPS_PS_INDICATOR, True, Nothing, Nothing)
-                Dim pGFLayer As IGeoFeatureLayer = CType(pseudoCopy, IGeoFeatureLayer)
-                pGFLayer.Renderer = actualRenderer
-                My.Document.FocusMap.AddLayer(pGFLayer)
-                pFSele.Clear()
             End If
 
             'add aoib as base layer for difference of representation maps
-            filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BufferedAOIExtentRaster
-            retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_AOI_BASEMAP, _
-                                                MapsDisplayStyle.Cyan_Light_to_Blue_Dark, 30, WorkspaceType.Geodatabase)
+            If Not LayerIsOnMap(BA_MAPS_AOI_BASEMAP) Then
+                filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BufferedAOIExtentRaster
+                retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_AOI_BASEMAP, _
+                                                    MapsDisplayStyle.Cyan_Light_to_Blue_Dark, 30, WorkspaceType.Geodatabase)
+            End If
 
             'Proximity if it exists
             If m_lastAnalysis.UseProximity Then
                 filepathname = m_analysisFolder & "\" & m_proximityLayer
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-                    retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PROXIMITY, _
-                                                        MapsDisplayStyle.Yellows, 30, WorkspaceType.Geodatabase)
+                    If Not LayerIsOnMap(BA_MAPS_PS_PROXIMITY) Then
+                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PROXIMITY, _
+                                                            MapsDisplayStyle.Yellows, 30, WorkspaceType.Geodatabase)
+                    End If
                 End If
             End If
 
@@ -896,8 +905,10 @@ Public Class FrmPsuedoSite
             filepathname = m_analysisFolder & "\" & m_elevLayer
             If m_lastAnalysis.UseElevation Then
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-                    retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, _
-                                   MapsDisplayStyle.Slope, 30, WorkspaceType.Geodatabase)
+                    If Not LayerIsOnMap(BA_MAPS_PS_ELEVATION) Then
+                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, _
+                                       MapsDisplayStyle.Slope, 30, WorkspaceType.Geodatabase)
+                    End If
                 End If
             End If
 
@@ -905,8 +916,10 @@ Public Class FrmPsuedoSite
             filepathname = m_analysisFolder & "\" & m_precipLayer
             If m_lastAnalysis.UsePrism Then
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-                    retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PRECIPITATION, _
-                                MapsDisplayStyle.Purple_Blues, 30, WorkspaceType.Geodatabase)
+                    If Not LayerIsOnMap(BA_MAPS_PS_PRECIPITATION) Then
+                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PRECIPITATION, _
+                                    MapsDisplayStyle.Purple_Blues, 30, WorkspaceType.Geodatabase)
+                    End If
                 End If
             End If
 
@@ -914,15 +927,19 @@ Public Class FrmPsuedoSite
             filepathname = m_analysisFolder & "\" & m_locationLayer
             If m_lastAnalysis.UseLocation Then
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
-                    retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_LOCATION, _
-                                MapsDisplayStyle.Brown_to_Blue_Green, 30, WorkspaceType.Geodatabase)
+                    If Not LayerIsOnMap(BA_MAPS_PS_LOCATION) Then
+                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_LOCATION, _
+                                    MapsDisplayStyle.Brown_to_Blue_Green, 30, WorkspaceType.Geodatabase)
+                    End If
                 End If
             End If
 
             'add hillshade
-            filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) & _
-                BA_GetBareName(BA_EnumDescription(PublicPath.Hillshade))
-            retVal = BA_MapDisplayRaster(pMxDoc, filepathname, BA_MAPS_HILLSHADE, 0)
+            If Not LayerIsOnMap(BA_MAPS_HILLSHADE) Then
+                filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) & _
+                    BA_GetBareName(BA_EnumDescription(PublicPath.Hillshade))
+                retVal = BA_MapDisplayRaster(pMxDoc, filepathname, BA_MAPS_HILLSHADE, 0)
+            End If
             'Move hillshade to bottom
             Dim layerCount As Int16 = My.Document.FocusMap.LayerCount
             Dim idxHillshade As Integer = BA_GetLayerIndexByName(My.Document, BA_MAPS_HILLSHADE)
@@ -1925,4 +1942,19 @@ Public Class FrmPsuedoSite
         TxtPrecipLower.Enabled = False
         TxtPrecipUpper.Enabled = False
     End Sub
+
+    Private Function LayerIsOnMap(ByVal layername As String) As Boolean
+        'check if a layer with the assigned name exists
+        Dim i As Long
+        Dim pMap As IMap = My.Document.FocusMap()
+        Dim nlayers As Long = pMap.LayerCount
+        Dim pTempLayer As ILayer
+        For i = nlayers To 1 Step -1
+            pTempLayer = pMap.Layer(i - 1)
+            If layername = pTempLayer.Name Then 'remove the layer
+                Return True
+            End If
+        Next
+        Return False
+    End Function
 End Class
