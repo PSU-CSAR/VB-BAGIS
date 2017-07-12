@@ -1169,9 +1169,9 @@ Public Class FrmPsuedoSite
                     lblEndMonth.Enabled = False
                     CmboxEnd.Enabled = False
                 End If
-                TxtPrecipUpper.Text = CStr(m_lastAnalysis.LowerPrecip)
-                TxtPrecipLower.Text = CStr(m_lastAnalysis.UpperPrecip)
                 CmdPrism_Click(Me, EventArgs.Empty)
+                TxtPrecipUpper.Text = CStr(m_lastAnalysis.UpperPrecip)
+                TxtPrecipLower.Text = CStr(m_lastAnalysis.LowerPrecip)
             End If
             If m_lastAnalysis.UseProximity = True Then
                 CkProximity.Checked = True
@@ -1845,9 +1845,9 @@ Public Class FrmPsuedoSite
                 lblEndMonth.Enabled = False
                 CmboxEnd.Enabled = False
             End If
-            TxtPrecipUpper.Text = CStr(logSite.LowerPrecip)
-            TxtPrecipLower.Text = CStr(logSite.UpperPrecip)
             CmdPrism_Click(Me, EventArgs.Empty)
+            TxtPrecipUpper.Text = CStr(logSite.UpperPrecip)
+            TxtPrecipLower.Text = CStr(logSite.LowerPrecip)
         End If
         If logSite.UseProximity = True Then
             CkProximity.Checked = True
@@ -1924,6 +1924,5 @@ Public Class FrmPsuedoSite
         CmboxPrecipType.Enabled = False
         TxtPrecipLower.Enabled = False
         TxtPrecipUpper.Enabled = False
-        '@ToDo: Work on read-only version of form; Disable checkboxes
     End Sub
 End Class

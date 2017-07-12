@@ -196,7 +196,7 @@ Public Class PseudoSite
     End Sub
 
     Public Sub PrismProperties(ByVal precipTypeIdx As Short, ByVal precipBeginIdx As Short, ByVal precipEndIdx As Short, _
-                               ByVal precipLower As Double, ByVal precipUpper As Double)
+                               ByVal precipUpper As Double, ByVal precipLower As Double)
         m_precipTypeIdx = precipTypeIdx
         m_precipBeginIdx = precipBeginIdx
         m_precipEndIdx = precipEndIdx
