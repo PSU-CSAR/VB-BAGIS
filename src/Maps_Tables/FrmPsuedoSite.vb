@@ -796,7 +796,7 @@ Public Class FrmPsuedoSite
         BA_AddMapElements(My.Document, mapTitle, "Subtitle BAGIS")
 
         'Toggle the layers we want to see
-        Dim LayerNames(10) As String
+        Dim LayerNames(11) As String
         LayerNames(1) = BA_MAPS_SCENARIO1_REPRESENTATION
         LayerNames(2) = BA_EnumDescription(MapsLayerName.NewPseudoSite)
         LayerNames(3) = BA_MAPS_PS_INDICATOR
@@ -806,6 +806,7 @@ Public Class FrmPsuedoSite
         LayerNames(7) = BA_MAPS_PS_PRECIPITATION
         LayerNames(8) = BA_MAPS_PS_LOCATION
         LayerNames(9) = BA_MAPS_HILLSHADE
+        LayerNames(10) = BA_MAPS_AOI_BOUNDARY
         response = BA_ToggleLayersinMapFrame(My.Document, LayerNames)
 
         BA_RemoveLayersfromLegend(My.Document)
@@ -817,7 +818,7 @@ Public Class FrmPsuedoSite
         BA_SetLegendFormat(My.Document, keyLayerName)
 
         'Clip data frame to aoi border
-        ClipDataFrameToAoiBorder()
+        'ClipDataFrameToAoiBorder()     //Disable this so we can show areas outside the AOI
 
         MessageBox.Show("Use ArcMap Table of Contents to view map.", "Map", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
@@ -881,6 +882,12 @@ Public Class FrmPsuedoSite
                     My.Document.FocusMap.AddLayer(pGFLayer)
                     pFSele.Clear()
                 End If
+            End If
+
+            'add aoi boundary and zoom to AOI
+            If Not LayerIsOnMap(BA_MAPS_AOI_BOUNDARY) Then
+                filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & m_aoiBoundary
+                retVal = BA_AddExtentLayer(pMxDoc, filepathname, Nothing, False, BA_MAPS_AOI_BOUNDARY, 1, 1.2, 2.0)
             End If
 
             'add aoib as base layer for difference of representation maps
