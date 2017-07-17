@@ -19,6 +19,7 @@ Public Class FrmPsuedoSite
     Private m_proximityLayer As String = "ps_proximity"
     Private m_precipLayer As String = "ps_precip"
     Private m_locationLayer As String = "ps_location"
+    Private m_cellStatsLayer As String = "ps_cellStat"
     Private m_demInMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
@@ -39,6 +40,7 @@ Public Class FrmPsuedoSite
     'These 2 collections hold the values for the location layer(s) in memory; The key is the layer path which should be unique
     Private m_dictLocationAllValues As IDictionary(Of String, IList(Of String))
     Private m_dictLocationIncludeValues As IDictionary(Of String, IList(Of String))
+    Private m_displayCombinedLayer As Boolean
 
 
     Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits, _
@@ -415,7 +417,6 @@ Public Class FrmPsuedoSite
             End If
         End If
 
-        Dim cellStatFileName As String = "ps_cellStat"
         Dim timesFileName As String = "ps_times"
         If sb.Length > 0 Then
             If success = BA_ReturnCode.Success Then
@@ -424,10 +425,10 @@ Public Class FrmPsuedoSite
                 pStepProg.Step()
                 sb.Remove(sb.ToString().LastIndexOf("; "), "; ".Length)
                 success = BA_GetCellStatistics(sb.ToString, snapRasterPath, "MINIMUM", _
-                                               m_analysisFolder + "\" + cellStatFileName, "false")
+                                               m_analysisFolder + "\" + m_cellStatsLayer, "false")
             End If
 
-            If BA_IsRasterEmpty(m_analysisFolder, cellStatFileName) Then
+            If BA_IsRasterEmpty(m_analysisFolder, m_cellStatsLayer) Then
                 Dim errMsg As String = "The entire area of the AOI was excluded using the constraints you selected. " +
                     "No suitable site location could be found. "
                 MessageBox.Show(errMsg, "No site location found", MessageBoxButtons.OK, MessageBoxIcon.Hand)
@@ -438,11 +439,17 @@ Public Class FrmPsuedoSite
                 Exit Sub
             End If
 
+            'Add 'NAME' field cell stats (all constraints) layer to be used as label for map
+            If success = BA_ReturnCode.Success Then
+                success = BA_AddUserFieldToRaster(m_analysisFolder, m_cellStatsLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                                              100, BA_MAPS_PS_ALL_CONSTRAINTS)
+            End If
+
             furthestPixelInputFile = timesFileName
             If success = BA_ReturnCode.Success Then
                 pStepProg.Message = "Executing Times tool with distance and cell statistics layers"
                 pStepProg.Step()
-                success = BA_Times(m_analysisFolder + "\" + distanceFileName, m_analysisFolder + "\" + cellStatFileName, _
+                success = BA_Times(m_analysisFolder + "\" + distanceFileName, m_analysisFolder + "\" + m_cellStatsLayer, _
                     m_analysisFolder + "\" + timesFileName)
             End If
         End If
@@ -801,12 +808,20 @@ Public Class FrmPsuedoSite
         LayerNames(2) = BA_EnumDescription(MapsLayerName.NewPseudoSite)
         LayerNames(3) = BA_MAPS_PS_INDICATOR
         LayerNames(4) = BA_MAPS_AOI_BASEMAP
-        LayerNames(5) = BA_MAPS_PS_PROXIMITY
-        LayerNames(6) = BA_MAPS_PS_ELEVATION
-        LayerNames(7) = BA_MAPS_PS_PRECIPITATION
-        LayerNames(8) = BA_MAPS_PS_LOCATION
-        LayerNames(9) = BA_MAPS_HILLSHADE
-        LayerNames(10) = BA_MAPS_AOI_BOUNDARY
+
+        If m_displayCombinedLayer = False Then
+            LayerNames(5) = BA_MAPS_PS_PROXIMITY
+            LayerNames(6) = BA_MAPS_PS_ELEVATION
+            LayerNames(7) = BA_MAPS_PS_PRECIPITATION
+            LayerNames(8) = BA_MAPS_PS_LOCATION
+            LayerNames(9) = BA_MAPS_HILLSHADE
+            LayerNames(10) = BA_MAPS_AOI_BOUNDARY
+        Else
+            ReDim Preserve LayerNames(8)
+            LayerNames(5) = BA_MAPS_PS_ALL_CONSTRAINTS
+            LayerNames(6) = BA_MAPS_HILLSHADE
+            LayerNames(7) = BA_MAPS_AOI_BOUNDARY
+        End If
         response = BA_ToggleLayersinMapFrame(My.Document, LayerNames)
 
         BA_RemoveLayersfromLegend(My.Document)
@@ -895,6 +910,27 @@ Public Class FrmPsuedoSite
                 filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BufferedAOIExtentRaster
                 retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_AOI_BASEMAP, _
                                                     MapsDisplayStyle.Cyan_Light_to_Blue_Dark, 30, WorkspaceType.Geodatabase)
+            End If
+
+            'Check to see if should display the combined map layer
+            Dim constraintCount As Short = 0
+            If m_lastAnalysis.UseProximity Then _
+                constraintCount += 1
+            If m_lastAnalysis.UseElevation Then _
+                constraintCount += 1
+            If m_lastAnalysis.UseLocation Then _
+                constraintCount += 1
+            If m_lastAnalysis.UsePrism Then _
+                constraintCount += 1
+            If constraintCount > 1 Then
+                m_displayCombinedLayer = True
+                filepathname = m_analysisFolder & "\" & m_cellStatsLayer
+                If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                    If Not LayerIsOnMap(BA_MAPS_PS_ALL_CONSTRAINTS) Then
+                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_ALL_CONSTRAINTS, _
+                                                            MapsDisplayStyle.Pink_to_Yellow_Green, 30, WorkspaceType.Geodatabase)
+                    End If
+                End If
             End If
 
             'Proximity if it exists
@@ -1626,6 +1662,10 @@ Public Class FrmPsuedoSite
         fileToDelete = m_analysisFolder + "\" + m_locationLayer
         If BA_File_Exists(fileToDelete, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
             BA_RemoveRasterFromGDB(m_analysisFolder, m_locationLayer)
+        End If
+        fileToDelete = m_analysisFolder + "\" + m_cellStatsLayer
+        If BA_File_Exists(fileToDelete, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+            BA_RemoveRasterFromGDB(m_analysisFolder, m_cellStatsLayer)
         End If
         fileToDelete = m_analysisFolder + "\" + m_siteFileName
         If BA_File_Exists(fileToDelete, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
