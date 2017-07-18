@@ -719,7 +719,7 @@ Public Class frmSiteScenario
                                 End If
                                 'Check to see if there are any more pseudo-sites left so we can correctly set the global variable
                                 Dim hasPseudoSites As Boolean = False
-                                For Each nextRow As DataGridViewRow In siteRepForm.GrdExistingSites.Rows
+                                For Each nextRow As DataGridViewRow In GrdScenario1.Rows
                                     Dim siteText As String = Convert.ToString(nextRow.Cells(idxSiteType).Value)
                                     Dim nextSiteType As SiteType = BA_GetSiteType(siteText)
                                     If nextSiteType = SiteType.Pseudo Then
