@@ -43,7 +43,7 @@ Public Class BtnScenario2
                 End If
             Next
             'Reorder scenario layers so things are visible
-            BA_MoveScenarioLayers()
+            'BA_MoveScenarioLayers()
             'End If
         Catch ex As Exception
             Windows.Forms.MessageBox.Show("An error occurred while trying to display the scenario 2 map.", "Error", Windows.Forms.MessageBoxButtons.OK)

@@ -68,7 +68,7 @@ Public Class BtnDifferenceCondition
                 End If
             Next
             'Reorder scenario layers so things are visible
-            BA_MoveScenarioLayers()
+            ''BA_MoveScenarioLayers()
         Catch ex As Exception
             Windows.Forms.MessageBox.Show("An error occurred while trying to display the difference map.", "Error", Windows.Forms.MessageBoxButtons.OK)
             Debug.Print("OnClick" & ex.Message)
