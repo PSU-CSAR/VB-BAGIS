@@ -364,14 +364,24 @@ Public Class FrmPsuedoSite
         Dim success As BA_ReturnCode = BA_ReturnCode.Success
 
         '2. Identify cells that are furthest from the represented area (Euclidean distance tool)
+        Dim tempDistanceFileName As String = "tmpDistance"  'File name before extract to mask; Run initially against buffered AOI
+        Dim tempMaskPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
         Dim distanceFileName As String = "ps_distance"
         Dim furthestPixelInputFile As String = distanceFileName
         If success = BA_ReturnCode.Success Then
             pStepProg.Message = "Executing Euclidean distance tool"
             pStepProg.Step()
-            '@ToDo: Verify what cell size should be; Currently comes from filled_dem
-            success = BA_EuclideanDistance(m_analysisFolder + "\" + m_representedArea, m_analysisFolder + "\" + distanceFileName, _
-                                           CStr(m_cellSize), maskPath, snapRasterPath, maskPath)
+            success = BA_EuclideanDistance(m_analysisFolder + "\" + m_representedArea, m_analysisFolder + "\" + tempDistanceFileName, _
+                                           CStr(m_cellSize), tempMaskPath, snapRasterPath, tempMaskPath)
+        End If
+        If success = BA_ReturnCode.Success Then
+            'Extract to Mask to clip off area outside AOI
+            success = BA_ExtractByMask(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & m_aoiBoundary, _
+                                       m_analysisFolder + "\" + tempDistanceFileName, snapRasterPath, m_analysisFolder + "\" + distanceFileName)
+            If success = BA_ReturnCode.Success Then
+                'Delete temp distance file
+                BA_RemoveRasterFromGDB(m_analysisFolder, tempDistanceFileName)
+            End If
         End If
         If CkElev.Checked = True Then
             success = GenerateElevationLayer(pStepProg, snapRasterPath)
