@@ -22,11 +22,11 @@ Partial Class FrmPsuedoSite
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(FrmPsuedoSite))
-        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle7 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle8 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.LblBufferDistance = New System.Windows.Forms.Label()
         Me.CkElev = New System.Windows.Forms.CheckBox()
         Me.Label7 = New System.Windows.Forms.Label()
@@ -70,7 +70,7 @@ Partial Class FrmPsuedoSite
         Me.txtBufferDistance = New System.Windows.Forms.TextBox()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.BtnSaveProximity = New System.Windows.Forms.Button()
-        Me.BtnDoneProximity = New System.Windows.Forms.Button()
+        Me.BtnCancelProximity = New System.Windows.Forms.Button()
         Me.LstVectors = New System.Windows.Forms.ListBox()
         Me.BtnDeleteProximity = New System.Windows.Forms.Button()
         Me.BtnAddProximity = New System.Windows.Forms.Button()
@@ -93,7 +93,7 @@ Partial Class FrmPsuedoSite
         Me.BtnToggle = New System.Windows.Forms.Button()
         Me.Label6 = New System.Windows.Forms.Label()
         Me.BtnSaveLocation = New System.Windows.Forms.Button()
-        Me.BtnDoneLocation = New System.Windows.Forms.Button()
+        Me.BtnCancelLocation = New System.Windows.Forms.Button()
         Me.LstValues = New System.Windows.Forms.ListBox()
         Me.LstRasters = New System.Windows.Forms.ListBox()
         Me.BtnDeleteLocation = New System.Windows.Forms.Button()
@@ -584,7 +584,7 @@ Partial Class FrmPsuedoSite
         Me.PnlProximity.Controls.Add(Me.txtBufferDistance)
         Me.PnlProximity.Controls.Add(Me.Label5)
         Me.PnlProximity.Controls.Add(Me.BtnSaveProximity)
-        Me.PnlProximity.Controls.Add(Me.BtnDoneProximity)
+        Me.PnlProximity.Controls.Add(Me.BtnCancelProximity)
         Me.PnlProximity.Controls.Add(Me.LstVectors)
         Me.PnlProximity.Location = New System.Drawing.Point(453, 18)
         Me.PnlProximity.Name = "PnlProximity"
@@ -635,16 +635,16 @@ Partial Class FrmPsuedoSite
         Me.BtnSaveProximity.Text = "Save"
         Me.BtnSaveProximity.UseVisualStyleBackColor = True
         '
-        'BtnDoneProximity
+        'BtnCancelProximity
         '
-        Me.BtnDoneProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnDoneProximity.Location = New System.Drawing.Point(327, 98)
-        Me.BtnDoneProximity.Margin = New System.Windows.Forms.Padding(2)
-        Me.BtnDoneProximity.Name = "BtnDoneProximity"
-        Me.BtnDoneProximity.Size = New System.Drawing.Size(65, 25)
-        Me.BtnDoneProximity.TabIndex = 74
-        Me.BtnDoneProximity.Text = "Done"
-        Me.BtnDoneProximity.UseVisualStyleBackColor = True
+        Me.BtnCancelProximity.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnCancelProximity.Location = New System.Drawing.Point(327, 98)
+        Me.BtnCancelProximity.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnCancelProximity.Name = "BtnCancelProximity"
+        Me.BtnCancelProximity.Size = New System.Drawing.Size(65, 25)
+        Me.BtnCancelProximity.TabIndex = 74
+        Me.BtnCancelProximity.Text = "Cancel"
+        Me.BtnCancelProximity.UseVisualStyleBackColor = True
         '
         'LstVectors
         '
@@ -696,8 +696,8 @@ Partial Class FrmPsuedoSite
         '
         'DataGridViewTextBoxColumn1
         '
-        DataGridViewCellStyle1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.DataGridViewTextBoxColumn1.DefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle5.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.DataGridViewTextBoxColumn1.DefaultCellStyle = DataGridViewCellStyle5
         Me.DataGridViewTextBoxColumn1.HeaderText = "Layer"
         Me.DataGridViewTextBoxColumn1.Name = "DataGridViewTextBoxColumn1"
         Me.DataGridViewTextBoxColumn1.ReadOnly = True
@@ -706,8 +706,8 @@ Partial Class FrmPsuedoSite
         '
         'DataGridViewTextBoxColumn2
         '
-        DataGridViewCellStyle2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.DataGridViewTextBoxColumn2.DefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle6.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.DataGridViewTextBoxColumn2.DefaultCellStyle = DataGridViewCellStyle6
         Me.DataGridViewTextBoxColumn2.HeaderText = "Buffer"
         Me.DataGridViewTextBoxColumn2.Name = "DataGridViewTextBoxColumn2"
         Me.DataGridViewTextBoxColumn2.ReadOnly = True
@@ -848,7 +848,7 @@ Partial Class FrmPsuedoSite
         Me.PnlLocation.Controls.Add(Me.BtnToggle)
         Me.PnlLocation.Controls.Add(Me.Label6)
         Me.PnlLocation.Controls.Add(Me.BtnSaveLocation)
-        Me.PnlLocation.Controls.Add(Me.BtnDoneLocation)
+        Me.PnlLocation.Controls.Add(Me.BtnCancelLocation)
         Me.PnlLocation.Controls.Add(Me.LstValues)
         Me.PnlLocation.Controls.Add(Me.LstRasters)
         Me.PnlLocation.Location = New System.Drawing.Point(461, 41)
@@ -891,16 +891,16 @@ Partial Class FrmPsuedoSite
         Me.BtnSaveLocation.Text = "Save"
         Me.BtnSaveLocation.UseVisualStyleBackColor = True
         '
-        'BtnDoneLocation
+        'BtnCancelLocation
         '
-        Me.BtnDoneLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnDoneLocation.Location = New System.Drawing.Point(258, 97)
-        Me.BtnDoneLocation.Margin = New System.Windows.Forms.Padding(2)
-        Me.BtnDoneLocation.Name = "BtnDoneLocation"
-        Me.BtnDoneLocation.Size = New System.Drawing.Size(65, 25)
-        Me.BtnDoneLocation.TabIndex = 74
-        Me.BtnDoneLocation.Text = "Done"
-        Me.BtnDoneLocation.UseVisualStyleBackColor = True
+        Me.BtnCancelLocation.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnCancelLocation.Location = New System.Drawing.Point(258, 97)
+        Me.BtnCancelLocation.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnCancelLocation.Name = "BtnCancelLocation"
+        Me.BtnCancelLocation.Size = New System.Drawing.Size(65, 25)
+        Me.BtnCancelLocation.TabIndex = 74
+        Me.BtnCancelLocation.Text = "Cancel"
+        Me.BtnCancelLocation.UseVisualStyleBackColor = True
         '
         'LstValues
         '
@@ -963,8 +963,8 @@ Partial Class FrmPsuedoSite
         '
         'Layer
         '
-        DataGridViewCellStyle3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Layer.DefaultCellStyle = DataGridViewCellStyle3
+        DataGridViewCellStyle7.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Layer.DefaultCellStyle = DataGridViewCellStyle7
         Me.Layer.HeaderText = "Layer"
         Me.Layer.Name = "Layer"
         Me.Layer.ReadOnly = True
@@ -973,8 +973,8 @@ Partial Class FrmPsuedoSite
         '
         'Values
         '
-        DataGridViewCellStyle4.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Values.DefaultCellStyle = DataGridViewCellStyle4
+        DataGridViewCellStyle8.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Values.DefaultCellStyle = DataGridViewCellStyle8
         Me.Values.HeaderText = "Values"
         Me.Values.Name = "Values"
         Me.Values.ReadOnly = True
@@ -1096,7 +1096,7 @@ Partial Class FrmPsuedoSite
     Friend WithEvents BtnDeleteLocation As System.Windows.Forms.Button
     Friend WithEvents BtnAddLocation As System.Windows.Forms.Button
     Friend WithEvents BtnSaveLocation As System.Windows.Forms.Button
-    Friend WithEvents BtnDoneLocation As System.Windows.Forms.Button
+    Friend WithEvents BtnCancelLocation As System.Windows.Forms.Button
     Friend WithEvents Layer As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents Values As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents FullPath As System.Windows.Forms.DataGridViewTextBoxColumn
@@ -1113,7 +1113,7 @@ Partial Class FrmPsuedoSite
     Friend WithEvents txtBufferDistance As System.Windows.Forms.TextBox
     Friend WithEvents Label5 As System.Windows.Forms.Label
     Friend WithEvents BtnSaveProximity As System.Windows.Forms.Button
-    Friend WithEvents BtnDoneProximity As System.Windows.Forms.Button
+    Friend WithEvents BtnCancelProximity As System.Windows.Forms.Button
     Friend WithEvents LstVectors As System.Windows.Forms.ListBox
     Friend WithEvents LblAddBufferDistance As System.Windows.Forms.Label
 End Class

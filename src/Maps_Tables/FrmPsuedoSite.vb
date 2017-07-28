@@ -1562,7 +1562,7 @@ Public Class FrmPsuedoSite
         ToggleLocationButtons(Not PnlLocation.Visible)
     End Sub
 
-    Private Sub BtnDoneLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnDoneLocation.Click
+    Private Sub BtnCancelLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnCancelLocation.Click
         PnlLocation.Visible = False
         LstRasters.ClearSelected()
     End Sub
@@ -1629,6 +1629,7 @@ Public Class FrmPsuedoSite
                 GrdLocation.Rows.Add(item)
             LstRasters.ClearSelected()
             GrdLocation.CurrentCell = Nothing
+            BtnCancelLocation_Click(sender, e)
         End If
     End Sub
 
@@ -1783,7 +1784,7 @@ Public Class FrmPsuedoSite
         End If
     End Sub
 
-    Private Sub BtnDoneProximity_Click(sender As Object, e As System.EventArgs) Handles BtnDoneProximity.Click
+    Private Sub BtnCancelProximity_Click(sender As Object, e As System.EventArgs) Handles BtnCancelProximity.Click
         PnlProximity.Visible = False
         LstVectors.ClearSelected()
         txtBufferDistance.Text = Nothing
@@ -1890,6 +1891,7 @@ Public Class FrmPsuedoSite
                 GrdProximity.Rows.Add(item)
             LstVectors.ClearSelected()
             GrdProximity.CurrentCell = Nothing
+            BtnCancelProximity_Click(sender, e)
         End If
     End Sub
 
