@@ -1064,6 +1064,14 @@ Public Class frmCreateAOIfromExistingBND
         End If
     End Sub
 
+    Private Sub lblBufferD_DoubleClick(sender As Object, e As System.EventArgs) Handles lblBufferD.DoubleClick
+        Dim response As String
+        response = InputBox("Please enter a PRISM buffer distance in meters", "Set/Check PRISM Buffer Distance", BA_PRISMClipBuffer)
+        If Len(Trim(response)) > 0 Then
+            BA_PRISMClipBuffer = Val(response)
+        End If
+    End Sub
+
     Public Sub New()
 
         ' This call is required by the designer.
