@@ -111,12 +111,14 @@ Public Class frmAOIInfo
                 Case MeasurementUnit.Millimeters
                     rbtnDepthMM.Checked = True
             End Select
+            txtPrismBufferD.Text = "Clip Buffer Distance: " + CStr(BA_PRISMClipBuffer) + " meters"
         End If
 
         'SNOTEL
         temppathname = tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & BA_SNOTELSites
         If BA_File_Exists(temppathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             ChkSNOTELExist.Checked = True
+            txtSiteBufferD.Text = "Site Layers Clip Buffer Distance: " + CStr(BA_AOIClipBuffer) + " meters"
         Else
             ChkSNOTELExist.Checked = False
             'BA_SystemSettings.GenerateAOIOnly = True 'some AOIs that don't have SNOTEL sites do not have SNOTEL layer
@@ -126,6 +128,7 @@ Public Class frmAOIInfo
         temppathname = tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & BA_SnowCourseSites
         If BA_File_Exists(temppathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             ChkSnowCourseExist.Checked = True
+            txtSiteBufferD.Text = "Site Layers Clip Buffer Distance: " + CStr(BA_AOIClipBuffer) + " meters"
         Else
             ChkSnowCourseExist.Checked = False
             'BA_SystemSettings.GenerateAOIOnly = True  'some AOIs that don't have snow course sites do not have snow course layer
@@ -630,21 +633,27 @@ Public Class frmAOIInfo
         grpboxPRISMUnit.Enabled = ChkPRISMSelected.Checked
         rbtnDepthInch.Enabled = ChkPRISMSelected.Checked
         rbtnDepthMM.Enabled = ChkPRISMSelected.Checked
+        txtPrismBufferD.Enabled = ChkPRISMSelected.Checked
+        txtDepthUnit.Enabled = ChkPRISMSelected.Checked
     End Sub
 
     Private Sub ChkSNOTELSelected_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ChkSNOTELSelected.CheckedChanged
         If ChkSNOTELSelected.Checked Or ChkPRISMSelected.Checked Or ChkSnowCourseSelected.Checked = True Then
             CmdReClip.Enabled = True
+            txtSiteBufferD.Enabled = True
         Else
             CmdReClip.Enabled = False
+            txtSiteBufferD.Enabled = False
         End If
     End Sub
 
     Private Sub ChkSnowCourseSelected_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ChkSnowCourseSelected.CheckedChanged
         If ChkSnowCourseSelected.Checked Or ChkPRISMSelected.Checked Or ChkSNOTELSelected.Checked = True Then
             CmdReClip.Enabled = True
+            txtSiteBufferD.Enabled = True
         Else
             CmdReClip.Enabled = False
+            txtSiteBufferD.Enabled = False
         End If
     End Sub
 
@@ -1114,6 +1123,32 @@ Public Class frmAOIInfo
         '        GC.WaitForPendingFinalizers()
         '        GC.Collect()
         '    End Try
+    End Sub
+
+    Private Sub txtPrismBufferD_DoubleClick(sender As Object, e As System.EventArgs) Handles txtPrismBufferD.DoubleClick
+        Dim response As String
+        response = InputBox("Please enter a PRISM buffer distance in meters", "Set PRISM Buffer Distance", BA_PRISMClipBuffer)
+        If Not IsNumeric(response) Then
+            MsgBox("Numeric value required!")
+            Exit Sub
+        End If
+        If Len(Trim(response)) > 0 Then
+            BA_PRISMClipBuffer = Val(response)
+            txtPrismBufferD.Text = "Clip Buffer Distance: " + response + " meters"
+        End If
+    End Sub
+
+    Private Sub txtSiteBufferD_DoubleClick(sender As Object, e As System.EventArgs) Handles txtSiteBufferD.DoubleClick
+        Dim response As String
+        response = InputBox("Please enter a buffer distance in meters", "Set Site Layers Buffer Distance", BA_AOIClipBuffer)
+        If Not IsNumeric(response) Then
+            MsgBox("Numeric value required!")
+            Exit Sub
+        End If
+        If Len(Trim(response)) > 0 Then
+            BA_AOIClipBuffer = Val(response)
+            txtPrismBufferD.Text = "Site Layers Clip Buffer Distance: " + response + " meters"
+        End If
     End Sub
 
 End Class

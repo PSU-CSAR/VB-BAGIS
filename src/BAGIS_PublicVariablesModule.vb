@@ -42,6 +42,7 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_PRISMClipAOIRaster = "p_aoi" 'raster
     Public BA_PRISMClipBuffer As Double = 1000 'default value = 1000 meters, buffer distance for clipping PRISM data
     Public Const BA_NameFieldWidth = 60 'name field in the attribute table to stor reclass range data
+    Public BA_AOIClipBuffer As Double = 100 'default value = 100 meters, buffer distance for clipping AOI data
 
     'AOI snotel site, snow course site, and pseudo-site attributes
     Public Const BA_SiteNameField = "BA_SNAME"

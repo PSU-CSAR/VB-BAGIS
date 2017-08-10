@@ -56,6 +56,19 @@ Public Class frmCreateAOI
         Dim pProgD As IProgressDialog2 = BA_GetAnimationProgressor(My.ArcMap.Application.hWnd, "Initializing process...", "Creating AOI")
         System.Windows.Forms.Application.DoEvents()
 
+        'verify AOI buffer distance
+        If ChkAOIBuffer.Checked = True Then
+            If Not IsNumeric(txtBufferD.Text) Then
+                MsgBox("Buffer distance must be numeric! Program stopped!")
+                pProgD.HideDialog()
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pProgD)
+                Exit Sub
+            Else
+                BA_AOIClipBuffer = CDbl(txtBufferD.Text) 'Unit is Meter
+                If BA_AOIClipBuffer <= 0 Then BA_AOIClipBuffer = 100 'default buffer distance
+            End If
+        End If
+
         'The BA_Create_Output_Folders function can delete the file structure if it exists
         Dim response As Integer
         'response = BA_Create_Output_Folders(AOIFolderBase, True)
@@ -278,22 +291,19 @@ Public Class frmCreateAOI
         AOI_ReferenceUnit = BA_SystemSettings.PourAreaUnit
         response = BA_UpdatePPAttributes(destAOIGDB)
 
-        Dim Distance As Double
-
         Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, nstep)
         Dim progressDialog2 As IProgressDialog2 = BA_GetProgressDialog(pStepProg, "Creating AOI...", "Creating AOI")
         System.Windows.Forms.Application.DoEvents()
 
         'create PRISM clipping buffered polygon
-        Distance = BA_PRISMClipBuffer    '1000 Meters by default
-        If Distance <= 0 Then Distance = 1000
+        If BA_PRISMClipBuffer <= 0 Then BA_PRISMClipBuffer = 1000 '1000 Meters by default
 
         'use Buffer GP to perform buffer and save the result as a shapefile
         Dim GP As ESRI.ArcGIS.Geoprocessor.Geoprocessor = New ESRI.ArcGIS.Geoprocessor.Geoprocessor()
         Dim BufferTool As ESRI.ArcGIS.AnalysisTools.Buffer = New ESRI.ArcGIS.AnalysisTools.Buffer
         With BufferTool
             .in_features = destAOIGDB & "\" & BA_AOIExtentCoverage
-            .buffer_distance_or_field = Distance
+            .buffer_distance_or_field = BA_PRISMClipBuffer
             .dissolve_option = "ALL"
             .out_feature_class = AOIFolderBase & "\" & BA_PRISMClipAOI & ".shp"
         End With
@@ -315,17 +325,13 @@ Public Class frmCreateAOI
         retVal = BA_Feature2RasterGP(AOIFolderBase & BA_StandardizeShapefileName(BA_PRISMClipAOI, True, True), destAOIGDB & BA_EnumDescription(PublicPath.AoiPrismGrid), "ID", Cellsize, fullLayerPath)
         BA_Remove_Shapefile(AOIFolderBase, BA_StandardizeShapefileName(BA_PRISMClipAOI, False))
 
-        If ChkAOIBuffer.Checked Then 'buffer the AOI polygon for clipping
-            'use the IFeatureCursorBuffer2 interface to buffer the AOI
-            Distance = CDbl(txtBufferD.Text)    'Unit is Meter
-            If Distance <= 0 Then Distance = 1000 'default buffer distance
-        Else
-            Distance = 1 'one meter buffer to dissolve polygons connected at a point
+        If Not ChkAOIBuffer.Checked Then 'buffer the AOI polygon for clipping
+            BA_AOIClipBuffer = 1 'one meter buffer to dissolve polygons connected at a point
         End If
 
         With BufferTool
             .in_features = destAOIGDB & "\" & BA_AOIExtentCoverage
-            .buffer_distance_or_field = Distance
+            .buffer_distance_or_field = BA_AOIClipBuffer
             .dissolve_option = "ALL"
             .out_feature_class = AOIFolderBase & "\" & BA_BufferedAOIExtentCoverage & ".shp"
         End With
@@ -741,7 +747,7 @@ Public Class frmCreateAOI
         ChkSnapPP.Checked = True
         ChkAOIBuffer.Checked = True
         txtSnapD.Text = "15"
-        txtBufferD.Text = "100"
+        txtBufferD.Text = BA_AOIClipBuffer
 
         If BA_SystemSettings.DEM_ZUnit_IsMeter Then
             lblDEMUnit.Text = BA_EnumDescription(MeasurementUnit.Meters)
@@ -755,15 +761,13 @@ Public Class frmCreateAOI
 
     End Sub
 
-    Private Sub txtBufferD_TextChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtBufferD.TextChanged
-    End Sub
-
-    Private Sub txtSnapD_TextChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtSnapD.TextChanged
-    End Sub
-
     Private Sub lblBufferD_DoubleClick(sender As Object, e As System.EventArgs) Handles lblBufferD.DoubleClick
         Dim response As String
         response = InputBox("Please enter a PRISM buffer distance in meters", "Set/Check PRISM Buffer Distance", BA_PRISMClipBuffer)
+        If Not IsNumeric(response) Then
+            MsgBox("Numeric value required!")
+            Exit Sub
+        End If
         If Len(Trim(response)) > 0 Then
             BA_PRISMClipBuffer = Val(response)
         End If

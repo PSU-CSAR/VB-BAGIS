@@ -113,6 +113,17 @@ Public Class frmCreateAOIfromExistingBND
             Exit Sub
         End If
 
+        'verify AOI buffer distance
+        If ChkAOIBuffer.Checked = True Then
+            If Not IsNumeric(txtBufferD.Text) Then
+                MsgBox("Buffer distance must be numeric!")
+                Exit Sub
+            Else
+                BA_AOIClipBuffer = CDbl(txtBufferD.Text) 'Unit is Meter
+                If BA_AOIClipBuffer <= 0 Then BA_AOIClipBuffer = 100 'default buffer distance
+            End If
+        End If
+
         Dim UserAOIFolderBase As String = txtOutputWorkspace.Text + "\" + txtOutputName.Text
         Dim ListLayerCount As Integer = BA_SystemSettings.listCount
         Dim internalLayerCount As Integer = 0
@@ -224,7 +235,6 @@ Public Class frmCreateAOIfromExistingBND
         Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(strDEMDataSet)
         Dim DEMCellSize As Double = 0
         Dim inputraster As String
-        Dim Distance As Double
         If wType = WorkspaceType.ImageServer Then
             DEMCellSize = BA_CellSizeImageService(strDEMDataSet)
         Else
@@ -298,15 +308,14 @@ Public Class frmCreateAOIfromExistingBND
 
             'buffer AOI for clipping PRISM data
             'create PRISM clipping buffered polygon
-            Distance = BA_PRISMClipBuffer    '1000 Meters by default
-            If Distance <= 0 Then Distance = 1000
+            If BA_PRISMClipBuffer <= 0 Then BA_PRISMClipBuffer = 1000 '1000 Meters by default
 
             'use Buffer GP to perform buffer and save the result as a shapefile
             Dim GP As ESRI.ArcGIS.Geoprocessor.Geoprocessor = New ESRI.ArcGIS.Geoprocessor.Geoprocessor()
             Dim BufferTool As ESRI.ArcGIS.AnalysisTools.Buffer = New ESRI.ArcGIS.AnalysisTools.Buffer
             With BufferTool
                 .in_features = destAOIGDB & "\" & BA_AOIExtentCoverage
-                .buffer_distance_or_field = Distance
+                .buffer_distance_or_field = BA_PRISMClipBuffer
                 .dissolve_option = "ALL"
                 .out_feature_class = UserAOIFolderBase & "\" & BA_PRISMClipAOI & ".shp"
             End With
@@ -323,17 +332,13 @@ Public Class frmCreateAOIfromExistingBND
             retVal = BA_Feature2RasterGP(UserAOIFolderBase & BA_StandardizeShapefileName(BA_PRISMClipAOI, True, True), destAOIGDB & BA_EnumDescription(PublicPath.AoiPrismGrid), "ID", DEMCellSize, fullLayerPath)
             BA_Remove_Shapefile(UserAOIFolderBase, BA_StandardizeShapefileName(BA_PRISMClipAOI, False))
 
-            If ChkAOIBuffer.Checked Then 'buffer the AOI polygon for clipping
-                'use the IFeatureCursorBuffer2 interface to buffer the AOI
-                Distance = CDbl(txtBufferD.Text)    'Unit is Meter
-                If Distance <= 0 Then Distance = 1000 'default buffer distance
-            Else
-                Distance = 1 'one meter buffer to dissolve polygons connected at a point
+            If Not ChkAOIBuffer.Checked Then 'buffer the AOI polygon for clipping
+                BA_AOIClipBuffer = 1 'one meter buffer to dissolve polygons connected at a point
             End If
 
             With BufferTool
                 .in_features = destAOIGDB & "\" & BA_AOIExtentCoverage
-                .buffer_distance_or_field = Distance
+                .buffer_distance_or_field = BA_AOIClipBuffer
                 .dissolve_option = "ALL"
                 .out_feature_class = UserAOIFolderBase & "\" & BA_BufferedAOIExtentCoverage & ".shp"
             End With
@@ -1067,6 +1072,10 @@ Public Class frmCreateAOIfromExistingBND
     Private Sub lblBufferD_DoubleClick(sender As Object, e As System.EventArgs) Handles lblBufferD.DoubleClick
         Dim response As String
         response = InputBox("Please enter a PRISM buffer distance in meters", "Set/Check PRISM Buffer Distance", BA_PRISMClipBuffer)
+        If Not IsNumeric(response) Then
+            MsgBox("Numeric value required!")
+            Exit Sub
+        End If
         If Len(Trim(response)) > 0 Then
             BA_PRISMClipBuffer = Val(response)
         End If
