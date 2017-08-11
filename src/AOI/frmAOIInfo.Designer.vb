@@ -57,7 +57,10 @@ Partial Class frmAOIInfo
         Me.CmbAddSelectionsToMap = New System.Windows.Forms.Button()
         Me.CmdClearSelected = New System.Windows.Forms.Button()
         Me.FrameBAGISLayers = New System.Windows.Forms.GroupBox()
+        Me.txtSiteBufferD = New System.Windows.Forms.TextBox()
         Me.grpboxPRISMUnit = New System.Windows.Forms.GroupBox()
+        Me.txtDepthUnit = New System.Windows.Forms.TextBox()
+        Me.txtPrismBufferD = New System.Windows.Forms.TextBox()
         Me.rbtnDepthInch = New System.Windows.Forms.RadioButton()
         Me.rbtnDepthMM = New System.Windows.Forms.RadioButton()
         Me.Label3 = New System.Windows.Forms.Label()
@@ -71,9 +74,6 @@ Partial Class frmAOIInfo
         Me.cmdOK = New System.Windows.Forms.Button()
         Me.CmdReClip = New System.Windows.Forms.Button()
         Me.Label20 = New System.Windows.Forms.Label()
-        Me.txtPrismBufferD = New System.Windows.Forms.TextBox()
-        Me.txtDepthUnit = New System.Windows.Forms.TextBox()
-        Me.txtSiteBufferD = New System.Windows.Forms.TextBox()
         Me.FrameUserLayers.SuspendLayout()
         Me.FrameBAGISLayers.SuspendLayout()
         Me.grpboxPRISMUnit.SuspendLayout()
@@ -456,6 +456,20 @@ Partial Class frmAOIInfo
         Me.FrameBAGISLayers.TabStop = False
         Me.FrameBAGISLayers.Text = "Presence of BAGIS Layers"
         '
+        'txtSiteBufferD
+        '
+        Me.txtSiteBufferD.BackColor = System.Drawing.SystemColors.Menu
+        Me.txtSiteBufferD.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.txtSiteBufferD.Enabled = False
+        Me.txtSiteBufferD.ForeColor = System.Drawing.SystemColors.WindowText
+        Me.txtSiteBufferD.Location = New System.Drawing.Point(14, 156)
+        Me.txtSiteBufferD.Name = "txtSiteBufferD"
+        Me.txtSiteBufferD.ReadOnly = True
+        Me.txtSiteBufferD.Size = New System.Drawing.Size(287, 15)
+        Me.txtSiteBufferD.TabIndex = 19
+        Me.txtSiteBufferD.Text = "Site Layers Clip Buffer Distance:"
+        Me.txtSiteBufferD.Visible = False
+        '
         'grpboxPRISMUnit
         '
         Me.grpboxPRISMUnit.Controls.Add(Me.txtDepthUnit)
@@ -470,6 +484,32 @@ Partial Class frmAOIInfo
         Me.grpboxPRISMUnit.TabIndex = 18
         Me.grpboxPRISMUnit.TabStop = False
         Me.grpboxPRISMUnit.Text = "PRISM"
+        '
+        'txtDepthUnit
+        '
+        Me.txtDepthUnit.BackColor = System.Drawing.SystemColors.Menu
+        Me.txtDepthUnit.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.txtDepthUnit.Enabled = False
+        Me.txtDepthUnit.ForeColor = System.Drawing.SystemColors.WindowText
+        Me.txtDepthUnit.Location = New System.Drawing.Point(8, 47)
+        Me.txtDepthUnit.Name = "txtDepthUnit"
+        Me.txtDepthUnit.ReadOnly = True
+        Me.txtDepthUnit.Size = New System.Drawing.Size(77, 15)
+        Me.txtDepthUnit.TabIndex = 6
+        Me.txtDepthUnit.Text = "Depth Unit:"
+        '
+        'txtPrismBufferD
+        '
+        Me.txtPrismBufferD.BackColor = System.Drawing.SystemColors.Menu
+        Me.txtPrismBufferD.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.txtPrismBufferD.Enabled = False
+        Me.txtPrismBufferD.ForeColor = System.Drawing.SystemColors.WindowText
+        Me.txtPrismBufferD.Location = New System.Drawing.Point(8, 24)
+        Me.txtPrismBufferD.Name = "txtPrismBufferD"
+        Me.txtPrismBufferD.ReadOnly = True
+        Me.txtPrismBufferD.Size = New System.Drawing.Size(239, 15)
+        Me.txtPrismBufferD.TabIndex = 5
+        Me.txtPrismBufferD.Text = "Clip Buffer Distance:"
         '
         'rbtnDepthInch
         '
@@ -598,45 +638,6 @@ Partial Class frmAOIInfo
         Me.Label20.Size = New System.Drawing.Size(127, 16)
         Me.Label20.TabIndex = 4
         Me.Label20.Text = "Clip Buffer Distance:"
-        '
-        'txtPrismBufferD
-        '
-        Me.txtPrismBufferD.BackColor = System.Drawing.SystemColors.Menu
-        Me.txtPrismBufferD.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.txtPrismBufferD.Enabled = False
-        Me.txtPrismBufferD.ForeColor = System.Drawing.SystemColors.WindowText
-        Me.txtPrismBufferD.Location = New System.Drawing.Point(8, 24)
-        Me.txtPrismBufferD.Name = "txtPrismBufferD"
-        Me.txtPrismBufferD.ReadOnly = True
-        Me.txtPrismBufferD.Size = New System.Drawing.Size(239, 15)
-        Me.txtPrismBufferD.TabIndex = 5
-        Me.txtPrismBufferD.Text = "Clip Buffer Distance:"
-        '
-        'txtDepthUnit
-        '
-        Me.txtDepthUnit.BackColor = System.Drawing.SystemColors.Menu
-        Me.txtDepthUnit.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.txtDepthUnit.Enabled = False
-        Me.txtDepthUnit.ForeColor = System.Drawing.SystemColors.WindowText
-        Me.txtDepthUnit.Location = New System.Drawing.Point(8, 47)
-        Me.txtDepthUnit.Name = "txtDepthUnit"
-        Me.txtDepthUnit.ReadOnly = True
-        Me.txtDepthUnit.Size = New System.Drawing.Size(77, 15)
-        Me.txtDepthUnit.TabIndex = 6
-        Me.txtDepthUnit.Text = "Depth Unit:"
-        '
-        'txtSiteBufferD
-        '
-        Me.txtSiteBufferD.BackColor = System.Drawing.SystemColors.Menu
-        Me.txtSiteBufferD.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.txtSiteBufferD.Enabled = False
-        Me.txtSiteBufferD.ForeColor = System.Drawing.SystemColors.WindowText
-        Me.txtSiteBufferD.Location = New System.Drawing.Point(14, 156)
-        Me.txtSiteBufferD.Name = "txtSiteBufferD"
-        Me.txtSiteBufferD.ReadOnly = True
-        Me.txtSiteBufferD.Size = New System.Drawing.Size(287, 15)
-        Me.txtSiteBufferD.TabIndex = 19
-        Me.txtSiteBufferD.Text = "Site Layers Clip Buffer Distance:"
         '
         'frmAOIInfo
         '

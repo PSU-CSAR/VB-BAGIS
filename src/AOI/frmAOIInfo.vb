@@ -27,6 +27,7 @@ Public Class frmAOIInfo
         LstVectors.SelectedIndex = -1
     End Sub
     Dim m_version As String
+    Private m_PRISMClipBuffer As Double = -1
 
     Private Sub CmdSetAOI_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSetAOI.Click
         Dim bObjectSelected As Boolean = True
@@ -112,13 +113,17 @@ Public Class frmAOIInfo
                     rbtnDepthMM.Checked = True
             End Select
             txtPrismBufferD.Text = "Clip Buffer Distance: " + CStr(BA_PRISMClipBuffer) + " meters"
+            ' This variable keeps track of whether the PRISM clip buffer is changed; If changed, we need to recreate p_aoi_v and p_aoi
+            m_PRISMClipBuffer = BA_PRISMClipBuffer
         End If
 
         'SNOTEL
         temppathname = tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & BA_SNOTELSites
         If BA_File_Exists(temppathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             ChkSNOTELExist.Checked = True
-            txtSiteBufferD.Text = "Site Layers Clip Buffer Distance: " + CStr(BA_AOIClipBuffer) + " meters"
+            'txtSiteBufferD intended to make buffer configurable; Implementation postponed because there is
+            'no good way to get the original buffer distance
+            'txtSiteBufferD.Text = "Site Layers Clip Buffer Distance: " + CStr(BA_AOIClipBuffer) + " meters"
         Else
             ChkSNOTELExist.Checked = False
             'BA_SystemSettings.GenerateAOIOnly = True 'some AOIs that don't have SNOTEL sites do not have SNOTEL layer
@@ -128,7 +133,7 @@ Public Class frmAOIInfo
         temppathname = tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & BA_SnowCourseSites
         If BA_File_Exists(temppathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             ChkSnowCourseExist.Checked = True
-            txtSiteBufferD.Text = "Site Layers Clip Buffer Distance: " + CStr(BA_AOIClipBuffer) + " meters"
+            'txtSiteBufferD.Text = "Site Layers Clip Buffer Distance: " + CStr(BA_AOIClipBuffer) + " meters"
         Else
             ChkSnowCourseExist.Checked = False
             'BA_SystemSettings.GenerateAOIOnly = True  'some AOIs that don't have snow course sites do not have snow course layer
@@ -402,6 +407,14 @@ Public Class frmAOIInfo
                     prismExists = BA_Workspace_Exists(tempPathName)
                 End If
                 If prismExists Then
+                    If BA_PRISMClipBuffer <> m_PRISMClipBuffer Then
+                        'PRISM buffer changed, we need to recreate prism template files
+                        success = ReclipPrismAoiFiles()
+                        If success <> BA_ReturnCode.Success Then
+                            MessageBox.Show("Unable to generate PRISM layers in aoi.gdb", "PRISM ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                            Exit Sub
+                        End If
+                    End If
                     BA_SetPRISMFolderNames()
 
                     'there are 17 prism rasters to be clipped
@@ -417,9 +430,9 @@ Public Class frmAOIInfo
                             Dim newFilePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True) & DataName
                             response = BA_ClipAOIImageServer(AOIFolderBase, webServiceUrl, newFilePath, AOIClipFile.PrismClipAOIExtentCoverage)
                         Else
-                        'input PRISM raster is in GRID format, output is in FGDB format 
-                        Dim outputFolder As String = m_aoi.FilePath & "\" & BA_EnumDescription(GeodatabaseNames.Prism)
-                        response = BA_ClipAOIRaster(AOIFolderBase, InPRISMPath & "\" & DataName & "\grid", DataName, outputFolder, AOIClipFile.PrismClipAOIExtentCoverage)
+                            'input PRISM raster is in GRID format, output is in FGDB format 
+                            Dim outputFolder As String = m_aoi.FilePath & "\" & BA_EnumDescription(GeodatabaseNames.Prism)
+                            response = BA_ClipAOIRaster(AOIFolderBase, InPRISMPath & "\" & DataName & "\grid", DataName, outputFolder, AOIClipFile.PrismClipAOIExtentCoverage)
                         End If
 
                         If response <= 0 Then
@@ -640,20 +653,20 @@ Public Class frmAOIInfo
     Private Sub ChkSNOTELSelected_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ChkSNOTELSelected.CheckedChanged
         If ChkSNOTELSelected.Checked Or ChkPRISMSelected.Checked Or ChkSnowCourseSelected.Checked = True Then
             CmdReClip.Enabled = True
-            txtSiteBufferD.Enabled = True
+            'txtSiteBufferD.Enabled = True
         Else
             CmdReClip.Enabled = False
-            txtSiteBufferD.Enabled = False
+            'txtSiteBufferD.Enabled = False
         End If
     End Sub
 
     Private Sub ChkSnowCourseSelected_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ChkSnowCourseSelected.CheckedChanged
         If ChkSnowCourseSelected.Checked Or ChkPRISMSelected.Checked Or ChkSNOTELSelected.Checked = True Then
             CmdReClip.Enabled = True
-            txtSiteBufferD.Enabled = True
+            'txtSiteBufferD.Enabled = True
         Else
             CmdReClip.Enabled = False
-            txtSiteBufferD.Enabled = False
+            'txtSiteBufferD.Enabled = False
         End If
     End Sub
 
@@ -1138,17 +1151,39 @@ Public Class frmAOIInfo
         End If
     End Sub
 
-    Private Sub txtSiteBufferD_DoubleClick(sender As Object, e As System.EventArgs) Handles txtSiteBufferD.DoubleClick
-        Dim response As String
-        response = InputBox("Please enter a buffer distance in meters", "Set Site Layers Buffer Distance", BA_AOIClipBuffer)
-        If Not IsNumeric(response) Then
-            MsgBox("Numeric value required!")
-            Exit Sub
-        End If
-        If Len(Trim(response)) > 0 Then
-            BA_AOIClipBuffer = Val(response)
-            txtPrismBufferD.Text = "Site Layers Clip Buffer Distance: " + response + " meters"
-        End If
-    End Sub
+    Private Function ReclipPrismAoiFiles() As BA_ReturnCode
+        'use Buffer GP to perform buffer and save the result as a shapefile
+        Dim GP As ESRI.ArcGIS.Geoprocessor.Geoprocessor = New ESRI.ArcGIS.Geoprocessor.Geoprocessor()
+        Dim BufferTool As ESRI.ArcGIS.AnalysisTools.Buffer = New ESRI.ArcGIS.AnalysisTools.Buffer
+        Try
+            Dim aoiGdbPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi)
+            With BufferTool
+                .in_features = aoiGdbPath & "\" & BA_AOIExtentCoverage
+                .buffer_distance_or_field = BA_PRISMClipBuffer
+                .dissolve_option = "ALL"
+                .out_feature_class = AOIFolderBase & "\" & BA_PRISMClipAOI & ".shp"
+            End With
+            GP.AddOutputsToMap = False
+            GP.Execute(BufferTool, Nothing)
+
+            'save the buffered AOI as a shapefile and then import it into the GDB
+            'to prevent a bug when the buffer distance exceed the xy domain limits of the GDB
+            'Copy the temporary line shape file to the aoi.gdb
+            If BA_File_Exists(aoiGdbPath + "\" + BA_PRISMClipAOI, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                BA_Remove_ShapefileFromGDB(aoiGdbPath, BA_PRISMClipAOI)
+            End If
+            Dim success As BA_ReturnCode = BA_ConvertShapeFileToGDB(AOIFolderBase, BA_StandardizeShapefileName(BA_PRISMClipAOI, True, False), aoiGdbPath, BA_PRISMClipAOI)
+            'create a raster version of the buffered AOI
+            Dim DEMCellSize As Double = BA_CellSize(aoiGdbPath, BA_GetBareName(BA_EnumDescription(PublicPath.AoiGrid)))
+            Dim snapRasterPath As String = aoiGdbPath + BA_EnumDescription(PublicPath.AoiGrid)
+            success = BA_Feature2RasterGP(AOIFolderBase & BA_StandardizeShapefileName(BA_PRISMClipAOI, True, True), aoiGdbPath & BA_EnumDescription(PublicPath.AoiPrismGrid), "ID", DEMCellSize, snapRasterPath)
+            BA_Remove_Shapefile(AOIFolderBase, BA_StandardizeShapefileName(BA_PRISMClipAOI, False))
+            m_PRISMClipBuffer = BA_PRISMClipBuffer
+            Return success
+        Catch ex As Exception
+            Debug.Print("ReclipPrismAoiFiles: " + ex.Message)
+            Return BA_ReturnCode.UnknownError
+        End Try
+    End Function
 
 End Class
