@@ -130,7 +130,7 @@ Public Class frmBasin_Tool
     End Sub
 
     Private Sub CheckGDBFolderStatus(ByVal folderPath As String)
-        Dim demPath As String = folderPath & "\" & BA_EnumDescription(GeodatabaseNames.Surfaces) & "\" & BA_EnumDescription(MapsFileName.dem)
+        Dim demPath As String = folderPath & "\" & BA_EnumDescription(GeodatabaseNames.Surfaces) & "\" & BA_EnumDescription(MapsFileName.dem_gdb)
         Dim demFilledPath As String = folderPath & "\" & BA_EnumDescription(GeodatabaseNames.Surfaces) & "\" & BA_EnumDescription(MapsFileName.filled_dem_gdb)
         Dim aoiPath As String = folderPath & "\" & BA_EnumDescription(GeodatabaseNames.Aoi) & BA_EnumDescription(PublicPath.AoiVector)
 
