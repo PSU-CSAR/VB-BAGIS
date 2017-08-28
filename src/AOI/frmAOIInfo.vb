@@ -255,25 +255,19 @@ Public Class frmAOIInfo
         txtRefArea.Text = Format(AOI_ReferenceArea, "#0.00")
         lblRefUnit.Text = AOI_ReferenceUnit
 
-        'display dem elevation stats
-        ' ''Dim pRasterStatistics As IRasterStatistics = Nothing
-        ' ''Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
-        ' ''Try
-        ' ''    Dim rasterResolutionPath As String = BA_GeodatabasePath(aoiPath, GeodatabaseNames.Aoi) & BA_EnumDescription(PublicPath.AoiGrid)
-        ' ''    'Get cell size from DEM grid to resample PRISM data
-        ' ''    Dim cellSize As Double = 0
-        ' ''    pRasterStatistics = BA_GetRasterStatsGDB(rasterResolutionPath, cellSize)
-
         'Get DEM statistics
         Dim pRasterStats As IRasterStatistics = Nothing
         Dim fullfilepath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Surfaces) & "\" & BA_EnumDescription(MapsFileName.filled_dem_gdb)
         pRasterStats = BA_GetDemStatsGDB(AOIFolderBase)
 
-        txtMinElev.Text = Math.Round(pRasterStats.Minimum - 0.005, 2)
-        txtMaxElev.Text = Math.Round(pRasterStats.Maximum + 0.005, 2)
-        txtRangeElev.Text = Math.Round((pRasterStats.Maximum - pRasterStats.Minimum) + 0.005, 2)
-
-        pRasterStats = Nothing
+        If pRasterStats IsNot Nothing Then
+            txtMinElev.Text = Math.Round(pRasterStats.Minimum - 0.005, 2)
+            txtMaxElev.Text = Math.Round(pRasterStats.Maximum + 0.005, 2)
+            txtRangeElev.Text = Math.Round((pRasterStats.Maximum - pRasterStats.Minimum) + 0.005, 2)
+            pRasterStats = Nothing
+        Else
+            MsgBox("Unable to read the filled DEM! The AOI surface.gdb is corrupted.")
+        End If
 
         'check Snotel, snow course, and PRISM data
         'reset their selected checkboxes
