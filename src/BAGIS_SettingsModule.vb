@@ -1077,7 +1077,7 @@ Module BAGIS_SettingsModule
             End Using
             Return settings
         Catch ex As Exception
-            Debug.Print("BA_ReadDefaultSettingsFromJson Exception: " & ex.Message)
+            Debug.Print("BA_QueryDefaultSettings Exception: " & ex.Message)
             Return Nothing
         End Try
     End Function
