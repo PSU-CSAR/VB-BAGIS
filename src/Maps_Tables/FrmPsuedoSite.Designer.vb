@@ -103,6 +103,9 @@ Partial Class FrmPsuedoSite
         Me.Values = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.FullPath = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.BtnEditLocation = New System.Windows.Forms.Button()
+        Me.BtnRecalculate = New System.Windows.Forms.Button()
+        Me.BtnCopy = New System.Windows.Forms.Button()
+        Me.CkConstraints = New System.Windows.Forms.CheckBox()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
@@ -744,7 +747,7 @@ Partial Class FrmPsuedoSite
         'BtnFindSite
         '
         Me.BtnFindSite.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnFindSite.Location = New System.Drawing.Point(285, 696)
+        Me.BtnFindSite.Location = New System.Drawing.Point(438, 716)
         Me.BtnFindSite.Name = "BtnFindSite"
         Me.BtnFindSite.Size = New System.Drawing.Size(93, 23)
         Me.BtnFindSite.TabIndex = 83
@@ -754,7 +757,7 @@ Partial Class FrmPsuedoSite
         'BtnClose
         '
         Me.BtnClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClose.Location = New System.Drawing.Point(466, 696)
+        Me.BtnClose.Location = New System.Drawing.Point(466, 749)
         Me.BtnClose.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClose.Name = "BtnClose"
         Me.BtnClose.Size = New System.Drawing.Size(65, 22)
@@ -766,7 +769,7 @@ Partial Class FrmPsuedoSite
         '
         Me.BtnMap.Enabled = False
         Me.BtnMap.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnMap.Location = New System.Drawing.Point(180, 696)
+        Me.BtnMap.Location = New System.Drawing.Point(333, 716)
         Me.BtnMap.Name = "BtnMap"
         Me.BtnMap.Size = New System.Drawing.Size(93, 23)
         Me.BtnMap.TabIndex = 84
@@ -797,7 +800,7 @@ Partial Class FrmPsuedoSite
         'BtnClear
         '
         Me.BtnClear.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClear.Location = New System.Drawing.Point(390, 696)
+        Me.BtnClear.Location = New System.Drawing.Point(390, 749)
         Me.BtnClear.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClear.Name = "BtnClear"
         Me.BtnClear.Size = New System.Drawing.Size(65, 22)
@@ -998,12 +1001,46 @@ Partial Class FrmPsuedoSite
         Me.BtnEditLocation.Text = "Edit"
         Me.BtnEditLocation.UseVisualStyleBackColor = True
         '
+        'BtnRecalculate
+        '
+        Me.BtnRecalculate.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnRecalculate.Location = New System.Drawing.Point(3, 716)
+        Me.BtnRecalculate.Name = "BtnRecalculate"
+        Me.BtnRecalculate.Size = New System.Drawing.Size(322, 23)
+        Me.BtnRecalculate.TabIndex = 91
+        Me.BtnRecalculate.Text = "Add new site to Scenario 1 and recalculate"
+        Me.BtnRecalculate.UseVisualStyleBackColor = True
+        '
+        'BtnCopy
+        '
+        Me.BtnCopy.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnCopy.Location = New System.Drawing.Point(78, 683)
+        Me.BtnCopy.Name = "BtnCopy"
+        Me.BtnCopy.Size = New System.Drawing.Size(232, 23)
+        Me.BtnCopy.TabIndex = 92
+        Me.BtnCopy.Text = "Copy constraints for new site"
+        Me.BtnCopy.UseVisualStyleBackColor = True
+        '
+        'CkConstraints
+        '
+        Me.CkConstraints.AutoSize = True
+        Me.CkConstraints.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CkConstraints.Location = New System.Drawing.Point(320, 685)
+        Me.CkConstraints.Name = "CkConstraints"
+        Me.CkConstraints.Size = New System.Drawing.Size(180, 20)
+        Me.CkConstraints.TabIndex = 93
+        Me.CkConstraints.Text = "Re-use layers for new site"
+        Me.CkConstraints.UseVisualStyleBackColor = True
+        '
         'FrmPsuedoSite
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(567, 729)
+        Me.ClientSize = New System.Drawing.Size(567, 787)
+        Me.Controls.Add(Me.CkConstraints)
+        Me.Controls.Add(Me.BtnRecalculate)
         Me.Controls.Add(Me.GrpLocation)
+        Me.Controls.Add(Me.BtnCopy)
         Me.Controls.Add(Me.CkLocation)
         Me.Controls.Add(Me.TextBox1)
         Me.Controls.Add(Me.BtnClear)
@@ -1022,7 +1059,7 @@ Partial Class FrmPsuedoSite
         Me.Margin = New System.Windows.Forms.Padding(2)
         Me.Name = "FrmPsuedoSite"
         Me.ShowIcon = False
-        Me.Text = "Add Pseudo Site:"
+        Me.Text = " "
         Me.GrpElevation.ResumeLayout(False)
         Me.GrpElevation.PerformLayout()
         Me.GrpPrecipitation.ResumeLayout(False)
@@ -1116,4 +1153,7 @@ Partial Class FrmPsuedoSite
     Friend WithEvents BtnCancelProximity As System.Windows.Forms.Button
     Friend WithEvents LstVectors As System.Windows.Forms.ListBox
     Friend WithEvents LblAddBufferDistance As System.Windows.Forms.Label
+    Friend WithEvents BtnRecalculate As System.Windows.Forms.Button
+    Friend WithEvents BtnCopy As System.Windows.Forms.Button
+    Friend WithEvents CkConstraints As System.Windows.Forms.CheckBox
 End Class

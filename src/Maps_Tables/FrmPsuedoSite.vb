@@ -1994,6 +1994,7 @@ Public Class FrmPsuedoSite
         BtnMap.Visible = False
         BtnClear.Visible = False
         BtnFindSite.Visible = False
+        BtnRecalculate.Visible = False
         TxtSiteName.Enabled = False
         txtLower.Enabled = False
         TxtUpperRange.Enabled = False
