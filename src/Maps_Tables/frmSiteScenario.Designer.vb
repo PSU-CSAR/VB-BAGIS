@@ -19,10 +19,10 @@ Partial Class frmSiteScenario
   'Do not modify it using the code editor.
   <System.Diagnostics.DebuggerStepThrough()> _
   Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle9 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle10 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle11 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle12 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmSiteScenario))
         Me.GrdScenario1 = New System.Windows.Forms.DataGridView()
         Me.Selected = New System.Windows.Forms.DataGridViewCheckBoxColumn()
@@ -85,6 +85,7 @@ Partial Class frmSiteScenario
         Me.BtnMaps = New System.Windows.Forms.Button()
         Me.BtnAutoPseudo = New System.Windows.Forms.Button()
         Me.BtnAutoLog = New System.Windows.Forms.Button()
+        Me.BtnTables = New System.Windows.Forms.Button()
         CType(Me.GrdScenario1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.GrdScenario2, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
@@ -93,25 +94,25 @@ Partial Class frmSiteScenario
         '
         Me.GrdScenario1.AllowUserToAddRows = False
         Me.GrdScenario1.AllowUserToDeleteRows = False
-        DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control
-        DataGridViewCellStyle1.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        DataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText
-        DataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight
-        DataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.GrdScenario1.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control
+        DataGridViewCellStyle9.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText
+        DataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight
+        DataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.GrdScenario1.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle9
         Me.GrdScenario1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.GrdScenario1.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Selected, Me.ObjectId, Me.Site_Type, Me.Site_Name, Me.Elevation, Me.Upper_Elev, Me.Lower_Elev, Me.DefaultElevation})
-        DataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle2.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        DataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight
-        DataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.GrdScenario1.DefaultCellStyle = DataGridViewCellStyle2
-        Me.GrdScenario1.Location = New System.Drawing.Point(1, 160)
+        DataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle10.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight
+        DataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.GrdScenario1.DefaultCellStyle = DataGridViewCellStyle10
+        Me.GrdScenario1.Location = New System.Drawing.Point(1, 186)
         Me.GrdScenario1.Margin = New System.Windows.Forms.Padding(2)
         Me.GrdScenario1.Name = "GrdScenario1"
         Me.GrdScenario1.RowHeadersVisible = False
@@ -176,25 +177,25 @@ Partial Class frmSiteScenario
         '
         Me.GrdScenario2.AllowUserToAddRows = False
         Me.GrdScenario2.AllowUserToDeleteRows = False
-        DataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control
-        DataGridViewCellStyle3.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        DataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText
-        DataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight
-        DataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
-        Me.GrdScenario2.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle3
+        DataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Control
+        DataGridViewCellStyle11.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.WindowText
+        DataGridViewCellStyle11.SelectionBackColor = System.Drawing.SystemColors.Highlight
+        DataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
+        Me.GrdScenario2.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle11
         Me.GrdScenario2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.GrdScenario2.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.SObjectId, Me.ScenarioType, Me.ScenarioName, Me.ScenarioElevation, Me.ScenarioUpper_Elev, Me.ScenarioLower_Elev, Me.SDefaultElevation})
-        DataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window
-        DataGridViewCellStyle4.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        DataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText
-        DataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight
-        DataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText
-        DataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
-        Me.GrdScenario2.DefaultCellStyle = DataGridViewCellStyle4
-        Me.GrdScenario2.Location = New System.Drawing.Point(-3, 437)
+        DataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle12.BackColor = System.Drawing.SystemColors.Window
+        DataGridViewCellStyle12.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle12.ForeColor = System.Drawing.SystemColors.ControlText
+        DataGridViewCellStyle12.SelectionBackColor = System.Drawing.SystemColors.Highlight
+        DataGridViewCellStyle12.SelectionForeColor = System.Drawing.SystemColors.HighlightText
+        DataGridViewCellStyle12.WrapMode = System.Windows.Forms.DataGridViewTriState.[False]
+        Me.GrdScenario2.DefaultCellStyle = DataGridViewCellStyle12
+        Me.GrdScenario2.Location = New System.Drawing.Point(-3, 463)
         Me.GrdScenario2.Margin = New System.Windows.Forms.Padding(2)
         Me.GrdScenario2.Name = "GrdScenario2"
         Me.GrdScenario2.RowHeadersVisible = False
@@ -248,7 +249,7 @@ Partial Class frmSiteScenario
         'BtnAddSite
         '
         Me.BtnAddSite.Image = CType(resources.GetObject("BtnAddSite.Image"), System.Drawing.Image)
-        Me.BtnAddSite.Location = New System.Drawing.Point(200, 334)
+        Me.BtnAddSite.Location = New System.Drawing.Point(200, 360)
         Me.BtnAddSite.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnAddSite.Name = "BtnAddSite"
         Me.BtnAddSite.Size = New System.Drawing.Size(35, 35)
@@ -258,7 +259,7 @@ Partial Class frmSiteScenario
         'BtnRemoveSite
         '
         Me.BtnRemoveSite.Image = CType(resources.GetObject("BtnRemoveSite.Image"), System.Drawing.Image)
-        Me.BtnRemoveSite.Location = New System.Drawing.Point(239, 334)
+        Me.BtnRemoveSite.Location = New System.Drawing.Point(239, 360)
         Me.BtnRemoveSite.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnRemoveSite.Name = "BtnRemoveSite"
         Me.BtnRemoveSite.Size = New System.Drawing.Size(35, 35)
@@ -364,7 +365,7 @@ Partial Class frmSiteScenario
         'BtnClose
         '
         Me.BtnClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClose.Location = New System.Drawing.Point(418, 105)
+        Me.BtnClose.Location = New System.Drawing.Point(383, 130)
         Me.BtnClose.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClose.Name = "BtnClose"
         Me.BtnClose.Size = New System.Drawing.Size(55, 22)
@@ -376,7 +377,7 @@ Partial Class frmSiteScenario
         '
         Me.BtnCalculate.Enabled = False
         Me.BtnCalculate.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnCalculate.Location = New System.Drawing.Point(199, 105)
+        Me.BtnCalculate.Location = New System.Drawing.Point(224, 105)
         Me.BtnCalculate.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnCalculate.Name = "BtnCalculate"
         Me.BtnCalculate.Size = New System.Drawing.Size(79, 22)
@@ -388,7 +389,7 @@ Partial Class frmSiteScenario
         '
         Me.Label6.AutoSize = True
         Me.Label6.Font = New System.Drawing.Font("Microsoft Sans Serif", 11.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label6.Location = New System.Drawing.Point(7, 133)
+        Me.Label6.Location = New System.Drawing.Point(7, 159)
         Me.Label6.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label6.Name = "Label6"
         Me.Label6.Size = New System.Drawing.Size(84, 18)
@@ -399,7 +400,7 @@ Partial Class frmSiteScenario
         '
         Me.Label5.AutoSize = True
         Me.Label5.Font = New System.Drawing.Font("Microsoft Sans Serif", 11.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label5.Location = New System.Drawing.Point(-4, 405)
+        Me.Label5.Location = New System.Drawing.Point(-4, 431)
         Me.Label5.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label5.Name = "Label5"
         Me.Label5.Size = New System.Drawing.Size(89, 18)
@@ -409,7 +410,7 @@ Partial Class frmSiteScenario
         'BtnNewSite
         '
         Me.BtnNewSite.Image = CType(resources.GetObject("BtnNewSite.Image"), System.Drawing.Image)
-        Me.BtnNewSite.Location = New System.Drawing.Point(6, 334)
+        Me.BtnNewSite.Location = New System.Drawing.Point(6, 360)
         Me.BtnNewSite.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnNewSite.Name = "BtnNewSite"
         Me.BtnNewSite.Size = New System.Drawing.Size(35, 35)
@@ -419,7 +420,7 @@ Partial Class frmSiteScenario
         'BtnPreview
         '
         Me.BtnPreview.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnPreview.Location = New System.Drawing.Point(191, 376)
+        Me.BtnPreview.Location = New System.Drawing.Point(191, 402)
         Me.BtnPreview.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnPreview.Name = "BtnPreview"
         Me.BtnPreview.Size = New System.Drawing.Size(165, 22)
@@ -430,7 +431,7 @@ Partial Class frmSiteScenario
         'BtnRemoveAll
         '
         Me.BtnRemoveAll.Image = CType(resources.GetObject("BtnRemoveAll.Image"), System.Drawing.Image)
-        Me.BtnRemoveAll.Location = New System.Drawing.Point(318, 334)
+        Me.BtnRemoveAll.Location = New System.Drawing.Point(318, 360)
         Me.BtnRemoveAll.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnRemoveAll.Name = "BtnRemoveAll"
         Me.BtnRemoveAll.Size = New System.Drawing.Size(35, 35)
@@ -440,7 +441,7 @@ Partial Class frmSiteScenario
         'BtnAddAll
         '
         Me.BtnAddAll.Image = CType(resources.GetObject("BtnAddAll.Image"), System.Drawing.Image)
-        Me.BtnAddAll.Location = New System.Drawing.Point(278, 334)
+        Me.BtnAddAll.Location = New System.Drawing.Point(278, 360)
         Me.BtnAddAll.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnAddAll.Name = "BtnAddAll"
         Me.BtnAddAll.Size = New System.Drawing.Size(35, 35)
@@ -450,7 +451,7 @@ Partial Class frmSiteScenario
         'BtnDeleteSite
         '
         Me.BtnDeleteSite.Image = CType(resources.GetObject("BtnDeleteSite.Image"), System.Drawing.Image)
-        Me.BtnDeleteSite.Location = New System.Drawing.Point(46, 334)
+        Me.BtnDeleteSite.Location = New System.Drawing.Point(46, 360)
         Me.BtnDeleteSite.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnDeleteSite.Name = "BtnDeleteSite"
         Me.BtnDeleteSite.Size = New System.Drawing.Size(35, 35)
@@ -460,7 +461,7 @@ Partial Class frmSiteScenario
         'BtnToggleSel
         '
         Me.BtnToggleSel.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnToggleSel.Location = New System.Drawing.Point(4, 103)
+        Me.BtnToggleSel.Location = New System.Drawing.Point(5, 130)
         Me.BtnToggleSel.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnToggleSel.Name = "BtnToggleSel"
         Me.BtnToggleSel.Size = New System.Drawing.Size(120, 23)
@@ -472,7 +473,7 @@ Partial Class frmSiteScenario
         '
         Me.BtnViewResult.Enabled = False
         Me.BtnViewResult.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnViewResult.Location = New System.Drawing.Point(284, 105)
+        Me.BtnViewResult.Location = New System.Drawing.Point(312, 130)
         Me.BtnViewResult.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnViewResult.Name = "BtnViewResult"
         Me.BtnViewResult.Size = New System.Drawing.Size(63, 22)
@@ -483,7 +484,7 @@ Partial Class frmSiteScenario
         'BtnReload
         '
         Me.BtnReload.Image = CType(resources.GetObject("BtnReload.Image"), System.Drawing.Image)
-        Me.BtnReload.Location = New System.Drawing.Point(371, 334)
+        Me.BtnReload.Location = New System.Drawing.Point(371, 360)
         Me.BtnReload.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnReload.Name = "BtnReload"
         Me.BtnReload.Size = New System.Drawing.Size(35, 35)
@@ -582,7 +583,7 @@ Partial Class frmSiteScenario
         'BtnAbout
         '
         Me.BtnAbout.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnAbout.Location = New System.Drawing.Point(136, 105)
+        Me.BtnAbout.Location = New System.Drawing.Point(161, 105)
         Me.BtnAbout.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnAbout.Name = "BtnAbout"
         Me.BtnAbout.Size = New System.Drawing.Size(55, 22)
@@ -614,7 +615,7 @@ Partial Class frmSiteScenario
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(56, 316)
+        Me.Label3.Location = New System.Drawing.Point(56, 342)
         Me.Label3.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(54, 13)
@@ -624,7 +625,7 @@ Partial Class frmSiteScenario
         'Label4
         '
         Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(234, 316)
+        Me.Label4.Location = New System.Drawing.Point(234, 342)
         Me.Label4.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(78, 13)
@@ -670,7 +671,7 @@ Partial Class frmSiteScenario
         'Label7
         '
         Me.Label7.AutoSize = True
-        Me.Label7.Location = New System.Drawing.Point(369, 316)
+        Me.Label7.Location = New System.Drawing.Point(369, 342)
         Me.Label7.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(41, 13)
@@ -680,7 +681,7 @@ Partial Class frmSiteScenario
         'TxtScenario1
         '
         Me.TxtScenario1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TxtScenario1.Location = New System.Drawing.Point(101, 133)
+        Me.TxtScenario1.Location = New System.Drawing.Point(101, 159)
         Me.TxtScenario1.Margin = New System.Windows.Forms.Padding(2)
         Me.TxtScenario1.Name = "TxtScenario1"
         Me.TxtScenario1.Size = New System.Drawing.Size(337, 22)
@@ -690,7 +691,7 @@ Partial Class frmSiteScenario
         'TxtScenario2
         '
         Me.TxtScenario2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TxtScenario2.Location = New System.Drawing.Point(98, 404)
+        Me.TxtScenario2.Location = New System.Drawing.Point(98, 430)
         Me.TxtScenario2.Margin = New System.Windows.Forms.Padding(2)
         Me.TxtScenario2.Name = "TxtScenario2"
         Me.TxtScenario2.Size = New System.Drawing.Size(337, 22)
@@ -701,7 +702,7 @@ Partial Class frmSiteScenario
         '
         Me.BtnMaps.Enabled = False
         Me.BtnMaps.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnMaps.Location = New System.Drawing.Point(356, 105)
+        Me.BtnMaps.Location = New System.Drawing.Point(383, 105)
         Me.BtnMaps.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnMaps.Name = "BtnMaps"
         Me.BtnMaps.Size = New System.Drawing.Size(55, 22)
@@ -712,7 +713,7 @@ Partial Class frmSiteScenario
         'BtnAutoPseudo
         '
         Me.BtnAutoPseudo.Image = CType(resources.GetObject("BtnAutoPseudo.Image"), System.Drawing.Image)
-        Me.BtnAutoPseudo.Location = New System.Drawing.Point(123, 334)
+        Me.BtnAutoPseudo.Location = New System.Drawing.Point(123, 360)
         Me.BtnAutoPseudo.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnAutoPseudo.Name = "BtnAutoPseudo"
         Me.BtnAutoPseudo.Size = New System.Drawing.Size(35, 35)
@@ -722,12 +723,24 @@ Partial Class frmSiteScenario
         'BtnAutoLog
         '
         Me.BtnAutoLog.Image = CType(resources.GetObject("BtnAutoLog.Image"), System.Drawing.Image)
-        Me.BtnAutoLog.Location = New System.Drawing.Point(85, 334)
+        Me.BtnAutoLog.Location = New System.Drawing.Point(85, 360)
         Me.BtnAutoLog.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnAutoLog.Name = "BtnAutoLog"
         Me.BtnAutoLog.Size = New System.Drawing.Size(35, 35)
         Me.BtnAutoLog.TabIndex = 83
         Me.BtnAutoLog.UseVisualStyleBackColor = True
+        '
+        'BtnTables
+        '
+        Me.BtnTables.Enabled = False
+        Me.BtnTables.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnTables.Location = New System.Drawing.Point(312, 105)
+        Me.BtnTables.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnTables.Name = "BtnTables"
+        Me.BtnTables.Size = New System.Drawing.Size(63, 22)
+        Me.BtnTables.TabIndex = 84
+        Me.BtnTables.Text = "Tables"
+        Me.BtnTables.UseVisualStyleBackColor = True
         '
         'frmSiteScenario
         '
@@ -735,6 +748,7 @@ Partial Class frmSiteScenario
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink
+        Me.Controls.Add(Me.BtnTables)
         Me.Controls.Add(Me.BtnAutoLog)
         Me.Controls.Add(Me.BtnAutoPseudo)
         Me.Controls.Add(Me.BtnMaps)
@@ -783,7 +797,7 @@ Partial Class frmSiteScenario
         Me.Controls.Add(Me.GrdScenario1)
         Me.Margin = New System.Windows.Forms.Padding(2)
         Me.Name = "frmSiteScenario"
-        Me.Size = New System.Drawing.Size(475, 586)
+        Me.Size = New System.Drawing.Size(471, 612)
         CType(Me.GrdScenario1, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.GrdScenario2, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
@@ -851,5 +865,6 @@ Partial Class frmSiteScenario
     Friend WithEvents SDefaultElevation As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents BtnAutoPseudo As System.Windows.Forms.Button
     Friend WithEvents BtnAutoLog As System.Windows.Forms.Button
+    Friend WithEvents BtnTables As System.Windows.Forms.Button
 
 End Class

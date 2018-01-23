@@ -1624,6 +1624,8 @@ Public Class frmSiteScenario
         If BA_File_Exists(analysisFolder & FileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             BtnMaps.Enabled = True
         End If
+        '@ToDo: May need to make this more selective
+        BtnTables.Enabled = BtnMaps.Enabled
     End Sub
 
     Private Sub BtnMaps_Click(sender As System.Object, e As System.EventArgs) Handles BtnMaps.Click
@@ -2353,5 +2355,9 @@ Public Class frmSiteScenario
             MessageBox.Show("The log could not be found for the site you selected. It is likely not an auto-site.", "Log not found", MessageBoxButtons.OK, _
                 MessageBoxIcon.Information)
         End If
+    End Sub
+
+    Private Sub BtnTables_Click(sender As System.Object, e As System.EventArgs) Handles BtnTables.Click
+
     End Sub
 End Class
