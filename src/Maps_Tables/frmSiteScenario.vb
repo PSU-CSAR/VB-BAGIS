@@ -9,6 +9,7 @@ Imports ESRI.ArcGIS.Geometry
 Imports ESRI.ArcGIS.Framework
 Imports ESRI.ArcGIS.Geodatabase
 Imports ESRI.ArcGIS.Carto
+Imports Microsoft.Office.Interop.Excel
 
 ''' <summary>
 ''' Designer class of the dockable window add-in. It contains user interfaces that
@@ -1941,18 +1942,18 @@ Public Class frmSiteScenario
             pColor.RGB = RGB(0, 0, 255)
             retVal = BA_MapDisplayPointMarkers(My.ThisApplication, filepath & FileName, MapsLayerName.Snotel, pColor, MapsMarkerType.Snotel)
         End If
-            If AOI_HasSnowCourse Then
-                FileName = BA_EnumDescription(MapsFileName.SnowCourse)
-                pColor.RGB = RGB(0, 255, 255) 'cyan
-                retVal = BA_MapDisplayPointMarkers(My.ThisApplication, filepath & FileName, MapsLayerName.SnowCourse, pColor, MapsMarkerType.SnowCourse)
-            End If
-            If AOI_HasPseudoSite Then
-                FileName = BA_EnumDescription(MapsFileName.Pseudo)
+        If AOI_HasSnowCourse Then
+            FileName = BA_EnumDescription(MapsFileName.SnowCourse)
+            pColor.RGB = RGB(0, 255, 255) 'cyan
+            retVal = BA_MapDisplayPointMarkers(My.ThisApplication, filepath & FileName, MapsLayerName.SnowCourse, pColor, MapsMarkerType.SnowCourse)
+        End If
+        If AOI_HasPseudoSite Then
+            FileName = BA_EnumDescription(MapsFileName.Pseudo)
             pColor.RGB = RGB(255, 170, 0) 'electron gold
-                retVal = BA_MapDisplayPointMarkers(My.ThisApplication, filepath & FileName, MapsLayerName.pseudo_sites, pColor, MapsMarkerType.PseudoSite)
-            End If
+            retVal = BA_MapDisplayPointMarkers(My.ThisApplication, filepath & FileName, MapsLayerName.pseudo_sites, pColor, MapsMarkerType.PseudoSite)
+        End If
 
-            m_baseLayers = True
+        m_baseLayers = True
     End Sub
 
     Private Sub CalculateRepresentedArea()
@@ -2359,5 +2360,104 @@ Public Class frmSiteScenario
 
     Private Sub BtnTables_Click(sender As System.Object, e As System.EventArgs) Handles BtnTables.Click
 
+        '@ToDo: Populate this object from the maps settings file
+        Dim mapsSettings As MapsSettings = New MapsSettings()
+
+        Dim EMinValue As Double = Val(txtMinElev.Text)
+        Dim EMaxValue As Double = Val(txtMaxElev.Text)
+        'set the y axis values of the excel charts
+        BA_Excel_SetYAxis(CDbl(EMinValue), CDbl(EMaxValue), CDbl(mapsSettings.ElevationInterval))
+
+        'Declare Excel object variables
+        Dim objExcel As New Microsoft.Office.Interop.Excel.Application
+        Dim bkWorkBook As Workbook 'a file in excel
+        bkWorkBook = objExcel.Workbooks.Add
+
+        'Create PRISM Worksheet
+        Dim pPRISMWorkSheet As Worksheet = bkWorkBook.Sheets.Add
+        pPRISMWorkSheet.Name = "PRISM"
+        'Create Elevation Curve Worksheet for plotting curve
+        Dim pSubElvWorksheet As Worksheet = bkWorkBook.ActiveSheet
+        pSubElvWorksheet.Name = "Elevation Curve"
+        'Create Charts Worksheet
+        Dim pChartsWorksheet As Worksheet = bkWorkBook.Sheets.Add
+        pChartsWorksheet.Name = "Charts"
+        'Create SNOTEL Distribution Worksheet
+        Dim pSNOTELWorksheet As Worksheet = bkWorkBook.Sheets.Add
+        pSNOTELWorksheet.Name = "SNOTEL"
+        'Create Snow Course Distribution Worksheet
+        Dim pSnowCourseWorksheet As Worksheet = bkWorkBook.Sheets.Add
+        pSnowCourseWorksheet.Name = "Snow Course"
+
+        'Declare progress indicator variables
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 15)
+        Dim progressDialog2 As IProgressDialog2 = Nothing
+
+        Try
+            progressDialog2 = BA_GetProgressDialog(pStepProg, "Generating Basin Analysis Tables", "Running...")
+            pStepProg.Show()
+            progressDialog2.ShowDialog()
+            pStepProg.Step()
+
+            Dim conversionFactor As Double
+            If OptZFeet.Checked = True Then 'Display = Feet
+                If m_demInMeters = False Then 'DEM = Feet
+                    conversionFactor = 1
+                Else 'DEM = METERS
+                    conversionFactor = 3.2808399 'Meters to Foot
+                End If
+            Else 'Display = Meters
+                If m_demInMeters = False Then 'DEM = Feet
+                    conversionFactor = 0.3048 'Foot to Meters
+                Else 'DEM = Meters
+                    conversionFactor = 1
+                End If
+            End If
+
+            '=============================================
+            ' Create Excel WorkSheets
+            '=============================================
+            pStepProg.Message = "Preparing Excel Spreadsheets..."
+            pStepProg.Step()
+            'Calculate file path for prism based on the form
+            Dim MaxPRISMValue As Double
+            Dim PrecipPath As String
+            Dim PRISMRasterName As String
+            SetPrecipPathInfo(mapsSettings, PrecipPath, PRISMRasterName)
+            Dim response As Integer = BA_Excel_CreatePRISMTable(AOIFolderBase, pPRISMWorkSheet, pSubElvWorksheet, MaxPRISMValue, _
+                                                 PrecipPath & "\" + PRISMRasterName, AOI_DEMMin, conversionFactor, OptZMeters.Checked)
+
+            '@ToDo: Populate these from selected sites
+            AOI_HasSNOTEL = True
+            AOI_HasSnowCourse = True
+            response = BA_Excel_CreateCombinedChart(pPRISMWorkSheet, pSubElvWorksheet, pChartsWorksheet, pSnowCourseWorksheet, _
+                                            pSNOTELWorksheet, Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, MaxPRISMValue, _
+                                            OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse)
+        Catch ex As Exception
+            Debug.Print("BtnTables_Click Exception: " & ex.Message)
+        Finally
+            objExcel.Visible = True
+            If pStepProg IsNot Nothing Then
+                pStepProg.Hide()
+                pStepProg = Nothing
+            End If
+            If progressDialog2 IsNot Nothing Then
+                progressDialog2.HideDialog()
+                progressDialog2 = Nothing
+            End If
+        End Try
+    End Sub
+
+    Private Sub SetPrecipPathInfo(ByVal mapsSettings As MapsSettings, ByRef PrecipPath As String, ByRef PRISMRasterName As String)
+        If mapsSettings.IdxPrecipType = 0 Then  'read direct Annual PRISM raster
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
+            PRISMRasterName = AOIPrismFolderNames.annual.ToString
+        ElseIf mapsSettings.IdxPrecipType > 0 And mapsSettings.IdxPrecipType < 5 Then 'read directly Quarterly PRISM raster
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
+            PRISMRasterName = BA_GetPrismFolderName(mapsSettings.IdxPrecipType + 12)
+        Else 'sum individual monthly PRISM rasters
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
+            PRISMRasterName = BA_TEMP_PRISM
+        End If
     End Sub
 End Class
