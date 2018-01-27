@@ -2362,6 +2362,8 @@ Public Class frmSiteScenario
 
         '@ToDo: Populate this object from the maps settings file
         Dim mapsSettings As MapsSettings = New MapsSettings()
+        mapsSettings.ElevationInterval = "1000"
+        mapsSettings.IdxPrecipType = "0"
 
         Dim EMinValue As Double = Val(txtMinElev.Text)
         Dim EMaxValue As Double = Val(txtMaxElev.Text)
@@ -2376,6 +2378,9 @@ Public Class frmSiteScenario
         'Create PRISM Worksheet
         Dim pPRISMWorkSheet As Worksheet = bkWorkBook.Sheets.Add
         pPRISMWorkSheet.Name = "PRISM"
+        'Create Elevation Distribution Worksheet
+        Dim pAreaElvWorksheet As Worksheet = bkWorkBook.Sheets.Add
+        pAreaElvWorksheet.Name = "Area Elevations"
         'Create Elevation Curve Worksheet for plotting curve
         Dim pSubElvWorksheet As Worksheet = bkWorkBook.ActiveSheet
         pSubElvWorksheet.Name = "Elevation Curve"
@@ -2413,23 +2418,39 @@ Public Class frmSiteScenario
                     conversionFactor = 1
                 End If
             End If
+            AOI_DEMMin = Convert.ToDouble(txtMinElev.Text)
+            AOI_DEMMax = Convert.ToDouble(txtMaxElev.Text)
+            Dim response As Integer = BA_Excel_CreateElevationTable(AOIFolderBase, pAreaElvWorksheet, conversionFactor, AOI_DEMMin, OptZMeters.Checked)
 
             '=============================================
             ' Create Excel WorkSheets
             '=============================================
             pStepProg.Message = "Preparing Excel Spreadsheets..."
             pStepProg.Step()
-            'Calculate file path for prism based on the form
-            Dim MaxPRISMValue As Double
-            Dim PrecipPath As String
-            Dim PRISMRasterName As String
-            SetPrecipPathInfo(mapsSettings, PrecipPath, PRISMRasterName)
-            Dim response As Integer = BA_Excel_CreatePRISMTable(AOIFolderBase, pPRISMWorkSheet, pSubElvWorksheet, MaxPRISMValue, _
-                                                 PrecipPath & "\" + PRISMRasterName, AOI_DEMMin, conversionFactor, OptZMeters.Checked)
 
             '@ToDo: Populate these from selected sites
             AOI_HasSNOTEL = True
             AOI_HasSnowCourse = True
+            If AOI_HasSNOTEL Then
+                pStepProg.Message = "Creating SNOTEL Table and Chart..."
+                pStepProg.Step()
+                response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSNOTELWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.SnotelZone), conversionFactor)
+            End If
+
+            If AOI_HasSnowCourse Then
+                pStepProg.Message = "Creating Snow Course Table and Chart..."
+                pStepProg.Step()
+
+                response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSnowCourseWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.SnowCourseZone), conversionFactor)
+             End If
+            'Calculate file path for prism based on the form
+            Dim MaxPRISMValue As Double
+            Dim PrecipPath As String = Nothing
+            Dim PRISMRasterName As String = Nothing
+            SetPrecipPathInfo(mapsSettings, PrecipPath, PRISMRasterName)
+            response = BA_Excel_CreatePRISMTable(AOIFolderBase, pPRISMWorkSheet, pSubElvWorksheet, MaxPRISMValue, _
+                                                 PrecipPath & "\" + PRISMRasterName, AOI_DEMMin, conversionFactor, OptZMeters.Checked)
+
             response = BA_Excel_CreateCombinedChart(pPRISMWorkSheet, pSubElvWorksheet, pChartsWorksheet, pSnowCourseWorksheet, _
                                             pSNOTELWorksheet, Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, MaxPRISMValue, _
                                             OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse)
