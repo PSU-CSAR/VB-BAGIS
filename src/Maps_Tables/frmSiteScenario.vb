@@ -238,7 +238,9 @@ Public Class frmSiteScenario
 
         'Populate Boxes
         txtMinElev.Text = Math.Round(ES_DEMMin - 0.005, 2)
+        AOI_DEMMin = Math.Round(ES_DEMMin - 0.005, 2)
         txtMaxElev.Text = Math.Round(ES_DEMMax + 0.005, 2)
+        AOI_DEMMax = Math.Round(ES_DEMMax + 0.005, 2)
 
         'Retrieving the XY units from the filled_dem
         InitBufferDistance()
@@ -2312,7 +2314,7 @@ Public Class frmSiteScenario
 
     Private Sub BtnAutoLog_Click(sender As System.Object, e As System.EventArgs) Handles BtnAutoLog.Click
         If GrdScenario1.SelectedRows.Count < 1 Then
-            MessageBox.Show("You need to select one autoo-site to view its log", "Select site", MessageBoxButtons.OK, _
+            MessageBox.Show("You need to select one auto-site to view its log", "Select site", MessageBoxButtons.OK, _
                 MessageBoxIcon.Information)
             Exit Sub
         ElseIf GrdScenario1.SelectedRows.Count > 1 Then
@@ -2384,15 +2386,17 @@ Public Class frmSiteScenario
         'Create Elevation Curve Worksheet for plotting curve
         Dim pSubElvWorksheet As Worksheet = bkWorkBook.ActiveSheet
         pSubElvWorksheet.Name = "Elevation Curve"
-        'Create Charts Worksheet
-        Dim pChartsWorksheet As Worksheet = bkWorkBook.Sheets.Add
-        pChartsWorksheet.Name = "Charts"
         'Create SNOTEL Distribution Worksheet
         Dim pSNOTELWorksheet As Worksheet = bkWorkBook.Sheets.Add
         pSNOTELWorksheet.Name = "SNOTEL"
         'Create Snow Course Distribution Worksheet
         Dim pSnowCourseWorksheet As Worksheet = bkWorkBook.Sheets.Add
         pSnowCourseWorksheet.Name = "Snow Course"
+        'Create Charts Worksheet
+        Dim pChartsWorksheet As Worksheet = bkWorkBook.Sheets.Add
+        pChartsWorksheet.Name = "Charts"
+
+        Dim pInputRaster As IGeoDataset = Nothing
 
         'Declare progress indicator variables
         Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 15)
@@ -2418,8 +2422,7 @@ Public Class frmSiteScenario
                     conversionFactor = 1
                 End If
             End If
-            AOI_DEMMin = Convert.ToDouble(txtMinElev.Text)
-            AOI_DEMMax = Convert.ToDouble(txtMaxElev.Text)
+            'AOI_DEMMin and AOIDEMMax are set when the aoi is loaded in LoadAOIInfo() method
             Dim response As Integer = BA_Excel_CreateElevationTable(AOIFolderBase, pAreaElvWorksheet, conversionFactor, AOI_DEMMin, OptZMeters.Checked)
 
             '=============================================
@@ -2428,13 +2431,54 @@ Public Class frmSiteScenario
             pStepProg.Message = "Preparing Excel Spreadsheets..."
             pStepProg.Step()
 
+            'Copy elevation/names into dictionary
+            Dim IntervalList() As BA_IntervalList = Nothing
+            Dim InputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces)
+            Dim InputName As String = BA_EnumDescription(MapsFileName.filled_dem_gdb)
+            Dim OutputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
+            Const NO_VECTOR_NAME As String = ""
+            Dim MessageKey As AOIMessageKey
+            AOI_HasSNOTEL = False
+            Dim dictSnotel As IDictionary(Of String, String) = New Dictionary(Of String, String)
+            For Each nextRow As DataGridViewRow In GrdScenario1.Rows
+                Dim strSiteType As String = Convert.ToString(nextRow.Cells(idxSiteType).Value)
+                Dim strElev As String = Nothing
+                Dim strName As String = Nothing
+                Select strSiteType
+                    Case SiteType.Snotel.ToString
+                        strElev = Convert.ToString(nextRow.Cells(idxDefaultElevation).Value)    'default elevation always in same units as DEM
+                        strName = Convert.ToString(nextRow.Cells(idxSiteName).Value)
+                        If String.IsNullOrEmpty(strName) Then _
+                            strName = "Name missing"
+                        If dictSnotel.ContainsKey(strElev) Then
+                            Dim strNewName = dictSnotel(strElev) + ", " + strName
+                            dictSnotel(strElev) = strNewName
+                        Else
+                            dictSnotel.Add(strElev, strName)
+                        End If
+                End Select
+            Next
+
+            If dictSnotel.Keys.Count > 0 Then
+                AOI_HasSNOTEL = True
+                MessageKey = AOIMessageKey.Snotel
+                Dim success As BA_ReturnCode = GetUniqueSortedValues(dictSnotel, AOI_DEMMin, AOI_DEMMax, IntervalList)
+                If success = BA_ReturnCode.Success Then
+                    'Open Input Raster and create the zone raster and vector
+                    pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
+                    If pInputRaster IsNot Nothing Then
+                        response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, _
+                                                       OutputPath, BA_EnumDescription(MapsFileName.S1SnotelZone), _
+                                                       NO_VECTOR_NAME, MessageKey)
+                    End If
+                End If
+            End If
             '@ToDo: Populate these from selected sites
-            AOI_HasSNOTEL = True
             AOI_HasSnowCourse = True
             If AOI_HasSNOTEL Then
                 pStepProg.Message = "Creating SNOTEL Table and Chart..."
                 pStepProg.Step()
-                response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSNOTELWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.SnotelZone), conversionFactor)
+                response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSNOTELWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1SnotelZone), conversionFactor)
             End If
 
             If AOI_HasSnowCourse Then
@@ -2442,7 +2486,7 @@ Public Class frmSiteScenario
                 pStepProg.Step()
 
                 response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSnowCourseWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.SnowCourseZone), conversionFactor)
-             End If
+            End If
             'Calculate file path for prism based on the form
             Dim MaxPRISMValue As Double
             Dim PrecipPath As String = Nothing
@@ -2454,10 +2498,17 @@ Public Class frmSiteScenario
             response = BA_Excel_CreateCombinedChart(pPRISMWorkSheet, pSubElvWorksheet, pChartsWorksheet, pSnowCourseWorksheet, _
                                             pSNOTELWorksheet, Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, MaxPRISMValue, _
                                             OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse)
+
+            'copy DEM area and %_area to the PRISM table
+            response = BA_Excel_CopyCells(pAreaElvWorksheet, 3, pPRISMWorkSheet, 12)
+            response = BA_Excel_CopyCells(pAreaElvWorksheet, 10, pPRISMWorkSheet, 13)
+            response = BA_Excel_PrecipitationVolume(pPRISMWorkSheet, 12, 7, 14, 15)
+
         Catch ex As Exception
             Debug.Print("BtnTables_Click Exception: " & ex.Message)
         Finally
             objExcel.Visible = True
+            pInputRaster = Nothing
             If pStepProg IsNot Nothing Then
                 pStepProg.Hide()
                 pStepProg = Nothing
@@ -2481,4 +2532,80 @@ Public Class frmSiteScenario
             PRISMRasterName = BA_TEMP_PRISM
         End If
     End Sub
+
+    Public Function GetUniqueSortedValues(ByVal dictElev As IDictionary(Of String, String), _
+                                          ByVal lowerbnd As Double, ByVal upperbnd As Double, ByRef IntervalList() As BA_IntervalList) As BA_ReturnCode
+        Try
+            'Dim i As Integer = 0
+            'Do While i < lstElevations.Count
+            '    Dim strElev As String = lstElevations(i)
+            '    If Not String.IsNullOrEmpty(strElev) Then
+            '        Dim strName As String = strElev
+            '        If String.IsNullOrEmpty(lstNames(i)) Then
+            '            strName = "Name missing"
+            '        Else
+            '            strName = lstNames(i)
+            '        End If
+            '        If dictElev.ContainsKey(strElev) Then
+            '            Dim strNewName = dictElev(strElev) + ", " + strName
+            '            dictElev(strElev) = strNewName
+            '        Else
+            '            dictElev.Add(strElev, strName)
+            '        End If
+            '    End If
+            '    i += 1  'increment counter
+            'Loop
+
+            Dim nuniquevalue As Integer = dictElev.Keys.Count
+
+            Dim valuelist(nuniquevalue + 2)
+            Dim namelist(nuniquevalue + 2)
+
+            'keep a list of unique value and find the largest value
+            Dim ncount As Short
+            Dim Value As Double
+
+            Dim i As Short = 0 'i keeps track of the actual numbers in the list, ignore negative values
+            For Each strElev As String In dictElev.Keys
+                Value = -1
+                Double.TryParse(strElev, Value)
+                If Int(Value - 0.5) < Int(upperbnd) And Int(Value + 0.5) > Int(lowerbnd) Then
+                    i = i + 1
+                    valuelist(i) = Val(CStr(Value))
+                    namelist(i) = dictElev(strElev)
+                Else
+                    If Value > upperbnd Or Value < lowerbnd Then 'invalid data in the attribute field, out of bound
+                        MsgBox("WARNING!!" & vbCrLf & "A monitoring site is ignored in the analysis!" & vbCrLf & "The site's elevation (" & Value & ") is outside the DEM range (" & lowerbnd & ", " & upperbnd & ")!")
+                    End If
+                    nuniquevalue = nuniquevalue - 1
+                End If
+            Next
+
+            ncount = i + 2
+            ReDim Preserve valuelist(ncount)
+            ReDim Preserve namelist(ncount)
+            ReDim IntervalList(ncount - 1)
+
+            'add upper and lower bnds to the list
+            valuelist(ncount) = Val(CStr(upperbnd))
+            namelist(ncount) = "Not represented" '"Max Value"
+            valuelist(ncount - 1) = Val(CStr(lowerbnd))
+            namelist(ncount - 1) = "Min Value"
+
+            'sort the list ascendingly
+            QuickSort(valuelist, namelist)
+
+            'create the intervallist
+            For i = 1 To ncount - 1
+                IntervalList(i).Value = i
+                IntervalList(i).LowerBound = valuelist(i)
+                IntervalList(i).UpperBound = valuelist(i + 1)
+                IntervalList(i).Name = namelist(i + 1) 'use the upperbnd name to represent the interval
+            Next
+            Return BA_ReturnCode.Success
+        Catch ex As Exception
+            MessageBox.Show("GetUniqueSortedValues Exception: " + ex.Message)
+            Return BA_ReturnCode.UnknownError
+        End Try
+    End Function
 End Class
