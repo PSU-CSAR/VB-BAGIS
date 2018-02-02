@@ -2467,7 +2467,8 @@ Public Class frmGenerateMaps
 
             response = BA_Excel_CreateCombinedChart(pPRISMWorkSheet, pSubElvWorksheet, pChartsWorksheet, pSnowCourseWorksheet, _
                                                     pSNOTELWorksheet, Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, MaxPRISMValue, _
-                                                    OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse)
+                                                    OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse, _
+                                                    Nothing, False)
 
             'copy DEM area and %_area to the PRISM table
             'response = Excel_CopyCells(pAreaElvWorksheet, 3, pPRISMWorkSheet, 12)
@@ -2552,7 +2553,8 @@ Public Class frmGenerateMaps
 
                 response = BA_Excel_CreateCombinedChart(pPrecipitationRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, pSCRangeWorksheet, _
                                                         pSTRangeWorksheet, CDbl(txtFromElev.Text), CDbl(txtToElev.Text), Chart_YMapUnit, MaxPRISMValue, _
-                                                        OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse)
+                                                        OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse, Nothing, _
+                                                        False)
             End If
 
         Catch ex As Exception
