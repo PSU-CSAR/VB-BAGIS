@@ -2364,18 +2364,55 @@ Public Class frmSiteScenario
 
         '@ToDo: Populate this object from the maps settings file
         Dim mapsSettings As MapsSettings = New MapsSettings()
+        mapsSettings.ZMeters = False
         mapsSettings.ElevationInterval = "1000"
         mapsSettings.IdxPrecipType = "0"
+        mapsSettings.UseSubRange = True
+        mapsSettings.SubRangeFromElev = "10000"
+        mapsSettings.SubRangeToElev = "14069.07"
+        Dim dblSubRangeFromElev = CDbl(mapsSettings.SubRangeFromElev)
+        Dim dblSubRangeToElev = CDbl(mapsSettings.SubRangeToElev)
 
         Dim EMinValue As Double = Val(txtMinElev.Text)
         Dim EMaxValue As Double = Val(txtMaxElev.Text)
         'set the y axis values of the excel charts
-        BA_Excel_SetYAxis(CDbl(EMinValue), CDbl(EMaxValue), CDbl(mapsSettings.ElevationInterval))
+        BA_Excel_SetYAxis(EMinValue, EMaxValue, CDbl(mapsSettings.ElevationInterval))
+
+        'verify elevation range values if used
+        If mapsSettings.UseSubRange = True Then
+            Dim subRangeConversionFactor As Double = CalculateConversionFactor(OptZMeters.Checked, mapsSettings.ZMeters)
+            dblSubRangeFromElev = Math.Round(dblSubRangeFromElev * subRangeConversionFactor, 2)
+            dblSubRangeToElev = Math.Round(dblSubRangeToElev * subRangeConversionFactor, 2)
+            If dblSubRangeFromElev < EMinValue Or _
+                dblSubRangeToElev > EMaxValue Or _
+                dblSubRangeFromElev >= dblSubRangeToElev Then
+                MsgBox("Invalid elevation range specified for localized analysis!")
+                Exit Sub
+            End If
+        End If
 
         'Declare Excel object variables
         Dim objExcel As New Microsoft.Office.Interop.Excel.Application
         Dim bkWorkBook As Workbook 'a file in excel
         bkWorkBook = objExcel.Workbooks.Add
+
+        'Dim variables for the range worksheets in case we need them later
+        Dim pSCRangeWorksheet As Worksheet = Nothing
+        Dim pElevationRangeWorksheet As Worksheet = Nothing
+        Dim pPrecipitationRangeWorksheet As Worksheet = Nothing
+        Dim pRangeChartWorksheet As Worksheet = Nothing
+        Dim pSTRangeWorksheet As Worksheet = Nothing
+        Dim pPseudoRangeWorksheet As Worksheet = Nothing
+        If mapsSettings.UseSubRange = True Then
+            pPrecipitationRangeWorksheet = bkWorkBook.Sheets.Add
+            pPrecipitationRangeWorksheet.Name = "PRISM Range"
+
+            pElevationRangeWorksheet = bkWorkBook.Sheets.Add
+            pElevationRangeWorksheet.Name = "Elevation Range"
+
+            pRangeChartWorksheet = bkWorkBook.Sheets.Add
+            pRangeChartWorksheet.Name = "Range Charts"
+        End If
 
         'Create PRISM Worksheet
         Dim pPRISMWorkSheet As Worksheet = bkWorkBook.Sheets.Add
@@ -2411,20 +2448,7 @@ Public Class frmSiteScenario
             progressDialog2.ShowDialog()
             pStepProg.Step()
 
-            Dim conversionFactor As Double
-            If OptZFeet.Checked = True Then 'Display = Feet
-                If m_demInMeters = False Then 'DEM = Feet
-                    conversionFactor = 1
-                Else 'DEM = METERS
-                    conversionFactor = 3.2808399 'Meters to Foot
-                End If
-            Else 'Display = Meters
-                If m_demInMeters = False Then 'DEM = Feet
-                    conversionFactor = 0.3048 'Foot to Meters
-                Else 'DEM = Meters
-                    conversionFactor = 1
-                End If
-            End If
+            Dim conversionFactor As Double = CalculateConversionFactor(OptZMeters.Checked, m_demInMeters)
             'AOI_DEMMin and AOIDEMMax are set when the aoi is loaded in LoadAOIInfo() method
             Dim response As Integer = BA_Excel_CreateElevationTable(AOIFolderBase, pAreaElvWorksheet, conversionFactor, AOI_DEMMin, OptZMeters.Checked)
 
@@ -2509,6 +2533,10 @@ Public Class frmSiteScenario
                     pStepProg.Message = "Creating SNOTEL Table..."
                     pStepProg.Step()
                     response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSNOTELWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1SnotelZone), conversionFactor)
+                    If mapsSettings.UseSubRange = True Then
+                        pSTRangeWorksheet = bkWorkBook.Sheets.Add
+                        pSTRangeWorksheet.Name = "SNOTEL Range"
+                    End If
                 End If
             End If
 
@@ -2529,6 +2557,10 @@ Public Class frmSiteScenario
                     pStepProg.Message = "Creating Snow Course Table..."
                     pStepProg.Step()
                     response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSnowCourseWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1SnowCourseZone), conversionFactor)
+                    If mapsSettings.UseSubRange = True Then
+                        pSCRangeWorksheet = bkWorkBook.Sheets.Add
+                        pSCRangeWorksheet.Name = "Snow Course Range"
+                    End If
                 End If
             End If
 
@@ -2549,6 +2581,10 @@ Public Class frmSiteScenario
                     pStepProg.Message = "Creating Psuedo Site Table..."
                     pStepProg.Step()
                     response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pPSiteWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1PseudoZone), conversionFactor)
+                    If mapsSettings.UseSubRange = True Then
+                        pPseudoRangeWorksheet = bkWorkBook.Sheets.Add
+                        pPseudoRangeWorksheet.Name = "Pseudo Site Range"
+                    End If
                 End If
             End If
 
@@ -2570,6 +2606,27 @@ Public Class frmSiteScenario
             response = BA_Excel_CopyCells(pAreaElvWorksheet, 3, pPRISMWorkSheet, 12)
             response = BA_Excel_CopyCells(pAreaElvWorksheet, 10, pPRISMWorkSheet, 13)
             response = BA_Excel_PrecipitationVolume(pPRISMWorkSheet, 12, 7, 14, 15)
+
+            If mapsSettings.UseSubRange = True Then
+                pStepProg.Message = "Creating Elevation Range Tables and Charts..."
+                pStepProg.Step()
+
+                response = BA_Excel_CreateElevRangeTable(pElevationRangeWorksheet, pSubElvWorksheet, dblSubRangeFromElev, dblSubRangeToElev)
+                response = BA_Excel_CreatePrecipRangeTable(pPrecipitationRangeWorksheet, pPRISMWorkSheet, dblSubRangeFromElev, dblSubRangeToElev, MaxPRISMValue)
+
+                If AOI_HasSNOTEL Then
+                    response = BA_Excel_CreateSNOTELRangeTable(pSTRangeWorksheet, pSNOTELWorksheet, pSubElvWorksheet, dblSubRangeFromElev, dblSubRangeToElev)
+                End If
+
+                If AOI_HasSnowCourse Then
+                    response = BA_Excel_CreateSNOTELRangeTable(pSCRangeWorksheet, pSnowCourseWorksheet, pSubElvWorksheet, dblSubRangeFromElev, dblSubRangeToElev)
+                End If
+
+                response = BA_Excel_CreateCombinedChart(pPrecipitationRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, pSCRangeWorksheet, _
+                                                        pSTRangeWorksheet, dblSubRangeFromElev, dblSubRangeToElev, Chart_YMapUnit, MaxPRISMValue, _
+                                                        OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse, Nothing, _
+                                                        False)
+            End If
 
         Catch ex As Exception
             Debug.Print("BtnTables_Click Exception: " & ex.Message)
@@ -2674,5 +2731,23 @@ Public Class frmSiteScenario
             MessageBox.Show("GetUniqueSortedValues Exception: " + ex.Message)
             Return BA_ReturnCode.UnknownError
         End Try
+    End Function
+
+    Private Function CalculateConversionFactor(ByVal displayInMeters As Boolean, ByVal demInMeters As Boolean) As Double
+        Dim conversionFactor As Double
+        If displayInMeters = False Then 'Display = Feet
+            If demInMeters = False Then 'DEM = Feet
+                conversionFactor = 1
+            Else 'DEM = METERS
+                conversionFactor = 3.2808399 'Meters to Foot
+            End If
+        Else 'Display = Meters
+            If demInMeters = False Then 'DEM = Feet
+                conversionFactor = 0.3048 'Foot to Meters
+            Else 'DEM = Meters
+                conversionFactor = 1
+            End If
+        End If
+        Return conversionFactor
     End Function
 End Class
