@@ -1032,12 +1032,12 @@ Public Class frmSiteScenario
                 For Each sRow As DataGridViewRow In GrdScenario1.Rows
                     Dim elev As Double = Convert.ToDouble(sRow.Cells(idxDefaultElevation).Value)
                     sRow.Cells(idxElevation).Value = Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet))
-                    Debug.Print(Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet)))
+                    'Debug.Print(Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet)))
                 Next
                 For Each sRow As DataGridViewRow In GrdScenario2.Rows
                     Dim elev As Double = Convert.ToDouble(sRow.Cells(idxDefaultElevation - 1).Value)
                     sRow.Cells(idxElevation - 1).Value = Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet))
-                    Debug.Print(Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet)))
+                    'Debug.Print(Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet)))
                 Next
             End If
             ManageUpperRange()
@@ -2383,6 +2383,19 @@ Public Class frmSiteScenario
             Dim subRangeConversionFactor As Double = CalculateConversionFactor(OptZMeters.Checked, mapsSettings.ZMeters)
             dblSubRangeFromElev = Math.Round(dblSubRangeFromElev * subRangeConversionFactor, 2)
             dblSubRangeToElev = Math.Round(dblSubRangeToElev * subRangeConversionFactor, 2)
+            'Ensure that rounding errors don't prevent subrange analysis; frmGenerateMaps uses different method to
+            'calculate AOI Min/Max DEM and to convert between feet/meters
+            If dblSubRangeFromElev < EMinValue Then
+                If (EMinValue - dblSubRangeFromElev) < 0.5 Then
+                    dblSubRangeFromElev = EMinValue
+                End If
+            End If
+            If dblSubRangeToElev > EMaxValue Then
+                If (dblSubRangeToElev - EMaxValue) < 0.5 Then
+                    dblSubRangeToElev = EMaxValue
+                End If
+            End If
+
             If dblSubRangeFromElev < EMinValue Or _
                 dblSubRangeToElev > EMaxValue Or _
                 dblSubRangeFromElev >= dblSubRangeToElev Then
@@ -2403,23 +2416,7 @@ Public Class frmSiteScenario
         Dim pRangeChartWorksheet As Worksheet = Nothing
         Dim pSTRangeWorksheet As Worksheet = Nothing
         Dim pPseudoRangeWorksheet As Worksheet = Nothing
-        If mapsSettings.UseSubRange = True Then
-            pPrecipitationRangeWorksheet = bkWorkBook.Sheets.Add
-            pPrecipitationRangeWorksheet.Name = "PRISM Range"
 
-            pElevationRangeWorksheet = bkWorkBook.Sheets.Add
-            pElevationRangeWorksheet.Name = "Elevation Range"
-
-            pRangeChartWorksheet = bkWorkBook.Sheets.Add
-            pRangeChartWorksheet.Name = "Range Charts"
-        End If
-
-        'Create PRISM Worksheet
-        Dim pPRISMWorkSheet As Worksheet = bkWorkBook.Sheets.Add
-        pPRISMWorkSheet.Name = "PRISM"
-        'Create Elevation Distribution Worksheet
-        Dim pAreaElvWorksheet As Worksheet = bkWorkBook.Sheets.Add
-        pAreaElvWorksheet.Name = "Area Elevations"
         'Create Elevation Curve Worksheet for plotting curve
         Dim pSubElvWorksheet As Worksheet = bkWorkBook.ActiveSheet
         pSubElvWorksheet.Name = "Elevation Curve"
@@ -2432,6 +2429,22 @@ Public Class frmSiteScenario
         'Create P-Site Distribution Worksheet
         Dim pPSiteWorksheet As Worksheet = bkWorkBook.Sheets.Add
         pPSiteWorksheet.Name = "Pseudo Site"
+        'Create PRISM Worksheet
+        Dim pPRISMWorkSheet As Worksheet = bkWorkBook.Sheets.Add
+        pPRISMWorkSheet.Name = "PRISM"
+        'Create Elevation Distribution Worksheet
+        Dim pAreaElvWorksheet As Worksheet = bkWorkBook.Sheets.Add
+        pAreaElvWorksheet.Name = "Area Elevations"
+        If mapsSettings.UseSubRange = True Then
+            pPrecipitationRangeWorksheet = bkWorkBook.Sheets.Add
+            pPrecipitationRangeWorksheet.Name = "PRISM Range"
+
+            pElevationRangeWorksheet = bkWorkBook.Sheets.Add
+            pElevationRangeWorksheet.Name = "Elevation Range"
+
+            pRangeChartWorksheet = bkWorkBook.Sheets.Add
+            pRangeChartWorksheet.Name = "Range Charts"
+        End If
         'Create Charts Worksheet
         Dim pChartsWorksheet As Worksheet = bkWorkBook.Sheets.Add
         pChartsWorksheet.Name = "Charts"
@@ -2451,6 +2464,8 @@ Public Class frmSiteScenario
             Dim conversionFactor As Double = CalculateConversionFactor(OptZMeters.Checked, m_demInMeters)
             'AOI_DEMMin and AOIDEMMax are set when the aoi is loaded in LoadAOIInfo() method
             Dim response As Integer = BA_Excel_CreateElevationTable(AOIFolderBase, pAreaElvWorksheet, conversionFactor, AOI_DEMMin, OptZMeters.Checked)
+            'create subdivided elevation table for plotting the curve
+            response = BA_Excel_CreateSubElevationTable(AOIFolderBase, pSubElvWorksheet, conversionFactor, AOI_DEMMin, OptZMeters.Checked)
 
             '=============================================
             ' Create Excel WorkSheets
