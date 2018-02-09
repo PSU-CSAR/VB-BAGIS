@@ -2372,6 +2372,17 @@ Public Class frmSiteScenario
         mapsSettings.SubRangeToElev = "14069.07"
         Dim dblSubRangeFromElev = CDbl(mapsSettings.SubRangeFromElev)
         Dim dblSubRangeToElev = CDbl(mapsSettings.SubRangeToElev)
+        If mapsSettings.ZMeters <> OptZMeters.Checked Then
+            mapsSettings.UseSubRange = False
+            Dim units As String = MeasurementUnit.Meters.ToString
+            If mapsSettings.ZMeters = False Then _
+                units = MeasurementUnit.Feet.ToString
+            MessageBox.Show("The elevation units on the Map Settings " + _
+                            "screen are " + units + ". Specified Elevation Range will not be used! " + _
+                            "Change the units on this screen to match the Map Settings" + _
+                            "to generate tables for the Specified Elevation Range. ", "BAGIS", _
+                            MessageBoxButtons.OK, MessageBoxIcon.Information)
+        End If
 
         Dim EMinValue As Double = Val(txtMinElev.Text)
         Dim EMaxValue As Double = Val(txtMaxElev.Text)
