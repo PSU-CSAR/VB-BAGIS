@@ -2415,6 +2415,63 @@ Public Class frmSiteScenario
             End If
         End If
 
+        'Reset global variables; Read in the sites before we create the spreadsheets so tabs are in proper order
+        AOI_HasSNOTEL = False
+        AOI_HasSnowCourse = False
+        AOI_HasPseudoSite = False
+        Dim dictSnotel As IDictionary(Of String, String) = New Dictionary(Of String, String)
+        Dim dictScos As IDictionary(Of String, String) = New Dictionary(Of String, String)
+        Dim dictPSite As IDictionary(Of String, String) = New Dictionary(Of String, String)
+        For Each nextRow As DataGridViewRow In GrdScenario1.Rows
+            Dim bSelected As Boolean = Convert.ToBoolean(nextRow.Cells(idxSelected).Value)
+            If bSelected Then
+                Dim strSiteType As String = Convert.ToString(nextRow.Cells(idxSiteType).Value)
+                Dim strElev As String = Nothing
+                Dim strName As String = Nothing
+                Select Case strSiteType
+                    Case SiteType.Snotel.ToString
+                        strElev = Convert.ToString(nextRow.Cells(idxDefaultElevation).Value)    'default elevation always in same units as DEM
+                        strName = Convert.ToString(nextRow.Cells(idxSiteName).Value)
+                        If String.IsNullOrEmpty(strName) Then _
+                            strName = "Name missing"
+                        If dictSnotel.ContainsKey(strElev) Then
+                            Dim strNewName = dictSnotel(strElev) + ", " + strName
+                            dictSnotel(strElev) = strNewName
+                        Else
+                            dictSnotel.Add(strElev, strName)
+                        End If
+                    Case SiteType.SnowCourse.ToString
+                        strElev = Convert.ToString(nextRow.Cells(idxDefaultElevation).Value)    'default elevation always in same units as DEM
+                        strName = Convert.ToString(nextRow.Cells(idxSiteName).Value)
+                        If String.IsNullOrEmpty(strName) Then _
+                            strName = "Name missing"
+                        If dictScos.ContainsKey(strElev) Then
+                            Dim strNewName = dictScos(strElev) + ", " + strName
+                            dictScos(strElev) = strNewName
+                        Else
+                            dictScos.Add(strElev, strName)
+                        End If
+                    Case SiteType.Pseudo.ToString
+                        strElev = Convert.ToString(nextRow.Cells(idxDefaultElevation).Value)    'default elevation always in same units as DEM
+                        strName = Convert.ToString(nextRow.Cells(idxSiteName).Value)
+                        If String.IsNullOrEmpty(strName) Then _
+                            strName = "Name missing"
+                        If dictPSite.ContainsKey(strElev) Then
+                            Dim strNewName = dictPSite(strElev) + ", " + strName
+                            dictPSite(strElev) = strNewName
+                        Else
+                            dictPSite.Add(strElev, strName)
+                        End If
+                End Select
+            End If
+        Next
+        If dictSnotel.Keys.Count > 0 Then _
+            AOI_HasSNOTEL = True
+        If dictScos.Keys.Count > 0 Then _
+            AOI_HasSnowCourse = True
+        If dictPSite.Keys.Count > 0 Then _
+            AOI_HasPseudoSite = True
+
         'Declare Excel object variables
         Dim objExcel As New Microsoft.Office.Interop.Excel.Application
         Dim bkWorkBook As Workbook 'a file in excel
@@ -2447,6 +2504,19 @@ Public Class frmSiteScenario
         Dim pAreaElvWorksheet As Worksheet = bkWorkBook.Sheets.Add
         pAreaElvWorksheet.Name = "Area Elevations"
         If mapsSettings.UseSubRange = True Then
+            If AOI_HasSNOTEL Then
+                pSTRangeWorksheet = bkWorkBook.Sheets.Add
+                pSTRangeWorksheet.Name = "SNOTEL Range"
+            End If
+            If AOI_HasSnowCourse Then
+                pSCRangeWorksheet = bkWorkBook.Sheets.Add
+                pSCRangeWorksheet.Name = "Snow Course Range"
+            End If
+            If AOI_HasPseudoSite Then
+                pPseudoRangeWorksheet = bkWorkBook.Sheets.Add
+                pPseudoRangeWorksheet.Name = "Pseudo Site Range"
+            End If
+
             pPrecipitationRangeWorksheet = bkWorkBook.Sheets.Add
             pPrecipitationRangeWorksheet.Name = "PRISM Range"
 
@@ -2491,59 +2561,8 @@ Public Class frmSiteScenario
             Dim OutputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
             Const NO_VECTOR_NAME As String = ""
             Dim MessageKey As AOIMessageKey
-            'Reset global variables
-            AOI_HasSNOTEL = False
-            AOI_HasSnowCourse = False
-            AOI_HasPseudoSite = False
-            Dim dictSnotel As IDictionary(Of String, String) = New Dictionary(Of String, String)
-            Dim dictScos As IDictionary(Of String, String) = New Dictionary(Of String, String)
-            Dim dictPSite As IDictionary(Of String, String) = New Dictionary(Of String, String)
-            For Each nextRow As DataGridViewRow In GrdScenario1.Rows
-                Dim bSelected As Boolean = Convert.ToBoolean(nextRow.Cells(idxSelected).Value)
-                If bSelected Then
-                    Dim strSiteType As String = Convert.ToString(nextRow.Cells(idxSiteType).Value)
-                    Dim strElev As String = Nothing
-                    Dim strName As String = Nothing
-                    Select Case strSiteType
-                        Case SiteType.Snotel.ToString
-                            strElev = Convert.ToString(nextRow.Cells(idxDefaultElevation).Value)    'default elevation always in same units as DEM
-                            strName = Convert.ToString(nextRow.Cells(idxSiteName).Value)
-                            If String.IsNullOrEmpty(strName) Then _
-                                strName = "Name missing"
-                            If dictSnotel.ContainsKey(strElev) Then
-                                Dim strNewName = dictSnotel(strElev) + ", " + strName
-                                dictSnotel(strElev) = strNewName
-                            Else
-                                dictSnotel.Add(strElev, strName)
-                            End If
-                        Case SiteType.SnowCourse.ToString
-                            strElev = Convert.ToString(nextRow.Cells(idxDefaultElevation).Value)    'default elevation always in same units as DEM
-                            strName = Convert.ToString(nextRow.Cells(idxSiteName).Value)
-                            If String.IsNullOrEmpty(strName) Then _
-                                strName = "Name missing"
-                            If dictScos.ContainsKey(strElev) Then
-                                Dim strNewName = dictScos(strElev) + ", " + strName
-                                dictScos(strElev) = strNewName
-                            Else
-                                dictScos.Add(strElev, strName)
-                            End If
-                        Case SiteType.Pseudo.ToString
-                            strElev = Convert.ToString(nextRow.Cells(idxDefaultElevation).Value)    'default elevation always in same units as DEM
-                            strName = Convert.ToString(nextRow.Cells(idxSiteName).Value)
-                            If String.IsNullOrEmpty(strName) Then _
-                                strName = "Name missing"
-                            If dictPSite.ContainsKey(strElev) Then
-                                Dim strNewName = dictPSite(strElev) + ", " + strName
-                                dictPSite(strElev) = strNewName
-                            Else
-                                dictPSite.Add(strElev, strName)
-                            End If
-                    End Select
-                End If
-            Next
 
-            If dictSnotel.Keys.Count > 0 Then
-                AOI_HasSNOTEL = True
+            If AOI_HasSNOTEL Then
                 MessageKey = AOIMessageKey.Snotel
                 Dim success As BA_ReturnCode = GetUniqueSortedValues(dictSnotel, AOI_DEMMin, AOI_DEMMax, IntervalList)
                 If success = BA_ReturnCode.Success Then
@@ -2555,19 +2574,12 @@ Public Class frmSiteScenario
                                                        NO_VECTOR_NAME, MessageKey)
                     End If
                 End If
-                If AOI_HasSNOTEL Then
-                    pStepProg.Message = "Creating SNOTEL Table..."
-                    pStepProg.Step()
-                    response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSNOTELWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1SnotelZone), conversionFactor)
-                    If mapsSettings.UseSubRange = True Then
-                        pSTRangeWorksheet = bkWorkBook.Sheets.Add
-                        pSTRangeWorksheet.Name = "SNOTEL Range"
-                    End If
-                End If
+                pStepProg.Message = "Creating SNOTEL Table..."
+                pStepProg.Step()
+                response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSNOTELWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1SnotelZone), conversionFactor)
             End If
 
-            If dictScos.Keys.Count > 0 Then
-                AOI_HasSnowCourse = True
+            If AOI_HasSnowCourse = True Then
                 MessageKey = AOIMessageKey.SnowCourse
                 Dim success As BA_ReturnCode = GetUniqueSortedValues(dictScos, AOI_DEMMin, AOI_DEMMax, IntervalList)
                 If success = BA_ReturnCode.Success Then
@@ -2579,19 +2591,12 @@ Public Class frmSiteScenario
                                                        NO_VECTOR_NAME, MessageKey)
                     End If
                 End If
-                If AOI_HasSnowCourse Then
-                    pStepProg.Message = "Creating Snow Course Table..."
-                    pStepProg.Step()
-                    response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSnowCourseWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1SnowCourseZone), conversionFactor)
-                    If mapsSettings.UseSubRange = True Then
-                        pSCRangeWorksheet = bkWorkBook.Sheets.Add
-                        pSCRangeWorksheet.Name = "Snow Course Range"
-                    End If
-                End If
+                pStepProg.Message = "Creating Snow Course Table..."
+                pStepProg.Step()
+                response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSnowCourseWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1SnowCourseZone), conversionFactor)
             End If
 
-            If dictPSite.Keys.Count > 0 Then
-                AOI_HasPseudoSite = True
+            If AOI_HasPseudoSite = True Then
                 MessageKey = AOIMessageKey.Pseudo
                 Dim success As BA_ReturnCode = GetUniqueSortedValues(dictPSite, AOI_DEMMin, AOI_DEMMax, IntervalList)
                 If success = BA_ReturnCode.Success Then
@@ -2603,15 +2608,9 @@ Public Class frmSiteScenario
                                                        NO_VECTOR_NAME, MessageKey)
                     End If
                 End If
-                If AOI_HasPseudoSite Then
-                    pStepProg.Message = "Creating Psuedo Site Table..."
-                    pStepProg.Step()
-                    response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pPSiteWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1PseudoZone), conversionFactor)
-                    If mapsSettings.UseSubRange = True Then
-                        pPseudoRangeWorksheet = bkWorkBook.Sheets.Add
-                        pPseudoRangeWorksheet.Name = "Pseudo Site Range"
-                    End If
-                End If
+                pStepProg.Message = "Creating Psuedo Site Table..."
+                pStepProg.Step()
+                response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pPSiteWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1PseudoZone), conversionFactor)
             End If
 
             'Calculate file path for prism based on the form
@@ -2626,7 +2625,7 @@ Public Class frmSiteScenario
             response = BA_Excel_CreateCombinedChart(pPRISMWorkSheet, pSubElvWorksheet, pChartsWorksheet, pSnowCourseWorksheet, _
                                             pSNOTELWorksheet, Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, MaxPRISMValue, _
                                             OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse, pPSiteWorksheet, _
-                                            AOI_HasPseudoSite)
+                                            AOI_HasPseudoSite, BA_ChartSpacing)
 
             'copy DEM area and %_area to the PRISM table
             response = BA_Excel_CopyCells(pAreaElvWorksheet, 3, pPRISMWorkSheet, 12)
@@ -2651,7 +2650,7 @@ Public Class frmSiteScenario
                 response = BA_Excel_CreateCombinedChart(pPrecipitationRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, pSCRangeWorksheet, _
                                                         pSTRangeWorksheet, dblSubRangeFromElev, dblSubRangeToElev, Chart_YMapUnit, MaxPRISMValue, _
                                                         OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse, Nothing, _
-                                                        False)
+                                                        False, BA_ChartSpacing)
             End If
 
         Catch ex As Exception
