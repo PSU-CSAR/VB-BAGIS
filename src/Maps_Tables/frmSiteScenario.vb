@@ -2646,11 +2646,15 @@ Public Class frmSiteScenario
                 If AOI_HasSnowCourse Then
                     response = BA_Excel_CreateSNOTELRangeTable(pSCRangeWorksheet, pSnowCourseWorksheet, pSubElvWorksheet, dblSubRangeFromElev, dblSubRangeToElev)
                 End If
+                If AOI_HasPseudoSite Then
+                    response = BA_Excel_CreateSNOTELRangeTable(pPseudoRangeWorksheet, pPSiteWorksheet, pSubElvWorksheet, dblSubRangeFromElev, dblSubRangeToElev)
+                End If
+
 
                 response = BA_Excel_CreateCombinedChart(pPrecipitationRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, pSCRangeWorksheet, _
                                                         pSTRangeWorksheet, dblSubRangeFromElev, dblSubRangeToElev, Chart_YMapUnit, MaxPRISMValue, _
-                                                        OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse, Nothing, _
-                                                        False, BA_ChartSpacing)
+                                                        OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse, pPseudoRangeWorksheet, _
+                                                        AOI_HasPseudoSite, BA_ChartSpacing)
             End If
 
         Catch ex As Exception
