@@ -2363,8 +2363,7 @@ Public Class frmSiteScenario
     Private Sub BtnTables_Click(sender As System.Object, e As System.EventArgs) Handles BtnTables.Click
 
         '@ToDo: Populate this object from the maps settings file
-        Dim mapsSettings As MapsSettings = New MapsSettings()
-        mapsSettings.ZMeters = False
+        Dim mapsSettings As MapsSettings = ReadMapSettings()
         mapsSettings.ElevationInterval = "1000"
         mapsSettings.IdxPrecipType = "0"
         mapsSettings.UseSubRange = True
@@ -2779,4 +2778,38 @@ Public Class frmSiteScenario
         End If
         Return conversionFactor
     End Function
+
+    Private Function ReadMapSettings() As MapsSettings
+        Dim retSettings As MapsSettings = Nothing
+        Dim filePathName As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + _
+            "\" + BA_MapParameterFile
+        If BA_File_ExistsWindowsIO(filePathName) Then
+            Using sr As IO.StreamReader = New IO.StreamReader(filePathName)
+                'read the version text
+                Dim linestring As String = sr.ReadLine
+                Dim errormessage As String = Nothing
+                'check version
+                If Trim(linestring) <> BA_VersionText And Trim(linestring) <> BA_CompatibleVersion1Text Then
+                    sr.Close()
+                    errormessage = "The map parameter file's version doesn't match the version of the model!"
+                    MessageBox.Show(errormessage, "BAGIS", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    Return retSettings
+                End If
+                'read the map unit text
+                retSettings = New MapsSettings()
+                linestring = sr.ReadLine
+                If Trim(linestring) = "True" Then
+                    retSettings.ZMeters = True
+                Else
+                    retSettings.ZMeters = False
+                End If
+
+            End Using
+        Else
+            MessageBox.Show("Unable to open the maps settings file. Please configure the settings from the Map Settings screen!", _
+                            "BAGIS", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        End If
+        Return retSettings
+    End Function
+
 End Class
