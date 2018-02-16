@@ -2362,13 +2362,7 @@ Public Class frmSiteScenario
 
     Private Sub BtnTables_Click(sender As System.Object, e As System.EventArgs) Handles BtnTables.Click
 
-        '@ToDo: Populate this object from the maps settings file
         Dim mapsSettings As MapsSettings = ReadMapSettings()
-        mapsSettings.ElevationInterval = "1000"
-        mapsSettings.IdxPrecipType = "0"
-        mapsSettings.UseSubRange = True
-        mapsSettings.SubRangeFromElev = "10000"
-        mapsSettings.SubRangeToElev = "14069.07"
         Dim dblSubRangeFromElev = CDbl(mapsSettings.SubRangeFromElev)
         Dim dblSubRangeToElev = CDbl(mapsSettings.SubRangeToElev)
         If mapsSettings.ZMeters <> OptZMeters.Checked Then
@@ -2378,7 +2372,7 @@ Public Class frmSiteScenario
                 units = MeasurementUnit.Feet.ToString
             MessageBox.Show("The elevation units on the Map Settings " + _
                             "screen are " + units + ". Specified Elevation Range will not be used! " + _
-                            "Change the units on this screen to match the Map Settings" + _
+                            "Change the units on this screen to match the Map Settings " + _
                             "to generate tables for the Specified Elevation Range. ", "BAGIS", _
                             MessageBoxButtons.OK, MessageBoxIcon.Information)
         End If
@@ -2523,11 +2517,11 @@ Public Class frmSiteScenario
             pElevationRangeWorksheet.Name = "Elevation Range"
 
             pRangeChartWorksheet = bkWorkBook.Sheets.Add
-            pRangeChartWorksheet.Name = "Range Charts"
+            pRangeChartWorksheet.Name = "Range Chart"
         End If
         'Create Charts Worksheet
         Dim pChartsWorksheet As Worksheet = bkWorkBook.Sheets.Add
-        pChartsWorksheet.Name = "Charts"
+        pChartsWorksheet.Name = "Chart"
 
         Dim pInputRaster As IGeoDataset = Nothing
 
@@ -2617,6 +2611,11 @@ Public Class frmSiteScenario
             Dim PrecipPath As String = Nothing
             Dim PRISMRasterName As String = Nothing
             SetPrecipPathInfo(mapsSettings, PrecipPath, PRISMRasterName)
+            If Not BA_File_Exists(PrecipPath + "\" + PRISMRasterName, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                MessageBox.Show("Unable to locate precipitation layer: " + PrecipPath + "\" + PRISMRasterName + _
+                                "! The tables cannot be created.", "BAGIS", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Exit Sub
+            End If
             response = BA_Excel_CreatePRISMTable(AOIFolderBase, pPRISMWorkSheet, pSubElvWorksheet, MaxPRISMValue, _
                                                  PrecipPath & "\" + PRISMRasterName, AOI_DEMMin, conversionFactor, OptZMeters.Checked)
 
@@ -2784,6 +2783,9 @@ Public Class frmSiteScenario
         Dim filePathName As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + _
             "\" + BA_MapParameterFile
         If BA_File_ExistsWindowsIO(filePathName) Then
+            'This list corresponds to the values in frmGenerateMaps.CmboxElevInterval
+            Dim lstElevationInterval As IList(Of String) = _
+                New List(Of String) From {"50", "100", "200", "250", "500", "1000", "2500", "5000"}
             Using sr As IO.StreamReader = New IO.StreamReader(filePathName)
                 'read the version text
                 Dim linestring As String = sr.ReadLine
@@ -2803,7 +2805,42 @@ Public Class frmSiteScenario
                 Else
                     retSettings.ZMeters = False
                 End If
-
+                'prepare the elevation interval list
+                linestring = sr.ReadLine
+                Dim idxElevation As Integer = 0
+                If IsValidInteger(linestring) Then idxElevation = CInt(linestring)
+                If lstElevationInterval.Count > (idxElevation + 1) Then
+                    retSettings.ElevationInterval = lstElevationInterval.Item(idxElevation)
+                End If
+                linestring = sr.ReadLine    'Elevation class number
+                Dim listCount As Integer = 0
+                If IsValidInteger(linestring) Then listCount = CInt(linestring)
+                For i As Integer = 0 To listCount - 1
+                    linestring = sr.ReadLine    'throw this away; we don't need it
+                Next
+                'prepare the PRISM list
+                linestring = sr.ReadLine
+                retSettings.IdxPrecipType = Val(linestring)
+                'ignore rest of PRISM settings; Not used
+                linestring = sr.ReadLine    'Begin date
+                linestring = sr.ReadLine    'End date
+                linestring = sr.ReadLine    'Min precip
+                linestring = sr.ReadLine    'Max precip
+                linestring = sr.ReadLine    'Precip range
+                linestring = sr.ReadLine    'Precip interval
+                linestring = sr.ReadLine    'Number of precip zones
+                linestring = sr.ReadLine    'Precip zones listbox; throw away, not used
+                listCount = Val(Trim(linestring))
+                If listCount > 0 Then
+                    For i = 1 To listCount
+                        linestring = sr.ReadLine
+                    Next
+                End If
+                linestring = sr.ReadLine    'number of subdivision
+                'subrange analysis settings
+                retSettings.UseSubRange = Convert.ToBoolean(sr.ReadLine)
+                retSettings.SubRangeFromElev = sr.ReadLine
+                retSettings.SubRangeToElev = sr.ReadLine
             End Using
         Else
             MessageBox.Show("Unable to open the maps settings file. Please configure the settings from the Map Settings screen!", _
