@@ -2465,6 +2465,13 @@ Public Class frmSiteScenario
         If dictPSite.Keys.Count > 0 Then _
             AOI_HasPseudoSite = True
 
+        Dim createRepresentedPrecip As Boolean = False
+        Dim repPrecipLayerPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + _
+                                           BA_TablePrecMeanElev
+        If BA_File_Exists(repPrecipLayerPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
+            createRepresentedPrecip = True
+        End If
+
         'Declare Excel object variables
         Dim objExcel As New Microsoft.Office.Interop.Excel.Application
         Dim bkWorkBook As Workbook 'a file in excel
@@ -2519,6 +2526,24 @@ Public Class frmSiteScenario
             pRangeChartWorksheet = bkWorkBook.Sheets.Add
             pRangeChartWorksheet.Name = "Range Chart"
         End If
+
+        Dim pPrecipDemElevWorksheet As Worksheet = Nothing
+        Dim pPrecipSiteWorksheet As Worksheet = Nothing
+        Dim pPrecipChartWorksheet As Worksheet = Nothing
+        If createRepresentedPrecip = True Then
+            'Create Elevation Precipitation Worksheet
+            pPrecipDemElevWorksheet = bkWorkBook.Sheets.Add
+            pPrecipDemElevWorksheet.Name = "Elev-Precip AOI"
+
+            'Create Site Precipitation Worksheet
+            pPrecipSiteWorksheet = bkWorkBook.Sheets.Add
+            pPrecipSiteWorksheet.Name = "Elev-Precip Sites"
+
+            'Create Elev-Precip chart Worksheet
+            pPrecipChartWorksheet = bkWorkBook.Sheets.Add
+            pPrecipChartWorksheet.Name = "Elev-Precip Chart"
+        End If
+
         'Create Charts Worksheet
         Dim pChartsWorksheet As Worksheet = bkWorkBook.Sheets.Add
         pChartsWorksheet.Name = "Chart"
@@ -2629,6 +2654,48 @@ Public Class frmSiteScenario
             response = BA_Excel_CopyCells(pAreaElvWorksheet, 3, pPRISMWorkSheet, 12)
             response = BA_Excel_CopyCells(pAreaElvWorksheet, 10, pPRISMWorkSheet, 13)
             response = BA_Excel_PrecipitationVolume(pPRISMWorkSheet, 12, 7, 14, 15)
+
+            If createRepresentedPrecip = True = True Then
+                pStepProg.Message = "Creating Elevation-Precipitation Correlation Charts..."
+                pStepProg.Step()
+
+                Dim partitionFileName As String = BA_FindElevPrecipRasterName(BA_RasterPartPrefix)
+                If String.IsNullOrEmpty(partitionFileName) Then partitionFileName = BA_UNKNOWN
+                Dim partitionFieldName As String = BA_UNKNOWN
+                If Not partitionFileName.Equals(BA_UNKNOWN) Then
+                    partitionFieldName = partitionFileName.Substring(BA_RasterPartPrefix.Length)
+                End If
+                Dim zonesFileName As String = BA_FindElevPrecipRasterName(BA_ZonesRasterPrefix)
+                Dim zonesFieldName As String = Nothing
+                If Not String.IsNullOrEmpty(zonesFileName) Then
+                    zonesFieldName = BA_FIELD_VALUE
+                End If
+
+                Dim demTitleUnit As MeasurementUnit = MeasurementUnit.Feet
+                If OptZMeters.Checked Then
+                    demTitleUnit = MeasurementUnit.Meters
+                End If
+
+                Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
+                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, conversionFactor, _
+                    MeasurementUnit.Inches, partitionFieldName, zonesFileName, zonesFieldName)
+                If success = BA_ReturnCode.Success Then
+                    success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
+                                                         BA_Precip, BA_SiteElevField, BA_SiteNameField, _
+                                                         BA_SiteTypeField, BA_Aspect, partitionFieldName, _
+                                                         pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName, _
+                                                         zonesFileName, conversionFactor)
+
+                    If success = BA_ReturnCode.Success Then
+                        Dim demChartMin As Integer = Math.Floor(Convert.ToDouble(txtMinElev.Text) / 100) * 100
+                        Dim prismChartMin As Integer = Math.Floor(Convert.ToDouble(mapsSettings.MinimumPrecip)) - 1
+                        success = BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pPrecipSiteWorksheet, _
+                                                                pPrecipChartWorksheet, _
+                                                                demTitleUnit, MeasurementUnit.Inches, _
+                                                                demChartMin, prismChartMin)
+                    End If
+                End If
+            End If
 
             If mapsSettings.UseSubRange = True Then
                 pStepProg.Message = "Creating Elevation Range Tables and Charts..."
@@ -2824,7 +2891,7 @@ Public Class frmSiteScenario
                 'ignore rest of PRISM settings; Not used
                 linestring = sr.ReadLine    'Begin date
                 linestring = sr.ReadLine    'End date
-                linestring = sr.ReadLine    'Min precip
+                retSettings.MinimumPrecip = sr.ReadLine    'Min precip
                 linestring = sr.ReadLine    'Max precip
                 linestring = sr.ReadLine    'Precip range
                 linestring = sr.ReadLine    'Precip interval

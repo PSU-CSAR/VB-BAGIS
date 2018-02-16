@@ -932,12 +932,12 @@ Public Class frmGenerateMaps
                     Else
                         ElevPrecipLayersReady = False
                     End If
-                    Dim partitionFileName As String = FindElevPrecipRasterName(BA_RasterPartPrefix)
+                    Dim partitionFileName As String = BA_FindElevPrecipRasterName(BA_RasterPartPrefix)
                     If Not String.IsNullOrEmpty(partitionFileName) Then
                         LblPartitionLayer.Text = partitionFileName.Substring(BA_RasterPartPrefix.Length)
                         m_partitionRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName
                     End If
-                    Dim zonesFileName As String = FindElevPrecipRasterName(BA_ZonesRasterPrefix)
+                    Dim zonesFileName As String = BA_FindElevPrecipRasterName(BA_ZonesRasterPrefix)
                     If Not String.IsNullOrEmpty(zonesFileName) Then
                         m_zoneRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + zonesFileName
                         OptAggZone.Checked = True
@@ -2123,8 +2123,8 @@ Public Class frmGenerateMaps
                         Dim partitionFileName As String = "tmpPartition"
                         If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
                             'Extract PARTITION values to sites
-                             success = BA_ExtractValuesToPoints(tempSnotelPrecipPath, m_partitionRasterPath, _
-                                                               BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName, _
+                            success = BA_ExtractValuesToPoints(tempSnotelPrecipPath, m_partitionRasterPath, _
+                                                              BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName, _
                                                                PrecipPath + "\" + PRISMRasterName, True)
                             If success = BA_ReturnCode.Success Then
                                 'Rename extracted partition field
@@ -2607,7 +2607,7 @@ Public Class frmGenerateMaps
         'If no new partition raster was selected
         If String.IsNullOrEmpty(frmPartitionRaster.RasterPath) Then
             ' Delete existing partition raster if it exists
-            Dim deleteFileName As String = FindElevPrecipRasterName(BA_RasterPartPrefix)
+            Dim deleteFileName As String = BA_FindElevPrecipRasterName(BA_RasterPartPrefix)
             If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + deleteFileName, _
                               WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
                 BA_RemoveRasterFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), deleteFileName)
@@ -2763,22 +2763,6 @@ Public Class frmGenerateMaps
 
     End Function
 
-    Private Function FindElevPrecipRasterName(ByVal searchPrefix As String) As String
-        Dim AOIVectorList() As String = Nothing
-        Dim AOIRasterList() As String = Nothing
-        Dim layerPath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Analysis)
-        BA_ListLayersinGDB(layerPath, AOIRasterList, AOIVectorList)
-        Dim RasterCount As Integer = UBound(AOIRasterList)
-        If RasterCount > 0 Then
-            For i = 1 To RasterCount
-                If AOIRasterList(i).IndexOf(searchPrefix) = 0 Then
-                    Return AOIRasterList(i)
-                End If
-            Next
-        End If
-        Return Nothing
-    End Function
-
     Private Sub ChkRepresentedPrecip_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles ChkRepresentedPrecip.CheckedChanged
         OptAggPrism.Enabled = ChkRepresentedPrecip.Checked
         OptAggZone.Enabled = ChkRepresentedPrecip.Checked
@@ -2860,7 +2844,7 @@ Public Class frmGenerateMaps
 
         If String.IsNullOrEmpty(frmElevPrecip.RasterPath) Then
             ' Delete existing partition raster if it exists
-            Dim deleteFileName As String = FindElevPrecipRasterName(BA_ZonesRasterPrefix)
+            Dim deleteFileName As String = BA_FindElevPrecipRasterName(BA_ZonesRasterPrefix)
             If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + deleteFileName, _
                               WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
                 BA_RemoveRasterFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), deleteFileName)
