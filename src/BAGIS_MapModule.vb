@@ -217,16 +217,6 @@ Module BAGIS_MapModule
 
     End Function
 
-    ''Returns the Site entry associated with the Site's String representation
-    Public Function BA_GetSiteType(ByVal siteText As String) As SiteType
-        For Each pType As SiteType In [Enum].GetValues(GetType(SiteType))
-            If pType.ToString = siteText Then
-                Return pType
-            End If
-        Next
-        Return Nothing
-    End Function
-
     'Deletes a site according to its object id
     Public Function BA_DeleteSite(ByVal folderPath As String, ByVal fileName As String, _
                                   ByVal dSite As Site) As BA_ReturnCode

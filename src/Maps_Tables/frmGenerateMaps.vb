@@ -2510,7 +2510,7 @@ Public Class frmGenerateMaps
                                                          BA_Precip, BA_SiteElevField, BA_SiteNameField, _
                                                          BA_SiteTypeField, BA_Aspect, partitionFieldName, _
                                                          pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName, _
-                                                         zonesFileName, conversionFactor)
+                                                         zonesFileName, conversionFactor, Nothing)
 
                     If success = BA_ReturnCode.Success Then
                         Dim demChartMin As Integer = Math.Floor(Convert.ToDouble(txtMinElev.Text) / 100) * 100

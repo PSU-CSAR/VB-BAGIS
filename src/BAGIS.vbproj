@@ -171,7 +171,6 @@
     </Compile>
     <Compile Include="Buttons\BtnWebServices.vb" />
     <Compile Include="enumerations\SiteScenarioLayerType.vb" />
-    <Compile Include="enumerations\SiteType.vb" />
     <Compile Include="Forms\FrmSettingsOld.Designer.vb">
       <DependentUpon>FrmSettingsOld.vb</DependentUpon>
     </Compile>
@@ -371,7 +370,6 @@
     <Compile Include="Objects\PseudoSite.vb" />
     <Compile Include="Objects\LayerDownload.vb" />
     <Compile Include="Objects\Settings.vb" />
-    <Compile Include="Objects\Site.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AOI\frmCreateAOIfromExistingBND.resx">

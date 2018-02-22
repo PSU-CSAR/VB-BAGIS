@@ -49,8 +49,6 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_SiteElevField = "BA_SELEV"
     Public Const BA_RasterValu = "RASTERVALU"   'Field generated when using BA_ExtractValuesToPoints to populate BA_SELEV from DEM
     Public Const BA_SiteTypeField = "BA_STYPE"
-    Public Const BA_SiteSnotel = "stel"
-    Public Const BA_SiteSnowCourse = "scos"
     Public Const BA_Aspect = "BA_ASPECT"
     Public Const BA_Precip = "BA_PRECIP"
 

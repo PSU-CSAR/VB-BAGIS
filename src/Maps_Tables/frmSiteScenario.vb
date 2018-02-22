@@ -1250,11 +1250,11 @@ Public Class frmSiteScenario
                     Dim strType As String = nextRow.Cells(idxSiteType).Value
                     Dim siteType As SiteType = BA_GetSiteType(strType)
                     Select Case siteType
-                        Case BAGIS.SiteType.Snotel
+                        Case BAGIS_ClassLibrary.SiteType.Snotel
                             lstActualSnotelId.Add(Convert.ToString(nextRow.Cells(idxObjectId).Value))
-                        Case BAGIS.SiteType.SnowCourse
+                        Case BAGIS_ClassLibrary.SiteType.SnowCourse
                             lstActualSnowCourseId.Add(Convert.ToString(nextRow.Cells(idxObjectId).Value))
-                        Case BAGIS.SiteType.Pseudo
+                        Case BAGIS_ClassLibrary.SiteType.Pseudo
                             lstActualPseudoId.Add(Convert.ToString(nextRow.Cells(idxObjectId).Value))
                     End Select
                 End If
@@ -1263,12 +1263,12 @@ Public Class frmSiteScenario
                 Dim strType As String = nextRow.Cells(idxSiteType - 1).Value
                 Dim siteType As SiteType = BA_GetSiteType(strType)
                 Select Case siteType
-                    Case BAGIS.SiteType.Snotel
+                    Case BAGIS_ClassLibrary.SiteType.Snotel
                         'Not checking to see if the id is already in the list because the query result will be the same
                         lstPseudoSnotelId.Add(Convert.ToString(nextRow.Cells(idxObjectId - 1).Value))
-                    Case BAGIS.SiteType.SnowCourse
+                    Case BAGIS_ClassLibrary.SiteType.SnowCourse
                         lstPseudoSnowCourseId.Add(Convert.ToString(nextRow.Cells(idxObjectId - 1).Value))
-                    Case BAGIS.SiteType.Pseudo
+                    Case BAGIS_ClassLibrary.SiteType.Pseudo
                         lstPseudoPseudoId.Add(Convert.ToString(nextRow.Cells(idxObjectId - 1).Value))
                 End Select
             Next
@@ -1724,11 +1724,11 @@ Public Class frmSiteScenario
                     Dim siteType As SiteType = BA_GetSiteType(Convert.ToString(pRow.Cells(idxSiteType).Value))
                     Dim oid As Int32 = Convert.ToInt32(pRow.Cells(idxObjectId).Value)
                     Select Case siteType
-                        Case BAGIS.SiteType.Snotel
+                        Case BAGIS_ClassLibrary.SiteType.Snotel
                             snotelList.Add(oid)
-                        Case BAGIS.SiteType.SnowCourse
+                        Case BAGIS_ClassLibrary.SiteType.SnowCourse
                             snowCourseList.Add(oid)
-                        Case BAGIS.SiteType.Pseudo
+                        Case BAGIS_ClassLibrary.SiteType.Pseudo
                             pseudoList.Add(oid)
                     End Select
                 End If
@@ -1807,11 +1807,11 @@ Public Class frmSiteScenario
                 Dim siteType As SiteType = BA_GetSiteType(Convert.ToString(pRow.Cells(idxSiteType - 1).Value))
                 Dim oid As Int32 = Convert.ToInt32(pRow.Cells(idxObjectId - 1).Value)
                 Select Case siteType
-                    Case BAGIS.SiteType.Snotel
+                    Case BAGIS_ClassLibrary.SiteType.Snotel
                         snotelList.Add(oid)
-                    Case BAGIS.SiteType.SnowCourse
+                    Case BAGIS_ClassLibrary.SiteType.SnowCourse
                         snowCourseList.Add(oid)
-                    Case BAGIS.SiteType.Pseudo
+                    Case BAGIS_ClassLibrary.SiteType.Pseudo
                         pseudoList.Add(oid)
                 End Select
             Next
@@ -2676,6 +2676,14 @@ Public Class frmSiteScenario
                     demTitleUnit = MeasurementUnit.Meters
                 End If
 
+                Dim sitesList As IList(Of Site) = New List(Of Site)
+                For Each pRow As DataGridViewRow In GrdScenario1.Rows
+                    Dim nextSite As Site = CreateSiteFromRow(pRow, False)
+                    If nextSite.IncludeInAnalysis = True Then
+                        sitesList.Add(nextSite)
+                    End If
+                Next
+
                 Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
                     PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, conversionFactor, _
                     MeasurementUnit.Inches, partitionFieldName, zonesFileName, zonesFieldName)
@@ -2684,7 +2692,7 @@ Public Class frmSiteScenario
                                                          BA_Precip, BA_SiteElevField, BA_SiteNameField, _
                                                          BA_SiteTypeField, BA_Aspect, partitionFieldName, _
                                                          pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName, _
-                                                         zonesFileName, conversionFactor)
+                                                         zonesFileName, conversionFactor, sitesList)
 
                     If success = BA_ReturnCode.Success Then
                         Dim demChartMin As Integer = Math.Floor(Convert.ToDouble(txtMinElev.Text) / 100) * 100
