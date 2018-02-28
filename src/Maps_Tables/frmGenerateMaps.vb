@@ -1138,8 +1138,6 @@ Public Class frmGenerateMaps
     Private Sub chkUseRange_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkUseRange.CheckedChanged
         lblFromElev.Enabled = chkUseRange.Checked
         lblToElev.Enabled = chkUseRange.Checked
-        txtFromElev.Enabled = chkUseRange.Checked
-        txtToElev.Enabled = chkUseRange.Checked
         OptSelFrom.Enabled = chkUseRange.Checked
         OptSelTo.Enabled = chkUseRange.Checked
         lblSelectType.Enabled = chkUseRange.Checked

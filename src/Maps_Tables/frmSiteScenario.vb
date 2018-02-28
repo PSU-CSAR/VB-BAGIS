@@ -2370,9 +2370,9 @@ Public Class frmSiteScenario
             Dim units As String = MeasurementUnit.Meters.ToString
             If mapsSettings.ZMeters = False Then _
                 units = MeasurementUnit.Feet.ToString
-            MessageBox.Show("The elevation units on the Map Settings " + _
-                            "screen are " + units + ". Specified Elevation Range will not be used! " + _
-                            "Change the units on this screen to match the Map Settings " + _
+            MessageBox.Show("The elevation units on the Generate Maps " + _
+                            "tool are " + units + ". Specified Elevation Range will not be used! " + _
+                            "Change the units on this screen to match the Generate Maps tool " + _
                             "to generate tables for the Specified Elevation Range. ", "BAGIS", _
                             MessageBoxButtons.OK, MessageBoxIcon.Information)
         End If
@@ -2924,4 +2924,11 @@ Public Class frmSiteScenario
         Return retSettings
     End Function
 
+    Private Sub BtnTableHelp_Click(sender As System.Object, e As System.EventArgs) Handles BtnTableHelp.Click
+        Dim sb As StringBuilder = New StringBuilder
+        sb.Append("Use the Generate Maps menu item to view/update the elevation interval, ")
+        sb.Append("specified elevation range, or PRISM data settings that are used when ")
+        sb.Append("generating the Site Scenario tables.")
+        MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.None)
+    End Sub
 End Class

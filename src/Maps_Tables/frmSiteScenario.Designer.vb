@@ -86,6 +86,7 @@ Partial Class frmSiteScenario
         Me.BtnAutoPseudo = New System.Windows.Forms.Button()
         Me.BtnAutoLog = New System.Windows.Forms.Button()
         Me.BtnTables = New System.Windows.Forms.Button()
+        Me.BtnTableHelp = New System.Windows.Forms.Button()
         CType(Me.GrdScenario1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.GrdScenario2, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
@@ -377,7 +378,7 @@ Partial Class frmSiteScenario
         '
         Me.BtnCalculate.Enabled = False
         Me.BtnCalculate.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnCalculate.Location = New System.Drawing.Point(224, 105)
+        Me.BtnCalculate.Location = New System.Drawing.Point(202, 105)
         Me.BtnCalculate.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnCalculate.Name = "BtnCalculate"
         Me.BtnCalculate.Size = New System.Drawing.Size(79, 22)
@@ -473,7 +474,7 @@ Partial Class frmSiteScenario
         '
         Me.BtnViewResult.Enabled = False
         Me.BtnViewResult.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnViewResult.Location = New System.Drawing.Point(312, 130)
+        Me.BtnViewResult.Location = New System.Drawing.Point(290, 130)
         Me.BtnViewResult.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnViewResult.Name = "BtnViewResult"
         Me.BtnViewResult.Size = New System.Drawing.Size(63, 22)
@@ -583,7 +584,7 @@ Partial Class frmSiteScenario
         'BtnAbout
         '
         Me.BtnAbout.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnAbout.Location = New System.Drawing.Point(161, 105)
+        Me.BtnAbout.Location = New System.Drawing.Point(139, 105)
         Me.BtnAbout.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnAbout.Name = "BtnAbout"
         Me.BtnAbout.Size = New System.Drawing.Size(55, 22)
@@ -734,7 +735,7 @@ Partial Class frmSiteScenario
         '
         Me.BtnTables.Enabled = False
         Me.BtnTables.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnTables.Location = New System.Drawing.Point(312, 105)
+        Me.BtnTables.Location = New System.Drawing.Point(290, 105)
         Me.BtnTables.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnTables.Name = "BtnTables"
         Me.BtnTables.Size = New System.Drawing.Size(63, 22)
@@ -742,12 +743,25 @@ Partial Class frmSiteScenario
         Me.BtnTables.Text = "Tables"
         Me.BtnTables.UseVisualStyleBackColor = True
         '
+        'BtnTableHelp
+        '
+        Me.BtnTableHelp.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnTableHelp.ForeColor = System.Drawing.Color.Blue
+        Me.BtnTableHelp.Location = New System.Drawing.Point(354, 105)
+        Me.BtnTableHelp.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnTableHelp.Name = "BtnTableHelp"
+        Me.BtnTableHelp.Size = New System.Drawing.Size(25, 22)
+        Me.BtnTableHelp.TabIndex = 85
+        Me.BtnTableHelp.Text = "?"
+        Me.BtnTableHelp.UseVisualStyleBackColor = True
+        '
         'frmSiteScenario
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink
+        Me.Controls.Add(Me.BtnTableHelp)
         Me.Controls.Add(Me.BtnTables)
         Me.Controls.Add(Me.BtnAutoLog)
         Me.Controls.Add(Me.BtnAutoPseudo)
@@ -866,5 +880,6 @@ Partial Class frmSiteScenario
     Friend WithEvents BtnAutoPseudo As System.Windows.Forms.Button
     Friend WithEvents BtnAutoLog As System.Windows.Forms.Button
     Friend WithEvents BtnTables As System.Windows.Forms.Button
+    Friend WithEvents BtnTableHelp As System.Windows.Forms.Button
 
 End Class
