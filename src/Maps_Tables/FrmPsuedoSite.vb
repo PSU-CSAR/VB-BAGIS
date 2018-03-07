@@ -1332,7 +1332,7 @@ Public Class FrmPsuedoSite
             If success = BA_ReturnCode.Success Then
                 Dim elev As Double = 9999.0
                 fClass = BA_OpenFeatureClassFromGDB(m_analysisFolder, tempFileName)
-                Dim idxElev As Short = fClass.Fields.FindField(BA_RasterValu)
+                Dim idxElev As Short = fClass.Fields.FindField(BA_FIELD_RASTERVALU)
                 If idxElev > -1 Then
                     aCursor = fClass.Search(Nothing, False)
                     aFeature = aCursor.NextFeature

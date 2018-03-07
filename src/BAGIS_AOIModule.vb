@@ -723,10 +723,10 @@ Module BAGIS_AOIModule
                                                                     snapRasterPath, False)
             If success = BA_ReturnCode.Success Then
                 Dim expressType As String = "VB"
-                Dim expression As String = "[" + BA_RasterValu + "]"
+                Dim expression As String = "[" + BA_FIELD_RASTERVALU + "]"
                 success = BA_CalculateField(outPointFeatures, BA_SiteElevField, expression, expressType)
                 If success = BA_ReturnCode.Success Then
-                    success = BA_DeleteFieldFromFeatureClass(File_Path, outPointFile, BA_RasterValu)
+                    success = BA_DeleteFieldFromFeatureClass(File_Path, outPointFile, BA_FIELD_RASTERVALU)
                     If success = BA_ReturnCode.Success Then
                         success = BA_Remove_ShapefileFromGDB(File_Path, File_Name)
                     End If

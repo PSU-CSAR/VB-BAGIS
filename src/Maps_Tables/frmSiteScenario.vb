@@ -2655,25 +2655,38 @@ Public Class frmSiteScenario
             response = BA_Excel_CopyCells(pAreaElvWorksheet, 10, pPRISMWorkSheet, 13)
             response = BA_Excel_PrecipitationVolume(pPRISMWorkSheet, 12, 7, 14, 15)
 
-            If createRepresentedPrecip = True = True Then
+            If createRepresentedPrecip = True Then
                 pStepProg.Message = "Creating Elevation-Precipitation Correlation Charts..."
                 pStepProg.Step()
 
                 Dim partitionFileName As String = BA_FindElevPrecipRasterName(BA_RasterPartPrefix)
                 If String.IsNullOrEmpty(partitionFileName) Then partitionFileName = BA_UNKNOWN
                 Dim partitionFieldName As String = BA_UNKNOWN
+                Dim partitionRasterPath As String = Nothing
                 If Not partitionFileName.Equals(BA_UNKNOWN) Then
                     partitionFieldName = partitionFileName.Substring(BA_RasterPartPrefix.Length)
+                    partitionRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName
                 End If
                 Dim zonesFileName As String = BA_FindElevPrecipRasterName(BA_ZonesRasterPrefix)
                 Dim zonesFieldName As String = Nothing
+                Dim zonesRasterPath As String = Nothing
                 If Not String.IsNullOrEmpty(zonesFileName) Then
                     zonesFieldName = BA_FIELD_VALUE
+                    zonesRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + zonesFileName
                 End If
 
                 Dim demTitleUnit As MeasurementUnit = MeasurementUnit.Feet
                 If OptZMeters.Checked Then
                     demTitleUnit = MeasurementUnit.Meters
+                End If
+
+                If AOI_HasPseudoSite = True Then
+                    Dim pSitePath As String = BA_CreatePseudoSitesLayer(AOIFolderBase, BA_SiteTypeField, _
+                                                                    PrecipPath + "\" + PRISMRasterName, partitionRasterPath, _
+                                                                    BA_RasterPartPrefix, zonesRasterPath, BA_ZonesRasterPrefix, _
+                                                                    BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_RasterAspectZones, _
+                                                                    mapsSettings.AspectDirections)
+
                 End If
 
                 Dim sitesList As IList(Of Site) = New List(Of Site)
@@ -2685,12 +2698,12 @@ Public Class frmSiteScenario
                 Next
 
                 Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
-                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_Aspect, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, conversionFactor, _
+                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_FIELD_ASPECT, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, conversionFactor, _
                     MeasurementUnit.Inches, partitionFieldName, zonesFileName, zonesFieldName)
                 If success = BA_ReturnCode.Success Then
                     success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
-                                                         BA_Precip, BA_SiteElevField, BA_SiteNameField, _
-                                                         BA_SiteTypeField, BA_Aspect, partitionFieldName, _
+                                                         BA_FIELD_PRECIP, BA_SiteElevField, BA_SiteNameField, _
+                                                         BA_SiteTypeField, BA_FIELD_ASPECT, partitionFieldName, _
                                                          pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName, _
                                                          zonesFileName, conversionFactor, sitesList)
 
@@ -2853,6 +2866,11 @@ Public Class frmSiteScenario
         Return conversionFactor
     End Function
 
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <returns></returns>
+    ''' <remarks></remarks>
     Private Function ReadMapSettings() As MapsSettings
         Dim retSettings As MapsSettings = Nothing
         Dim filePathName As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + _
@@ -2916,6 +2934,14 @@ Public Class frmSiteScenario
                 retSettings.UseSubRange = Convert.ToBoolean(sr.ReadLine)
                 retSettings.SubRangeFromElev = sr.ReadLine
                 retSettings.SubRangeToElev = sr.ReadLine
+                If sr.Peek > -1 Then 'check if additional parameters were added after BAGIS Ver 1. Aspect was added in version 2
+                    linestring = sr.ReadLine 'skip the REVISION text
+                    linestring = sr.ReadLine 'aspect
+                    Dim tokenstring() As String = linestring.Split(New Char(), " "c)
+                    If tokenstring(0).ToUpper = "ASPECT" Then
+                        retSettings.AspectDirections = tokenstring(1)
+                    End If
+                End If
             End Using
         Else
             MessageBox.Show("Unable to open the maps settings file. Please configure the settings from the Map Settings screen!", _

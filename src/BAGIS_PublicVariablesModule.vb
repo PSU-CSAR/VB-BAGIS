@@ -47,10 +47,8 @@ Module BAGIS_PublicVariablesModule
     'AOI snotel site, snow course site, and pseudo-site attributes
     Public Const BA_SiteNameField = "BA_SNAME"
     Public Const BA_SiteElevField = "BA_SELEV"
-    Public Const BA_RasterValu = "RASTERVALU"   'Field generated when using BA_ExtractValuesToPoints to populate BA_SELEV from DEM
     Public Const BA_SiteTypeField = "BA_STYPE"
-    Public Const BA_Aspect = "BA_ASPECT"
-    Public Const BA_Precip = "BA_PRECIP"
+
 
     'AOI pourpoint area and area unit field names
     Public Const BA_AOIShapeAreaField = "AOISHPAREA"

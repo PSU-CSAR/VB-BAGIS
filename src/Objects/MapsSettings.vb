@@ -9,5 +9,6 @@ Public Class MapsSettings
     Public SubRangeFromElev As String
     Public SubRangeToElev As String
     Public MinimumPrecip As String
+    Public AspectDirections As String = "8"  'Default
 
 End Class
