@@ -84,6 +84,7 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_MergedSites = "mergesites_v"
     Public Const BA_AspectPrec = "aspzoneprec"
     Public Const BA_ZonesRasterPrefix = "aggzone_"
+    Public Const BA_VectorAllSitesPrec = "sitesprec_v"
 
     'scenario output rasters
     Public Const BA_PseudoNP = "nppseduo"

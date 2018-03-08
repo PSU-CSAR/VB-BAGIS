@@ -2553,6 +2553,7 @@ Public Class frmSiteScenario
         'Declare progress indicator variables
         Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 15)
         Dim progressDialog2 As IProgressDialog2 = Nothing
+        Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
 
         Try
             progressDialog2 = BA_GetProgressDialog(pStepProg, "Generating Basin Analysis Tables", "Running...")
@@ -2582,7 +2583,7 @@ Public Class frmSiteScenario
 
             If AOI_HasSNOTEL Then
                 MessageKey = AOIMessageKey.Snotel
-                Dim success As BA_ReturnCode = GetUniqueSortedValues(dictSnotel, AOI_DEMMin, AOI_DEMMax, IntervalList)
+                success = GetUniqueSortedValues(dictSnotel, AOI_DEMMin, AOI_DEMMax, IntervalList)
                 If success = BA_ReturnCode.Success Then
                     'Open Input Raster and create the zone raster and vector
                     pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
@@ -2599,7 +2600,7 @@ Public Class frmSiteScenario
 
             If AOI_HasSnowCourse = True Then
                 MessageKey = AOIMessageKey.SnowCourse
-                Dim success As BA_ReturnCode = GetUniqueSortedValues(dictScos, AOI_DEMMin, AOI_DEMMax, IntervalList)
+                success = GetUniqueSortedValues(dictScos, AOI_DEMMin, AOI_DEMMax, IntervalList)
                 If success = BA_ReturnCode.Success Then
                     'Open Input Raster and create the zone raster and vector
                     pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
@@ -2616,7 +2617,7 @@ Public Class frmSiteScenario
 
             If AOI_HasPseudoSite = True Then
                 MessageKey = AOIMessageKey.Pseudo
-                Dim success As BA_ReturnCode = GetUniqueSortedValues(dictPSite, AOI_DEMMin, AOI_DEMMax, IntervalList)
+                success = GetUniqueSortedValues(dictPSite, AOI_DEMMin, AOI_DEMMax, IntervalList)
                 If success = BA_ReturnCode.Success Then
                     'Open Input Raster and create the zone raster and vector
                     pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
@@ -2681,12 +2682,20 @@ Public Class frmSiteScenario
                 End If
 
                 If AOI_HasPseudoSite = True Then
-                    Dim pSitePath As String = BA_CreatePseudoSitesLayer(AOIFolderBase, BA_SiteTypeField, _
+                    success = BA_CreatePseudoSitesLayer(AOIFolderBase, BA_SiteTypeField, _
                                                                     PrecipPath + "\" + PRISMRasterName, partitionRasterPath, _
                                                                     BA_RasterPartPrefix, zonesRasterPath, BA_ZonesRasterPrefix, _
                                                                     BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_RasterAspectZones, _
                                                                     mapsSettings.AspectDirections)
-
+                    If success = BA_ReturnCode.Success Then
+                        Dim sb As StringBuilder = New StringBuilder()
+                        sb.Append(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_EnumDescription(MapsFileName.PsitePrecVector))
+                        sb.Append("; ")
+                        sb.Append(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_VectorSnotelPrec)
+                        'Merge psites with snotel/snow course
+                        success = BA_MergeFeatures(sb.ToString, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + _
+                                                   BA_VectorAllSitesPrec, Nothing)
+                    End If
                 End If
 
                 Dim sitesList As IList(Of Site) = New List(Of Site)
@@ -2697,11 +2706,11 @@ Public Class frmSiteScenario
                     End If
                 Next
 
-                Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
+                success = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
                     PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_FIELD_ASPECT, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, conversionFactor, _
                     MeasurementUnit.Inches, partitionFieldName, zonesFileName, zonesFieldName)
                 If success = BA_ReturnCode.Success Then
-                    success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
+                    success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorAllSitesPrec, _
                                                          BA_FIELD_PRECIP, BA_SiteElevField, BA_SiteNameField, _
                                                          BA_SiteTypeField, BA_FIELD_ASPECT, partitionFieldName, _
                                                          pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName, _
