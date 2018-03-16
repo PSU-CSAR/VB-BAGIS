@@ -171,7 +171,6 @@
     </Compile>
     <Compile Include="Buttons\BtnWebServices.vb" />
     <Compile Include="enumerations\SiteScenarioLayerType.vb" />
-    <Compile Include="enumerations\SiteType.vb" />
     <Compile Include="Forms\FrmSettingsOld.Designer.vb">
       <DependentUpon>FrmSettingsOld.vb</DependentUpon>
     </Compile>
@@ -366,11 +365,11 @@
     <Compile Include="AOI\setPourPointtool.vb" />
     <Compile Include="Objects\Analysis.vb" />
     <Compile Include="Objects\AreaStatistics.vb" />
+    <Compile Include="Objects\MapsSettings.vb" />
     <Compile Include="Objects\PseudoSiteLayer.vb" />
     <Compile Include="Objects\PseudoSite.vb" />
     <Compile Include="Objects\LayerDownload.vb" />
     <Compile Include="Objects\Settings.vb" />
-    <Compile Include="Objects\Site.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AOI\frmCreateAOIfromExistingBND.resx">

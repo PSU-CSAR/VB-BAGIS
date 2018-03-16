@@ -9,6 +9,7 @@ Imports ESRI.ArcGIS.Geometry
 Imports ESRI.ArcGIS.Framework
 Imports ESRI.ArcGIS.Geodatabase
 Imports ESRI.ArcGIS.Carto
+Imports Microsoft.Office.Interop.Excel
 
 ''' <summary>
 ''' Designer class of the dockable window add-in. It contains user interfaces that
@@ -237,7 +238,9 @@ Public Class frmSiteScenario
 
         'Populate Boxes
         txtMinElev.Text = Math.Round(ES_DEMMin - 0.005, 2)
+        AOI_DEMMin = Math.Round(ES_DEMMin - 0.005, 2)
         txtMaxElev.Text = Math.Round(ES_DEMMax + 0.005, 2)
+        AOI_DEMMax = Math.Round(ES_DEMMax + 0.005, 2)
 
         'Retrieving the XY units from the filled_dem
         InitBufferDistance()
@@ -1029,12 +1032,12 @@ Public Class frmSiteScenario
                 For Each sRow As DataGridViewRow In GrdScenario1.Rows
                     Dim elev As Double = Convert.ToDouble(sRow.Cells(idxDefaultElevation).Value)
                     sRow.Cells(idxElevation).Value = Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet))
-                    Debug.Print(Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet)))
+                    'Debug.Print(Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet)))
                 Next
                 For Each sRow As DataGridViewRow In GrdScenario2.Rows
                     Dim elev As Double = Convert.ToDouble(sRow.Cells(idxDefaultElevation - 1).Value)
                     sRow.Cells(idxElevation - 1).Value = Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet))
-                    Debug.Print(Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet)))
+                    'Debug.Print(Math.Round(converter.ConvertUnits(elev, esriUnits.esriMeters, esriUnits.esriFeet)))
                 Next
             End If
             ManageUpperRange()
@@ -1247,11 +1250,11 @@ Public Class frmSiteScenario
                     Dim strType As String = nextRow.Cells(idxSiteType).Value
                     Dim siteType As SiteType = BA_GetSiteType(strType)
                     Select Case siteType
-                        Case BAGIS.SiteType.Snotel
+                        Case BAGIS_ClassLibrary.SiteType.Snotel
                             lstActualSnotelId.Add(Convert.ToString(nextRow.Cells(idxObjectId).Value))
-                        Case BAGIS.SiteType.SnowCourse
+                        Case BAGIS_ClassLibrary.SiteType.SnowCourse
                             lstActualSnowCourseId.Add(Convert.ToString(nextRow.Cells(idxObjectId).Value))
-                        Case BAGIS.SiteType.Pseudo
+                        Case BAGIS_ClassLibrary.SiteType.Pseudo
                             lstActualPseudoId.Add(Convert.ToString(nextRow.Cells(idxObjectId).Value))
                     End Select
                 End If
@@ -1260,12 +1263,12 @@ Public Class frmSiteScenario
                 Dim strType As String = nextRow.Cells(idxSiteType - 1).Value
                 Dim siteType As SiteType = BA_GetSiteType(strType)
                 Select Case siteType
-                    Case BAGIS.SiteType.Snotel
+                    Case BAGIS_ClassLibrary.SiteType.Snotel
                         'Not checking to see if the id is already in the list because the query result will be the same
                         lstPseudoSnotelId.Add(Convert.ToString(nextRow.Cells(idxObjectId - 1).Value))
-                    Case BAGIS.SiteType.SnowCourse
+                    Case BAGIS_ClassLibrary.SiteType.SnowCourse
                         lstPseudoSnowCourseId.Add(Convert.ToString(nextRow.Cells(idxObjectId - 1).Value))
-                    Case BAGIS.SiteType.Pseudo
+                    Case BAGIS_ClassLibrary.SiteType.Pseudo
                         lstPseudoPseudoId.Add(Convert.ToString(nextRow.Cells(idxObjectId - 1).Value))
                 End Select
             Next
@@ -1624,6 +1627,8 @@ Public Class frmSiteScenario
         If BA_File_Exists(analysisFolder & FileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             BtnMaps.Enabled = True
         End If
+        '@ToDo: May need to make this more selective
+        BtnTables.Enabled = BtnMaps.Enabled
     End Sub
 
     Private Sub BtnMaps_Click(sender As System.Object, e As System.EventArgs) Handles BtnMaps.Click
@@ -1719,11 +1724,11 @@ Public Class frmSiteScenario
                     Dim siteType As SiteType = BA_GetSiteType(Convert.ToString(pRow.Cells(idxSiteType).Value))
                     Dim oid As Int32 = Convert.ToInt32(pRow.Cells(idxObjectId).Value)
                     Select Case siteType
-                        Case BAGIS.SiteType.Snotel
+                        Case BAGIS_ClassLibrary.SiteType.Snotel
                             snotelList.Add(oid)
-                        Case BAGIS.SiteType.SnowCourse
+                        Case BAGIS_ClassLibrary.SiteType.SnowCourse
                             snowCourseList.Add(oid)
-                        Case BAGIS.SiteType.Pseudo
+                        Case BAGIS_ClassLibrary.SiteType.Pseudo
                             pseudoList.Add(oid)
                     End Select
                 End If
@@ -1802,11 +1807,11 @@ Public Class frmSiteScenario
                 Dim siteType As SiteType = BA_GetSiteType(Convert.ToString(pRow.Cells(idxSiteType - 1).Value))
                 Dim oid As Int32 = Convert.ToInt32(pRow.Cells(idxObjectId - 1).Value)
                 Select Case siteType
-                    Case BAGIS.SiteType.Snotel
+                    Case BAGIS_ClassLibrary.SiteType.Snotel
                         snotelList.Add(oid)
-                    Case BAGIS.SiteType.SnowCourse
+                    Case BAGIS_ClassLibrary.SiteType.SnowCourse
                         snowCourseList.Add(oid)
-                    Case BAGIS.SiteType.Pseudo
+                    Case BAGIS_ClassLibrary.SiteType.Pseudo
                         pseudoList.Add(oid)
                 End Select
             Next
@@ -1939,18 +1944,18 @@ Public Class frmSiteScenario
             pColor.RGB = RGB(0, 0, 255)
             retVal = BA_MapDisplayPointMarkers(My.ThisApplication, filepath & FileName, MapsLayerName.Snotel, pColor, MapsMarkerType.Snotel)
         End If
-            If AOI_HasSnowCourse Then
-                FileName = BA_EnumDescription(MapsFileName.SnowCourse)
-                pColor.RGB = RGB(0, 255, 255) 'cyan
-                retVal = BA_MapDisplayPointMarkers(My.ThisApplication, filepath & FileName, MapsLayerName.SnowCourse, pColor, MapsMarkerType.SnowCourse)
-            End If
-            If AOI_HasPseudoSite Then
-                FileName = BA_EnumDescription(MapsFileName.Pseudo)
+        If AOI_HasSnowCourse Then
+            FileName = BA_EnumDescription(MapsFileName.SnowCourse)
+            pColor.RGB = RGB(0, 255, 255) 'cyan
+            retVal = BA_MapDisplayPointMarkers(My.ThisApplication, filepath & FileName, MapsLayerName.SnowCourse, pColor, MapsMarkerType.SnowCourse)
+        End If
+        If AOI_HasPseudoSite Then
+            FileName = BA_EnumDescription(MapsFileName.Pseudo)
             pColor.RGB = RGB(255, 170, 0) 'electron gold
-                retVal = BA_MapDisplayPointMarkers(My.ThisApplication, filepath & FileName, MapsLayerName.pseudo_sites, pColor, MapsMarkerType.PseudoSite)
-            End If
+            retVal = BA_MapDisplayPointMarkers(My.ThisApplication, filepath & FileName, MapsLayerName.pseudo_sites, pColor, MapsMarkerType.PseudoSite)
+        End If
 
-            m_baseLayers = True
+        m_baseLayers = True
     End Sub
 
     Private Sub CalculateRepresentedArea()
@@ -2309,7 +2314,7 @@ Public Class frmSiteScenario
 
     Private Sub BtnAutoLog_Click(sender As System.Object, e As System.EventArgs) Handles BtnAutoLog.Click
         If GrdScenario1.SelectedRows.Count < 1 Then
-            MessageBox.Show("You need to select one autoo-site to view its log", "Select site", MessageBoxButtons.OK, _
+            MessageBox.Show("You need to select one auto-site to view its log", "Select site", MessageBoxButtons.OK, _
                 MessageBoxIcon.Information)
             Exit Sub
         ElseIf GrdScenario1.SelectedRows.Count > 1 Then
@@ -2353,5 +2358,612 @@ Public Class frmSiteScenario
             MessageBox.Show("The log could not be found for the site you selected. It is likely not an auto-site.", "Log not found", MessageBoxButtons.OK, _
                 MessageBoxIcon.Information)
         End If
+    End Sub
+
+    Private Sub BtnTables_Click(sender As System.Object, e As System.EventArgs) Handles BtnTables.Click
+
+        Dim mapsSettings As MapsSettings = ReadMapSettings()
+        Dim dblSubRangeFromElev = CDbl(mapsSettings.SubRangeFromElev)
+        Dim dblSubRangeToElev = CDbl(mapsSettings.SubRangeToElev)
+        If mapsSettings.ZMeters <> OptZMeters.Checked Then
+            mapsSettings.UseSubRange = False
+            Dim units As String = MeasurementUnit.Meters.ToString
+            If mapsSettings.ZMeters = False Then _
+                units = MeasurementUnit.Feet.ToString
+            MessageBox.Show("The elevation units on the Generate Maps " + _
+                            "tool are " + units + ". Specified Elevation Range will not be used! " + _
+                            "Change the units on this screen to match the Generate Maps tool " + _
+                            "to generate tables for the Specified Elevation Range. ", "BAGIS", _
+                            MessageBoxButtons.OK, MessageBoxIcon.Information)
+        End If
+
+        Dim EMinValue As Double = Val(txtMinElev.Text)
+        Dim EMaxValue As Double = Val(txtMaxElev.Text)
+        'set the y axis values of the excel charts
+        BA_Excel_SetYAxis(EMinValue, EMaxValue, CDbl(mapsSettings.ElevationInterval))
+
+        'verify elevation range values if used
+        If mapsSettings.UseSubRange = True Then
+            Dim subRangeConversionFactor As Double = CalculateConversionFactor(OptZMeters.Checked, mapsSettings.ZMeters)
+            dblSubRangeFromElev = Math.Round(dblSubRangeFromElev * subRangeConversionFactor, 2)
+            dblSubRangeToElev = Math.Round(dblSubRangeToElev * subRangeConversionFactor, 2)
+            'Ensure that rounding errors don't prevent subrange analysis; frmGenerateMaps uses different method to
+            'calculate AOI Min/Max DEM and to convert between feet/meters
+            If dblSubRangeFromElev < EMinValue Then
+                If (EMinValue - dblSubRangeFromElev) < 0.5 Then
+                    dblSubRangeFromElev = EMinValue
+                End If
+            End If
+            If dblSubRangeToElev > EMaxValue Then
+                If (dblSubRangeToElev - EMaxValue) < 0.5 Then
+                    dblSubRangeToElev = EMaxValue
+                End If
+            End If
+
+            If dblSubRangeFromElev < EMinValue Or _
+                dblSubRangeToElev > EMaxValue Or _
+                dblSubRangeFromElev >= dblSubRangeToElev Then
+                MsgBox("Invalid elevation range specified for localized analysis!")
+                Exit Sub
+            End If
+        End If
+
+        'Reset global variables; Read in the sites before we create the spreadsheets so tabs are in proper order
+        AOI_HasSNOTEL = False
+        AOI_HasSnowCourse = False
+        AOI_HasPseudoSite = False
+        Dim dictSnotel As IDictionary(Of String, String) = New Dictionary(Of String, String)
+        Dim dictScos As IDictionary(Of String, String) = New Dictionary(Of String, String)
+        Dim dictPSite As IDictionary(Of String, String) = New Dictionary(Of String, String)
+        For Each nextRow As DataGridViewRow In GrdScenario1.Rows
+            Dim bSelected As Boolean = Convert.ToBoolean(nextRow.Cells(idxSelected).Value)
+            If bSelected Then
+                Dim strSiteType As String = Convert.ToString(nextRow.Cells(idxSiteType).Value)
+                Dim strElev As String = Nothing
+                Dim strName As String = Nothing
+                Select Case strSiteType
+                    Case SiteType.Snotel.ToString
+                        strElev = Convert.ToString(nextRow.Cells(idxDefaultElevation).Value)    'default elevation always in same units as DEM
+                        strName = Convert.ToString(nextRow.Cells(idxSiteName).Value)
+                        If String.IsNullOrEmpty(strName) Then _
+                            strName = "Name missing"
+                        If dictSnotel.ContainsKey(strElev) Then
+                            Dim strNewName = dictSnotel(strElev) + ", " + strName
+                            dictSnotel(strElev) = strNewName
+                        Else
+                            dictSnotel.Add(strElev, strName)
+                        End If
+                    Case SiteType.SnowCourse.ToString
+                        strElev = Convert.ToString(nextRow.Cells(idxDefaultElevation).Value)    'default elevation always in same units as DEM
+                        strName = Convert.ToString(nextRow.Cells(idxSiteName).Value)
+                        If String.IsNullOrEmpty(strName) Then _
+                            strName = "Name missing"
+                        If dictScos.ContainsKey(strElev) Then
+                            Dim strNewName = dictScos(strElev) + ", " + strName
+                            dictScos(strElev) = strNewName
+                        Else
+                            dictScos.Add(strElev, strName)
+                        End If
+                    Case SiteType.Pseudo.ToString
+                        strElev = Convert.ToString(nextRow.Cells(idxDefaultElevation).Value)    'default elevation always in same units as DEM
+                        strName = Convert.ToString(nextRow.Cells(idxSiteName).Value)
+                        If String.IsNullOrEmpty(strName) Then _
+                            strName = "Name missing"
+                        If dictPSite.ContainsKey(strElev) Then
+                            Dim strNewName = dictPSite(strElev) + ", " + strName
+                            dictPSite(strElev) = strNewName
+                        Else
+                            dictPSite.Add(strElev, strName)
+                        End If
+                End Select
+            End If
+        Next
+        If dictSnotel.Keys.Count > 0 Then _
+            AOI_HasSNOTEL = True
+        If dictScos.Keys.Count > 0 Then _
+            AOI_HasSnowCourse = True
+        If dictPSite.Keys.Count > 0 Then _
+            AOI_HasPseudoSite = True
+
+        Dim createRepresentedPrecip As Boolean = False
+        Dim repPrecipLayerPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + _
+                                           BA_TablePrecMeanElev
+        If BA_File_Exists(repPrecipLayerPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
+            createRepresentedPrecip = True
+        End If
+
+        'Declare Excel object variables
+        Dim objExcel As New Microsoft.Office.Interop.Excel.Application
+        Dim bkWorkBook As Workbook 'a file in excel
+        bkWorkBook = objExcel.Workbooks.Add
+
+        'Dim variables for the range worksheets in case we need them later
+        Dim pSCRangeWorksheet As Worksheet = Nothing
+        Dim pElevationRangeWorksheet As Worksheet = Nothing
+        Dim pPrecipitationRangeWorksheet As Worksheet = Nothing
+        Dim pRangeChartWorksheet As Worksheet = Nothing
+        Dim pSTRangeWorksheet As Worksheet = Nothing
+        Dim pPseudoRangeWorksheet As Worksheet = Nothing
+
+        'Create Elevation Curve Worksheet for plotting curve
+        Dim pSubElvWorksheet As Worksheet = bkWorkBook.ActiveSheet
+        pSubElvWorksheet.Name = "Elevation Curve"
+        'Create SNOTEL Distribution Worksheet
+        Dim pSNOTELWorksheet As Worksheet = bkWorkBook.Sheets.Add
+        pSNOTELWorksheet.Name = "SNOTEL"
+        'Create Snow Course Distribution Worksheet
+        Dim pSnowCourseWorksheet As Worksheet = bkWorkBook.Sheets.Add
+        pSnowCourseWorksheet.Name = "Snow Course"
+        'Create P-Site Distribution Worksheet
+        Dim pPSiteWorksheet As Worksheet = bkWorkBook.Sheets.Add
+        pPSiteWorksheet.Name = "Pseudo Site"
+        'Create PRISM Worksheet
+        Dim pPRISMWorkSheet As Worksheet = bkWorkBook.Sheets.Add
+        pPRISMWorkSheet.Name = "PRISM"
+        'Create Elevation Distribution Worksheet
+        Dim pAreaElvWorksheet As Worksheet = bkWorkBook.Sheets.Add
+        pAreaElvWorksheet.Name = "Area Elevations"
+        If mapsSettings.UseSubRange = True Then
+            If AOI_HasSNOTEL Then
+                pSTRangeWorksheet = bkWorkBook.Sheets.Add
+                pSTRangeWorksheet.Name = "SNOTEL Range"
+            End If
+            If AOI_HasSnowCourse Then
+                pSCRangeWorksheet = bkWorkBook.Sheets.Add
+                pSCRangeWorksheet.Name = "Snow Course Range"
+            End If
+            If AOI_HasPseudoSite Then
+                pPseudoRangeWorksheet = bkWorkBook.Sheets.Add
+                pPseudoRangeWorksheet.Name = "Pseudo Site Range"
+            End If
+
+            pPrecipitationRangeWorksheet = bkWorkBook.Sheets.Add
+            pPrecipitationRangeWorksheet.Name = "PRISM Range"
+
+            pElevationRangeWorksheet = bkWorkBook.Sheets.Add
+            pElevationRangeWorksheet.Name = "Elevation Range"
+
+            pRangeChartWorksheet = bkWorkBook.Sheets.Add
+            pRangeChartWorksheet.Name = "Range Chart"
+        End If
+
+        Dim pPrecipDemElevWorksheet As Worksheet = Nothing
+        Dim pPrecipSiteWorksheet As Worksheet = Nothing
+        Dim pPrecipChartWorksheet As Worksheet = Nothing
+        If createRepresentedPrecip = True Then
+            'Create Elevation Precipitation Worksheet
+            pPrecipDemElevWorksheet = bkWorkBook.Sheets.Add
+            pPrecipDemElevWorksheet.Name = "Elev-Precip AOI"
+
+            'Create Site Precipitation Worksheet
+            pPrecipSiteWorksheet = bkWorkBook.Sheets.Add
+            pPrecipSiteWorksheet.Name = "Elev-Precip Sites"
+
+            'Create Elev-Precip chart Worksheet
+            pPrecipChartWorksheet = bkWorkBook.Sheets.Add
+            pPrecipChartWorksheet.Name = "Elev-Precip Chart"
+        End If
+
+        'Create Charts Worksheet
+        Dim pChartsWorksheet As Worksheet = bkWorkBook.Sheets.Add
+        pChartsWorksheet.Name = "Chart"
+
+        Dim pInputRaster As IGeoDataset = Nothing
+
+        'Declare progress indicator variables
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 15)
+        Dim progressDialog2 As IProgressDialog2 = Nothing
+        Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
+
+        Try
+            progressDialog2 = BA_GetProgressDialog(pStepProg, "Generating Basin Analysis Tables", "Running...")
+            pStepProg.Show()
+            progressDialog2.ShowDialog()
+            pStepProg.Step()
+
+            Dim conversionFactor As Double = CalculateConversionFactor(OptZMeters.Checked, m_demInMeters)
+            'AOI_DEMMin and AOIDEMMax are set when the aoi is loaded in LoadAOIInfo() method
+            Dim response As Integer = BA_Excel_CreateElevationTable(AOIFolderBase, pAreaElvWorksheet, conversionFactor, AOI_DEMMin, OptZMeters.Checked)
+            'create subdivided elevation table for plotting the curve
+            response = BA_Excel_CreateSubElevationTable(AOIFolderBase, pSubElvWorksheet, conversionFactor, AOI_DEMMin, OptZMeters.Checked)
+
+            '=============================================
+            ' Create Excel WorkSheets
+            '=============================================
+            pStepProg.Message = "Preparing Excel Spreadsheets..."
+            pStepProg.Step()
+
+            'Copy elevation/names into dictionary
+            Dim IntervalList() As BA_IntervalList = Nothing
+            Dim InputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces)
+            Dim InputName As String = BA_EnumDescription(MapsFileName.filled_dem_gdb)
+            Dim OutputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
+            Const NO_VECTOR_NAME As String = ""
+            Dim MessageKey As AOIMessageKey
+
+            If AOI_HasSNOTEL Then
+                MessageKey = AOIMessageKey.Snotel
+                success = GetUniqueSortedValues(dictSnotel, AOI_DEMMin, AOI_DEMMax, IntervalList)
+                If success = BA_ReturnCode.Success Then
+                    'Open Input Raster and create the zone raster and vector
+                    pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
+                    If pInputRaster IsNot Nothing Then
+                        response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, _
+                                                       OutputPath, BA_EnumDescription(MapsFileName.S1SnotelZone), _
+                                                       NO_VECTOR_NAME, MessageKey)
+                    End If
+                End If
+                pStepProg.Message = "Creating SNOTEL Table..."
+                pStepProg.Step()
+                response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSNOTELWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1SnotelZone), conversionFactor)
+            End If
+
+            If AOI_HasSnowCourse = True Then
+                MessageKey = AOIMessageKey.SnowCourse
+                success = GetUniqueSortedValues(dictScos, AOI_DEMMin, AOI_DEMMax, IntervalList)
+                If success = BA_ReturnCode.Success Then
+                    'Open Input Raster and create the zone raster and vector
+                    pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
+                    If pInputRaster IsNot Nothing Then
+                        response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, _
+                                                       OutputPath, BA_EnumDescription(MapsFileName.S1SnowCourseZone), _
+                                                       NO_VECTOR_NAME, MessageKey)
+                    End If
+                End If
+                pStepProg.Message = "Creating Snow Course Table..."
+                pStepProg.Step()
+                response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSnowCourseWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1SnowCourseZone), conversionFactor)
+            End If
+
+            If AOI_HasPseudoSite = True Then
+                MessageKey = AOIMessageKey.Pseudo
+                success = GetUniqueSortedValues(dictPSite, AOI_DEMMin, AOI_DEMMax, IntervalList)
+                If success = BA_ReturnCode.Success Then
+                    'Open Input Raster and create the zone raster and vector
+                    pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
+                    If pInputRaster IsNot Nothing Then
+                        response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, _
+                                                       OutputPath, BA_EnumDescription(MapsFileName.S1PseudoZone), _
+                                                       NO_VECTOR_NAME, MessageKey)
+                    End If
+                End If
+                pStepProg.Message = "Creating Psuedo Site Table..."
+                pStepProg.Step()
+                response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pPSiteWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.S1PseudoZone), conversionFactor)
+            End If
+
+            'Calculate file path for prism based on the form
+            Dim MaxPRISMValue As Double
+            Dim PrecipPath As String = Nothing
+            Dim PRISMRasterName As String = Nothing
+            SetPrecipPathInfo(mapsSettings, PrecipPath, PRISMRasterName)
+            If Not BA_File_Exists(PrecipPath + "\" + PRISMRasterName, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                MessageBox.Show("Unable to locate precipitation layer: " + PrecipPath + "\" + PRISMRasterName + _
+                                "! The tables cannot be created.", "BAGIS", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Exit Sub
+            End If
+            response = BA_Excel_CreatePRISMTable(AOIFolderBase, pPRISMWorkSheet, pSubElvWorksheet, MaxPRISMValue, _
+                                                 PrecipPath & "\" + PRISMRasterName, AOI_DEMMin, conversionFactor, OptZMeters.Checked)
+
+
+            response = BA_Excel_CreateCombinedChart(pPRISMWorkSheet, pSubElvWorksheet, pChartsWorksheet, pSnowCourseWorksheet, _
+                                            pSNOTELWorksheet, Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, MaxPRISMValue, _
+                                            OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse, pPSiteWorksheet, _
+                                            AOI_HasPseudoSite, BA_ChartSpacing)
+
+            'copy DEM area and %_area to the PRISM table
+            response = BA_Excel_CopyCells(pAreaElvWorksheet, 3, pPRISMWorkSheet, 12)
+            response = BA_Excel_CopyCells(pAreaElvWorksheet, 10, pPRISMWorkSheet, 13)
+            response = BA_Excel_PrecipitationVolume(pPRISMWorkSheet, 12, 7, 14, 15)
+
+            If createRepresentedPrecip = True Then
+                pStepProg.Message = "Creating Elevation-Precipitation Correlation Charts..."
+                pStepProg.Step()
+
+                Dim partitionFileName As String = BA_FindElevPrecipRasterName(BA_RasterPartPrefix)
+                If String.IsNullOrEmpty(partitionFileName) Then partitionFileName = BA_UNKNOWN
+                Dim partitionFieldName As String = BA_UNKNOWN
+                Dim partitionRasterPath As String = Nothing
+                If Not partitionFileName.Equals(BA_UNKNOWN) Then
+                    partitionFieldName = partitionFileName.Substring(BA_RasterPartPrefix.Length)
+                    partitionRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName
+                End If
+                Dim zonesFileName As String = BA_FindElevPrecipRasterName(BA_ZonesRasterPrefix)
+                Dim zonesFieldName As String = Nothing
+                Dim zonesRasterPath As String = Nothing
+                If Not String.IsNullOrEmpty(zonesFileName) Then
+                    zonesFieldName = BA_FIELD_VALUE
+                    zonesRasterPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + zonesFileName
+                End If
+
+                Dim demTitleUnit As MeasurementUnit = MeasurementUnit.Feet
+                If OptZMeters.Checked Then
+                    demTitleUnit = MeasurementUnit.Meters
+                End If
+
+                If AOI_HasPseudoSite = True Then
+                    success = BA_CreatePseudoSitesLayer(AOIFolderBase, BA_SiteTypeField, _
+                                                                    PrecipPath + "\" + PRISMRasterName, partitionRasterPath, _
+                                                                    BA_RasterPartPrefix, zonesRasterPath, BA_ZonesRasterPrefix, _
+                                                                    BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_RasterAspectZones, _
+                                                                    mapsSettings.AspectDirections)
+                    If success = BA_ReturnCode.Success Then
+                        Dim sb As StringBuilder = New StringBuilder()
+                        sb.Append(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_EnumDescription(MapsFileName.PsitePrecVector))
+                        sb.Append("; ")
+                        sb.Append(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_VectorSnotelPrec)
+                        'Merge psites with snotel/snow course
+                        success = BA_MergeFeatures(sb.ToString, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + _
+                                                   BA_VectorAllSitesPrec, Nothing)
+                    End If
+                End If
+
+                Dim sitesList As IList(Of Site) = New List(Of Site)
+                For Each pRow As DataGridViewRow In GrdScenario1.Rows
+                    Dim nextSite As Site = CreateSiteFromRow(pRow, False)
+                    If nextSite.IncludeInAnalysis = True Then
+                        sitesList.Add(nextSite)
+                    End If
+                Next
+
+                success = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
+                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_FIELD_ASPECT, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, conversionFactor, _
+                    MeasurementUnit.Inches, partitionFieldName, zonesFileName, zonesFieldName)
+                If success = BA_ReturnCode.Success Then
+                    success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorAllSitesPrec, _
+                                                         BA_FIELD_PRECIP, BA_SiteElevField, BA_SiteNameField, _
+                                                         BA_SiteTypeField, BA_FIELD_ASPECT, partitionFieldName, _
+                                                         pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName, _
+                                                         zonesFileName, conversionFactor, sitesList)
+
+                    If success = BA_ReturnCode.Success Then
+                        Dim demChartMin As Integer = Math.Floor(Convert.ToDouble(txtMinElev.Text) / 100) * 100
+                        Dim prismChartMin As Integer = Math.Floor(Convert.ToDouble(mapsSettings.MinimumPrecip)) - 1
+                        success = BA_CreateRepresentPrecipChart(bkWorkBook, pPrecipDemElevWorksheet, pPrecipSiteWorksheet, _
+                                                                pPrecipChartWorksheet, _
+                                                                demTitleUnit, MeasurementUnit.Inches, _
+                                                                demChartMin, prismChartMin)
+                    End If
+                End If
+            End If
+
+            If mapsSettings.UseSubRange = True Then
+                pStepProg.Message = "Creating Elevation Range Tables and Charts..."
+                pStepProg.Step()
+
+                response = BA_Excel_CreateElevRangeTable(pElevationRangeWorksheet, pSubElvWorksheet, dblSubRangeFromElev, dblSubRangeToElev)
+                response = BA_Excel_CreatePrecipRangeTable(pPrecipitationRangeWorksheet, pPRISMWorkSheet, dblSubRangeFromElev, dblSubRangeToElev, MaxPRISMValue)
+
+                If AOI_HasSNOTEL Then
+                    response = BA_Excel_CreateSNOTELRangeTable(pSTRangeWorksheet, pSNOTELWorksheet, pSubElvWorksheet, dblSubRangeFromElev, dblSubRangeToElev)
+                End If
+
+                If AOI_HasSnowCourse Then
+                    response = BA_Excel_CreateSNOTELRangeTable(pSCRangeWorksheet, pSnowCourseWorksheet, pSubElvWorksheet, dblSubRangeFromElev, dblSubRangeToElev)
+                End If
+                If AOI_HasPseudoSite Then
+                    response = BA_Excel_CreateSNOTELRangeTable(pPseudoRangeWorksheet, pPSiteWorksheet, pSubElvWorksheet, dblSubRangeFromElev, dblSubRangeToElev)
+                End If
+
+
+                response = BA_Excel_CreateCombinedChart(pPrecipitationRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, pSCRangeWorksheet, _
+                                                        pSTRangeWorksheet, dblSubRangeFromElev, dblSubRangeToElev, Chart_YMapUnit, MaxPRISMValue, _
+                                                        OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse, pPseudoRangeWorksheet, _
+                                                        AOI_HasPseudoSite, BA_ChartSpacing)
+            End If
+
+        Catch ex As Exception
+            Debug.Print("BtnTables_Click Exception: " & ex.Message)
+        Finally
+            objExcel.Visible = True
+            pInputRaster = Nothing
+            If pStepProg IsNot Nothing Then
+                pStepProg.Hide()
+                pStepProg = Nothing
+            End If
+            If progressDialog2 IsNot Nothing Then
+                progressDialog2.HideDialog()
+                progressDialog2 = Nothing
+            End If
+        End Try
+    End Sub
+
+    Private Sub SetPrecipPathInfo(ByVal mapsSettings As MapsSettings, ByRef PrecipPath As String, ByRef PRISMRasterName As String)
+        If mapsSettings.IdxPrecipType = 0 Then  'read direct Annual PRISM raster
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
+            PRISMRasterName = AOIPrismFolderNames.annual.ToString
+        ElseIf mapsSettings.IdxPrecipType > 0 And mapsSettings.IdxPrecipType < 5 Then 'read directly Quarterly PRISM raster
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
+            PRISMRasterName = BA_GetPrismFolderName(mapsSettings.IdxPrecipType + 12)
+        Else 'sum individual monthly PRISM rasters
+            PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
+            PRISMRasterName = BA_TEMP_PRISM
+        End If
+    End Sub
+
+    Public Function GetUniqueSortedValues(ByVal dictElev As IDictionary(Of String, String), _
+                                          ByVal lowerbnd As Double, ByVal upperbnd As Double, ByRef IntervalList() As BA_IntervalList) As BA_ReturnCode
+        Try
+            'Dim i As Integer = 0
+            'Do While i < lstElevations.Count
+            '    Dim strElev As String = lstElevations(i)
+            '    If Not String.IsNullOrEmpty(strElev) Then
+            '        Dim strName As String = strElev
+            '        If String.IsNullOrEmpty(lstNames(i)) Then
+            '            strName = "Name missing"
+            '        Else
+            '            strName = lstNames(i)
+            '        End If
+            '        If dictElev.ContainsKey(strElev) Then
+            '            Dim strNewName = dictElev(strElev) + ", " + strName
+            '            dictElev(strElev) = strNewName
+            '        Else
+            '            dictElev.Add(strElev, strName)
+            '        End If
+            '    End If
+            '    i += 1  'increment counter
+            'Loop
+
+            Dim nuniquevalue As Integer = dictElev.Keys.Count
+
+            Dim valuelist(nuniquevalue + 2)
+            Dim namelist(nuniquevalue + 2)
+
+            'keep a list of unique value and find the largest value
+            Dim ncount As Short
+            Dim Value As Double
+
+            Dim i As Short = 0 'i keeps track of the actual numbers in the list, ignore negative values
+            For Each strElev As String In dictElev.Keys
+                Value = -1
+                Double.TryParse(strElev, Value)
+                If Int(Value - 0.5) < Int(upperbnd) And Int(Value + 0.5) > Int(lowerbnd) Then
+                    i = i + 1
+                    valuelist(i) = Val(CStr(Value))
+                    namelist(i) = dictElev(strElev)
+                Else
+                    If Value > upperbnd Or Value < lowerbnd Then 'invalid data in the attribute field, out of bound
+                        MsgBox("WARNING!!" & vbCrLf & "A monitoring site is ignored in the analysis!" & vbCrLf & "The site's elevation (" & Value & ") is outside the DEM range (" & lowerbnd & ", " & upperbnd & ")!")
+                    End If
+                    nuniquevalue = nuniquevalue - 1
+                End If
+            Next
+
+            ncount = i + 2
+            ReDim Preserve valuelist(ncount)
+            ReDim Preserve namelist(ncount)
+            ReDim IntervalList(ncount - 1)
+
+            'add upper and lower bnds to the list
+            valuelist(ncount) = Val(CStr(upperbnd))
+            namelist(ncount) = "Not represented" '"Max Value"
+            valuelist(ncount - 1) = Val(CStr(lowerbnd))
+            namelist(ncount - 1) = "Min Value"
+
+            'sort the list ascendingly
+            QuickSort(valuelist, namelist)
+
+            'create the intervallist
+            For i = 1 To ncount - 1
+                IntervalList(i).Value = i
+                IntervalList(i).LowerBound = valuelist(i)
+                IntervalList(i).UpperBound = valuelist(i + 1)
+                IntervalList(i).Name = namelist(i + 1) 'use the upperbnd name to represent the interval
+            Next
+            Return BA_ReturnCode.Success
+        Catch ex As Exception
+            MessageBox.Show("GetUniqueSortedValues Exception: " + ex.Message)
+            Return BA_ReturnCode.UnknownError
+        End Try
+    End Function
+
+    Private Function CalculateConversionFactor(ByVal displayInMeters As Boolean, ByVal demInMeters As Boolean) As Double
+        Dim conversionFactor As Double
+        If displayInMeters = False Then 'Display = Feet
+            If demInMeters = False Then 'DEM = Feet
+                conversionFactor = 1
+            Else 'DEM = METERS
+                conversionFactor = 3.2808399 'Meters to Foot
+            End If
+        Else 'Display = Meters
+            If demInMeters = False Then 'DEM = Feet
+                conversionFactor = 0.3048 'Foot to Meters
+            Else 'DEM = Meters
+                conversionFactor = 1
+            End If
+        End If
+        Return conversionFactor
+    End Function
+
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <returns></returns>
+    ''' <remarks></remarks>
+    Private Function ReadMapSettings() As MapsSettings
+        Dim retSettings As MapsSettings = Nothing
+        Dim filePathName As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + _
+            "\" + BA_MapParameterFile
+        If BA_File_ExistsWindowsIO(filePathName) Then
+            'This list corresponds to the values in frmGenerateMaps.CmboxElevInterval
+            Dim lstElevationInterval As IList(Of String) = _
+                New List(Of String) From {"50", "100", "200", "250", "500", "1000", "2500", "5000"}
+            Using sr As IO.StreamReader = New IO.StreamReader(filePathName)
+                'read the version text
+                Dim linestring As String = sr.ReadLine
+                Dim errormessage As String = Nothing
+                'check version
+                If Trim(linestring) <> BA_VersionText And Trim(linestring) <> BA_CompatibleVersion1Text Then
+                    sr.Close()
+                    errormessage = "The map parameter file's version doesn't match the version of the model!"
+                    MessageBox.Show(errormessage, "BAGIS", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    Return retSettings
+                End If
+                'read the map unit text
+                retSettings = New MapsSettings()
+                linestring = sr.ReadLine
+                If Trim(linestring) = "True" Then
+                    retSettings.ZMeters = True
+                Else
+                    retSettings.ZMeters = False
+                End If
+                'prepare the elevation interval list
+                linestring = sr.ReadLine
+                Dim idxElevation As Integer = 0
+                If IsValidInteger(linestring) Then idxElevation = CInt(linestring)
+                If lstElevationInterval.Count > (idxElevation + 1) Then
+                    retSettings.ElevationInterval = lstElevationInterval.Item(idxElevation)
+                End If
+                linestring = sr.ReadLine    'Elevation class number
+                Dim listCount As Integer = 0
+                If IsValidInteger(linestring) Then listCount = CInt(linestring)
+                For i As Integer = 0 To listCount - 1
+                    linestring = sr.ReadLine    'throw this away; we don't need it
+                Next
+                'prepare the PRISM list
+                linestring = sr.ReadLine
+                retSettings.IdxPrecipType = Val(linestring)
+                'ignore rest of PRISM settings; Not used
+                linestring = sr.ReadLine    'Begin date
+                linestring = sr.ReadLine    'End date
+                retSettings.MinimumPrecip = sr.ReadLine    'Min precip
+                linestring = sr.ReadLine    'Max precip
+                linestring = sr.ReadLine    'Precip range
+                linestring = sr.ReadLine    'Precip interval
+                linestring = sr.ReadLine    'Number of precip zones
+                linestring = sr.ReadLine    'Precip zones listbox; throw away, not used
+                listCount = Val(Trim(linestring))
+                If listCount > 0 Then
+                    For i = 1 To listCount
+                        linestring = sr.ReadLine
+                    Next
+                End If
+                linestring = sr.ReadLine    'number of subdivision
+                'subrange analysis settings
+                retSettings.UseSubRange = Convert.ToBoolean(sr.ReadLine)
+                retSettings.SubRangeFromElev = sr.ReadLine
+                retSettings.SubRangeToElev = sr.ReadLine
+                If sr.Peek > -1 Then 'check if additional parameters were added after BAGIS Ver 1. Aspect was added in version 2
+                    linestring = sr.ReadLine 'skip the REVISION text
+                    linestring = sr.ReadLine 'aspect
+                    Dim tokenstring() As String = linestring.Split(New Char(), " "c)
+                    If tokenstring(0).ToUpper = "ASPECT" Then
+                        retSettings.AspectDirections = tokenstring(1)
+                    End If
+                End If
+            End Using
+        Else
+            MessageBox.Show("Unable to open the maps settings file. Please configure the settings from the Map Settings screen!", _
+                            "BAGIS", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        End If
+        Return retSettings
+    End Function
+
+    Private Sub BtnTableHelp_Click(sender As System.Object, e As System.EventArgs) Handles BtnTableHelp.Click
+        Dim sb As StringBuilder = New StringBuilder
+        sb.Append("Use the Generate Maps menu item to view/update the elevation interval, ")
+        sb.Append("specified elevation range, or PRISM data settings that are used when ")
+        sb.Append("generating the Site Scenario tables.")
+        MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.None)
     End Sub
 End Class

@@ -151,6 +151,7 @@ Partial Class frmGenerateMaps
         Me.txtRangeElev.ForeColor = System.Drawing.Color.Blue
         Me.txtRangeElev.Location = New System.Drawing.Point(247, 78)
         Me.txtRangeElev.Name = "txtRangeElev"
+        Me.txtRangeElev.ReadOnly = True
         Me.txtRangeElev.Size = New System.Drawing.Size(100, 16)
         Me.txtRangeElev.TabIndex = 2
         Me.txtRangeElev.Text = "0"
@@ -164,6 +165,7 @@ Partial Class frmGenerateMaps
         Me.txtAreaSQMile.ForeColor = System.Drawing.Color.Blue
         Me.txtAreaSQMile.Location = New System.Drawing.Point(10, 79)
         Me.txtAreaSQMile.Name = "txtAreaSQMile"
+        Me.txtAreaSQMile.ReadOnly = True
         Me.txtAreaSQMile.Size = New System.Drawing.Size(100, 16)
         Me.txtAreaSQMile.TabIndex = 2
         Me.txtAreaSQMile.Text = "0"
@@ -177,6 +179,7 @@ Partial Class frmGenerateMaps
         Me.txtMaxElev.ForeColor = System.Drawing.Color.Blue
         Me.txtMaxElev.Location = New System.Drawing.Point(247, 56)
         Me.txtMaxElev.Name = "txtMaxElev"
+        Me.txtMaxElev.ReadOnly = True
         Me.txtMaxElev.Size = New System.Drawing.Size(100, 16)
         Me.txtMaxElev.TabIndex = 2
         Me.txtMaxElev.Text = "0"
@@ -190,6 +193,7 @@ Partial Class frmGenerateMaps
         Me.txtMinElev.ForeColor = System.Drawing.Color.Blue
         Me.txtMinElev.Location = New System.Drawing.Point(247, 32)
         Me.txtMinElev.Name = "txtMinElev"
+        Me.txtMinElev.ReadOnly = True
         Me.txtMinElev.Size = New System.Drawing.Size(100, 16)
         Me.txtMinElev.TabIndex = 2
         Me.txtMinElev.Text = "0"
@@ -203,6 +207,7 @@ Partial Class frmGenerateMaps
         Me.txtAreaAcre.ForeColor = System.Drawing.Color.Blue
         Me.txtAreaAcre.Location = New System.Drawing.Point(10, 57)
         Me.txtAreaAcre.Name = "txtAreaAcre"
+        Me.txtAreaAcre.ReadOnly = True
         Me.txtAreaAcre.Size = New System.Drawing.Size(100, 16)
         Me.txtAreaAcre.TabIndex = 2
         Me.txtAreaAcre.Text = "0"
@@ -216,6 +221,7 @@ Partial Class frmGenerateMaps
         Me.txtArea.ForeColor = System.Drawing.Color.Blue
         Me.txtArea.Location = New System.Drawing.Point(10, 33)
         Me.txtArea.Name = "txtArea"
+        Me.txtArea.ReadOnly = True
         Me.txtArea.Size = New System.Drawing.Size(100, 16)
         Me.txtArea.TabIndex = 2
         Me.txtArea.Text = "0"
@@ -406,6 +412,7 @@ Partial Class frmGenerateMaps
         Me.txtElevClassNumber.ForeColor = System.Drawing.Color.Blue
         Me.txtElevClassNumber.Location = New System.Drawing.Point(264, 28)
         Me.txtElevClassNumber.Name = "txtElevClassNumber"
+        Me.txtElevClassNumber.ReadOnly = True
         Me.txtElevClassNumber.Size = New System.Drawing.Size(63, 15)
         Me.txtElevClassNumber.TabIndex = 9
         Me.txtElevClassNumber.Text = "0"
@@ -569,22 +576,26 @@ Partial Class frmGenerateMaps
         '
         'txtToElev
         '
-        Me.txtToElev.BackColor = System.Drawing.SystemColors.Window
-        Me.txtToElev.Enabled = False
-        Me.txtToElev.Location = New System.Drawing.Point(94, 46)
+        Me.txtToElev.BackColor = System.Drawing.SystemColors.Menu
+        Me.txtToElev.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.txtToElev.ForeColor = System.Drawing.Color.Blue
+        Me.txtToElev.Location = New System.Drawing.Point(97, 50)
         Me.txtToElev.Name = "txtToElev"
-        Me.txtToElev.Size = New System.Drawing.Size(82, 20)
+        Me.txtToElev.ReadOnly = True
+        Me.txtToElev.Size = New System.Drawing.Size(82, 13)
         Me.txtToElev.TabIndex = 12
         Me.txtToElev.Text = "0"
         Me.txtToElev.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
         'txtFromElev
         '
-        Me.txtFromElev.BackColor = System.Drawing.SystemColors.Window
-        Me.txtFromElev.Enabled = False
-        Me.txtFromElev.Location = New System.Drawing.Point(94, 15)
+        Me.txtFromElev.BackColor = System.Drawing.SystemColors.Menu
+        Me.txtFromElev.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.txtFromElev.ForeColor = System.Drawing.Color.Blue
+        Me.txtFromElev.Location = New System.Drawing.Point(97, 19)
         Me.txtFromElev.Name = "txtFromElev"
-        Me.txtFromElev.Size = New System.Drawing.Size(82, 20)
+        Me.txtFromElev.ReadOnly = True
+        Me.txtFromElev.Size = New System.Drawing.Size(82, 13)
         Me.txtFromElev.TabIndex = 12
         Me.txtFromElev.Text = "0"
         Me.txtFromElev.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
@@ -629,6 +640,7 @@ Partial Class frmGenerateMaps
         Me.txtRangePrecip.ForeColor = System.Drawing.Color.Blue
         Me.txtRangePrecip.Location = New System.Drawing.Point(50, 179)
         Me.txtRangePrecip.Name = "txtRangePrecip"
+        Me.txtRangePrecip.ReadOnly = True
         Me.txtRangePrecip.Size = New System.Drawing.Size(69, 15)
         Me.txtRangePrecip.TabIndex = 12
         Me.txtRangePrecip.Text = "0"
@@ -641,6 +653,7 @@ Partial Class frmGenerateMaps
         Me.txtMaxPrecip.ForeColor = System.Drawing.Color.Blue
         Me.txtMaxPrecip.Location = New System.Drawing.Point(50, 146)
         Me.txtMaxPrecip.Name = "txtMaxPrecip"
+        Me.txtMaxPrecip.ReadOnly = True
         Me.txtMaxPrecip.Size = New System.Drawing.Size(69, 15)
         Me.txtMaxPrecip.TabIndex = 12
         Me.txtMaxPrecip.Text = "0"
@@ -663,6 +676,7 @@ Partial Class frmGenerateMaps
         Me.txtPrecipMapZoneNo.ForeColor = System.Drawing.Color.Blue
         Me.txtPrecipMapZoneNo.Location = New System.Drawing.Point(389, 144)
         Me.txtPrecipMapZoneNo.Name = "txtPrecipMapZoneNo"
+        Me.txtPrecipMapZoneNo.ReadOnly = True
         Me.txtPrecipMapZoneNo.Size = New System.Drawing.Size(48, 15)
         Me.txtPrecipMapZoneNo.TabIndex = 12
         Me.txtPrecipMapZoneNo.Text = "10"
@@ -675,6 +689,7 @@ Partial Class frmGenerateMaps
         Me.txtMinPrecip.ForeColor = System.Drawing.Color.Blue
         Me.txtMinPrecip.Location = New System.Drawing.Point(50, 112)
         Me.txtMinPrecip.Name = "txtMinPrecip"
+        Me.txtMinPrecip.ReadOnly = True
         Me.txtMinPrecip.Size = New System.Drawing.Size(69, 15)
         Me.txtMinPrecip.TabIndex = 12
         Me.txtMinPrecip.Text = "0"

@@ -217,16 +217,6 @@ Module BAGIS_MapModule
 
     End Function
 
-    ''Returns the Site entry associated with the Site's String representation
-    Public Function BA_GetSiteType(ByVal siteText As String) As SiteType
-        For Each pType As SiteType In [Enum].GetValues(GetType(SiteType))
-            If pType.ToString = siteText Then
-                Return pType
-            End If
-        Next
-        Return Nothing
-    End Function
-
     'Deletes a site according to its object id
     Public Function BA_DeleteSite(ByVal folderPath As String, ByVal fileName As String, _
                                   ByVal dSite As Site) As BA_ReturnCode
@@ -2051,4 +2041,19 @@ Module BAGIS_MapModule
         End Try
     End Function
 
+    Public Function BA_FindElevPrecipRasterName(ByVal searchPrefix As String) As String
+        Dim AOIVectorList() As String = Nothing
+        Dim AOIRasterList() As String = Nothing
+        Dim layerPath As String = AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Analysis)
+        BA_ListLayersinGDB(layerPath, AOIRasterList, AOIVectorList)
+        Dim RasterCount As Integer = UBound(AOIRasterList)
+        If RasterCount > 0 Then
+            For i = 1 To RasterCount
+                If AOIRasterList(i).IndexOf(searchPrefix) = 0 Then
+                    Return AOIRasterList(i)
+                End If
+            Next
+        End If
+        Return Nothing
+    End Function
 End Module
