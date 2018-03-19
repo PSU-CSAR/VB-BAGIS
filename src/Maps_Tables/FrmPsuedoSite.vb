@@ -41,6 +41,7 @@ Public Class FrmPsuedoSite
     Private m_dictLocationAllValues As IDictionary(Of String, IList(Of String))
     Private m_dictLocationIncludeValues As IDictionary(Of String, IList(Of String))
     Private m_displayCombinedLayer As Boolean
+    Private m_siteId As Integer
 
 
     Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits, _
@@ -154,20 +155,6 @@ Public Class FrmPsuedoSite
         If autoSiteLog IsNot Nothing Then
             'Use form as log in read-only mode
             LoadAnalysisLog(autoSiteLog)
-            'Only reload previous run if it completed successfully and ps_site exists
-        ElseIf BA_File_Exists(m_analysisFolder + "\" + m_siteFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-            'Check for previously saved scenario and load those values as defaults
-            Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSitesXml)
-            ' Open psuedo-site log if there is one, and load the newest site
-            If BA_File_ExistsWindowsIO(xmlOutputPath) Then
-                m_pseudoSitesList = BA_LoadPseudoSitesFromXml(AOIFolderBase)
-                m_lastAnalysis = m_pseudoSitesList.LastSite()
-                If m_lastAnalysis IsNot Nothing Then
-                    ReloadLastAnalysis(siteScenarioToolTimeStamp)
-                    BtnMap.Enabled = True
-                    BtnFindSite.Enabled = False
-                End If
-            End If
         End If
 
         'Locate location panel
@@ -490,7 +477,7 @@ Public Class FrmPsuedoSite
                                        m_analysisFolder + "\" + m_siteFileName, BA_FIELD_VALUE)
         End If
 
-        Dim siteObjectId As Integer = -1
+        m_siteId = -1
         If success = BA_ReturnCode.Success Then
             Dim numSites As Int16 = BA_CountPolygons(m_analysisFolder, m_siteFileName, BA_FIELD_GRIDCODE_GDB)
             If numSites < 1 Then
@@ -518,9 +505,9 @@ Public Class FrmPsuedoSite
 
                 If success = BA_ReturnCode.Success Then
                     'Query the OID of the new site
-                    siteObjectId = GetNewSiteObjectId(newSite.Elevation)
-                    If siteObjectId > 0 Then
-                        newSite.ObjectId = siteObjectId
+                    m_siteId = GetNewSiteObjectId(newSite.Elevation)
+                    If m_siteId > 0 Then
+                        newSite.ObjectId = m_siteId
                         'Adds the sites to 'existing sites' on the form
                         Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of frmSiteScenario.AddinImpl)(My.ThisAddIn.IDs.frmSiteScenario)
                         Dim siteScenarioForm As frmSiteScenario = dockWindowAddIn.UI
@@ -540,7 +527,7 @@ Public Class FrmPsuedoSite
         If success = BA_ReturnCode.Success Then
             pStepProg.Message = "Saving pseudo-site log"
             pStepProg.Step()
-            SavePseudoSiteLog(siteObjectId)
+            SavePseudoSiteLog()
         End If
         CleanUpAfterAnalysis(pStepProg, progressDialog2)
         MessageBox.Show("The new pseudo-site has been added to Scenario 1 in the Site Scenario Tool")
@@ -1149,8 +1136,8 @@ Public Class FrmPsuedoSite
         TxtSiteName.Text = pSitePrefix & pSiteId
     End Sub
 
-    Private Sub SavePseudoSiteLog(ByVal objectId As Integer)
-        m_lastAnalysis = New PseudoSite(objectId, TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked, _
+    Private Sub SavePseudoSiteLog()
+        m_lastAnalysis = New PseudoSite(m_siteId, TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked, _
                                         CkLocation.Checked)
         'Save Elevation data
         If m_lastAnalysis.UseElevation Then
@@ -1198,6 +1185,7 @@ Public Class FrmPsuedoSite
         m_pseudoSitesList.Save(xmlOutputPath)
     End Sub
 
+    '19-MAR-2018: No longer using this to load last site
     Private Sub ReloadLastAnalysis(ByVal scenarioTimeStamp As DateTime)
         If m_lastAnalysis IsNot Nothing Then
             Dim sb As StringBuilder = New StringBuilder()
@@ -1263,42 +1251,42 @@ Public Class FrmPsuedoSite
                         GrdProximity.ClearSelection()
                     End If
                 End If
-        End If
-        If m_lastAnalysis.UseLocation = True Then
-            CkLocation.Checked = True
-            If m_lastAnalysis.LocationLayers IsNot Nothing AndAlso m_lastAnalysis.LocationLayers.Count > 0 Then
-                If m_dictLocationAllValues Is Nothing Then
-                    m_dictLocationAllValues = New Dictionary(Of String, IList(Of String))
-                    m_dictLocationIncludeValues = New Dictionary(Of String, IList(Of String))
-                End If
-                For Each pLayer As PseudoSiteLayer In m_lastAnalysis.LocationLayers
-                    m_dictLocationAllValues.Add(pLayer.LayerPath, pLayer.AllValues)
-                    m_dictLocationIncludeValues.Add(pLayer.LayerPath, pLayer.SelectedValues)
-                    Dim valSb As StringBuilder = New StringBuilder()
-                    For Each strValue As String In pLayer.SelectedValues
-                        valSb.Append(strValue + m_sep)
+            End If
+            If m_lastAnalysis.UseLocation = True Then
+                CkLocation.Checked = True
+                If m_lastAnalysis.LocationLayers IsNot Nothing AndAlso m_lastAnalysis.LocationLayers.Count > 0 Then
+                    If m_dictLocationAllValues Is Nothing Then
+                        m_dictLocationAllValues = New Dictionary(Of String, IList(Of String))
+                        m_dictLocationIncludeValues = New Dictionary(Of String, IList(Of String))
+                    End If
+                    For Each pLayer As PseudoSiteLayer In m_lastAnalysis.LocationLayers
+                        m_dictLocationAllValues.Add(pLayer.LayerPath, pLayer.AllValues)
+                        m_dictLocationIncludeValues.Add(pLayer.LayerPath, pLayer.SelectedValues)
+                        Dim valSb As StringBuilder = New StringBuilder()
+                        For Each strValue As String In pLayer.SelectedValues
+                            valSb.Append(strValue + m_sep)
+                        Next
+                        valSb.Remove(valSb.ToString().LastIndexOf(m_sep), m_sep.Length)
+                        Dim item As New DataGridViewRow
+                        item.CreateCells(GrdLocation)
+                        With item
+                            .Cells(m_idxLayer).Value = pLayer.LayerName
+                            .Cells(m_idxValues).Value = valSb.ToString
+                            .Cells(m_idxFullPaths).Value = pLayer.LayerPath
+                        End With
+                        '---add the row---
+                        GrdLocation.Rows.Add(item)
                     Next
-                    valSb.Remove(valSb.ToString().LastIndexOf(m_sep), m_sep.Length)
-                    Dim item As New DataGridViewRow
-                    item.CreateCells(GrdLocation)
-                    With item
-                        .Cells(m_idxLayer).Value = pLayer.LayerName
-                        .Cells(m_idxValues).Value = valSb.ToString
-                        .Cells(m_idxFullPaths).Value = pLayer.LayerPath
-                    End With
-                    '---add the row---
-                    GrdLocation.Rows.Add(item)
-                Next
-                'Clear selection on grid
-                If GrdLocation.Rows.Count > 0 Then
-                    GrdLocation(1, 0).Selected = True
-                    GrdLocation.ClearSelection()
+                    'Clear selection on grid
+                    If GrdLocation.Rows.Count > 0 Then
+                        GrdLocation(1, 0).Selected = True
+                        GrdLocation.ClearSelection()
+                    End If
                 End If
             End If
-        End If
-        If sb.Length > 0 Then
-            MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.Information)
-        End If
+            If sb.Length > 0 Then
+                MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            End If
         End If
     End Sub
 
@@ -1896,6 +1884,7 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub LoadAnalysisLog(ByVal logSite As PseudoSite)
+        m_siteId = logSite.ObjectId
         TxtSiteName.Text = logSite.SiteName
         If logSite.UseElevation Then
             CkElev.Checked = True
@@ -2017,4 +2006,16 @@ Public Class FrmPsuedoSite
         Next
         Return False
     End Function
+
+    Private Sub BtnRecalculate_Click(sender As System.Object, e As System.EventArgs) Handles BtnRecalculate.Click
+        'Get handle to the site scenario form
+        Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of frmSiteScenario.AddinImpl)(My.ThisAddIn.IDs.frmSiteScenario)
+        Dim siteScenarioForm As frmSiteScenario = dockWindowAddIn.UI
+        '1. Check box on frmSiteScenario
+        siteScenarioForm.SelectPseudoSite(m_siteId)
+        '2. Set recalculate rep area
+        siteScenarioForm.CalculateScenario2 = False
+        '3. Click BtnCalculate on Site Scenario form
+        siteScenarioForm.BtnCalculate.PerformClick()
+    End Sub
 End Class

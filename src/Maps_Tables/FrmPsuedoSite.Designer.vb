@@ -22,11 +22,11 @@ Partial Class FrmPsuedoSite
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(FrmPsuedoSite))
-        Dim DataGridViewCellStyle7 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle8 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.LblBufferDistance = New System.Windows.Forms.Label()
         Me.CkElev = New System.Windows.Forms.CheckBox()
         Me.Label7 = New System.Windows.Forms.Label()
@@ -104,7 +104,7 @@ Partial Class FrmPsuedoSite
         Me.FullPath = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.BtnEditLocation = New System.Windows.Forms.Button()
         Me.BtnRecalculate = New System.Windows.Forms.Button()
-        Me.BtnCopy = New System.Windows.Forms.Button()
+        Me.BtnDefineSiteSame = New System.Windows.Forms.Button()
         Me.CkConstraints = New System.Windows.Forms.CheckBox()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
@@ -699,8 +699,8 @@ Partial Class FrmPsuedoSite
         '
         'DataGridViewTextBoxColumn1
         '
-        DataGridViewCellStyle5.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.DataGridViewTextBoxColumn1.DefaultCellStyle = DataGridViewCellStyle5
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.DataGridViewTextBoxColumn1.DefaultCellStyle = DataGridViewCellStyle1
         Me.DataGridViewTextBoxColumn1.HeaderText = "Layer"
         Me.DataGridViewTextBoxColumn1.Name = "DataGridViewTextBoxColumn1"
         Me.DataGridViewTextBoxColumn1.ReadOnly = True
@@ -709,8 +709,8 @@ Partial Class FrmPsuedoSite
         '
         'DataGridViewTextBoxColumn2
         '
-        DataGridViewCellStyle6.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.DataGridViewTextBoxColumn2.DefaultCellStyle = DataGridViewCellStyle6
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.DataGridViewTextBoxColumn2.DefaultCellStyle = DataGridViewCellStyle2
         Me.DataGridViewTextBoxColumn2.HeaderText = "Buffer"
         Me.DataGridViewTextBoxColumn2.Name = "DataGridViewTextBoxColumn2"
         Me.DataGridViewTextBoxColumn2.ReadOnly = True
@@ -966,8 +966,8 @@ Partial Class FrmPsuedoSite
         '
         'Layer
         '
-        DataGridViewCellStyle7.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Layer.DefaultCellStyle = DataGridViewCellStyle7
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Layer.DefaultCellStyle = DataGridViewCellStyle3
         Me.Layer.HeaderText = "Layer"
         Me.Layer.Name = "Layer"
         Me.Layer.ReadOnly = True
@@ -976,8 +976,8 @@ Partial Class FrmPsuedoSite
         '
         'Values
         '
-        DataGridViewCellStyle8.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Values.DefaultCellStyle = DataGridViewCellStyle8
+        DataGridViewCellStyle4.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Values.DefaultCellStyle = DataGridViewCellStyle4
         Me.Values.HeaderText = "Values"
         Me.Values.Name = "Values"
         Me.Values.ReadOnly = True
@@ -1006,26 +1006,26 @@ Partial Class FrmPsuedoSite
         Me.BtnRecalculate.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.BtnRecalculate.Location = New System.Drawing.Point(3, 716)
         Me.BtnRecalculate.Name = "BtnRecalculate"
-        Me.BtnRecalculate.Size = New System.Drawing.Size(322, 23)
+        Me.BtnRecalculate.Size = New System.Drawing.Size(322, 25)
         Me.BtnRecalculate.TabIndex = 91
         Me.BtnRecalculate.Text = "Add new site to Scenario 1 and recalculate"
         Me.BtnRecalculate.UseVisualStyleBackColor = True
         '
-        'BtnCopy
+        'BtnDefineSiteSame
         '
-        Me.BtnCopy.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnCopy.Location = New System.Drawing.Point(78, 683)
-        Me.BtnCopy.Name = "BtnCopy"
-        Me.BtnCopy.Size = New System.Drawing.Size(232, 23)
-        Me.BtnCopy.TabIndex = 92
-        Me.BtnCopy.Text = "Copy constraints for new site"
-        Me.BtnCopy.UseVisualStyleBackColor = True
+        Me.BtnDefineSiteSame.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnDefineSiteSame.Location = New System.Drawing.Point(3, 683)
+        Me.BtnDefineSiteSame.Name = "BtnDefineSiteSame"
+        Me.BtnDefineSiteSame.Size = New System.Drawing.Size(307, 25)
+        Me.BtnDefineSiteSame.TabIndex = 92
+        Me.BtnDefineSiteSame.Text = "Define a new site with the same settings"
+        Me.BtnDefineSiteSame.UseVisualStyleBackColor = True
         '
         'CkConstraints
         '
         Me.CkConstraints.AutoSize = True
         Me.CkConstraints.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CkConstraints.Location = New System.Drawing.Point(320, 685)
+        Me.CkConstraints.Location = New System.Drawing.Point(320, 686)
         Me.CkConstraints.Name = "CkConstraints"
         Me.CkConstraints.Size = New System.Drawing.Size(180, 20)
         Me.CkConstraints.TabIndex = 93
@@ -1040,7 +1040,7 @@ Partial Class FrmPsuedoSite
         Me.Controls.Add(Me.CkConstraints)
         Me.Controls.Add(Me.BtnRecalculate)
         Me.Controls.Add(Me.GrpLocation)
-        Me.Controls.Add(Me.BtnCopy)
+        Me.Controls.Add(Me.BtnDefineSiteSame)
         Me.Controls.Add(Me.CkLocation)
         Me.Controls.Add(Me.TextBox1)
         Me.Controls.Add(Me.BtnClear)
@@ -1154,6 +1154,6 @@ Partial Class FrmPsuedoSite
     Friend WithEvents LstVectors As System.Windows.Forms.ListBox
     Friend WithEvents LblAddBufferDistance As System.Windows.Forms.Label
     Friend WithEvents BtnRecalculate As System.Windows.Forms.Button
-    Friend WithEvents BtnCopy As System.Windows.Forms.Button
+    Friend WithEvents BtnDefineSiteSame As System.Windows.Forms.Button
     Friend WithEvents CkConstraints As System.Windows.Forms.CheckBox
 End Class

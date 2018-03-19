@@ -58,6 +58,7 @@ Public Class frmSiteScenario
     Friend idxUpper As Integer = 5
     Friend idxLower As Integer = 6
     Friend idxDefaultElevation As Integer = 7
+    Private m_calculateScenario2 As Boolean = True
 
     Public Sub New(ByVal hook As Object)
 
@@ -560,6 +561,17 @@ Public Class frmSiteScenario
         GrdScenario1.Rows.Add(item)
         ManageUpperRange()
         ManageLowerRange()
+    End Sub
+
+    Friend Sub SelectPseudoSite(ByVal siteObjectId As Integer)
+        For Each pRow As DataGridViewRow In GrdScenario1.Rows
+            Dim strType As String = Convert.ToString(pRow.Cells(idxSiteType).Value)
+            If strType.Equals(SiteType.Pseudo.ToString) Then
+                Dim intId As Integer = Convert.ToInt16(pRow.Cells(idxObjectId).Value)
+                If intId = siteObjectId Then _
+                    pRow.Cells(idxSelected).Value = True
+            End If
+        Next
     End Sub
 
     Friend ReadOnly Property DemInMeters As Boolean
@@ -1990,8 +2002,10 @@ Public Class frmSiteScenario
             If BA_File_Exists(analysisFolder & "\" & BA_EnumDescription(MapsFileName.ActualRepresentedArea), WorkspaceType.Geodatabase, _
                               esriDatasetType.esriDTRasterDataset) Then
                 BA_RemoveRasterFromGDB(analysisFolder, BA_EnumDescription(MapsFileName.ActualRepresentedArea))
-                BA_RemoveRasterFromGDB(analysisFolder, BA_EnumDescription(MapsFileName.PseudoRepresentedArea))
                 BA_RemoveRasterFromGDB(analysisFolder, BA_EnumDescription(MapsFileName.DifferenceRepresentedArea))
+                If m_calculateScenario2 = True Then
+                    BA_RemoveRasterFromGDB(analysisFolder, BA_EnumDescription(MapsFileName.PseudoRepresentedArea))
+                End If
             End If
 
             '--- Calculate correct buffer distance based on XY units ---
@@ -2124,7 +2138,7 @@ Public Class frmSiteScenario
 
             End If
             '--- Pseudo Representation ---
-            If GrdScenario2.Rows.Count > 0 Then
+            If GrdScenario2.Rows.Count > 0 AndAlso m_calculateScenario2 = True Then
                 '--- Use buffer distance ---
                 If ChkBufferDistance.Checked = True Then
                     Dim sb As StringBuilder = New StringBuilder 'StringBuffer to hold names of rasters to combine
@@ -2233,7 +2247,7 @@ Public Class frmSiteScenario
                     BA_Remove_Raster(AOIFolderBase, reclassName)
                     BA_Remove_Shapefile(AOIFolderBase, mergeName)
                 End If
-            Else
+            ElseIf m_calculateScenario2 = True Then
                 'Delete old scenario sites layer to avoid confusion
                 If BA_File_Exists(analysisFolder & "\" & BA_EnumDescription(MapsFileName.PseudoRepresentedArea), WorkspaceType.Geodatabase, _
                                   ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
@@ -2293,6 +2307,7 @@ Public Class frmSiteScenario
                 MessageBox.Show(sb.ToString, "Site Scenario", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 Call BA_Enable_ScenarioMapFlags(True)
             End If
+            m_calculateScenario2 = True
             ManageMapsButton()
 
         Catch ex As Exception
@@ -2966,4 +2981,10 @@ Public Class frmSiteScenario
         sb.Append("generating the Site Scenario tables.")
         MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.None)
     End Sub
+
+    Public WriteOnly Property CalculateScenario2
+        Set(value)
+            m_calculateScenario2 = value
+        End Set
+    End Property
 End Class
