@@ -24,7 +24,6 @@ Public Class FrmPsuedoSite
     Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
     Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
-    Private m_pseudoSitesList As PseudoSiteList = Nothing
     Private m_lastAnalysis As PseudoSite = Nothing
     Private m_formLoaded As Boolean = False
     Private m_cellSize As Double
@@ -179,6 +178,12 @@ Public Class FrmPsuedoSite
 
         ' Delete any layers from the previous run
         DeletePreviousRun()
+
+        If String.IsNullOrEmpty(TxtSiteName.Text) Then
+            MessageBox.Show("Site name is required to find a site", "BAGIS-V3", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
+            TxtSiteName.Focus()
+            Exit Sub
+        End If
 
         If CkElev.Checked Then
             'Validate lower and upper elevations
@@ -528,9 +533,10 @@ Public Class FrmPsuedoSite
             pStepProg.Message = "Saving pseudo-site log"
             pStepProg.Step()
             SavePseudoSiteLog()
+            BtnRecalculate.Enabled = True
+            MessageBox.Show("The new pseudo-site has been added to Scenario 1 in the Site Scenario Tool")
         End If
         CleanUpAfterAnalysis(pStepProg, progressDialog2)
-        MessageBox.Show("The new pseudo-site has been added to Scenario 1 in the Site Scenario Tool")
     End Sub
 
     Private Sub CleanUpAfterAnalysis(ByVal pStepProg As IStepProgressor, ByVal progressDialog2 As IProgressDialog2)
@@ -1176,13 +1182,14 @@ Public Class FrmPsuedoSite
                                                      BA_PS_LOCATION)
             Next
         End If
-        If m_pseudoSitesList Is Nothing Then
-            m_pseudoSitesList = New PseudoSiteList()
-            m_pseudoSitesList.PseudoSites = New List(Of PseudoSite)
+        Dim lstPseudoSites As PseudoSiteList = BA_LoadPseudoSitesFromXml(AOIFolderBase)
+        If lstPseudoSites Is Nothing Then
+            lstPseudoSites = New PseudoSiteList()
+            lstPseudoSites.PseudoSites = New List(Of PseudoSite)
         End If
-        m_pseudoSitesList.PseudoSites.Add(m_lastAnalysis)
+        lstPseudoSites.PseudoSites.Add(m_lastAnalysis)
         Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSitesXml)
-        m_pseudoSitesList.Save(xmlOutputPath)
+        lstPseudoSites.Save(xmlOutputPath)
     End Sub
 
     '19-MAR-2018: No longer using this to load last site
@@ -1967,7 +1974,8 @@ Public Class FrmPsuedoSite
                 End If
             End If
         End If
-        ' Disable/hide controls on read-only form
+        'Disable/hide controls on read-only form
+        'If anything changes here, also change in BtnSameSite; Switches form to editable
         Me.Text = "Auto-site log: " + BA_GetBareName(AOIFolderBase)
         CkElev.Enabled = False
         CkPrecip.Enabled = False
@@ -2017,5 +2025,40 @@ Public Class FrmPsuedoSite
         siteScenarioForm.CalculateScenario2 = False
         '3. Click BtnCalculate on Site Scenario form
         siteScenarioForm.BtnCalculate.PerformClick()
+    End Sub
+
+    Private Sub BtnDefineSiteSame_Click(sender As System.Object, e As System.EventArgs) Handles BtnDefineSiteSame.Click
+        SuggestSiteName()
+        Dim siteName As String = InputBox("Please enter name for new pseudo-site:", "BAGIS V3", TxtSiteName.Text)
+        TxtSiteName.Text = siteName
+
+        'The form was in read-only mode so we need to make it writeable
+        If Me.Text.IndexOf("Auto-site log:") > -1 Then
+            ' Disable/hide controls on read-only form
+            Me.Text = "Add Pseudo Site: " + BA_GetBareName(AOIFolderBase)
+            CkElev.Enabled = True
+            CkPrecip.Enabled = True
+            CkLocation.Enabled = True
+            CkProximity.Enabled = True
+            CmdPrism.Visible = True
+            BtnAddProximity.Visible = True
+            BtnDeleteProximity.Visible = True
+            BtnEditProximity.Visible = True
+            BtnAddLocation.Visible = True
+            BtnDeleteLocation.Visible = True
+            BtnEditLocation.Visible = True
+            BtnMap.Visible = True
+            BtnClear.Visible = True
+            BtnFindSite.Visible = True
+            BtnRecalculate.Visible = True
+            TxtSiteName.Enabled = True
+            txtLower.Enabled = True
+            TxtUpperRange.Enabled = True
+            CmboxPrecipType.Enabled = True
+            TxtPrecipLower.Enabled = True
+            TxtPrecipUpper.Enabled = True
+            BtnDefineSiteSame.Enabled = False
+            BtnRecalculate.Enabled = False
+        End If
     End Sub
 End Class

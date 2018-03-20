@@ -182,6 +182,7 @@ Module BAGIS_MapModule
             'Name field
             Dim idxName As Integer = pFeatClass.FindField(BA_SiteNameField)
             Dim idxElev As Integer = pFeatClass.FindField(BA_SiteElevField)
+            Dim idxType As Integer = pFeatClass.FindField(BA_SiteTypeField)
             If idxName < 0 Then
                 Dim pFld As IFieldEdit = New Field
                 pFld.Name_2 = BA_SiteNameField
@@ -199,6 +200,16 @@ Module BAGIS_MapModule
                 pFeatClass.AddField(pFld)
                 idxElev = pFeatClass.FindField(BA_SiteElevField)
             End If
+            If idxType < 0 Then
+                Dim pFld As IFieldEdit = New Field
+                pFld.Name_2 = BA_SiteTypeField
+                pFld.Type_2 = esriFieldType.esriFieldTypeString
+                pFld.Length_2 = 5
+                pFld.Required_2 = False
+                ' Add field
+                pFeatClass.AddField(pFld)
+                idxType = pFeatClass.FindField(BA_SiteTypeField)
+            End If
             Dim queryFilter As IQueryFilter = New QueryFilter
             queryFilter.WhereClause = "OBJECTID = " & OID
             Dim fCursor As IFeatureCursor = pFeatClass.Update(queryFilter, False)
@@ -207,6 +218,7 @@ Module BAGIS_MapModule
             If pFeature IsNot Nothing Then
                 pFeature.Value(idxName) = pSite.Name
                 pFeature.Value(idxElev) = pSite.Elevation
+                pFeature.Value(idxType) = BA_SitePseudo
                 fCursor.UpdateFeature(pFeature)
             End If
             Return BA_ReturnCode.Success
