@@ -185,6 +185,17 @@ Public Class FrmPsuedoSite
             Exit Sub
         End If
 
+        'Don't allow the site name to be duplicated
+        Dim psuedoList As IList(Of Site) = BA_ReadSiteAttributes(SiteType.Pseudo)
+        For Each pSite As Site In psuedoList
+            If pSite.Name.ToUpper.Trim.Equals(TxtSiteName.Text.ToUpper.Trim) Then
+                MessageBox.Show("Site name " + pSite.Name.Trim + " is already in use. Please supply another name!",
+                                "BAGIS V3", MessageBoxButtons.OK)
+                TxtSiteName.Focus()
+                Exit Sub
+            End If
+        Next
+
         If CkElev.Checked Then
             'Validate lower and upper elevations
             Dim sbElev As StringBuilder = New StringBuilder()
@@ -1388,6 +1399,9 @@ Public Class FrmPsuedoSite
     Protected Sub Form_InputChanged() Handles Me.FormInputChanged
         BtnMap.Enabled = False
         BtnFindSite.Enabled = True
+        BtnRecalculate.Enabled = False
+        CkConstraints.Checked = False
+        CkConstraints.Enabled = False
     End Sub
 
     Private Sub CmboxBegin_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles CmboxBegin.SelectedIndexChanged
@@ -1974,30 +1988,14 @@ Public Class FrmPsuedoSite
                 End If
             End If
         End If
-        'Disable/hide controls on read-only form
-        'If anything changes here, also change in BtnSameSite; Switches form to editable
         Me.Text = "Auto-site log: " + BA_GetBareName(AOIFolderBase)
-        CkElev.Enabled = False
-        CkPrecip.Enabled = False
-        CkLocation.Enabled = False
-        CkProximity.Enabled = False
-        CmdPrism.Visible = False
-        BtnAddProximity.Visible = False
-        BtnDeleteProximity.Visible = False
-        BtnEditProximity.Visible = False
-        BtnAddLocation.Visible = False
-        BtnDeleteLocation.Visible = False
-        BtnEditLocation.Visible = False
-        BtnMap.Visible = False
-        BtnClear.Visible = False
-        BtnFindSite.Visible = False
-        BtnRecalculate.Visible = False
-        TxtSiteName.Enabled = False
-        txtLower.Enabled = False
-        TxtUpperRange.Enabled = False
-        CmboxPrecipType.Enabled = False
-        TxtPrecipLower.Enabled = False
-        TxtPrecipUpper.Enabled = False
+        'Disable/hide controls on read-only form
+        Me.EnableForm(False)
+        'Disable ckConstraints; Don't know provenance of existing constraint layers
+        CkConstraints.Checked = False
+        CkConstraints.Enabled = False
+        'Enable copying
+        BtnDefineSiteSame.Enabled = True
     End Sub
 
     Private Function LayerIsOnMap(ByVal layername As String) As Boolean
@@ -2025,6 +2023,11 @@ Public Class FrmPsuedoSite
         siteScenarioForm.CalculateScenario2 = False
         '3. Click BtnCalculate on Site Scenario form
         siteScenarioForm.BtnCalculate.PerformClick()
+        'Enable/disable buttons
+        BtnDefineSiteSame.Enabled = True    'OK to create a new site with the same parameters
+        CkConstraints.Checked = False       'Disable this, we will ask if they copy a site
+        BtnRecalculate.Enabled = False      'We just recalculated; Don't need to do it again
+        BtnFindSite.Enabled = True          'They can find a new site again
     End Sub
 
     Private Sub BtnDefineSiteSame_Click(sender As System.Object, e As System.EventArgs) Handles BtnDefineSiteSame.Click
@@ -2036,6 +2039,23 @@ Public Class FrmPsuedoSite
         If Me.Text.IndexOf("Auto-site log:") > -1 Then
             ' Disable/hide controls on read-only form
             Me.Text = "Add Pseudo Site: " + BA_GetBareName(AOIFolderBase)
+            Me.EnableForm(True)
+        Else
+            CkConstraints.Enabled = True
+            Dim res As DialogResult = MessageBox.Show("Do you want to re-use the constraint layers " + _
+                                                      "from the previous calculation? If you do this, you " + _
+                                                      "cannot modify any of the constraint settings!", "BAGIS V3", _
+                                                      MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+            If res = Windows.Forms.DialogResult.Yes Then
+                CkConstraints.Checked = True
+            Else
+                CkConstraints.Checked = False
+            End If
+        End If
+    End Sub
+
+    Private Sub EnableForm(ByVal bEnabled As Boolean)
+        If bEnabled = True Then
             CkElev.Enabled = True
             CkPrecip.Enabled = True
             CkLocation.Enabled = True
@@ -2059,6 +2079,36 @@ Public Class FrmPsuedoSite
             TxtPrecipUpper.Enabled = True
             BtnDefineSiteSame.Enabled = False
             BtnRecalculate.Enabled = False
+        Else
+            CkElev.Enabled = False
+            CkPrecip.Enabled = False
+            CkLocation.Enabled = False
+            CkProximity.Enabled = False
+            CmdPrism.Visible = False
+            BtnAddProximity.Visible = False
+            BtnDeleteProximity.Visible = False
+            BtnEditProximity.Visible = False
+            BtnAddLocation.Visible = False
+            BtnDeleteLocation.Visible = False
+            BtnEditLocation.Visible = False
+            BtnMap.Visible = False
+            BtnClear.Visible = False
+            BtnFindSite.Visible = False
+            BtnRecalculate.Visible = False
+            TxtSiteName.Enabled = False
+            txtLower.Enabled = False
+            TxtUpperRange.Enabled = False
+            CmboxPrecipType.Enabled = False
+            TxtPrecipLower.Enabled = False
+            TxtPrecipUpper.Enabled = False
+        End If
+    End Sub
+
+    Private Sub CkConstraints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkConstraints.CheckedChanged
+        If CkConstraints.Checked = True Then
+            Me.EnableForm(False)
+        Else
+            Me.EnableForm(True)
         End If
     End Sub
 End Class
