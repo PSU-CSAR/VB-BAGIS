@@ -22,11 +22,11 @@ Partial Class FrmPsuedoSite
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle5 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle6 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(FrmPsuedoSite))
-        Dim DataGridViewCellStyle7 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Dim DataGridViewCellStyle8 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle4 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.LblBufferDistance = New System.Windows.Forms.Label()
         Me.CkElev = New System.Windows.Forms.CheckBox()
         Me.Label7 = New System.Windows.Forms.Label()
@@ -106,6 +106,7 @@ Partial Class FrmPsuedoSite
         Me.BtnRecalculate = New System.Windows.Forms.Button()
         Me.BtnDefineSiteSame = New System.Windows.Forms.Button()
         Me.CkConstraints = New System.Windows.Forms.CheckBox()
+        Me.BtnReuseHelp = New System.Windows.Forms.Button()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
@@ -699,8 +700,8 @@ Partial Class FrmPsuedoSite
         '
         'DataGridViewTextBoxColumn1
         '
-        DataGridViewCellStyle5.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.DataGridViewTextBoxColumn1.DefaultCellStyle = DataGridViewCellStyle5
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.DataGridViewTextBoxColumn1.DefaultCellStyle = DataGridViewCellStyle1
         Me.DataGridViewTextBoxColumn1.HeaderText = "Layer"
         Me.DataGridViewTextBoxColumn1.Name = "DataGridViewTextBoxColumn1"
         Me.DataGridViewTextBoxColumn1.ReadOnly = True
@@ -709,8 +710,8 @@ Partial Class FrmPsuedoSite
         '
         'DataGridViewTextBoxColumn2
         '
-        DataGridViewCellStyle6.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.DataGridViewTextBoxColumn2.DefaultCellStyle = DataGridViewCellStyle6
+        DataGridViewCellStyle2.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.DataGridViewTextBoxColumn2.DefaultCellStyle = DataGridViewCellStyle2
         Me.DataGridViewTextBoxColumn2.HeaderText = "Buffer"
         Me.DataGridViewTextBoxColumn2.Name = "DataGridViewTextBoxColumn2"
         Me.DataGridViewTextBoxColumn2.ReadOnly = True
@@ -747,17 +748,17 @@ Partial Class FrmPsuedoSite
         'BtnFindSite
         '
         Me.BtnFindSite.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnFindSite.Location = New System.Drawing.Point(438, 716)
+        Me.BtnFindSite.Location = New System.Drawing.Point(11, 684)
         Me.BtnFindSite.Name = "BtnFindSite"
-        Me.BtnFindSite.Size = New System.Drawing.Size(93, 23)
+        Me.BtnFindSite.Size = New System.Drawing.Size(97, 25)
         Me.BtnFindSite.TabIndex = 83
-        Me.BtnFindSite.Text = "Find Site"
+        Me.BtnFindSite.Text = "1. Find Site"
         Me.BtnFindSite.UseVisualStyleBackColor = True
         '
         'BtnClose
         '
         Me.BtnClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClose.Location = New System.Drawing.Point(466, 749)
+        Me.BtnClose.Location = New System.Drawing.Point(466, 753)
         Me.BtnClose.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClose.Name = "BtnClose"
         Me.BtnClose.Size = New System.Drawing.Size(65, 22)
@@ -769,9 +770,9 @@ Partial Class FrmPsuedoSite
         '
         Me.BtnMap.Enabled = False
         Me.BtnMap.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnMap.Location = New System.Drawing.Point(333, 716)
+        Me.BtnMap.Location = New System.Drawing.Point(117, 684)
         Me.BtnMap.Name = "BtnMap"
-        Me.BtnMap.Size = New System.Drawing.Size(93, 23)
+        Me.BtnMap.Size = New System.Drawing.Size(71, 25)
         Me.BtnMap.TabIndex = 84
         Me.BtnMap.Text = "Map"
         Me.BtnMap.UseVisualStyleBackColor = True
@@ -800,7 +801,7 @@ Partial Class FrmPsuedoSite
         'BtnClear
         '
         Me.BtnClear.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClear.Location = New System.Drawing.Point(390, 749)
+        Me.BtnClear.Location = New System.Drawing.Point(390, 753)
         Me.BtnClear.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClear.Name = "BtnClear"
         Me.BtnClear.Size = New System.Drawing.Size(65, 22)
@@ -966,8 +967,8 @@ Partial Class FrmPsuedoSite
         '
         'Layer
         '
-        DataGridViewCellStyle7.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Layer.DefaultCellStyle = DataGridViewCellStyle7
+        DataGridViewCellStyle3.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Layer.DefaultCellStyle = DataGridViewCellStyle3
         Me.Layer.HeaderText = "Layer"
         Me.Layer.Name = "Layer"
         Me.Layer.ReadOnly = True
@@ -976,8 +977,8 @@ Partial Class FrmPsuedoSite
         '
         'Values
         '
-        DataGridViewCellStyle8.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Values.DefaultCellStyle = DataGridViewCellStyle8
+        DataGridViewCellStyle4.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Values.DefaultCellStyle = DataGridViewCellStyle4
         Me.Values.HeaderText = "Values"
         Me.Values.Name = "Values"
         Me.Values.ReadOnly = True
@@ -1004,40 +1005,54 @@ Partial Class FrmPsuedoSite
         'BtnRecalculate
         '
         Me.BtnRecalculate.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnRecalculate.Location = New System.Drawing.Point(3, 716)
+        Me.BtnRecalculate.Location = New System.Drawing.Point(200, 684)
         Me.BtnRecalculate.Name = "BtnRecalculate"
-        Me.BtnRecalculate.Size = New System.Drawing.Size(322, 25)
+        Me.BtnRecalculate.Size = New System.Drawing.Size(335, 25)
         Me.BtnRecalculate.TabIndex = 91
-        Me.BtnRecalculate.Text = "Add new site to Scenario 1 and recalculate"
+        Me.BtnRecalculate.Text = "2. Add new site to Scenario 1 and recalculate"
         Me.BtnRecalculate.UseVisualStyleBackColor = True
         '
         'BtnDefineSiteSame
         '
         Me.BtnDefineSiteSame.Enabled = False
         Me.BtnDefineSiteSame.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnDefineSiteSame.Location = New System.Drawing.Point(3, 683)
+        Me.BtnDefineSiteSame.Location = New System.Drawing.Point(11, 719)
         Me.BtnDefineSiteSame.Name = "BtnDefineSiteSame"
         Me.BtnDefineSiteSame.Size = New System.Drawing.Size(307, 25)
         Me.BtnDefineSiteSame.TabIndex = 92
-        Me.BtnDefineSiteSame.Text = "Define a new site with the same settings"
+        Me.BtnDefineSiteSame.Text = "3. Define a new site with the same settings"
         Me.BtnDefineSiteSame.UseVisualStyleBackColor = True
         '
         'CkConstraints
         '
         Me.CkConstraints.AutoSize = True
         Me.CkConstraints.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CkConstraints.Location = New System.Drawing.Point(320, 686)
+        Me.CkConstraints.Location = New System.Drawing.Point(333, 722)
         Me.CkConstraints.Name = "CkConstraints"
         Me.CkConstraints.Size = New System.Drawing.Size(180, 20)
         Me.CkConstraints.TabIndex = 93
         Me.CkConstraints.Text = "Re-use layers for new site"
         Me.CkConstraints.UseVisualStyleBackColor = True
         '
+        'BtnReuseHelp
+        '
+        Me.BtnReuseHelp.Enabled = False
+        Me.BtnReuseHelp.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnReuseHelp.ForeColor = System.Drawing.Color.Blue
+        Me.BtnReuseHelp.Location = New System.Drawing.Point(507, 720)
+        Me.BtnReuseHelp.Margin = New System.Windows.Forms.Padding(2)
+        Me.BtnReuseHelp.Name = "BtnReuseHelp"
+        Me.BtnReuseHelp.Size = New System.Drawing.Size(25, 22)
+        Me.BtnReuseHelp.TabIndex = 95
+        Me.BtnReuseHelp.Text = "?"
+        Me.BtnReuseHelp.UseVisualStyleBackColor = True
+        '
         'FrmPsuedoSite
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(567, 787)
+        Me.Controls.Add(Me.BtnReuseHelp)
         Me.Controls.Add(Me.CkConstraints)
         Me.Controls.Add(Me.BtnRecalculate)
         Me.Controls.Add(Me.GrpLocation)
@@ -1157,4 +1172,5 @@ Partial Class FrmPsuedoSite
     Friend WithEvents BtnRecalculate As System.Windows.Forms.Button
     Friend WithEvents BtnDefineSiteSame As System.Windows.Forms.Button
     Friend WithEvents CkConstraints As System.Windows.Forms.CheckBox
+    Friend WithEvents BtnReuseHelp As System.Windows.Forms.Button
 End Class

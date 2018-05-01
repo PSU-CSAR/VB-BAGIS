@@ -545,6 +545,7 @@ Public Class FrmPsuedoSite
             pStepProg.Step()
             SavePseudoSiteLog()
             BtnRecalculate.Enabled = True
+            BtnMap.Enabled = True
             MessageBox.Show("The new pseudo-site has been added to Scenario 1 in the Site Scenario Tool")
         End If
         CleanUpAfterAnalysis(pStepProg, progressDialog2)
@@ -554,7 +555,6 @@ Public Class FrmPsuedoSite
         If progressDialog2 IsNot Nothing Then
             progressDialog2.HideDialog()
         End If
-        BtnMap.Enabled = True
         progressDialog2 = Nothing
         pStepProg = Nothing
     End Sub
@@ -1400,8 +1400,10 @@ Public Class FrmPsuedoSite
         BtnMap.Enabled = False
         BtnFindSite.Enabled = True
         BtnRecalculate.Enabled = False
+        BtnDefineSiteSame.Enabled = False
         CkConstraints.Checked = False
         CkConstraints.Enabled = False
+        BtnReuseHelp.Enabled = False
     End Sub
 
     Private Sub CmboxBegin_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles CmboxBegin.SelectedIndexChanged
@@ -1476,6 +1478,13 @@ Public Class FrmPsuedoSite
             m_dictLocationAllValues.Clear()
             m_dictLocationIncludeValues.Clear()
         End If
+        BtnFindSite.Enabled = True
+        BtnMap.Enabled = False
+        BtnRecalculate.Enabled = False
+        BtnDefineSiteSame.Enabled = False
+        CkConstraints.Checked = False
+        CkConstraints.Enabled = False
+        BtnReuseHelp.Enabled = False
     End Sub
 
     Private Sub TxtSiteName_TextChanged(sender As Object, e As System.EventArgs) Handles TxtSiteName.TextChanged
@@ -1994,6 +2003,7 @@ Public Class FrmPsuedoSite
         'Disable ckConstraints; Don't know provenance of existing constraint layers
         CkConstraints.Checked = False
         CkConstraints.Enabled = False
+        BtnReuseHelp.Enabled = False
         'Enable copying
         BtnDefineSiteSame.Enabled = True
     End Sub
@@ -2024,10 +2034,13 @@ Public Class FrmPsuedoSite
         '3. Click BtnCalculate on Site Scenario form
         siteScenarioForm.BtnCalculate.PerformClick()
         'Enable/disable buttons
-        BtnDefineSiteSame.Enabled = True    'OK to create a new site with the same parameters
-        CkConstraints.Checked = False       'Disable this, we will ask if they copy a site
         BtnRecalculate.Enabled = False      'We just recalculated; Don't need to do it again
-        BtnFindSite.Enabled = True          'They can find a new site again
+        BtnDefineSiteSame.Enabled = True    'OK to create a new site with the same parameters
+        CkConstraints.Enabled = False
+        CkConstraints.Checked = False       'Disable this, we will ask if they copy a site
+        BtnReuseHelp.Enabled = False
+        BtnFindSite.Enabled = False         'Why would you want to find site with same parameters?
+        'It will be re-enabled if you change anything or clear the form
     End Sub
 
     Private Sub BtnDefineSiteSame_Click(sender As System.Object, e As System.EventArgs) Handles BtnDefineSiteSame.Click
@@ -2042,6 +2055,7 @@ Public Class FrmPsuedoSite
             Me.EnableForm(True)
         Else
             CkConstraints.Enabled = True
+            BtnReuseHelp.Enabled = True
             Dim res As DialogResult = MessageBox.Show("Do you want to re-use the constraint layers " + _
                                                       "from the previous calculation? If you do this, you " + _
                                                       "cannot modify any of the constraint settings!", "BAGIS V3", _
@@ -2091,10 +2105,9 @@ Public Class FrmPsuedoSite
             BtnAddLocation.Visible = False
             BtnDeleteLocation.Visible = False
             BtnEditLocation.Visible = False
-            BtnMap.Visible = False
-            BtnClear.Visible = False
-            BtnFindSite.Visible = False
-            BtnRecalculate.Visible = False
+            BtnMap.Enabled = False
+            BtnFindSite.Enabled = False
+            BtnRecalculate.Enabled = False
             TxtSiteName.Enabled = False
             txtLower.Enabled = False
             TxtUpperRange.Enabled = False
