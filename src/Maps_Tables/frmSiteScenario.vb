@@ -641,13 +641,9 @@ Public Class frmSiteScenario
                                                           MessageBoxIcon.Question)
                 If res = DialogResult.Yes Then
                     Dim PsXmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSitesXml)
-                    Dim lastAutoSite As PseudoSite = Nothing
                     Dim allAutoSites As PseudoSiteList = Nothing
                     If BA_File_ExistsWindowsIO(PsXmlOutputPath) Then
                         allAutoSites = BA_LoadPseudoSitesFromXml(AOIFolderBase)
-                        If allAutoSites IsNot Nothing Then
-                            lastAutoSite = allAutoSites.LastSite()
-                        End If
                     End If
                     Dim layersGdbPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers)
                     Dim success As BA_ReturnCode
@@ -660,10 +656,16 @@ Public Class frmSiteScenario
                                 success = BA_DeleteSite(layersGdbPath, BA_EnumDescription(MapsFileName.SnowCourse), pSite)
                             Case SiteType.Pseudo
                                 success = BA_DeleteSite(layersGdbPath, BA_EnumDescription(MapsFileName.Pseudo), pSite)
-                                If lastAutoSite IsNot Nothing AndAlso _
-                                    pSite.ObjectId = lastAutoSite.ObjectId Then
-                                    BA_Remove_File(PsXmlOutputPath)
-                                End If
+                                Dim idxDelete As Integer = -1
+                                For i As Integer = 0 To allAutoSites.PseudoSites.Count - 1
+                                    Dim dSite As PseudoSite = allAutoSites.PseudoSites(i)
+                                    If dSite.ObjectId = pSite.ObjectId Then
+                                        idxDelete = i
+                                        Exit For
+                                    End If
+                                Next
+                                If idxDelete > -1 Then _
+                                    allAutoSites.PseudoSites.RemoveAt(idxDelete)
                         End Select
                         If success = BA_ReturnCode.Success Then
                             'Remove the site from Scenario 1 DataGridView
@@ -746,6 +748,7 @@ Public Class frmSiteScenario
                             End If
                         End If
                     Next
+                    allAutoSites.Save(PsXmlOutputPath)
                 End If
             Else
                 MessageBox.Show("You have not selected any sites to delete.", "Delete site(s)", MessageBoxButtons.OK, _

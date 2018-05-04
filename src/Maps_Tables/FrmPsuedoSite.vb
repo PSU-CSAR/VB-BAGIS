@@ -152,7 +152,6 @@ Public Class FrmPsuedoSite
         BA_SetDefaultProjection(My.ArcMap.Application)
 
         If autoSiteLog IsNot Nothing Then
-            'Use form as log in read-only mode
             LoadAnalysisLog(autoSiteLog)
         End If
 
@@ -176,8 +175,11 @@ Public Class FrmPsuedoSite
             Exit Sub
         End If
 
-        ' Delete any layers from the previous run
-        DeletePreviousRun()
+        If CkConstraints.Checked = False Then
+            'Delete any layers from the previous run
+            DeletePreviousRun()
+        End If
+
 
         If String.IsNullOrEmpty(TxtSiteName.Text) Then
             MessageBox.Show("Site name is required to find a site", "BAGIS-V3", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
@@ -231,6 +233,14 @@ Public Class FrmPsuedoSite
                 sbElev.Append("Desired range upper: Numeric value required!" + vbCrLf)
             End If
 
+            If CkConstraints.Checked = True Then
+                'Check for existence of elev constraint layer
+                If Not BA_File_Exists(m_analysisFolder + "\" + m_elevLayer, WorkspaceType.Geodatabase, _
+                                      ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
+                    sbElev.Append("You elected to re-use layers for the new site but the elevation layer " + m_elevLayer + " cannot be found! " + vbCrLf)
+                End If
+            End If
+
             If sbElev.Length > 0 Then
                 Dim errMsg As String = "You selected the Elevation option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
                     sbElev.ToString + vbCrLf +
@@ -256,6 +266,21 @@ Public Class FrmPsuedoSite
                     CkProximity.Checked = False
                 End If
             End If
+            If CkConstraints.Checked = True Then
+                'Check for existence of elev constraint layer
+                If Not BA_File_Exists(m_analysisFolder + "\" + m_proximityLayer, WorkspaceType.Geodatabase, _
+                                      ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
+                    Dim res As DialogResult = MessageBox.Show("You elected to re-use layers for the new site but the proximity layer " + m_proximityLayer + " cannot be found! Do you wish to " + _
+                                          "find a site without using the Proximity option", "Missing layer", MessageBoxButtons.YesNo, _
+                                          MessageBoxIcon.Question)
+                    If res <> Windows.Forms.DialogResult.Yes Then
+                        Exit Sub
+                    Else
+                        CkProximity.Checked = False
+                    End If
+                End If
+            End If
+
         End If
 
         'If user selected PRISM layer, did they enter a valid range?
@@ -301,6 +326,14 @@ Public Class FrmPsuedoSite
                 Else
                     sbPrism.Append("Desired range upper: Numeric value required!" + vbCrLf)
                 End If
+                If CkConstraints.Checked = True Then
+                    'Check for existence of precip constraint layer
+                    If Not BA_File_Exists(m_analysisFolder + "\" + m_precipLayer, WorkspaceType.Geodatabase, _
+                                          ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
+                        sbPrism.Append("You elected to re-use layers for the new site but the precipitation layer " + m_precipLayer + " cannot be found! " + vbCrLf)
+                    End If
+                End If
+
                 If sbPrism.Length > 0 Then
                     Dim errMsg As String = "You selected the Precipitation option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
                         sbPrism.ToString + vbCrLf +
@@ -336,6 +369,13 @@ Public Class FrmPsuedoSite
                     End If
                 End If
             Next
+            If CkConstraints.Checked = True Then
+                'Check for existence of precip constraint layer
+                If Not BA_File_Exists(m_analysisFolder + "\" + m_locationLayer, WorkspaceType.Geodatabase, _
+                                      ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
+                    sbLoc.Append("You elected to re-use layers for the new site but the location layer " + m_locationLayer + " cannot be found! " + vbCrLf)
+                End If
+            End If
             If sbLoc.Length > 0 Then
                 Dim errMsg As String = "You selected the Location option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
                     sbLoc.ToString + vbCrLf +
@@ -496,21 +536,22 @@ Public Class FrmPsuedoSite
         m_siteId = -1
         If success = BA_ReturnCode.Success Then
             Dim numSites As Int16 = BA_CountPolygons(m_analysisFolder, m_siteFileName, BA_FIELD_GRIDCODE_GDB)
+            Dim intOid As Integer = 1
             If numSites < 1 Then
                 MessageBox.Show("No psuedo-sites were found. Please double-check your selection criteria")
             ElseIf numSites > 1 Then
                 MessageBox.Show(numSites & " pseudo-sites were found. Currently BAGIS only knows how to deal with one, so it will randomly pick one.")
                 Dim r As New Random()
-                Dim keepSite As Integer = r.Next(1, numSites + 1)
+                intOid = r.Next(1, numSites + 1)
                 'Delete all sites except the first one
-                Dim strSelect As String = " " & BA_FIELD_OBJECT_ID & " <> " & keepSite
+                Dim strSelect As String = " " & BA_FIELD_OBJECT_ID & " <> " & intOid
                 success = BA_DeleteFeatures(m_analysisFolder, m_siteFileName, strSelect)
             End If
 
             'Create new psuedo_sites file or append auto-site to existing
             pStepProg.Message = "Integrating new pseudo-site into site selection layers"
             pStepProg.Step()
-            Dim newSite As Site = PreparePointFileToAppend(snapRasterPath)
+            Dim newSite As Site = PreparePointFileToAppend(snapRasterPath, intOid)
             If newSite IsNot Nothing Then
                 Dim pseudoPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) + BA_EnumDescription(MapsFileName.Pseudo)
                 If BA_File_Exists(pseudoPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
@@ -582,151 +623,175 @@ Public Class FrmPsuedoSite
 
     Private Function GenerateElevationLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
         '1. Reclass elevation raster according to upper and lower ranges
-        pStepProg.Message = "Reclass DEM for elevation layer"
-        pStepProg.Step()
-        Dim sb As StringBuilder = New StringBuilder()
-        'Set min/max of reclass to actual dem values
-        Dim strMinElev As String = Convert.ToString(m_demMin)
-        Dim strLower As String = txtLower.Text
-        Dim strUpperRange As String = TxtUpperRange.Text
-        Dim strMaxElev As String = Convert.ToString(m_demMax)
-        'Convert the values to the DEM value, before composing the reclass string, if we need to
-        If m_demInMeters <> m_usingElevMeters Then
-            Dim converter As IUnitConverter = New UnitConverter
-            Dim toElevUnits As esriUnits = esriUnits.esriMeters
-            If Not m_demInMeters Then _
-                toElevUnits = esriUnits.esriFeet
-            Dim fromElevUnits As esriUnits = esriUnits.esriFeet
-            If m_usingElevMeters Then _
-                fromElevUnits = esriUnits.esriMeters
-            strMinElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMin, fromElevUnits, toElevUnits)))
-            strLower = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(txtLower.Text), fromElevUnits, toElevUnits)))
-            strUpperRange = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(TxtUpperRange.Text), fromElevUnits, toElevUnits)))
-            strMaxElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMax, fromElevUnits, toElevUnits)))
+        If CkConstraints.Checked = False Then
+            pStepProg.Message = "Reclass DEM for elevation layer"
+            pStepProg.Step()
+            Dim sb As StringBuilder = New StringBuilder()
+            'Set min/max of reclass to actual dem values
+            Dim strMinElev As String = Convert.ToString(m_demMin)
+            Dim strLower As String = txtLower.Text
+            Dim strUpperRange As String = TxtUpperRange.Text
+            Dim strMaxElev As String = Convert.ToString(m_demMax)
+            'Convert the values to the DEM value, before composing the reclass string, if we need to
+            If m_demInMeters <> m_usingElevMeters Then
+                Dim converter As IUnitConverter = New UnitConverter
+                Dim toElevUnits As esriUnits = esriUnits.esriMeters
+                If Not m_demInMeters Then _
+                    toElevUnits = esriUnits.esriFeet
+                Dim fromElevUnits As esriUnits = esriUnits.esriFeet
+                If m_usingElevMeters Then _
+                    fromElevUnits = esriUnits.esriMeters
+                strMinElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMin, fromElevUnits, toElevUnits)))
+                strLower = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(txtLower.Text), fromElevUnits, toElevUnits)))
+                strUpperRange = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(TxtUpperRange.Text), fromElevUnits, toElevUnits)))
+                strMaxElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMax, fromElevUnits, toElevUnits)))
+            End If
+            sb.Append(strMinElev + " " + strLower + " NoData;")
+            sb.Append(strLower + " " + strUpperRange + " 1;")
+            sb.Append(strUpperRange + " " + strMaxElev + " NoData")
+            Dim inputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
+            Dim reclassElevPath As String = m_analysisFolder & "\" & m_elevLayer
+            Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
+                                                                         reclassElevPath, snapRasterPath)
+            'Add 'NAME' field to be used as label for map
+            If success = BA_ReturnCode.Success Then
+                success = BA_AddUserFieldToRaster(m_analysisFolder, m_elevLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                                              100, BA_MAPS_PS_ELEVATION)
+            End If
+            Return success
+        Else
+            If BA_File_Exists(m_analysisFolder & "\" & m_elevLayer, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                Return BA_ReturnCode.Success
+            Else
+                Return BA_ReturnCode.UnknownError
+            End If
         End If
-        sb.Append(strMinElev + " " + strLower + " NoData;")
-        sb.Append(strLower + " " + strUpperRange + " 1;")
-        sb.Append(strUpperRange + " " + strMaxElev + " NoData")
-        Dim inputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
-        Dim reclassElevPath As String = m_analysisFolder & "\" & m_elevLayer
-        Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
-                                                                     reclassElevPath, snapRasterPath)
-        'Add 'NAME' field to be used as label for map
-        If success = BA_ReturnCode.Success Then
-            success = BA_AddUserFieldToRaster(m_analysisFolder, m_elevLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
-                                          100, BA_MAPS_PS_ELEVATION)
-        End If
-        Return success
     End Function
 
     Private Function GeneratePrecipitationLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
-        '1. Reclass precip raster according to upper and lower ranges
-        pStepProg.Message = "Reclass precipitation layer"
-        pStepProg.Step()
-        Dim sb As StringBuilder = New StringBuilder()
-        Dim strMinPrecip As String = Convert.ToString(m_precipMin)
-        Dim strLowerRange As String = TxtPrecipLower.Text
-        Dim strUpperRange As String = TxtPrecipUpper.Text
-        Dim strMaxPrecip As String = Convert.ToString(m_precipMax)
-        sb.Append(strMinPrecip + " " + strLowerRange + " NoData;")
-        sb.Append(strLowerRange + " " + strUpperRange + " 1;")
-        sb.Append(strUpperRange + " " + strMaxPrecip + " NoData")
+        If CkConstraints.Checked = False Then
+            '1. Reclass precip raster according to upper and lower ranges
+            pStepProg.Message = "Reclass precipitation layer"
+            pStepProg.Step()
+            Dim sb As StringBuilder = New StringBuilder()
+            Dim strMinPrecip As String = Convert.ToString(m_precipMin)
+            Dim strLowerRange As String = TxtPrecipLower.Text
+            Dim strUpperRange As String = TxtPrecipUpper.Text
+            Dim strMaxPrecip As String = Convert.ToString(m_precipMax)
+            sb.Append(strMinPrecip + " " + strLowerRange + " NoData;")
+            sb.Append(strLowerRange + " " + strUpperRange + " 1;")
+            sb.Append(strUpperRange + " " + strMaxPrecip + " NoData")
 
-        Dim inputFolder As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True)
-        Dim prismRasterName As String
-        If CmboxPrecipType.SelectedIndex = 0 Then
-            prismRasterName = AOIPrismFolderNames.annual.ToString    'read direct Annual PRISM raster
-        ElseIf CmboxPrecipType.SelectedIndex > 0 And CmboxPrecipType.SelectedIndex < 5 Then 'read directly Quarterly PRISM raster
-            prismRasterName = BA_GetPrismFolderName(CmboxPrecipType.SelectedIndex + 12)
-        Else 'sum individual monthly PRISM rasters
-            Dim response As Integer = BA_PRISMCustom(My.Document, AOIFolderBase, Val(CmboxBegin.SelectedItem), Val(CmboxEnd.SelectedItem))
-            If response = 0 Then
-                MsgBox("Unable to generate custom PRISM layer! Program stopped.")
+            Dim inputFolder As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism, True)
+            Dim prismRasterName As String
+            If CmboxPrecipType.SelectedIndex = 0 Then
+                prismRasterName = AOIPrismFolderNames.annual.ToString    'read direct Annual PRISM raster
+            ElseIf CmboxPrecipType.SelectedIndex > 0 And CmboxPrecipType.SelectedIndex < 5 Then 'read directly Quarterly PRISM raster
+                prismRasterName = BA_GetPrismFolderName(CmboxPrecipType.SelectedIndex + 12)
+            Else 'sum individual monthly PRISM rasters
+                Dim response As Integer = BA_PRISMCustom(My.Document, AOIFolderBase, Val(CmboxBegin.SelectedItem), Val(CmboxEnd.SelectedItem))
+                If response = 0 Then
+                    MsgBox("Unable to generate custom PRISM layer! Program stopped.")
+                    Return BA_ReturnCode.UnknownError
+                End If
+                inputFolder = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
+                prismRasterName = BA_TEMP_PRISM
+            End If
+            Dim inputPath As String = inputFolder + prismRasterName
+            Dim reclassPrismPath As String = m_analysisFolder & "\" & m_precipLayer
+            Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
+                                                                                 reclassPrismPath, snapRasterPath)
+            'Add 'NAME' field to be used as label for map
+            If success = BA_ReturnCode.Success Then
+                success = BA_AddUserFieldToRaster(m_analysisFolder, m_precipLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                                              100, BA_MAPS_PS_PRECIPITATION)
+            End If
+            Return success
+        Else
+            If BA_File_Exists(m_analysisFolder & "\" & m_precipLayer, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                Return BA_ReturnCode.Success
+            Else
                 Return BA_ReturnCode.UnknownError
             End If
-            inputFolder = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True)
-            prismRasterName = BA_TEMP_PRISM
         End If
-        Dim inputPath As String = inputFolder + prismRasterName
-        Dim reclassPrismPath As String = m_analysisFolder & "\" & m_precipLayer
-        Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
-                                                                             reclassPrismPath, snapRasterPath)
-        'Add 'NAME' field to be used as label for map
-        If success = BA_ReturnCode.Success Then
-            success = BA_AddUserFieldToRaster(m_analysisFolder, m_precipLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
-                                          100, BA_MAPS_PS_PRECIPITATION)
-        End If
-        Return success
     End Function
 
     Private Function GenerateLocationLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
-        Dim layerCount As Int16 = GrdLocation.Rows.Count
-        Dim success As BA_ReturnCode
-        Dim outputFolderPath As String = m_analysisFolder + "\" + m_locationLayer
-        Dim inRasterPath2 As String = Nothing
-        Dim timesOutputFolderPath As String = Nothing
-        Dim lstRastersToDelete As IList(Of String) = New List(Of String)
-        For i As Int16 = 0 To layerCount - 1
-            pStepProg.Message = "Processing location layer " + Convert.ToString(GrdLocation.Rows(i).Cells(m_idxLayer).Value)
-            pStepProg.Step()
-            'Build reclassItem array
-            Dim layerLocation As String = Convert.ToString(GrdLocation.Rows(i).Cells(m_idxFullPaths).Value)
-            Dim lstAllValues As IList(Of String) = m_dictLocationAllValues(layerLocation)
-            Dim lstIncludeValues As IList(Of String) = m_dictLocationIncludeValues(layerLocation)
-            Dim reclassItems(lstAllValues.Count - 1) As ReclassItem
-            For j As Integer = 0 To lstAllValues.Count - 1
-                Dim nextItem As ReclassItem = New ReclassItem()
-                Dim pValue As String = lstAllValues(j)
-                nextItem.FromValue = pValue
-                nextItem.ToValue = pValue
-                If lstIncludeValues.Contains(pValue) Then
-                    nextItem.OutputValue = 1
-                Else
-                    nextItem.OutputValue = -9999
+        If CkConstraints.Checked = False Then
+            Dim layerCount As Int16 = GrdLocation.Rows.Count
+            Dim success As BA_ReturnCode
+            Dim outputFolderPath As String = m_analysisFolder + "\" + m_locationLayer
+            Dim inRasterPath2 As String = Nothing
+            Dim timesOutputFolderPath As String = Nothing
+            Dim lstRastersToDelete As IList(Of String) = New List(Of String)
+            For i As Int16 = 0 To layerCount - 1
+                pStepProg.Message = "Processing location layer " + Convert.ToString(GrdLocation.Rows(i).Cells(m_idxLayer).Value)
+                pStepProg.Step()
+                'Build reclassItem array
+                Dim layerLocation As String = Convert.ToString(GrdLocation.Rows(i).Cells(m_idxFullPaths).Value)
+                Dim lstAllValues As IList(Of String) = m_dictLocationAllValues(layerLocation)
+                Dim lstIncludeValues As IList(Of String) = m_dictLocationIncludeValues(layerLocation)
+                Dim reclassItems(lstAllValues.Count - 1) As ReclassItem
+                For j As Integer = 0 To lstAllValues.Count - 1
+                    Dim nextItem As ReclassItem = New ReclassItem()
+                    Dim pValue As String = lstAllValues(j)
+                    nextItem.FromValue = pValue
+                    nextItem.ToValue = pValue
+                    If lstIncludeValues.Contains(pValue) Then
+                        nextItem.OutputValue = 1
+                    Else
+                        nextItem.OutputValue = -9999
+                    End If
+                    reclassItems(j) = nextItem
+                Next
+                If layerCount > 1 Then
+                    outputFolderPath = m_analysisFolder + "\tempLocation" + CStr(i)
+                    lstRastersToDelete.Add(outputFolderPath)
+                    timesOutputFolderPath = m_analysisFolder + "\timesLocation" + CStr(i)
                 End If
-                reclassItems(j) = nextItem
+                success = BA_ReclassifyRasterFromTableWithNoData(layerLocation, BA_FIELD_VALUE, reclassItems, _
+                                                                 outputFolderPath, snapRasterPath)
+                If success = BA_ReturnCode.Success AndAlso i > 0 Then
+                    'inRasterPath1 always outputFolderPath
+                    'inRasterPath2 see case statement below
+                    'outRasterPath always timesOutputFolderPath
+                    Select Case i
+                        Case 1
+                            'Multiplying first 2 reclass layers
+                            inRasterPath2 = m_analysisFolder + "\tempLocation" + CStr(i - 1)
+                        Case Is > 1
+                            'Multiplying by previous times output layer
+                            inRasterPath2 = m_analysisFolder + "\timesLocation" + CStr(i - 1)
+                    End Select
+                    success = BA_Times(outputFolderPath, inRasterPath2, timesOutputFolderPath)
+                    lstRastersToDelete.Add(timesOutputFolderPath)
+                End If
+                ' Stop processing if there is an error
+                If success <> BA_ReturnCode.Success Then
+                    Return success
+                End If
             Next
+            ' Need to rename the final layer to the location output layer
             If layerCount > 1 Then
-                outputFolderPath = m_analysisFolder + "\tempLocation" + CStr(i)
-                lstRastersToDelete.Add(outputFolderPath)
-                timesOutputFolderPath = m_analysisFolder + "\timesLocation" + CStr(i)
+                success = BA_Copy(timesOutputFolderPath, m_analysisFolder + "\" + m_locationLayer)
             End If
-            success = BA_ReclassifyRasterFromTableWithNoData(layerLocation, BA_FIELD_VALUE, reclassItems, _
-                                                             outputFolderPath, snapRasterPath)
-            If success = BA_ReturnCode.Success AndAlso i > 0 Then
-                'inRasterPath1 always outputFolderPath
-                'inRasterPath2 see case statement below
-                'outRasterPath always timesOutputFolderPath
-                Select Case i
-                    Case 1
-                        'Multiplying first 2 reclass layers
-                        inRasterPath2 = m_analysisFolder + "\tempLocation" + CStr(i - 1)
-                    Case Is > 1
-                        'Multiplying by previous times output layer
-                        inRasterPath2 = m_analysisFolder + "\timesLocation" + CStr(i - 1)
-                End Select
-                success = BA_Times(outputFolderPath, inRasterPath2, timesOutputFolderPath)
-                lstRastersToDelete.Add(timesOutputFolderPath)
+            If success = BA_ReturnCode.Success Then
+                For Each layerPath As String In lstRastersToDelete
+                    Dim layerFolder As String = "PleaseReturn"
+                    Dim layerName As String = BA_GetBareName(layerPath, layerFolder)
+                    Dim retVal As Short = BA_RemoveRasterFromGDB(layerFolder, layerName)
+                Next
+                success = BA_AddUserFieldToRaster(m_analysisFolder, m_locationLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                                  100, BA_MAPS_PS_LOCATION)
             End If
-            ' Stop processing if there is an error
-            If success <> BA_ReturnCode.Success Then
-                Return success
+            Return success
+        Else
+            If BA_File_Exists(m_analysisFolder & "\" & m_locationLayer, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                Return BA_ReturnCode.Success
+            Else
+                Return BA_ReturnCode.UnknownError
             End If
-        Next
-        ' Need to rename the final layer to the location output layer
-        If layerCount > 1 Then
-            success = BA_Copy(timesOutputFolderPath, m_analysisFolder + "\" + m_locationLayer)
         End If
-        If success = BA_ReturnCode.Success Then
-            For Each layerPath As String In lstRastersToDelete
-                Dim layerFolder As String = "PleaseReturn"
-                Dim layerName As String = BA_GetBareName(layerPath, layerFolder)
-                Dim retVal As Short = BA_RemoveRasterFromGDB(layerFolder, layerName)
-            Next
-            success = BA_AddUserFieldToRaster(m_analysisFolder, m_locationLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
-                              100, BA_MAPS_PS_LOCATION)
-        End If
-        Return success
     End Function
 
     Private Sub txtLower_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles txtLower.Validating
@@ -1060,75 +1125,83 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Function GenerateProximityLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
-        pStepProg.Message = "Generating proximity layer"
-        pStepProg.Step()
+        If CkConstraints.Checked = False Then
+            pStepProg.Message = "Generating proximity layer"
+            pStepProg.Step()
 
-        Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
-        Dim lstVectorsToDelete As IList(Of String) = New List(Of String)
-        Dim tempProximity As String = Nothing
-        Dim outFeaturesPath As String = Nothing
-        Dim count As Int16 = 0
-        'Use this to hold the list of layers that we send to the merge tool
-        Dim sb As StringBuilder = New StringBuilder()
-        For Each dRow As DataGridViewRow In GrdProximity.Rows
-            '--- Calculate correct buffer distance based on XY units ---
-            Dim comps As Double = -1
-            Dim bufferDistance As Double = 0
-            Dim strBuffer As String = Convert.ToString(dRow.Cells(m_idxBufferDistance).Value)
-            Dim isNumber As Boolean = Double.TryParse(strBuffer, comps)
-            If isNumber Then
-                bufferDistance = comps
-            End If
-            strBuffer = strBuffer + " "
-            Select Case m_usingXYUnits
-                Case esriUnits.esriFeet
-                    strBuffer = strBuffer + MeasurementUnit.Feet.ToString
-                Case esriUnits.esriKilometers
-                    strBuffer = strBuffer + MeasurementUnit.Kilometers.ToString
-                Case esriUnits.esriMiles
-                    strBuffer = strBuffer + MeasurementUnit.Miles.ToString
-                Case Else
-                    strBuffer = strBuffer + MeasurementUnit.Meters.ToString
-            End Select
-
-            tempProximity = "ps_prox_v" & count
-            outFeaturesPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tempProximity
-            success = BA_Buffer(Convert.ToString(dRow.Cells(m_idxFullPaths).Value), outFeaturesPath, strBuffer, "ALL")
-            If success = BA_ReturnCode.Success Then
-                success = BA_AddUserFieldToVector(m_analysisFolder, tempProximity, BA_FIELD_PSITE, esriFieldType.esriFieldTypeInteger, _
-                                                  -1, "1")
-                If success = BA_ReturnCode.Success Then
-                    sb.Append(outFeaturesPath + "; ")
+            Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
+            Dim lstVectorsToDelete As IList(Of String) = New List(Of String)
+            Dim tempProximity As String = Nothing
+            Dim outFeaturesPath As String = Nothing
+            Dim count As Int16 = 0
+            'Use this to hold the list of layers that we send to the merge tool
+            Dim sb As StringBuilder = New StringBuilder()
+            For Each dRow As DataGridViewRow In GrdProximity.Rows
+                '--- Calculate correct buffer distance based on XY units ---
+                Dim comps As Double = -1
+                Dim bufferDistance As Double = 0
+                Dim strBuffer As String = Convert.ToString(dRow.Cells(m_idxBufferDistance).Value)
+                Dim isNumber As Boolean = Double.TryParse(strBuffer, comps)
+                If isNumber Then
+                    bufferDistance = comps
                 End If
-            End If
-            lstVectorsToDelete.Add(outFeaturesPath)
-            count += 1
-        Next
-        If count > 1 AndAlso success = BA_ReturnCode.Success Then
-            'Merge all features
-            sb.Remove(sb.ToString().LastIndexOf("; "), "; ".Length)
-            outFeaturesPath = m_analysisFolder + "\tmpMerge"
-            lstVectorsToDelete.Add(outFeaturesPath)
-            success = BA_MergeFeatures(sb.ToString, outFeaturesPath, snapRasterPath)
-        End If
-        If success = BA_ReturnCode.Success Then
-            success = BA_Feature2RasterGP(outFeaturesPath, m_analysisFolder + "\" + m_proximityLayer, BA_FIELD_PSITE, m_cellSize, snapRasterPath)
-        End If
-        If success = BA_ReturnCode.Success Then
-            'Add 'NAME' field to be used as label for map
-            success = BA_AddUserFieldToRaster(m_analysisFolder, m_proximityLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
-                                          100, BA_MAPS_PS_PROXIMITY)
-            For Each aPath As String In lstVectorsToDelete
-                Dim folderName As String = "PleaseReturn"
-                Dim fileName As String = BA_GetBareName(outFeaturesPath, folderName)
-                Dim retVal As Int16 = BA_Remove_ShapefileFromGDB(folderName, fileName)
-            Next
-        End If
+                strBuffer = strBuffer + " "
+                Select Case m_usingXYUnits
+                    Case esriUnits.esriFeet
+                        strBuffer = strBuffer + MeasurementUnit.Feet.ToString
+                    Case esriUnits.esriKilometers
+                        strBuffer = strBuffer + MeasurementUnit.Kilometers.ToString
+                    Case esriUnits.esriMiles
+                        strBuffer = strBuffer + MeasurementUnit.Miles.ToString
+                    Case Else
+                        strBuffer = strBuffer + MeasurementUnit.Meters.ToString
+                End Select
 
-        If Not success = BA_ReturnCode.Success Then
-            MessageBox.Show("An error occurred while generating the proximity layer. It will not be used in analysis")
+                tempProximity = "ps_prox_v" & count
+                outFeaturesPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tempProximity
+                success = BA_Buffer(Convert.ToString(dRow.Cells(m_idxFullPaths).Value), outFeaturesPath, strBuffer, "ALL")
+                If success = BA_ReturnCode.Success Then
+                    success = BA_AddUserFieldToVector(m_analysisFolder, tempProximity, BA_FIELD_PSITE, esriFieldType.esriFieldTypeInteger, _
+                                                      -1, "1")
+                    If success = BA_ReturnCode.Success Then
+                        sb.Append(outFeaturesPath + "; ")
+                    End If
+                End If
+                lstVectorsToDelete.Add(outFeaturesPath)
+                count += 1
+            Next
+            If count > 1 AndAlso success = BA_ReturnCode.Success Then
+                'Merge all features
+                sb.Remove(sb.ToString().LastIndexOf("; "), "; ".Length)
+                outFeaturesPath = m_analysisFolder + "\tmpMerge"
+                lstVectorsToDelete.Add(outFeaturesPath)
+                success = BA_MergeFeatures(sb.ToString, outFeaturesPath, snapRasterPath)
+            End If
+            If success = BA_ReturnCode.Success Then
+                success = BA_Feature2RasterGP(outFeaturesPath, m_analysisFolder + "\" + m_proximityLayer, BA_FIELD_PSITE, m_cellSize, snapRasterPath)
+            End If
+            If success = BA_ReturnCode.Success Then
+                'Add 'NAME' field to be used as label for map
+                success = BA_AddUserFieldToRaster(m_analysisFolder, m_proximityLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                                              100, BA_MAPS_PS_PROXIMITY)
+                For Each aPath As String In lstVectorsToDelete
+                    Dim folderName As String = "PleaseReturn"
+                    Dim fileName As String = BA_GetBareName(outFeaturesPath, folderName)
+                    Dim retVal As Int16 = BA_Remove_ShapefileFromGDB(folderName, fileName)
+                Next
+            End If
+
+            If Not success = BA_ReturnCode.Success Then
+                MessageBox.Show("An error occurred while generating the proximity layer. It will not be used in analysis")
+            End If
+            Return success
+        Else
+            If BA_File_Exists(m_analysisFolder & "\" & m_proximityLayer, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                Return BA_ReturnCode.Success
+            Else
+                Return BA_ReturnCode.UnknownError
+            End If
         End If
-        Return success
     End Function
 
     Private Sub SuggestSiteName()
@@ -1308,7 +1381,7 @@ Public Class FrmPsuedoSite
         End If
     End Sub
 
-    Public Function PreparePointFileToAppend(ByVal snapRasterPath As String) As Site
+    Public Function PreparePointFileToAppend(ByVal snapRasterPath As String, ByVal intOid As Integer) As Site
         Dim fClass As IFeatureClass = Nothing
         Dim aField As IField = Nothing
         Dim aCursor As IFeatureCursor = Nothing
@@ -1348,9 +1421,8 @@ Public Class FrmPsuedoSite
                 End If
                 BA_Remove_ShapefileFromGDB(m_analysisFolder, tempFileName)
                 '3. Updates the site attributes
-                'Only 1 site; Site id is always 1
-                newSite = New Site(1, TxtSiteName.Text, SiteType.Pseudo, elev, False)
-                success = BA_UpdatePseudoSiteAttributes(m_analysisFolder, m_siteFileName, 1, newSite)
+                newSite = New Site(intOid, TxtSiteName.Text, SiteType.Pseudo, elev, False)
+                success = BA_UpdatePseudoSiteAttributes(m_analysisFolder, m_siteFileName, intOid, newSite)
             End If
             Return newSite
         Catch ex As Exception
@@ -1378,7 +1450,7 @@ Public Class FrmPsuedoSite
             aQueryFilter.WhereClause = " " & BA_SiteNameField & " = '" & TxtSiteName.Text & _
                                        " ' and " & BA_SiteElevField & " = " & siteElev
             If idxOid > -1 Then
-                aCursor = fClass.Search(Nothing, False)
+                aCursor = fClass.Search(aQueryFilter, False)
                 aFeature = aCursor.NextFeature
                 Do While aFeature IsNot Nothing
                     If aFeature IsNot Nothing Then
@@ -1456,6 +1528,7 @@ Public Class FrmPsuedoSite
 
     Private Sub BtnClear_Click(sender As System.Object, e As System.EventArgs) Handles BtnClear.Click
         SuggestSiteName()
+        Me.EnableForm(True)
         CkElev.Checked = False
         txtLower.Text = txtMinElev.Text
         TxtUpperRange.Text = TxtMaxElev.Text
@@ -1998,14 +2071,13 @@ Public Class FrmPsuedoSite
             End If
         End If
         Me.Text = "Auto-site log: " + BA_GetBareName(AOIFolderBase)
-        'Disable/hide controls on read-only form
-        Me.EnableForm(False)
         'Disable ckConstraints; Don't know provenance of existing constraint layers
         CkConstraints.Checked = False
         CkConstraints.Enabled = False
         BtnReuseHelp.Enabled = False
         'Enable copying
         BtnDefineSiteSame.Enabled = True
+        BtnFindSite.Enabled = False
     End Sub
 
     Private Function LayerIsOnMap(ByVal layername As String) As Boolean
@@ -2066,6 +2138,8 @@ Public Class FrmPsuedoSite
                 CkConstraints.Checked = False
             End If
         End If
+        Me.BtnFindSite.Enabled = True
+        Me.BtnFindSite.PerformClick()
     End Sub
 
     Private Sub EnableForm(ByVal bEnabled As Boolean)
