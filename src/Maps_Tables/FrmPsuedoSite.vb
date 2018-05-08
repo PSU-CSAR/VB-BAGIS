@@ -24,7 +24,7 @@ Public Class FrmPsuedoSite
     Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
     Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
-    Private m_lastAnalysis As PseudoSite = Nothing
+    Private m_lastAnalysis As PseudoSite = Nothing  'The site currently loaded in form
     Private m_formLoaded As Boolean = False
     Private m_cellSize As Double
     Private m_demMax As Double
@@ -41,6 +41,7 @@ Public Class FrmPsuedoSite
     Private m_dictLocationIncludeValues As IDictionary(Of String, IList(Of String))
     Private m_displayCombinedLayer As Boolean
     Private m_siteId As Integer
+    Private m_reuseConstraintLayersFlag As Boolean = False
 
 
     Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits, _
@@ -152,6 +153,7 @@ Public Class FrmPsuedoSite
         BA_SetDefaultProjection(My.ArcMap.Application)
 
         If autoSiteLog IsNot Nothing Then
+            m_lastAnalysis = autoSiteLog
             LoadAnalysisLog(autoSiteLog)
         End If
 
@@ -175,11 +177,16 @@ Public Class FrmPsuedoSite
             Exit Sub
         End If
 
-        If CkConstraints.Checked = False Then
+        'Logic for re-using contraint layers
+        If BA_Last_PseudoSite IsNot Nothing AndAlso m_lastAnalysis IsNot Nothing Then
+            If BA_Last_PseudoSite.ObjectId = m_lastAnalysis.ObjectId Then
+                m_reuseConstraintLayersFlag = True
+            End If
+        End If
+        If m_reuseConstraintLayersFlag = False Then
             'Delete any layers from the previous run
             DeletePreviousRun()
         End If
-
 
         If String.IsNullOrEmpty(TxtSiteName.Text) Then
             MessageBox.Show("Site name is required to find a site", "BAGIS-V3", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
@@ -234,11 +241,11 @@ Public Class FrmPsuedoSite
                 sbElev.Append("Desired range upper: Numeric value required!" + vbCrLf)
             End If
 
-            If CkConstraints.Checked = True Then
+            If m_reuseConstraintLayersFlag = True Then
                 'Check for existence of elev constraint layer
                 If Not BA_File_Exists(m_analysisFolder + "\" + m_elevLayer, WorkspaceType.Geodatabase, _
                                       ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
-                    sbElev.Append("You elected to re-use layers for the new site but the elevation layer " + m_elevLayer + " cannot be found! " + vbCrLf)
+                    sbElev.Append("BAGIS needs to re-use constraint layers for the new site but the elevation layer " + m_elevLayer + " cannot be found! " + vbCrLf)
                 End If
             End If
 
@@ -267,11 +274,11 @@ Public Class FrmPsuedoSite
                     CkProximity.Checked = False
                 End If
             End If
-            If CkConstraints.Checked = True Then
+            If m_reuseConstraintLayersFlag = True Then
                 'Check for existence of elev constraint layer
                 If Not BA_File_Exists(m_analysisFolder + "\" + m_proximityLayer, WorkspaceType.Geodatabase, _
                                       ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
-                    Dim res As DialogResult = MessageBox.Show("You elected to re-use layers for the new site but the proximity layer " + m_proximityLayer + " cannot be found! Do you wish to " + _
+                    Dim res As DialogResult = MessageBox.Show("BAGIS needs to re-use constraint layers for the new site but the proximity layer " + m_proximityLayer + " cannot be found! Do you wish to " + _
                                           "find a site without using the Proximity option", "Missing layer", MessageBoxButtons.YesNo, _
                                           MessageBoxIcon.Question)
                     If res <> Windows.Forms.DialogResult.Yes Then
@@ -327,11 +334,11 @@ Public Class FrmPsuedoSite
                 Else
                     sbPrism.Append("Desired range upper: Numeric value required!" + vbCrLf)
                 End If
-                If CkConstraints.Checked = True Then
+                If m_reuseConstraintLayersFlag = True Then
                     'Check for existence of precip constraint layer
                     If Not BA_File_Exists(m_analysisFolder + "\" + m_precipLayer, WorkspaceType.Geodatabase, _
                                           ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
-                        sbPrism.Append("You elected to re-use layers for the new site but the precipitation layer " + m_precipLayer + " cannot be found! " + vbCrLf)
+                        sbPrism.Append("BAGIS needs to re-use constraint layers for the new site but the precipitation layer " + m_precipLayer + " cannot be found! " + vbCrLf)
                     End If
                 End If
 
@@ -370,11 +377,11 @@ Public Class FrmPsuedoSite
                     End If
                 End If
             Next
-            If CkConstraints.Checked = True Then
+            If m_reuseConstraintLayersFlag = True Then
                 'Check for existence of precip constraint layer
                 If Not BA_File_Exists(m_analysisFolder + "\" + m_locationLayer, WorkspaceType.Geodatabase, _
                                       ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
-                    sbLoc.Append("You elected to re-use layers for the new site but the location layer " + m_locationLayer + " cannot be found! " + vbCrLf)
+                    sbLoc.Append("BAGIS needs to re-use constraint layers for the new site but the location layer " + m_locationLayer + " cannot be found! " + vbCrLf)
                 End If
             End If
             If sbLoc.Length > 0 Then
@@ -394,6 +401,7 @@ Public Class FrmPsuedoSite
         Dim maskPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & m_aoiBoundary
 
         BtnFindSite.Enabled = False
+        BA_Last_PseudoSite = Nothing    'Clear session variable
 
         'Use this to hold the list of layers that we send to the cell statistics tool
         Dim sb As StringBuilder = New StringBuilder()
@@ -624,7 +632,7 @@ Public Class FrmPsuedoSite
 
     Private Function GenerateElevationLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
         '1. Reclass elevation raster according to upper and lower ranges
-        If CkConstraints.Checked = False Then
+        If m_reuseConstraintLayersFlag = False Then
             pStepProg.Message = "Reclass DEM for elevation layer"
             pStepProg.Step()
             Dim sb As StringBuilder = New StringBuilder()
@@ -670,7 +678,7 @@ Public Class FrmPsuedoSite
     End Function
 
     Private Function GeneratePrecipitationLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
-        If CkConstraints.Checked = False Then
+        If m_reuseConstraintLayersFlag = False Then
             '1. Reclass precip raster according to upper and lower ranges
             pStepProg.Message = "Reclass precipitation layer"
             pStepProg.Step()
@@ -718,7 +726,7 @@ Public Class FrmPsuedoSite
     End Function
 
     Private Function GenerateLocationLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
-        If CkConstraints.Checked = False Then
+        If m_reuseConstraintLayersFlag = False Then
             Dim layerCount As Int16 = GrdLocation.Rows.Count
             Dim success As BA_ReturnCode
             Dim outputFolderPath As String = m_analysisFolder + "\" + m_locationLayer
@@ -1126,7 +1134,7 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Function GenerateProximityLayer(ByVal pStepProg As IStepProgressor, ByVal snapRasterPath As String) As BA_ReturnCode
-        If CkConstraints.Checked = False Then
+        If m_reuseConstraintLayersFlag = False Then
             pStepProg.Message = "Generating proximity layer"
             pStepProg.Step()
 
@@ -1278,111 +1286,6 @@ Public Class FrmPsuedoSite
         lstPseudoSites.Save(xmlOutputPath)
     End Sub
 
-    '19-MAR-2018: No longer using this to load last site
-    Private Sub ReloadLastAnalysis(ByVal scenarioTimeStamp As DateTime)
-        If m_lastAnalysis IsNot Nothing Then
-            Dim sb As StringBuilder = New StringBuilder()
-            If m_lastAnalysis.DateCreated < scenarioTimeStamp Then
-                'Don't reload form because represented area could be wrong for previous analysis
-                Exit Sub
-            Else
-                sb.Append("BAGIS has loaded details for the previously generated pseudo-site. Use the ‘map’ button to view the pseudo-site and its supporting layers. ")
-                sb.Append(vbCrLf + vbCrLf)
-                sb.Append("If you wish to generate another auto pseudo-site, close this window and return to the Site Scenario Analysis tool. ")
-                sb.Append("You must select the sites to be included in Scenario 1 based on your preferences and click the calculate button ")
-                sb.Append("to generate a new analysis for the represented area, then rerun the auto pseudo site tool.")
-                sb.Append(vbCrLf + vbCrLf)
-                sb.Append("Check the checkbox for this pseudo-site in the Scenario 1 grid in the Site Scenario Analysis tool ")
-                sb.Append("to include the newly generated site in future calculations.")
-            End If
-            TxtSiteName.Text = m_lastAnalysis.SiteName
-            If m_lastAnalysis.UseElevation Then
-                CkElev.Checked = True
-                If m_lastAnalysis.ElevUnits = esriUnits.esriFeet Then
-                    LblElevRange.Text = "Desired Range (Feet)"
-                End If
-                txtLower.Text = CStr(m_lastAnalysis.LowerElev)
-                TxtUpperRange.Text = CStr(m_lastAnalysis.UpperElev)
-            End If
-            If m_lastAnalysis.UsePrism Then
-                CkPrecip.Checked = True
-                CmboxPrecipType.SelectedIndex = m_lastAnalysis.PrecipTypeIdx
-                If CmboxPrecipType.SelectedIndex = 5 Then
-                    lblBeginMonth.Enabled = True
-                    CmboxBegin.Enabled = True
-                    CmboxBegin.SelectedIndex = m_lastAnalysis.PrecipBeginIdx
-                    lblEndMonth.Enabled = True
-                    CmboxEnd.Enabled = True
-                    CmboxEnd.SelectedIndex = m_lastAnalysis.PrecipEndIdx
-                Else
-                    lblBeginMonth.Enabled = False
-                    CmboxBegin.Enabled = False
-                    lblEndMonth.Enabled = False
-                    CmboxEnd.Enabled = False
-                End If
-                CmdPrism_Click(Me, EventArgs.Empty)
-                TxtPrecipUpper.Text = CStr(m_lastAnalysis.UpperPrecip)
-                TxtPrecipLower.Text = CStr(m_lastAnalysis.LowerPrecip)
-            End If
-            If m_lastAnalysis.UseProximity = True Then
-                CkProximity.Checked = True
-                If m_lastAnalysis.ProximityLayers IsNot Nothing AndAlso m_lastAnalysis.ProximityLayers.Count > 0 Then
-                    For Each pLayer As PseudoSiteLayer In m_lastAnalysis.ProximityLayers
-                        Dim item As New DataGridViewRow
-                        item.CreateCells(GrdLocation)
-                        With item
-                            .Cells(m_idxLayer).Value = pLayer.LayerName
-                            .Cells(m_idxBufferDistance).Value = pLayer.BufferDistance
-                            .Cells(m_idxFullPaths).Value = pLayer.LayerPath
-                        End With
-                        '---add the row---
-                        GrdProximity.Rows.Add(item)
-                    Next
-                    'Clear selection on grid
-                    If GrdProximity.Rows.Count > 0 Then
-                        GrdProximity(1, 0).Selected = True
-                        GrdProximity.ClearSelection()
-                    End If
-                End If
-            End If
-            If m_lastAnalysis.UseLocation = True Then
-                CkLocation.Checked = True
-                If m_lastAnalysis.LocationLayers IsNot Nothing AndAlso m_lastAnalysis.LocationLayers.Count > 0 Then
-                    If m_dictLocationAllValues Is Nothing Then
-                        m_dictLocationAllValues = New Dictionary(Of String, IList(Of String))
-                        m_dictLocationIncludeValues = New Dictionary(Of String, IList(Of String))
-                    End If
-                    For Each pLayer As PseudoSiteLayer In m_lastAnalysis.LocationLayers
-                        m_dictLocationAllValues.Add(pLayer.LayerPath, pLayer.AllValues)
-                        m_dictLocationIncludeValues.Add(pLayer.LayerPath, pLayer.SelectedValues)
-                        Dim valSb As StringBuilder = New StringBuilder()
-                        For Each strValue As String In pLayer.SelectedValues
-                            valSb.Append(strValue + m_sep)
-                        Next
-                        valSb.Remove(valSb.ToString().LastIndexOf(m_sep), m_sep.Length)
-                        Dim item As New DataGridViewRow
-                        item.CreateCells(GrdLocation)
-                        With item
-                            .Cells(m_idxLayer).Value = pLayer.LayerName
-                            .Cells(m_idxValues).Value = valSb.ToString
-                            .Cells(m_idxFullPaths).Value = pLayer.LayerPath
-                        End With
-                        '---add the row---
-                        GrdLocation.Rows.Add(item)
-                    Next
-                    'Clear selection on grid
-                    If GrdLocation.Rows.Count > 0 Then
-                        GrdLocation(1, 0).Selected = True
-                        GrdLocation.ClearSelection()
-                    End If
-                End If
-            End If
-            If sb.Length > 0 Then
-                MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.Information)
-            End If
-        End If
-    End Sub
-
     Public Function PreparePointFileToAppend(ByVal snapRasterPath As String, ByVal intOid As Integer) As Site
         Dim fClass As IFeatureClass = Nothing
         Dim aField As IField = Nothing
@@ -1478,9 +1381,8 @@ Public Class FrmPsuedoSite
         BtnFindSite.Enabled = True
         BtnRecalculate.Enabled = False
         BtnDefineSiteSame.Enabled = False
-        CkConstraints.Checked = False
-        CkConstraints.Enabled = False
-        BtnReuseHelp.Enabled = False
+        m_reuseConstraintLayersFlag = False
+        m_lastAnalysis = Nothing
     End Sub
 
     Private Sub CmboxBegin_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles CmboxBegin.SelectedIndexChanged
@@ -1560,9 +1462,9 @@ Public Class FrmPsuedoSite
         BtnMap.Enabled = False
         BtnRecalculate.Enabled = False
         BtnDefineSiteSame.Enabled = False
-        CkConstraints.Checked = False
-        CkConstraints.Enabled = False
-        BtnReuseHelp.Enabled = False
+        m_reuseConstraintLayersFlag = False
+        m_lastAnalysis = Nothing
+        BA_Last_PseudoSite = Nothing
     End Sub
 
     Private Sub TxtSiteName_TextChanged(sender As Object, e As System.EventArgs) Handles TxtSiteName.TextChanged
@@ -2076,10 +1978,7 @@ Public Class FrmPsuedoSite
             End If
         End If
         Me.Text = "Auto-site log: " + BA_GetBareName(AOIFolderBase)
-        'Disable ckConstraints; Don't know provenance of existing constraint layers
-        CkConstraints.Checked = False
-        CkConstraints.Enabled = False
-        BtnReuseHelp.Enabled = False
+
         'Enable copying
         BtnDefineSiteSame.Enabled = True
         BtnFindSite.Enabled = False
@@ -2115,36 +2014,27 @@ Public Class FrmPsuedoSite
         'Enable/disable buttons
         BtnRecalculate.Enabled = False      'We just recalculated; Don't need to do it again
         BtnDefineSiteSame.Enabled = True    'OK to create a new site with the same parameters
-        CkConstraints.Enabled = False
-        CkConstraints.Checked = False       'Disable this, we will ask if they copy a site
-        BtnReuseHelp.Enabled = False
-        BtnFindSite.Enabled = False         'Why would you want to find site with same parameters?
-        'It will be re-enabled if you change anything or clear the form
+        If m_lastAnalysis IsNot Nothing Then    'Save the last analysis in the session so the constraint layers can be re-used
+            BA_Last_PseudoSite = m_lastAnalysis
+        End If
+        BtnFindSite.Enabled = False         'Why would you want to find site with same parameters? It will be re-enabled if you change anything or clear the form
     End Sub
 
     Private Sub BtnDefineSiteSame_Click(sender As System.Object, e As System.EventArgs) Handles BtnDefineSiteSame.Click
         SuggestSiteName()
         TxtSiteName.Text = TxtSiteName.Text.Trim()
         Dim siteName As String = InputBox("Please enter name for new pseudo-site:", "BAGIS V3", TxtSiteName.Text)
-        TxtSiteName.Text = siteName
+        If String.IsNullOrEmpty(siteName) Then
+            Exit Sub
+        Else
+            TxtSiteName.Text = siteName
+        End If
 
         'The form was in read-only mode so we need to make it writeable
         If Me.Text.IndexOf("Auto-site log:") > -1 Then
             ' Disable/hide controls on read-only form
             Me.Text = "Add Pseudo Site: " + BA_GetBareName(AOIFolderBase)
             Me.EnableForm(True)
-        Else
-            CkConstraints.Enabled = True
-            BtnReuseHelp.Enabled = True
-            Dim res As DialogResult = MessageBox.Show("Do you want to re-use the constraint layers " + _
-                                                      "from the previous calculation? If you do this, you " + _
-                                                      "cannot modify any of the constraint settings!", "BAGIS V3", _
-                                                      MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-            If res = Windows.Forms.DialogResult.Yes Then
-                CkConstraints.Checked = True
-            Else
-                CkConstraints.Checked = False
-            End If
         End If
         Me.BtnFindSite.Enabled = True
         Me.BtnFindSite.PerformClick()
@@ -2196,14 +2086,6 @@ Public Class FrmPsuedoSite
             CmboxPrecipType.Enabled = False
             TxtPrecipLower.Enabled = False
             TxtPrecipUpper.Enabled = False
-        End If
-    End Sub
-
-    Private Sub CkConstraints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkConstraints.CheckedChanged
-        If CkConstraints.Checked = True Then
-            Me.EnableForm(False)
-        Else
-            Me.EnableForm(True)
         End If
     End Sub
 End Class

@@ -17,6 +17,7 @@ Module BAGIS_PublicVariablesModule
     Public BA_Excel_Available As Boolean
     Public BA_AOI_Forecast_ID As String 'Ver1E Update
     Public BA_Network_Available As String  'computer connected to network ?
+    Public BA_Last_PseudoSite As PseudoSite
 
     'Basin Layer Names
     Public BasinLayerDisplayNames(0 To 7) As String

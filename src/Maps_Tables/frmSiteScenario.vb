@@ -1982,6 +1982,7 @@ Public Class frmSiteScenario
         Dim progressDialog2 As IProgressDialog2 = BA_GetProgressDialog(pStepProg, "Calculating represented areas for AOI", "Calculating...")
         progressDialog2.ShowDialog()
         Try
+            BA_Last_PseudoSite = Nothing    'Unset last pseudo-site in session; Can't reuse constraint layers
             Dim layersFolder As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers)
             Dim analysisFolder As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis)
             Dim bufferDistance As Double = Convert.ToDouble(TxtBufferDistance.Text)

@@ -105,8 +105,6 @@ Partial Class FrmPsuedoSite
         Me.BtnEditLocation = New System.Windows.Forms.Button()
         Me.BtnRecalculate = New System.Windows.Forms.Button()
         Me.BtnDefineSiteSame = New System.Windows.Forms.Button()
-        Me.CkConstraints = New System.Windows.Forms.CheckBox()
-        Me.BtnReuseHelp = New System.Windows.Forms.Button()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
@@ -1023,37 +1021,11 @@ Partial Class FrmPsuedoSite
         Me.BtnDefineSiteSame.Text = "3. Define a new site with the same settings"
         Me.BtnDefineSiteSame.UseVisualStyleBackColor = True
         '
-        'CkConstraints
-        '
-        Me.CkConstraints.AutoSize = True
-        Me.CkConstraints.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.CkConstraints.Location = New System.Drawing.Point(333, 722)
-        Me.CkConstraints.Name = "CkConstraints"
-        Me.CkConstraints.Size = New System.Drawing.Size(180, 20)
-        Me.CkConstraints.TabIndex = 93
-        Me.CkConstraints.Text = "Re-use layers for new site"
-        Me.CkConstraints.UseVisualStyleBackColor = True
-        '
-        'BtnReuseHelp
-        '
-        Me.BtnReuseHelp.Enabled = False
-        Me.BtnReuseHelp.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnReuseHelp.ForeColor = System.Drawing.Color.Blue
-        Me.BtnReuseHelp.Location = New System.Drawing.Point(507, 720)
-        Me.BtnReuseHelp.Margin = New System.Windows.Forms.Padding(2)
-        Me.BtnReuseHelp.Name = "BtnReuseHelp"
-        Me.BtnReuseHelp.Size = New System.Drawing.Size(25, 22)
-        Me.BtnReuseHelp.TabIndex = 95
-        Me.BtnReuseHelp.Text = "?"
-        Me.BtnReuseHelp.UseVisualStyleBackColor = True
-        '
         'FrmPsuedoSite
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(567, 787)
-        Me.Controls.Add(Me.BtnReuseHelp)
-        Me.Controls.Add(Me.CkConstraints)
         Me.Controls.Add(Me.BtnRecalculate)
         Me.Controls.Add(Me.GrpLocation)
         Me.Controls.Add(Me.BtnDefineSiteSame)
@@ -1171,6 +1143,4 @@ Partial Class FrmPsuedoSite
     Friend WithEvents LblAddBufferDistance As System.Windows.Forms.Label
     Friend WithEvents BtnRecalculate As System.Windows.Forms.Button
     Friend WithEvents BtnDefineSiteSame As System.Windows.Forms.Button
-    Friend WithEvents CkConstraints As System.Windows.Forms.CheckBox
-    Friend WithEvents BtnReuseHelp As System.Windows.Forms.Button
 End Class
