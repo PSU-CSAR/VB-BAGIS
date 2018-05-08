@@ -153,7 +153,6 @@ Public Class FrmPsuedoSite
         BA_SetDefaultProjection(My.ArcMap.Application)
 
         If autoSiteLog IsNot Nothing Then
-            m_lastAnalysis = autoSiteLog
             LoadAnalysisLog(autoSiteLog)
         End If
 
@@ -1467,12 +1466,6 @@ Public Class FrmPsuedoSite
         BA_Last_PseudoSite = Nothing
     End Sub
 
-    Private Sub TxtSiteName_TextChanged(sender As Object, e As System.EventArgs) Handles TxtSiteName.TextChanged
-        If m_formLoaded = True Then
-            RaiseEvent FormInputChanged()
-        End If
-    End Sub
-
     Private Sub txtMinPrecip_TextChanged(sender As System.Object, e As System.EventArgs) Handles txtMinPrecip.TextChanged
         ManagePrecipRange()
     End Sub
@@ -1980,6 +1973,7 @@ Public Class FrmPsuedoSite
         Me.Text = "Auto-site log: " + BA_GetBareName(AOIFolderBase)
 
         'Enable copying
+        m_lastAnalysis = logSite
         BtnDefineSiteSame.Enabled = True
         BtnFindSite.Enabled = False
     End Sub
