@@ -59,6 +59,7 @@ Public Class frmSiteScenario
     Friend idxLower As Integer = 6
     Friend idxDefaultElevation As Integer = 7
     Private m_calculateScenario2 As Boolean = True
+    Private m_displayScenarioMaps As Boolean = True
 
     Public Sub New(ByVal hook As Object)
 
@@ -2286,36 +2287,42 @@ Public Class frmSiteScenario
                 SaveAnalysisLog(pStepProg, progressDialog2)
 
                 'Add the site scenario layers to the map frame
-                BA_AddScenarioLayersToMapFrame(My.ThisApplication, My.Document, AOIFolderBase)
-                SymbolizeSelectedSites()
-                Scenario1Map_Flag = True
-                'Display scenario 1 map as default
-                Dim Basin_Name As String
-                Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
-                If Len(Trim(cboSelectedBasin.getValue)) = 0 Then
-                    Basin_Name = ""
+                If m_displayScenarioMaps = True Then
+                    BA_AddScenarioLayersToMapFrame(My.ThisApplication, My.Document, AOIFolderBase)
+                    SymbolizeSelectedSites()
+                    Scenario1Map_Flag = True
+                    'Display scenario 1 map as default
+                    Dim Basin_Name As String
+                    Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
+                    If Len(Trim(cboSelectedBasin.getValue)) = 0 Then
+                        Basin_Name = ""
+                    Else
+                        Basin_Name = cboSelectedBasin.getValue
+                    End If
+                    BA_AddMapElements(My.Document, m_CurrentAOI & Basin_Name, "Subtitle BAGIS")
+                    Dim retVal As Integer = BA_DisplayMap(My.Document, 7, Basin_Name, m_CurrentAOI, Map_Display_Elevation_in_Meters, _
+                                            Trim(TxtScenario1.Text))
+                    BA_RemoveLayersfromLegend(My.Document)
+                    Dim sb As StringBuilder = New StringBuilder
+                    sb.Append("Please use the menu items to view maps!")
+                    SiteRepresentationMap_Flag = ChkBufferDistance.Checked
+                    If SiteRepresentationMap_Flag = False Then
+                        sb.Append(vbCrLf & "The Site Representation button is disabled because a buffer distance was not used.")
+                    End If
+                    MessageBox.Show(sb.ToString, "BAGIS V3 Site Scenario", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    Call BA_Enable_ScenarioMapFlags(True)
                 Else
-                    Basin_Name = cboSelectedBasin.getValue
+                    MessageBox.Show("The represented area calculation is complete!", "BAGIS V3 Site Scenario", _
+                                    MessageBoxButtons.OK, MessageBoxIcon.Information)
                 End If
-                BA_AddMapElements(My.Document, m_CurrentAOI & Basin_Name, "Subtitle BAGIS")
-                Dim retVal As Integer = BA_DisplayMap(My.Document, 7, Basin_Name, m_CurrentAOI, Map_Display_Elevation_in_Meters, _
-                                        Trim(TxtScenario1.Text))
-                BA_RemoveLayersfromLegend(My.Document)
-                Dim sb As StringBuilder = New StringBuilder
-                sb.Append("Please use the menu items to view maps!")
-                SiteRepresentationMap_Flag = ChkBufferDistance.Checked
-                If SiteRepresentationMap_Flag = False Then
-                    sb.Append(vbCrLf & "The Site Representation button is disabled because a buffer distance was not used.")
-                End If
-                MessageBox.Show(sb.ToString, "Site Scenario", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                Call BA_Enable_ScenarioMapFlags(True)
             End If
-            m_calculateScenario2 = True
             ManageMapsButton()
-
         Catch ex As Exception
             Debug.Print("CalculateRepresentedArea Exception: " & ex.Message)
         Finally
+            ' Always reset control flags to default for Site Scenario form
+            m_calculateScenario2 = True
+            m_displayScenarioMaps = True
             If progressDialog2 IsNot Nothing Then
                 progressDialog2.HideDialog()
             End If
@@ -2985,9 +2992,15 @@ Public Class frmSiteScenario
         MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.None)
     End Sub
 
-    Public WriteOnly Property CalculateScenario2
+    Public WriteOnly Property CalculateScenario2Flag
         Set(value)
             m_calculateScenario2 = value
+        End Set
+    End Property
+
+    Public WriteOnly Property DisplayScenarioMapsFlag
+        Set(value)
+            m_displayScenarioMaps = value
         End Set
     End Property
 End Class

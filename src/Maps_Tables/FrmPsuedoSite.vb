@@ -189,9 +189,10 @@ Public Class FrmPsuedoSite
 
         'Don't allow the site name to be duplicated
         Dim psuedoList As IList(Of Site) = BA_ReadSiteAttributes(SiteType.Pseudo)
+        TxtSiteName.Text = TxtSiteName.Text.Trim()
         For Each pSite As Site In psuedoList
-            If pSite.Name.ToUpper.Trim.Equals(TxtSiteName.Text.ToUpper.Trim) Then
-                MessageBox.Show("Site name " + pSite.Name.Trim + " is already in use. Please supply another name!",
+            If pSite.Name.ToUpper.Trim.Equals(TxtSiteName.Text.ToUpper) Then
+                MessageBox.Show("Site name " + TxtSiteName.Text + " is already in use. Please supply another name!",
                                 "BAGIS V3", MessageBoxButtons.OK)
                 TxtSiteName.Focus()
                 Exit Sub
@@ -1227,6 +1228,7 @@ Public Class FrmPsuedoSite
     End Sub
 
     Private Sub SavePseudoSiteLog()
+        TxtSiteName.Text = TxtSiteName.Text.Trim()
         m_lastAnalysis = New PseudoSite(m_siteId, TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked, _
                                         CkLocation.Checked)
         'Save Elevation data
@@ -1421,6 +1423,7 @@ Public Class FrmPsuedoSite
                 End If
                 BA_Remove_ShapefileFromGDB(m_analysisFolder, tempFileName)
                 '3. Updates the site attributes
+                TxtSiteName.Text = TxtSiteName.Text.Trim()
                 newSite = New Site(intOid, TxtSiteName.Text, SiteType.Pseudo, elev, False)
                 success = BA_UpdatePseudoSiteAttributes(m_analysisFolder, m_siteFileName, intOid, newSite)
             End If
@@ -1447,8 +1450,10 @@ Public Class FrmPsuedoSite
             Dim objectId As Integer = -1
             fClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), BA_EnumDescription(MapsFileName.Pseudo))
             Dim idxOid As Short = fClass.Fields.FindField(BA_FIELD_OBJECT_ID)
+            TxtSiteName.Text = TxtSiteName.Text.Trim()
+            Dim queryElev As Integer = Math.Round(siteElev, 0)  'Round to avoid rounding differences with ArcMap
             aQueryFilter.WhereClause = " " & BA_SiteNameField & " = '" & TxtSiteName.Text & _
-                                       " ' and " & BA_SiteElevField & " = " & siteElev
+                                       "' and ROUND(" & BA_SiteElevField & ",0) = " & queryElev
             If idxOid > -1 Then
                 aCursor = fClass.Search(aQueryFilter, False)
                 aFeature = aCursor.NextFeature
@@ -2102,8 +2107,10 @@ Public Class FrmPsuedoSite
         '1. Check box on frmSiteScenario
         siteScenarioForm.SelectPseudoSite(m_siteId)
         '2. Set recalculate rep area
-        siteScenarioForm.CalculateScenario2 = False
-        '3. Click BtnCalculate on Site Scenario form
+        siteScenarioForm.CalculateScenario2Flag = False
+        '3. Disable site scenario maps after calculation for speed
+        siteScenarioForm.DisplayScenarioMapsFlag = False
+        '4. Click BtnCalculate on Site Scenario form
         siteScenarioForm.BtnCalculate.PerformClick()
         'Enable/disable buttons
         BtnRecalculate.Enabled = False      'We just recalculated; Don't need to do it again
@@ -2117,6 +2124,7 @@ Public Class FrmPsuedoSite
 
     Private Sub BtnDefineSiteSame_Click(sender As System.Object, e As System.EventArgs) Handles BtnDefineSiteSame.Click
         SuggestSiteName()
+        TxtSiteName.Text = TxtSiteName.Text.Trim()
         Dim siteName As String = InputBox("Please enter name for new pseudo-site:", "BAGIS V3", TxtSiteName.Text)
         TxtSiteName.Text = siteName
 
