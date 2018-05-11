@@ -43,10 +43,8 @@ Public Class BtnSiteScenario
         If Len(aoiName) = 0 Then
             MsgBox("Please select an AOI!")
         Else
-            If Not dockWindowAddIn.Ready(aoiName) Then
                 dockWindow.Caption = "Site Scenario Analysis Tool (Current AOI --> " & aoiName & ")"
                 siteScenarioForm.LoadAOIInfo(AOIFolderBase)
-            End If
         End If
 
     End Sub

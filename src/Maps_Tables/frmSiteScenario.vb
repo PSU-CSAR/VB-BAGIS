@@ -120,15 +120,6 @@ Public Class frmSiteScenario
             End Get
         End Property
 
-        Protected Friend ReadOnly Property Ready(ByVal matchString As String) As Boolean
-            Get
-                If matchString = m_CurrentAOI Then
-                    Return True
-                Else
-                    Return False
-                End If
-            End Get
-        End Property
     End Class
 
     Private Sub BtnAddAll_Click(sender As System.Object, e As System.EventArgs) Handles BtnAddAll.Click
