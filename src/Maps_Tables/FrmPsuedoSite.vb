@@ -1279,6 +1279,12 @@ Public Class FrmPsuedoSite
         If lstPseudoSites Is Nothing Then
             lstPseudoSites = New PseudoSiteList()
             lstPseudoSites.PseudoSites = New List(Of PseudoSite)
+        Else
+            'Set lastSiteAdded to false for all existing sites; Only the latest site, 
+            'yet to be added, will be true
+            For Each existingSite As PseudoSite In lstPseudoSites.PseudoSites
+                existingSite.LastSiteAdded = False
+            Next
         End If
         lstPseudoSites.PseudoSites.Add(m_lastAnalysis)
         Dim xmlOutputPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) & BA_EnumDescription(PublicPath.PseudoSitesXml)
@@ -1976,6 +1982,11 @@ Public Class FrmPsuedoSite
         m_lastAnalysis = logSite
         BtnDefineSiteSame.Enabled = True
         BtnFindSite.Enabled = False
+        If logSite.LastSiteAdded = True Then
+            BtnMap.Enabled = True
+        Else
+            BtnMap.Enabled = False
+        End If
     End Sub
 
     Private Function LayerIsOnMap(ByVal layername As String) As Boolean

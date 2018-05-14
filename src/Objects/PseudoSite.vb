@@ -22,6 +22,7 @@ Public Class PseudoSite
     Dim m_useLocation As Boolean
     Dim m_locationLayers As List(Of PseudoSiteLayer)
     Dim m_proximityLayers As List(Of PseudoSiteLayer)
+    Dim m_lastSiteAdded As Boolean
 
     ' Required for de-serialization. Do not use.
     Sub New()
@@ -37,6 +38,7 @@ Public Class PseudoSite
         m_useProximity = useProximity
         m_useLocation = useDistance
         m_dateCreated = DateAndTime.Now
+        m_lastSiteAdded = True
     End Sub
 
     Public Property ObjectId() As Integer
@@ -253,6 +255,15 @@ Public Class PseudoSite
         End Set
     End Property
 
+    Public Property LastSiteAdded() As Boolean
+        Get
+            Return m_lastSiteAdded
+        End Get
+        Set(value As Boolean)
+            m_lastSiteAdded = value
+        End Set
+    End Property
+
 End Class
 
 Public Class PseudoSiteList
@@ -268,19 +279,6 @@ Public Class PseudoSiteList
             m_pseudoSites = New List(Of PseudoSite)
             m_pseudoSites.AddRange(value)
         End Set
-    End Property
-
-    <XmlIgnore()> Public ReadOnly Property LastSite As PseudoSite
-        Get
-            Dim lastSiteId As Integer = -1
-            Dim returnSite As PseudoSite = Nothing
-            For Each pSite As PseudoSite In m_pseudoSites
-                If pSite.ObjectId > lastSiteId Then
-                    returnSite = pSite
-                End If
-            Next
-            Return returnSite
-        End Get
     End Property
 
 End Class
