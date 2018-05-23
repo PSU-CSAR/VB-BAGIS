@@ -105,6 +105,7 @@ Partial Class FrmPsuedoSite
         Me.BtnEditLocation = New System.Windows.Forms.Button()
         Me.BtnRecalculate = New System.Windows.Forms.Button()
         Me.BtnDefineSiteSame = New System.Windows.Forms.Button()
+        Me.BtnMultipleHelp = New System.Windows.Forms.Button()
         Me.GrpElevation.SuspendLayout()
         Me.GrpPrecipitation.SuspendLayout()
         Me.GrpProximity.SuspendLayout()
@@ -746,7 +747,7 @@ Partial Class FrmPsuedoSite
         'BtnFindSite
         '
         Me.BtnFindSite.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnFindSite.Location = New System.Drawing.Point(11, 684)
+        Me.BtnFindSite.Location = New System.Drawing.Point(11, 716)
         Me.BtnFindSite.Name = "BtnFindSite"
         Me.BtnFindSite.Size = New System.Drawing.Size(97, 25)
         Me.BtnFindSite.TabIndex = 83
@@ -756,7 +757,7 @@ Partial Class FrmPsuedoSite
         'BtnClose
         '
         Me.BtnClose.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClose.Location = New System.Drawing.Point(466, 753)
+        Me.BtnClose.Location = New System.Drawing.Point(466, 784)
         Me.BtnClose.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClose.Name = "BtnClose"
         Me.BtnClose.Size = New System.Drawing.Size(65, 22)
@@ -768,7 +769,7 @@ Partial Class FrmPsuedoSite
         '
         Me.BtnMap.Enabled = False
         Me.BtnMap.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnMap.Location = New System.Drawing.Point(117, 684)
+        Me.BtnMap.Location = New System.Drawing.Point(117, 716)
         Me.BtnMap.Name = "BtnMap"
         Me.BtnMap.Size = New System.Drawing.Size(71, 25)
         Me.BtnMap.TabIndex = 84
@@ -799,7 +800,7 @@ Partial Class FrmPsuedoSite
         'BtnClear
         '
         Me.BtnClear.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnClear.Location = New System.Drawing.Point(390, 753)
+        Me.BtnClear.Location = New System.Drawing.Point(390, 784)
         Me.BtnClear.Margin = New System.Windows.Forms.Padding(2)
         Me.BtnClear.Name = "BtnClear"
         Me.BtnClear.Size = New System.Drawing.Size(65, 22)
@@ -1003,7 +1004,7 @@ Partial Class FrmPsuedoSite
         'BtnRecalculate
         '
         Me.BtnRecalculate.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnRecalculate.Location = New System.Drawing.Point(200, 684)
+        Me.BtnRecalculate.Location = New System.Drawing.Point(200, 716)
         Me.BtnRecalculate.Name = "BtnRecalculate"
         Me.BtnRecalculate.Size = New System.Drawing.Size(335, 25)
         Me.BtnRecalculate.TabIndex = 91
@@ -1014,18 +1015,30 @@ Partial Class FrmPsuedoSite
         '
         Me.BtnDefineSiteSame.Enabled = False
         Me.BtnDefineSiteSame.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnDefineSiteSame.Location = New System.Drawing.Point(11, 719)
+        Me.BtnDefineSiteSame.Location = New System.Drawing.Point(11, 750)
         Me.BtnDefineSiteSame.Name = "BtnDefineSiteSame"
         Me.BtnDefineSiteSame.Size = New System.Drawing.Size(307, 25)
         Me.BtnDefineSiteSame.TabIndex = 92
         Me.BtnDefineSiteSame.Text = "3. Define a new site with the same settings"
         Me.BtnDefineSiteSame.UseVisualStyleBackColor = True
         '
+        'BtnMultipleHelp
+        '
+        Me.BtnMultipleHelp.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BtnMultipleHelp.ForeColor = System.Drawing.Color.Blue
+        Me.BtnMultipleHelp.Location = New System.Drawing.Point(11, 683)
+        Me.BtnMultipleHelp.Name = "BtnMultipleHelp"
+        Me.BtnMultipleHelp.Size = New System.Drawing.Size(208, 25)
+        Me.BtnMultipleHelp.TabIndex = 93
+        Me.BtnMultipleHelp.Text = "How to add multiple sites ?"
+        Me.BtnMultipleHelp.UseVisualStyleBackColor = True
+        '
         'FrmPsuedoSite
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(567, 787)
+        Me.ClientSize = New System.Drawing.Size(567, 816)
+        Me.Controls.Add(Me.BtnMultipleHelp)
         Me.Controls.Add(Me.BtnRecalculate)
         Me.Controls.Add(Me.GrpLocation)
         Me.Controls.Add(Me.BtnDefineSiteSame)
@@ -1143,4 +1156,5 @@ Partial Class FrmPsuedoSite
     Friend WithEvents LblAddBufferDistance As System.Windows.Forms.Label
     Friend WithEvents BtnRecalculate As System.Windows.Forms.Button
     Friend WithEvents BtnDefineSiteSame As System.Windows.Forms.Button
+    Friend WithEvents BtnMultipleHelp As System.Windows.Forms.Button
 End Class

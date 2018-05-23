@@ -1,0 +1,46 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+		<title>How To Find Multiple Sites</title>
+	</head>
+	<body style="font-family:Sans-Serif" >
+	    <p>
+        <span style="font-weight: bold">Step 1: Find Site </span>finds a new site with the constraints 
+        you specify.
+        </p>
+        <p>
+        <span style="font-weight: bold">Step 2: Add New Site to Scenario 1 and Recalculate </span>adds 
+        the new site to scenario 1 and recalculates scenario 1’s represented area.
+        </p>
+        <p>
+        <span style="font-weight: bold">Step 3: Define a new site with the same settings </span>finds an 
+        additional new site using the same constraints. Repeat <span style="font-weight: bold">Step 2</span>
+        after <span style="font-weight: bold">Step 3</span> completes to update scenario 1's 
+        represented area. Keep repeating <span style="font-weight: bold">Steps 2 and 3</span> until you have 
+        the desired number of sites.
+        </p>
+        <p>
+        Changing the constraints after <span style="font-weight: bold">Step 1</span> allows you to ignore the new site and find another site 
+        (the <span style="font-weight: bold">Step 1</span> button will be reactivated).
+        </p>
+        <p>Editing the constraints after <span style="font-weight: bold">Step 2</span> allows you to find a subsequent site with different search settings.
+        </p>
+        <p>
+        The last site created is saved in ArcMap’s memory so you can close the Pseudo Site 
+        dialog window to view the Scenario/Site Representation maps. 
+        </p>
+        <p>
+        To update the represented areas captured by the new site, you must add the last site 
+        to Scenario 1 (by selecting the checkbox next to the site in the Scenario 1 grid on the 
+        Site Scenario dialog window), and recalculate the represented areas (by clicking the Calculate 
+        button on the Site Scenario dialog window).
+        </p>
+        <p>
+        Selecting the log for any auto site will enable <span style="font-weight: bold">Step 3</span> and allow you to find another site with 
+        the same search settings as the log site. In the same ArcMap session, if you select the log for 
+        the site most recently added to the represented area calculation, <span style="font-weight: bold">Step 3</span> will finish faster 
+        because BAGIS will re-use the cached constraint layers. If you terminate ArcMap, these cached layers 
+        are deleted and can no longer be reused.
+        </p>
+	</body>
+</html>

@@ -626,6 +626,9 @@
     <Content Include="Images\GenericYellowLeftArrow32.png" />
     <Content Include="Images\GenericYellowRightArrow32.png" />
     <AddInContent Include="Images\SelectSiteTool.png" />
+    <Content Include="PseudoSiteHelp.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\vb-bagis-class-library\src\BAGIS_ClassLibrary.vbproj">

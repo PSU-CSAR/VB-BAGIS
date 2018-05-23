@@ -2093,4 +2093,13 @@ Public Class FrmPsuedoSite
             TxtPrecipUpper.Enabled = False
         End If
     End Sub
+
+    Private Sub BtnMultipleHelp_Click(sender As System.Object, e As System.EventArgs) Handles BtnMultipleHelp.Click
+        Dim helpPath As String = BA_GetAddInDirectory() + BA_EnumDescription(PublicPath.PseudoSiteHelp)
+        If IO.File.Exists(helpPath) Then
+            Process.Start(helpPath)
+        Else
+            MessageBox.Show("The help .html file could not be found!", "BAGIS V3")
+        End If
+    End Sub
 End Class
