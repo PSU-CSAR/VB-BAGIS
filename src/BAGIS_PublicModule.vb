@@ -410,6 +410,24 @@ ErrorHandler:
         dockWindow2 = My.ArcMap.DockableWindowManager.GetDockableWindow(dockWinID2)
         If dockWindow2 IsNot Nothing AndAlso dockWindow2.IsVisible Then dockWindow2.Show(False)
 
+        'Set the default scratch workspace for all Analyst functions to follow
+        Dim workspaceFactory As IWorkspaceFactory = New RasterWorkspaceFactory()
+        Dim workspace As IWorkspace = Nothing
+        Dim pEnv As IRasterAnalysisEnvironment = Nothing
+        Try
+            pEnv = New RasterAnalysis
+            workspace = workspaceFactory.OpenFromFile(AOIFolderBase, 0)
+            pEnv.OutWorkspace = workspace
+            pEnv.SetAsNewDefaultEnvironment()
+        Catch ex As Exception
+            MessageBox.Show("Unable to set default analyst workspace for AOI!", "BAGIS V3")
+        Finally
+            workspaceFactory = Nothing
+            workspace = Nothing
+            GC.WaitForPendingFinalizers()
+            GC.Collect()
+        End Try
+
     End Sub
 
     Public Sub BA_Enable_MapFlags(ByVal BValue As Boolean)
@@ -1773,7 +1791,7 @@ ErrorHandler:
 
     Public Function Smooth(ByVal pRaster As IGeoDataset2, height As Double, width As Double, ByVal workspaceFolder As String) As IGeoDataset2
         ' Declare Variables
-        Dim pNBOp As INeighborhoodOp = New RasterNeighborhoodOp
+        Dim pNBOp As INeighborhoodOp = Nothing
         Dim pSmooth As IGeoDataset2 = Nothing
         Dim pNB As IRasterNeighborhood = New RasterNeighborhood
         Dim workspaceFactory As IWorkspaceFactory = New RasterWorkspaceFactory()
@@ -1783,11 +1801,13 @@ ErrorHandler:
 
         Try
             'Set scratch workspace
-            pEnv = CType(pNBOp, IRasterAnalysisEnvironment)  ' Explicit cast
+            pEnv = New RasterAnalysis
             workspace = workspaceFactory.OpenFromFile(workspaceFolder, 0)
             pEnv.OutWorkspace = workspace
+            pEnv.SetAsNewDefaultEnvironment()
 
-            ' Complete Function
+            'Instantiate object and omplete Function
+            pNBOp = New RasterNeighborhoodOp
             pSmooth = pNBOp.FocalStatistics(pRaster, ESRI.ArcGIS.GeoAnalyst.esriGeoAnalysisStatisticsEnum.esriGeoAnalysisStatsMean, pNB, True)
 
         Catch ex As Exception

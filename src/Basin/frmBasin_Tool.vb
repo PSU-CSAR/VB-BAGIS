@@ -4,7 +4,7 @@ Imports BAGIS_ClassLibrary
 Imports System.Windows.Forms
 Imports System.IO
 Imports ESRI.ArcGIS.Geodatabase
-Imports ESRI.ArcGIS.DataSourcesFile
+Imports ESRI.ArcGIS.DataSourcesRaster
 Imports ESRI.ArcGIS.Geometry
 Imports ESRI.ArcGIS.Desktop.AddIns
 Imports ESRI.ArcGIS.esriSystem
@@ -13,6 +13,7 @@ Imports ESRI.ArcGIS.Display
 Imports System.Text
 Imports ESRI.ArcGIS.ArcMapUI
 Imports System.ComponentModel
+Imports ESRI.ArcGIS.GeoAnalyst
 
 Public Class frmBasin_Tool
     Private ParentFolderFGDBBasinStatus As String = "-"
@@ -387,10 +388,19 @@ Public Class frmBasin_Tool
         response = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
         Dim response1 As Integer = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)
 
+        Dim workspaceFactory As IWorkspaceFactory = New RasterWorkspaceFactory()
+        Dim workspace As IWorkspace = Nothing
+        Dim pEnv As IRasterAnalysisEnvironment = Nothing
         Try
             'reset aoi information
             BA_Reset_AOIFlags()
             BA_ResetAOI()
+
+            'set default workspace for all geoanalyst tools to follow
+            pEnv = New RasterAnalysis
+            workspace = workspaceFactory.OpenFromFile(BasinFolderBase, 0)
+            pEnv.OutWorkspace = workspace
+            pEnv.SetAsNewDefaultEnvironment()
 
             If NeedtoClipDEM Then
                 If BA_DEMDimension.X_CellSize * BA_DEMDimension.Y_CellSize = 0 Then
@@ -410,7 +420,6 @@ Public Class frmBasin_Tool
                 cboSelectedBasin.setValue(BA_GetBareName(BasinFolderBase))
                 MsgBox("Please select and clip the DEM to the basin folder!")
                 'need to set pBasinEnvelope when the DEM extent is determined
-
             Else
                 pBasinEnvelope = BA_GetBasinEnvelope(BasinFolderBase)
 
@@ -432,9 +441,8 @@ Public Class frmBasin_Tool
             MsgBox("Unknown error")
             Exit Sub
         Finally
-            'pStepProg = Nothing
-            'progressDialog2.HideDialog()
-            'progressDialog2 = Nothing
+            workspaceFactory = Nothing
+            workspace = Nothing
             GC.WaitForPendingFinalizers()
             GC.Collect()
         End Try

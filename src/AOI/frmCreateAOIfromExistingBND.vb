@@ -253,7 +253,16 @@ Public Class frmCreateAOIfromExistingBND
             Exit Sub
         End If
 
+        Dim workspaceFactory As IWorkspaceFactory = New RasterWorkspaceFactory()
+        Dim workspace As IWorkspace = Nothing
+        Dim pEnv As IRasterAnalysisEnvironment = Nothing
         Try
+            'Set out workspace for future Analysis tools processing
+            pEnv = New RasterAnalysis
+            workspace = workspaceFactory.OpenFromFile(UserAOIFolderBase, 0)
+            pEnv.OutWorkspace = workspace
+            pEnv.SetAsNewDefaultEnvironment()
+
             ''create a raster version of the AOI boundary
             'BA_EnumDescription(PublicPath.AoiGrid)
             Dim sourceShapePath As String = ""
@@ -364,7 +373,6 @@ Public Class frmCreateAOIfromExistingBND
                 End If
                 Dim ptempDEM As IGeoDataset2 = BA_OpenRasterFromGDB(destSurfGDB, originalDem)
                 pClippedDEM = Smooth(ptempDEM, Val(txtHeight.Text), Val(txtWidth.Text), UserAOIFolderBase)
-                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(ptempDEM)
 
                 If pClippedDEM Is Nothing Then 'no dem within the selected area
                     pStepProg.Hide()
@@ -401,6 +409,8 @@ Public Class frmCreateAOIfromExistingBND
             End If
 
             If response <= 0 Then
+                workspace = Nothing
+                workspaceFactory = Nothing
                 pStepProg.Hide()
                 progressDialog2.HideDialog()
                 MsgBox("There is no DEM within the specified area! Please check your DEM source data.")
@@ -862,7 +872,7 @@ Public Class frmCreateAOIfromExistingBND
                     Dim webServiceUrl As String = strInLayerPath & "/" & prismServices(j).ToString & _
                          "/" & BA_Url_ImageServer
                     Dim newFilePath As String = BA_GeodatabasePath(UserAOIFolderBase, GeodatabaseNames.Prism, True) & strInLayerBareName
-                    BA_ClipAOIImageServer(UserAOIFolderBase, webServiceUrl, newFilePath, AOIClipFile.PrismClipAOIExtentCoverage)
+                    response = BA_ClipAOIImageServer(UserAOIFolderBase, webServiceUrl, newFilePath, AOIClipFile.PrismClipAOIExtentCoverage)
                 Else
                     response = BA_ClipAOIRaster(UserAOIFolderBase, strInLayerPath & "\" & strInLayerBareName & "\grid", strInLayerBareName, destPRISMGDB, AOIClipFile.PrismClipAOIExtentCoverage)
                 End If

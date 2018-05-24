@@ -2698,6 +2698,7 @@ Public Class frmSiteScenario
                     demTitleUnit = MeasurementUnit.Meters
                 End If
 
+                Dim vectorSitesLayer As String = BA_VectorSnotelPrec
                 If AOI_HasPseudoSite = True Then
                     success = BA_CreatePseudoSitesLayer(AOIFolderBase, BA_SiteTypeField, _
                                                                     PrecipPath + "\" + PRISMRasterName, partitionRasterPath, _
@@ -2712,6 +2713,7 @@ Public Class frmSiteScenario
                         'Merge psites with snotel/snow course
                         success = BA_MergeFeatures(sb.ToString, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + _
                                                    BA_VectorAllSitesPrec, Nothing)
+                        vectorSitesLayer = BA_VectorAllSitesPrec
                     End If
                 End If
 
@@ -2727,7 +2729,7 @@ Public Class frmSiteScenario
                     PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_FIELD_ASPECT, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, conversionFactor, _
                     MeasurementUnit.Inches, partitionFieldName, zonesFileName, zonesFieldName)
                 If success = BA_ReturnCode.Success Then
-                    success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorAllSitesPrec, _
+                    success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), vectorSitesLayer, _
                                                          BA_FIELD_PRECIP, BA_SiteElevField, BA_SiteNameField, _
                                                          BA_SiteTypeField, BA_FIELD_ASPECT, partitionFieldName, _
                                                          pPrecipSiteWorksheet, MeasurementUnit.Inches, partitionFieldName, _
