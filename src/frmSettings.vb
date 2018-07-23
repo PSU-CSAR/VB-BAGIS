@@ -679,6 +679,11 @@ Public Class frmSettings
             End If
         End If
 
+
+        Dim success As BA_ReturnCode = BA_SetDefaultProjection(My.ArcMap.Application)
+        If success <> BA_ReturnCode.Success Then
+            Exit Sub
+        End If
         BA_LoadReferenceLayers(txtTerrain.Text, txtDrainage.Text, txtWatershed.Text, pourpointRef)
         'Dim SaveAOIMXDButton = AddIn.FromID(Of BtnSaveAOIMXD)(My.ThisAddIn.IDs.BtnSaveAOIMXD)
         'Dim BasinInfoButton = AddIn.FromID(Of BtnBasinInfo)(My.ThisAddIn.IDs.BtnBasinInfo)

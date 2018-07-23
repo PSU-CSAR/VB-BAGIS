@@ -59,6 +59,10 @@ Public Class BtnAddRefLayers
             pourpointRef = ""
         End If
 
+        Dim success As BA_ReturnCode = BA_SetDefaultProjection(My.ArcMap.Application)
+        If success <> BA_ReturnCode.Success Then
+            Exit Sub
+        End If
         BA_LoadReferenceLayers(terrainRef, DrainageRef, watershedRef, pourpointRef)
         If String.IsNullOrEmpty(DrainageRef) And Not String.IsNullOrEmpty(watershedRef) And Not String.IsNullOrEmpty(terrainRef) Then
             MsgBox("No reference layer is specified in the settings")

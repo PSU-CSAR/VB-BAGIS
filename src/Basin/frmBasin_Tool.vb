@@ -303,6 +303,11 @@ Public Class frmBasin_Tool
             Exit Sub
         End If
 
+        Dim success As BA_ReturnCode = BA_SetDefaultProjection(My.ArcMap.Application)
+        If success <> BA_ReturnCode.Success Then    'unable to set the default projection
+            Exit Sub
+        End If
+
         Dim hasAOIinFolder As Boolean = False
         Dim SubFlist() As BA_SubFolderList = Nothing
         BA_Dir(txtBasinFolder.Text, SubFlist, hasAOIinFolder) 'check if the folder contains any AOI in it.
@@ -383,7 +388,6 @@ Public Class frmBasin_Tool
             Exit Sub
         End If
 
-        BA_SetDefaultProjection(My.ArcMap.Application)
         'set mapframe name to default name
         response = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
         Dim response1 As Integer = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)

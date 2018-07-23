@@ -70,7 +70,10 @@ Public Class frmAOIInfo
             Exit Sub
         End If
 
-        BA_SetDefaultProjection(My.ArcMap.Application)
+        success = BA_SetDefaultProjection(My.ArcMap.Application)
+        If success <> BA_ReturnCode.Success Then    'unable to set the default projection
+            Exit Sub
+        End If
 
         'set mapframe name to default name
         response = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)

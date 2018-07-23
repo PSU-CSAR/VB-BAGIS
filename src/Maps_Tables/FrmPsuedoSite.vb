@@ -56,6 +56,11 @@ Public Class FrmPsuedoSite
             Me.Close()
         End If
 
+        Dim success As BA_ReturnCode = BA_SetDefaultProjection(My.ArcMap.Application)
+        If success <> BA_ReturnCode.Success Then    'unable to set the default projection
+            Exit Sub
+        End If
+
         'Populate class-level variables
         m_usingElevMeters = useMeters
         m_demInMeters = demInMeters
@@ -150,7 +155,6 @@ Public Class FrmPsuedoSite
 
         SuggestSiteName()
         LoadLayers()
-        BA_SetDefaultProjection(My.ArcMap.Application)
 
         If autoSiteLog IsNot Nothing Then
             LoadAnalysisLog(autoSiteLog)
