@@ -792,22 +792,20 @@ Public Class frmCreateAOIfromExistingBND
                 response = BA_ClipAOISnoWebServices(UserAOIFolderBase, strInLayerPath, True)
             End If
 
-            'clip snotel shapefile
-            If strExtension = "(Shapefile)" Then
-                If response <> 1 Then
-                    Select Case response
-                        Case -1 '-1: unknown error
-                            MsgBox("Unknown error occurred when clipping data to AOI!")
-                        Case -2 '-2: output exists
-                            MsgBox("Output target layer exists in the AOI. Unable to clip new data to AOI!")
-                        Case -3 '-3: missing parameters
-                            MsgBox("Missing clipping parameters. Unable to clip new data to AOI!")
-                        Case -4 '-4: no input shapefile
-                            MsgBox("Missing the clipping shapefile. Unable to clip new data to AOI!")
-                        Case 0 '0: no intersect between the input and the clip layers
-                            'MsgBox("No SNOTEL data exists within the AOI. Unable to clip new SNOTEL data to AOI!")
-                    End Select
-                End If
+            'Display error message if appropriate
+            If response <> 1 Then
+                Select Case response
+                    Case -1 '-1: unknown error
+                        MsgBox("Unknown error occurred when clipping data to AOI!")
+                    Case -2 '-2: output exists
+                        MsgBox("Output target layer exists in the AOI. Unable to clip new data to AOI!")
+                    Case -3 '-3: missing parameters
+                        MsgBox("Missing clipping parameters. Unable to clip new data to AOI!")
+                    Case -4 '-4: no input shapefile
+                        MsgBox("Missing the clipping shapefile. Unable to clip new data to AOI!")
+                    Case 0 '0: no intersect between the input and the clip layers
+                        'MsgBox("No SNOTEL data exists within the AOI. Unable to clip new SNOTEL data to AOI!")
+                End Select
             End If
 
             'clip snow course layer
@@ -827,21 +825,19 @@ Public Class frmCreateAOIfromExistingBND
             End If
 
             'clip snow course shapefile
-            If strExtension = "(Shapefile)" Then
-                If response <> 1 Then
-                    Select Case response
-                        Case -1 '-1: unknown error
-                            MsgBox("Unknown error occurred when clipping data to AOI!")
-                        Case -2 '-2: output exists
-                            MsgBox("Output target layer exists in the AOI. Unable to clip new data to AOI!")
-                        Case -3 '-3: missing parameters
-                            MsgBox("Missing clipping parameters. Unable to clip new data to AOI!")
-                        Case -4 '-4: no input shapefile
-                            MsgBox("Missing the clipping shapefile. Unable to clip new data to AOI!")
-                        Case 0 '0: no intersect between the input and the clip layers
-                            'MsgBox("No Snow course data exists within the AOI. Unable to clip new SNOTEL data to AOI!")
-                    End Select
-                End If
+            If response <> 1 Then
+                Select Case response
+                    Case -1 '-1: unknown error
+                        MsgBox("Unknown error occurred when clipping data to AOI!")
+                    Case -2 '-2: output exists
+                        MsgBox("Output target layer exists in the AOI. Unable to clip new data to AOI!")
+                    Case -3 '-3: missing parameters
+                        MsgBox("Missing clipping parameters. Unable to clip new data to AOI!")
+                    Case -4 '-4: no input shapefile
+                        MsgBox("Missing the clipping shapefile. Unable to clip new data to AOI!")
+                    Case 0 '0: no intersect between the input and the clip layers
+                        'MsgBox("No Snow course data exists within the AOI. Unable to clip new SNOTEL data to AOI!")
+                End Select
             End If
 
             'clip PRISM raster data
