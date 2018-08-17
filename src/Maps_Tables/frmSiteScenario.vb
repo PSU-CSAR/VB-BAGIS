@@ -1967,7 +1967,7 @@ Public Class frmSiteScenario
 
     Private Sub CalculateRepresentedArea()
         ' Create/configure a step progressor
-        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 15)
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 16)
         pStepProg.Show()
         ' Create/configure the ProgressDialog. This automatically displays the dialog
         Dim progressDialog2 As IProgressDialog2 = BA_GetProgressDialog(pStepProg, "Calculating represented areas for AOI", "Calculating...")
@@ -2034,6 +2034,8 @@ Public Class frmSiteScenario
             '--- Actual Representation ---
             success = BA_ReturnCode.UnknownError
             Dim siteList As IList(Of Site) = New List(Of Site)
+            Dim tmpRepFileName As String = "tmpRepresentation_v"
+            Dim response As Integer = -1
             '--- Use buffer distance ---
             If ChkBufferDistance.Checked = True Then
                 Dim sb As StringBuilder = New StringBuilder 'StringBuffer to hold names of rasters to combine
@@ -2085,7 +2087,7 @@ Public Class frmSiteScenario
                     If success = BA_ReturnCode.Success Then
                         'Dissolve features to eliminate overlap
                         mergeName = BA_StandardizeShapefileName(mergeName, True, True)
-                        success = BA_Dissolve(AOIFolderBase & mergeName, BA_FIELD_GRIDCODE, analysisFolder & "\" & BA_EnumDescription(MapsFileName.ActualRepresentedArea))
+                        success = BA_Dissolve(AOIFolderBase & mergeName, BA_FIELD_GRIDCODE, analysisFolder & "\" & tmpRepFileName)
                         'Delete temporary merge file
                         BA_Remove_Shapefile(AOIFolderBase, BA_StandardizeShapefileName(mergeName, False))
                     End If
@@ -2115,23 +2117,34 @@ Public Class frmSiteScenario
                 Dim snapRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi) & BA_EnumDescription(PublicPath.AoiGrid)
                 Dim reclassName As String = "reclElev"
                 Dim mergeName As String = "tmpMerge"
-                Dim outputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_EnumDescription(MapsFileName.ActualRepresentedArea)
+                Dim outputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & tmpRepFileName
                 success = BA_ReclassByElevationOnly(demFilePath, AOIFolderBase & "\" & reclassName, snapRasterPath, siteMax, _
                                                     siteMin, upperElev, lowerElev, ES_DEMMax, ES_DEMMin)
                 'Check to see if output file already exists and delete if it does
                 If BA_Shapefile_Exists(AOIFolderBase & "\" & mergeName) Then
-                    BA_Remove_Shapefile(AOIFolderBase, mergeName)
+                    response = BA_Remove_Shapefile(AOIFolderBase, mergeName)
                 End If
                 Dim reclRaster As IGeoDataset = BA_OpenRasterFromFile(AOIFolderBase, reclassName)
                 If reclRaster IsNot Nothing Then
-                    BA_Raster2PolygonShapefile(AOIFolderBase, mergeName, reclRaster)
+                    response = BA_Raster2PolygonShapefile(AOIFolderBase, mergeName, reclRaster)
                     success = BA_Dissolve(AOIFolderBase & BA_StandardizeShapefileName(mergeName), BA_FIELD_GRIDCODE, outputPath)
                 End If
                 'Remove temporary files
                 reclRaster = Nothing
-                BA_Remove_Raster(AOIFolderBase, reclassName)
-                BA_Remove_Shapefile(AOIFolderBase, mergeName)
+                response = BA_Remove_Raster(AOIFolderBase, reclassName)
+                response = BA_Remove_Shapefile(AOIFolderBase, mergeName)
+            End If
 
+            pStepProg.Message = "Clip represented area map to AOI"
+            pStepProg.Step()
+            If BA_File_Exists(analysisFolder + "\" + BA_EnumDescription(MapsFileName.ActualRepresentedArea), WorkspaceType.Geodatabase, _
+                              esriDatasetType.esriDTFeatureClass) = True Then
+                response = BA_Remove_ShapefileFromGDB(analysisFolder, BA_EnumDescription(MapsFileName.ActualRepresentedArea))
+            End If
+            response = BA_ClipAOIVector(AOIFolderBase, analysisFolder + "\" + tmpRepFileName,
+                                                       BA_EnumDescription(MapsFileName.ActualRepresentedArea), analysisFolder, False)
+            If response = 1 Then
+                BA_Remove_ShapefileFromGDB(analysisFolder, tmpRepFileName)
             End If
             '--- Pseudo Representation ---
             If GrdScenario2.Rows.Count > 0 AndAlso m_calculateScenario2 = True Then
@@ -2193,9 +2206,9 @@ Public Class frmSiteScenario
                         If success = BA_ReturnCode.Success Then
                             'Dissolve features to eliminate overlap
                             mergeName = BA_StandardizeShapefileName(mergeName, True, True)
-                            success = BA_Dissolve(AOIFolderBase & mergeName, BA_FIELD_GRIDCODE, analysisFolder & "\" & BA_EnumDescription(MapsFileName.PseudoRepresentedArea))
+                            success = BA_Dissolve(AOIFolderBase & mergeName, BA_FIELD_GRIDCODE, analysisFolder & "\" & tmpRepFileName)
                             'Delete temporary merge file
-                            BA_Remove_Shapefile(AOIFolderBase, BA_StandardizeShapefileName(mergeName, False))
+                            response = BA_Remove_Shapefile(AOIFolderBase, BA_StandardizeShapefileName(mergeName, False))
                             Scenario2Map_Flag = True
                         End If
                     End If
@@ -2225,23 +2238,35 @@ Public Class frmSiteScenario
                     Dim snapRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi) & BA_EnumDescription(PublicPath.AoiGrid)
                     Dim reclassName As String = "reclElev"
                     Dim mergeName As String = "tmpMerge"
-                    Dim outputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_EnumDescription(MapsFileName.PseudoRepresentedArea)
+                    Dim outputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & tmpRepFileName
                     success = BA_ReclassByElevationOnly(demFilePath, AOIFolderBase & "\" & reclassName, snapRasterPath, siteMax, _
                                                         siteMin, upperElev, lowerElev, ES_DEMMax, ES_DEMMin)
                     'Check to see if output file already exists and delete if it does
                     If BA_Shapefile_Exists(AOIFolderBase & "\" & mergeName) Then
-                        BA_Remove_Shapefile(AOIFolderBase, mergeName)
+                        response = BA_Remove_Shapefile(AOIFolderBase, mergeName)
                     End If
                     Dim reclRaster As IGeoDataset = BA_OpenRasterFromFile(AOIFolderBase, reclassName)
                     If reclRaster IsNot Nothing Then
-                        BA_Raster2PolygonShapefile(AOIFolderBase, mergeName, reclRaster)
+                        response = BA_Raster2PolygonShapefile(AOIFolderBase, mergeName, reclRaster)
                         success = BA_Dissolve(AOIFolderBase & BA_StandardizeShapefileName(mergeName), BA_FIELD_GRIDCODE, outputPath)
                         Scenario2Map_Flag = True
                     End If
                     'Remove temporary files
                     reclRaster = Nothing
-                    BA_Remove_Raster(AOIFolderBase, reclassName)
-                    BA_Remove_Shapefile(AOIFolderBase, mergeName)
+                    response = BA_Remove_Raster(AOIFolderBase, reclassName)
+                    response = BA_Remove_Shapefile(AOIFolderBase, mergeName)
+                End If
+
+                pStepProg.Message = "Clip scenario 2 represented area map to AOI"
+                pStepProg.Step()
+                If BA_File_Exists(analysisFolder + "\" + BA_EnumDescription(MapsFileName.PseudoRepresentedArea), WorkspaceType.Geodatabase, _
+                                  esriDatasetType.esriDTFeatureClass) = True Then
+                    response = BA_Remove_ShapefileFromGDB(analysisFolder, BA_EnumDescription(MapsFileName.PseudoRepresentedArea))
+                End If
+                response = BA_ClipAOIVector(AOIFolderBase, analysisFolder + "\" + tmpRepFileName,
+                                                           BA_EnumDescription(MapsFileName.PseudoRepresentedArea), analysisFolder, False)
+                If response = 1 Then
+                    response = BA_Remove_ShapefileFromGDB(analysisFolder, tmpRepFileName)
                 End If
             ElseIf m_calculateScenario2 = True Then
                 'Delete old scenario sites layer to avoid confusion
