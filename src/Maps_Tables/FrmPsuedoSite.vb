@@ -2014,11 +2014,9 @@ Public Class FrmPsuedoSite
         Dim siteScenarioForm As frmSiteScenario = dockWindowAddIn.UI
         '1. Check box on frmSiteScenario
         siteScenarioForm.SelectPseudoSite(m_siteId)
-        '2. Set recalculate rep area
-        siteScenarioForm.CalculateScenario2Flag = False
-        '3. Disable site scenario maps after calculation for speed
+        '2. Disable site scenario maps after calculation for speed
         siteScenarioForm.DisplayScenarioMapsFlag = False
-        '4. Click BtnCalculate on Site Scenario form
+        '3. Click BtnCalculate on Site Scenario form
         siteScenarioForm.BtnCalculate.PerformClick()
         'Enable/disable buttons
         BtnRecalculate.Enabled = False      'We just recalculated; Don't need to do it again

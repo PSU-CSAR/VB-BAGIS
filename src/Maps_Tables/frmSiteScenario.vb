@@ -58,7 +58,7 @@ Public Class frmSiteScenario
     Friend idxUpper As Integer = 5
     Friend idxLower As Integer = 6
     Friend idxDefaultElevation As Integer = 7
-    Private m_calculateScenario2 As Boolean = True
+    Private m_calculateScenario2 As Boolean = False
     Private m_displayScenarioMaps As Boolean = True
 
     Public Sub New(ByVal hook As Object)
@@ -143,6 +143,7 @@ Public Class frmSiteScenario
                     GrdScenario2.Rows.Add(item)
                 End If
             Next
+            m_calculateScenario2 = True
         Catch ex As Exception
             Debug.Print("BtnAddAll_Click Exception: " & ex.Message)
         End Try
@@ -1093,6 +1094,7 @@ Public Class frmSiteScenario
                     idxList.Add(pCell.RowIndex)
                 End If
             Next
+            m_calculateScenario2 = True
         Catch ex As Exception
             Debug.Print("BtnAddSite_Click Exception: " & ex.Message)
         End Try
@@ -1112,6 +1114,7 @@ Public Class frmSiteScenario
             For Each dRow As DataGridViewRow In deleteList
                 GrdScenario2.Rows.Remove(dRow)
             Next
+            m_calculateScenario2 = True
         Catch ex As Exception
             Debug.Print("BtnRemoveSite Exception: " & ex.Message)
         End Try
@@ -1119,6 +1122,7 @@ Public Class frmSiteScenario
 
     Private Sub BtnRemoveAll_Click(sender As System.Object, e As System.EventArgs) Handles BtnRemoveAll.Click
         GrdScenario2.Rows.Clear()
+        m_calculateScenario2 = True
     End Sub
 
     Private Sub BtnToggleSel_Click(sender As System.Object, e As System.EventArgs) Handles BtnToggleSel.Click
