@@ -9,9 +9,9 @@
   <Company>Portland State University</Company>
   <Date>8/27/2018</Date>
   <Targets>
-    <Target name="Desktop" version="10.2" />
+    <Target name="Desktop" version="10.5" />
   </Targets>
-  <AddIn language="CLR4.0" library="BAGIS.dll" namespace="BAGIS">
+  <AddIn language="CLR" library="BAGIS.dll" namespace="BAGIS">
     <ArcMap>
       <Menus>
         <Menu id="Microsoft_BAGIS_Basin_Analyst" caption="Basin Analyst" isRootMenu="true">

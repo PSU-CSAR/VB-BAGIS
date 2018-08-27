@@ -148,9 +148,9 @@ Public Class frmCreateAOI
 
             'Save the snapped pourpoint
             'Query the Previous Raster to Include only the PP location
-            'Set QFilter to 0 (Pour Point Value)
+            'Set QFilter to 1 (Pour Point Value); This changed from 0 between AGS 10.2.2 and 10.5
             Dim pQFilter As IQueryFilter = New QueryFilter
-            pQFilter.WhereClause = "VALUE = 0"
+            pQFilter.WhereClause = "VALUE = 1"
             Dim pRasDes As IRasterDescriptor = New RasterDescriptor
             pRasDes.Create(pSnapPourPoint, pQFilter, "VALUE")
 
