@@ -877,5 +877,25 @@ Module BAGIS_AOIModule
         End If
         Return depthUnit
     End Function
+
+    Public Function BA_GetBufferDistance(ByVal inputFolder As String, ByVal inputFile As String) As Double
+        Dim dblBuffer As Double = 0
+        If BA_File_Exists(inputFolder & "\" & inputFile, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+            Dim tagsList As IList(Of String) = BA_ReadMetaData(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS)
+            If tagsList IsNot Nothing Then
+                For Each pInnerText As String In tagsList
+                    'This is our BAGIS tag
+                    If pInnerText.IndexOf(BA_BAGIS_TAG_PREFIX) = 0 Then
+                        Dim strBuffer As String = BA_GetValueForKey(pInnerText, BA_BUFFER_DISTANCE_TAG, ";")
+                        If Not String.IsNullOrEmpty(strBuffer) Then
+                            dblBuffer = CDbl(strBuffer)
+                        End If
+                        Exit For
+                    End If
+                Next
+            End If
+        End If
+        Return dblBuffer
+    End Function
 End Module
 

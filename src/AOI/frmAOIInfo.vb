@@ -115,7 +115,8 @@ Public Class frmAOIInfo
                 Case MeasurementUnit.Millimeters
                     rbtnDepthMM.Checked = True
             End Select
-            txtPrismBufferD.Text = "Clip Buffer Distance: " + CStr(BA_PRISMClipBuffer) + " meters"
+            BA_PRISMClipBuffer = BA_GetBufferDistance(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Prism), AOIPrismFolderNames.annual.ToString)
+            txtPrismBufferDist.Text = CStr(BA_PRISMClipBuffer)
             ' This variable keeps track of whether the PRISM clip buffer is changed; If changed, we need to recreate p_aoi_v and p_aoi
             m_PRISMClipBuffer = BA_PRISMClipBuffer
         End If
@@ -324,6 +325,18 @@ Public Class frmAOIInfo
         Dim response As Short
         Dim j As Integer
         Dim DataName As String
+
+        'Validation
+        If ChkPRISMSelected.Checked = True Then
+            If Not IsNumeric(txtPrismBufferDist.Text) Then
+                MessageBox.Show("Numeric value required for Prism buffer distance!", "BAGIS")
+                txtPrismBufferDist.Focus()
+                Exit Sub
+            End If
+            If Len(txtPrismBufferDist.Text) > 0 Then
+                BA_PRISMClipBuffer = Val(txtPrismBufferDist.Text)
+            End If
+        End If
 
         'remove all layers of the AOI from the data frame
         BA_SetSettingPath()
@@ -643,7 +656,9 @@ Public Class frmAOIInfo
         grpboxPRISMUnit.Enabled = ChkPRISMSelected.Checked
         rbtnDepthInch.Enabled = ChkPRISMSelected.Checked
         rbtnDepthMM.Enabled = ChkPRISMSelected.Checked
-        txtPrismBufferD.Enabled = ChkPRISMSelected.Checked
+        txtPrismBufferLbl.Enabled = ChkPRISMSelected.Checked
+        txtPrismBufferDist.Enabled = ChkPRISMSelected.Checked
+        txtPrismMeters.Enabled = ChkPRISMSelected.Checked
         txtDepthUnit.Enabled = ChkPRISMSelected.Checked
     End Sub
 
@@ -655,16 +670,20 @@ Public Class frmAOIInfo
             CmdReClip.Enabled = False
             'txtSiteBufferD.Enabled = False
         End If
+        TxtSnotelBuffer.Enabled = ChkSNOTELSelected.Checked
+        TxtSnotelClipDescr.Enabled = ChkSNOTELSelected.Checked
+        txtSnotelMeters.Enabled = ChkSNOTELSelected.Checked
     End Sub
 
     Private Sub ChkSnowCourseSelected_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ChkSnowCourseSelected.CheckedChanged
         If ChkSnowCourseSelected.Checked Or ChkPRISMSelected.Checked Or ChkSNOTELSelected.Checked = True Then
             CmdReClip.Enabled = True
-            'txtSiteBufferD.Enabled = True
         Else
             CmdReClip.Enabled = False
-            'txtSiteBufferD.Enabled = False
         End If
+        TxtSnowCourseBuffer.Enabled = ChkSnowCourseSelected.Checked
+        TxtSnowCourseClipDescr.Enabled = ChkSnowCourseSelected.Checked
+        TxtSnowCourseMeters.Enabled = ChkSnowCourseSelected.Checked
     End Sub
 
     Private Sub LoadLstLayers()
@@ -1135,7 +1154,7 @@ Public Class frmAOIInfo
         '    End Try
     End Sub
 
-    Private Sub txtPrismBufferD_DoubleClick(sender As Object, e As System.EventArgs) Handles txtPrismBufferD.DoubleClick
+    Private Sub txtPrismBufferD_DoubleClick(sender As Object, e As System.EventArgs) Handles txtPrismBufferLbl.DoubleClick
         Dim response As String
         response = InputBox("Please enter a PRISM buffer distance in meters", "Set PRISM Buffer Distance", BA_PRISMClipBuffer)
         If Not IsNumeric(response) Then
@@ -1144,7 +1163,7 @@ Public Class frmAOIInfo
         End If
         If Len(Trim(response)) > 0 Then
             BA_PRISMClipBuffer = Val(response)
-            txtPrismBufferD.Text = "Clip Buffer Distance: " + response + " meters"
+            txtPrismBufferLbl.Text = "Clip Buffer Distance: " + response + " meters"
         End If
     End Sub
 
