@@ -754,9 +754,9 @@ Public Class frmCreateAOIfromExistingBND
         sb.Append(BA_BAGIS_TAG_PREFIX)
         'Record elevation units
         sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Elevation.ToString & "; ")
-        sb.Append(BA_ZUNIT_VALUE_TAG & unitText & ";")
+        sb.Append(BA_ZUNIT_VALUE_TAG & unitText & "; ")
         'Record buffer distance
-        sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + ";")
+        sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + "; ")
         'Record buffer units
         sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + ";")
         sb.Append(BA_BAGIS_TAG_SUFFIX)
@@ -821,7 +821,7 @@ Public Class frmCreateAOIfromExistingBND
             If BA_File_Exists(inputFolder + inputFile, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
                 sb.Clear()
                 sb.Append(BA_BAGIS_TAG_PREFIX)
-                sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + ";")
+                sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + "; ")
                 sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + ";")
                 sb.Append(BA_BAGIS_TAG_SUFFIX)
                 BA_UpdateMetadata(inputFolder, inputFile, LayerType.Vector, BA_XPATH_TAGS, _
@@ -865,7 +865,7 @@ Public Class frmCreateAOIfromExistingBND
             If BA_File_Exists(inputFolder + inputFile, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
                 sb.Clear()
                 sb.Append(BA_BAGIS_TAG_PREFIX)
-                sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + ";")
+                sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + "; ")
                 sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + ";")
                 sb.Append(BA_BAGIS_TAG_SUFFIX)
                 BA_UpdateMetadata(inputFolder, inputFile, LayerType.Vector, BA_XPATH_TAGS, _
@@ -922,10 +922,10 @@ Public Class frmCreateAOIfromExistingBND
 
             sb.Clear()
             sb.Append(BA_BAGIS_TAG_PREFIX)
-            sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Depth.ToString & ";")
-            sb.Append(BA_ZUNIT_VALUE_TAG & unitText & ";")
+            sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Depth.ToString & "; ")
+            sb.Append(BA_ZUNIT_VALUE_TAG & unitText & "; ")
             'Record buffer distance and units
-            sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_PRISMClipBuffer) + ";")
+            sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_PRISMClipBuffer) + "; ")
             sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + ";")
             sb.Append(BA_BAGIS_TAG_SUFFIX)
             BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS, _

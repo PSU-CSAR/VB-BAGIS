@@ -509,7 +509,11 @@ Public Class frmCreateAOI
         sb.Clear()
         sb.Append(BA_BAGIS_TAG_PREFIX)
         sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Elevation.ToString & "; ")
-        sb.Append(BA_ZUNIT_VALUE_TAG & unitText & ";")
+        sb.Append(BA_ZUNIT_VALUE_TAG & unitText & "; ")
+        'Record buffer distance
+        sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + "; ")
+        'Record buffer units
+        sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + "; \")
         sb.Append(BA_BAGIS_TAG_SUFFIX)
         BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS, _
                           sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
@@ -564,6 +568,19 @@ Public Class frmCreateAOI
                 End Select
             End If
 
+            'Record buffer units in metadata if snotel layer exists
+            inputFolder = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True)
+            inputFile = BA_GetBareName(BA_EnumDescription(MapsFileName.Snotel))
+            If BA_File_Exists(inputFolder + inputFile, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                sb.Clear()
+                sb.Append(BA_BAGIS_TAG_PREFIX)
+                sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + "; ")
+                sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + ";")
+                sb.Append(BA_BAGIS_TAG_SUFFIX)
+                BA_UpdateMetadata(inputFolder, inputFile, LayerType.Vector, BA_XPATH_TAGS, _
+                                  sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
+            End If
+
             'clip snow course layer
             strInLayerPath = BA_SystemSettings.SCourseLayer
 
@@ -594,6 +611,18 @@ Public Class frmCreateAOI
                     Case 0 '0: no intersect between the input and the clip layers
                         'MsgBox("No SNOTEL data exists within the AOI. Unable to clip new SNOTEL data to AOI!")
                 End Select
+            End If
+
+            'Record buffer units in metadata if SC layer exists
+            inputFile = BA_GetBareName(BA_EnumDescription(MapsFileName.SnowCourse))
+            If BA_File_Exists(inputFolder + inputFile, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                sb.Clear()
+                sb.Append(BA_BAGIS_TAG_PREFIX)
+                sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + "; ")
+                sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + ";")
+                sb.Append(BA_BAGIS_TAG_SUFFIX)
+                BA_UpdateMetadata(inputFolder, inputFile, LayerType.Vector, BA_XPATH_TAGS, _
+                                  sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
             End If
 
             'clip PRISM raster data
@@ -647,7 +676,10 @@ Public Class frmCreateAOI
             sb.Clear()
             sb.Append(BA_BAGIS_TAG_PREFIX)
             sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Depth.ToString & "; ")
-            sb.Append(BA_ZUNIT_VALUE_TAG & unitText & ";")
+            sb.Append(BA_ZUNIT_VALUE_TAG & unitText & "; ")
+            'Record buffer distance and units
+            sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_PRISMClipBuffer) + "; ")
+            sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + ";")
             sb.Append(BA_BAGIS_TAG_SUFFIX)
             BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS, _
                               sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
