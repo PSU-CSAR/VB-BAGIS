@@ -115,7 +115,9 @@ Public Class frmAOIInfo
                 Case MeasurementUnit.Millimeters
                     rbtnDepthMM.Checked = True
             End Select
-            BA_PRISMClipBuffer = BA_GetBufferDistance(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Prism), AOIPrismFolderNames.annual.ToString)
+            Dim dblPrismBuffer As Double = BA_GetBufferDistance(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Prism), AOIPrismFolderNames.annual.ToString)
+            If dblPrismBuffer > 0 Then _
+                BA_PRISMClipBuffer = dblPrismBuffer
             txtPrismBufferDist.Text = CStr(BA_PRISMClipBuffer)
             ' This variable keeps track of whether the PRISM clip buffer is changed; If changed, we need to recreate p_aoi_v and p_aoi
             m_PRISMClipBuffer = BA_PRISMClipBuffer
@@ -125,21 +127,26 @@ Public Class frmAOIInfo
         temppathname = tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & BA_SNOTELSites
         If BA_File_Exists(temppathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             ChkSNOTELExist.Checked = True
-            'txtSiteBufferD intended to make buffer configurable; Implementation postponed because there is
-            'no good way to get the original buffer distance
-            'txtSiteBufferD.Text = "Site Layers Clip Buffer Distance: " + CStr(BA_AOIClipBuffer) + " meters"
+            Dim dblSnotelBuffer As Double = BA_GetBufferDistance(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), BA_SNOTELSites)
+            If dblSnotelBuffer > 0 Then _
+                BA_SnotelClipBuffer = dblSnotelBuffer
+            TxtSnotelBuffer.Text = CStr(BA_SnotelClipBuffer)
         Else
             ChkSNOTELExist.Checked = False
-            'BA_SystemSettings.GenerateAOIOnly = True 'some AOIs that don't have SNOTEL sites do not have SNOTEL layer
+            TxtSnotelBuffer.Text = Nothing
         End If
 
         'Snow Courses
         temppathname = tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & BA_SnowCourseSites
         If BA_File_Exists(temppathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             ChkSnowCourseExist.Checked = True
-            'txtSiteBufferD.Text = "Site Layers Clip Buffer Distance: " + CStr(BA_AOIClipBuffer) + " meters"
+            Dim dblSCBuffer As Double = BA_GetBufferDistance(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), BA_SnowCourseSites)
+            If dblSCBuffer > 0 Then _
+                BA_SnowCourseClipBuffer = dblSCBuffer
+            TxtSnowCourseBuffer.Text = CStr(BA_SnowCourseClipBuffer)
         Else
             ChkSnowCourseExist.Checked = False
+            TxtSnowCourseBuffer.Text = Nothing
             'BA_SystemSettings.GenerateAOIOnly = True  'some AOIs that don't have snow course sites do not have snow course layer
         End If
 
@@ -337,6 +344,27 @@ Public Class frmAOIInfo
                 BA_PRISMClipBuffer = Val(txtPrismBufferDist.Text)
             End If
         End If
+        If ChkSNOTELSelected.Checked = True Then
+            If Not IsNumeric(TxtSnotelBuffer.Text) Then
+                MessageBox.Show("Numeric value required for SNOTEL buffer distance!", "BAGIS")
+                TxtSnotelBuffer.Focus()
+                Exit Sub
+            End If
+            If Len(TxtSnotelBuffer.Text) > 0 Then
+                BA_SnotelClipBuffer = Val(TxtSnotelBuffer.Text)
+            End If
+        End If
+        If ChkSnowCourseSelected.Checked = True Then
+            If Not IsNumeric(TxtSnowCourseBuffer.Text) Then
+                MessageBox.Show("Numeric value required for Snow Course buffer distance!", "BAGIS")
+                TxtSnowCourseBuffer.Focus()
+                Exit Sub
+            End If
+            If Len(TxtSnowCourseBuffer.Text) > 0 Then
+                BA_SnowCourseClipBuffer = Val(TxtSnowCourseBuffer.Text)
+            End If
+        End If
+
 
         'remove all layers of the AOI from the data frame
         BA_SetSettingPath()
@@ -465,6 +493,9 @@ Public Class frmAOIInfo
                     sb.Append(BA_BAGIS_TAG_PREFIX)
                     sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Depth.ToString & "; ")
                     sb.Append(BA_ZUNIT_VALUE_TAG & unitText & ";")
+                    'Record buffer distance and units
+                    sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_PRISMClipBuffer) + "; ")
+                    sb.Append(BA_XUNIT_VALUE_TAG + txtPrismMeters.Text + ";")
                     sb.Append(BA_BAGIS_TAG_SUFFIX)
                     BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS, _
                                       sb.ToString, BA_BAGIS_TAG_PREFIX.Length)

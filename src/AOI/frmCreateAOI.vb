@@ -68,6 +68,18 @@ Public Class frmCreateAOI
                 If BA_AOIClipBuffer <= 0 Then BA_AOIClipBuffer = 100 'default buffer distance
             End If
         End If
+        'verify PRISM buffer distance
+        If ChkAOIBuffer.Checked = True Then
+            If Not IsNumeric(TxtPrismBufferD.Text) Then
+                MsgBox("PRISM buffer distance must be numeric! Program stopped!")
+                pProgD.HideDialog()
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pProgD)
+                Exit Sub
+            Else
+                BA_PRISMClipBuffer = CDbl(TxtPrismBufferD.Text) 'Unit is Meter
+                If BA_PRISMClipBuffer <= 0 Then BA_PRISMClipBuffer = 1500 'default buffer distance
+            End If
+        End If
 
         'The BA_Create_Output_Folders function can delete the file structure if it exists
         Dim response As Integer
@@ -773,13 +785,17 @@ Public Class frmCreateAOI
         lblBufferD.Enabled = ChkAOIBuffer.Checked
         lblBufferUnit.Enabled = ChkAOIBuffer.Checked
         txtBufferD.Enabled = ChkAOIBuffer.Checked
+        lblPrismBufferD.Enabled = ChkAOIBuffer.Checked
+        lblPrismBufferUnit.Enabled = ChkAOIBuffer.Checked
+        TxtPrismBufferD.Enabled = ChkAOIBuffer.Checked
     End Sub
 
     Private Sub frmCreateAOI_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
         ChkSnapPP.Checked = True
         ChkAOIBuffer.Checked = True
         txtSnapD.Text = "15"
-        txtBufferD.Text = BA_AOIClipBuffer
+        txtBufferD.Text = CStr(BA_AOIClipBuffer)
+        TxtPrismBufferD.Text = CStr(BA_PRISMClipBuffer)
 
         If BA_SystemSettings.DEM_ZUnit_IsMeter Then
             lblDEMUnit.Text = BA_EnumDescription(MeasurementUnit.Meters)
@@ -793,18 +809,6 @@ Public Class frmCreateAOI
 
     End Sub
 
-    Private Sub lblBufferD_DoubleClick(sender As Object, e As System.EventArgs) Handles lblBufferD.DoubleClick
-        Dim response As String
-        response = InputBox("Please enter a PRISM buffer distance in meters", "Set/Check PRISM Buffer Distance", BA_PRISMClipBuffer)
-        If Not IsNumeric(response) Then
-            MsgBox("Numeric value required!")
-            Exit Sub
-        End If
-        If Len(Trim(response)) > 0 Then
-            BA_PRISMClipBuffer = Val(response)
-        End If
-    End Sub
-
     Private Sub lblWhyBuffer_Click(sender As System.Object, e As System.EventArgs) Handles lblWhyBuffer.Click
         Dim mText = "Layers can be clipped to an AOI using a buffered AOI boundaries."
         mText = mText & " This practice allows users to include data outside the AOI boundaries in basin analysis."
@@ -812,10 +816,9 @@ Public Class frmCreateAOI
         mText = mText & " its derivatives, SNOTEL, snow courses, and other participating layers"
         mText = mText & " are clipped to the AOI using the buffered boundaries." & vbCrLf & vbCrLf
         mText = mText & "Due to the significantly coarser resolution of PRISM precipitation layers, "
-        mText = mText & " a differnt buffer distance is always used in clipping PRISM layers."
+        mText = mText & " a different buffer distance is always used in clipping PRISM layers."
         mText = mText & " The default buffer distance for PRISM is 1000 meters."
         mText = mText & " Using any value smaller than 1000 could result in missing PRISM pixel values within the AOI boundaries."
-        mText = mText & " To change the buffer distance for PRISM, please double-click on the Buffer Distance label."
         MsgBox(mText, MsgBoxStyle.Information, "Why Buffer an AOI")
     End Sub
 End Class
