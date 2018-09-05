@@ -810,15 +810,6 @@ Public Class frmCreateAOI
     End Sub
 
     Private Sub lblWhyBuffer_Click(sender As System.Object, e As System.EventArgs) Handles lblWhyBuffer.Click
-        Dim mText = "Layers can be clipped to an AOI using a buffered AOI boundaries."
-        mText = mText & " This practice allows users to include data outside the AOI boundaries in basin analysis."
-        mText = mText & " When this option is checked, all AOI associated layers, including DEM,"
-        mText = mText & " its derivatives, SNOTEL, snow courses, and other participating layers"
-        mText = mText & " are clipped to the AOI using the buffered boundaries." & vbCrLf & vbCrLf
-        mText = mText & "Due to the significantly coarser resolution of PRISM precipitation layers, "
-        mText = mText & " a different buffer distance is always used in clipping PRISM layers."
-        mText = mText & " The default buffer distance for PRISM is 1000 meters."
-        mText = mText & " Using any value smaller than 1000 could result in missing PRISM pixel values within the AOI boundaries."
-        MsgBox(mText, MsgBoxStyle.Information, "Why Buffer an AOI")
+         MessageBox.Show(BA_WhyBufferText, "Why Buffer an AOI", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
 End Class

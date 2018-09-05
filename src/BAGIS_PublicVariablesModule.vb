@@ -46,6 +46,16 @@ Module BAGIS_PublicVariablesModule
     Public BA_AOIClipBuffer As Double = 100 'default value = 100 meters, buffer distance for clipping AOI data
     Public BA_SnotelClipBuffer As Double = 100
     Public BA_SnowCourseClipBuffer As Double = 100
+    Public Const BA_WhyBufferText = "Layers can be clipped to an AOI using a buffered AOI boundaries." + _
+        " This practice allows users to include data outside the AOI boundaries in basin analysis." + _
+        " When this option is checked, all AOI associated layers, including DEM," + _
+        " its derivatives, SNOTEL, snow courses, and other participating layers" + _
+        " are clipped to the AOI using the buffered boundaries." + vbCrLf + vbCrLf + _
+        "Due to the significantly coarser resolution of PRISM precipitation layers, " + _
+        " a different buffer distance is always used in clipping PRISM layers." + _
+        " The default buffer distance for PRISM is 1000 meters." + _
+        " Using any value smaller than 1000 could result in missing PRISM pixel values within the AOI boundaries."
+
 
     'AOI snotel site, snow course site, and pseudo-site attributes
     Public Const BA_SiteNameField = "BA_SNAME"

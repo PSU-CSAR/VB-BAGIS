@@ -116,11 +116,21 @@ Public Class frmCreateAOIfromExistingBND
         'verify AOI buffer distance
         If ChkAOIBuffer.Checked = True Then
             If Not IsNumeric(txtBufferD.Text) Then
-                MsgBox("Buffer distance must be numeric!")
+                MsgBox("Buffer distance must be numeric! Program stopped!")
                 Exit Sub
             Else
                 BA_AOIClipBuffer = CDbl(txtBufferD.Text) 'Unit is Meter
                 If BA_AOIClipBuffer <= 0 Then BA_AOIClipBuffer = 100 'default buffer distance
+            End If
+        End If
+        'verify PRISM buffer distance
+        If ChkAOIBuffer.Checked = True Then
+            If Not IsNumeric(TxtPrismBufferD.Text) Then
+                MsgBox("PRISM buffer distance must be numeric! Program stopped!")
+                Exit Sub
+            Else
+                BA_PRISMClipBuffer = CDbl(TxtPrismBufferD.Text) 'Unit is Meter
+                If BA_PRISMClipBuffer <= 0 Then BA_PRISMClipBuffer = 1500 'default buffer distance
             End If
         End If
 
@@ -1028,6 +1038,9 @@ Public Class frmCreateAOIfromExistingBND
         lblSlopeUnit.Text = BA_EnumDescription(SlopeUnit.PctSlope) 'BAGIS generates Slope in Degree
 
         grpboxPRISMUnit.Visible = Not BA_SystemSettings.GenerateAOIOnly 'when generate AOI only, no PRISM will be clipped to the AOI
+        txtBufferD.Text = CStr(BA_AOIClipBuffer)
+        TxtPrismBufferD.Text = CStr(BA_PRISMClipBuffer)
+
     End Sub
 
     'return value:
@@ -1110,18 +1123,6 @@ Public Class frmCreateAOIfromExistingBND
         End If
     End Sub
 
-    Private Sub lblBufferD_DoubleClick(sender As Object, e As System.EventArgs) Handles lblBufferD.DoubleClick
-        Dim response As String
-        response = InputBox("Please enter a PRISM buffer distance in meters", "Set/Check PRISM Buffer Distance", BA_PRISMClipBuffer)
-        If Not IsNumeric(response) Then
-            MsgBox("Numeric value required!")
-            Exit Sub
-        End If
-        If Len(Trim(response)) > 0 Then
-            BA_PRISMClipBuffer = Val(response)
-        End If
-    End Sub
-
     Public Sub New()
 
         ' This call is required by the designer.
@@ -1129,5 +1130,18 @@ Public Class frmCreateAOIfromExistingBND
 
         ' Add any initialization after the InitializeComponent() call.
 
+    End Sub
+
+    Private Sub lblWhyBuffer_Click(sender As System.Object, e As System.EventArgs) Handles lblWhyBuffer.Click
+        MessageBox.Show(BA_WhyBufferText, "Why Buffer an AOI", MessageBoxButtons.OK, MessageBoxIcon.Information)
+    End Sub
+
+    Private Sub ChkAOIBuffer_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles ChkAOIBuffer.Click
+        lblBufferD.Enabled = ChkAOIBuffer.Checked
+        lblBufferUnit.Enabled = ChkAOIBuffer.Checked
+        txtBufferD.Enabled = ChkAOIBuffer.Checked
+        lblPrismBufferD.Enabled = ChkAOIBuffer.Checked
+        lblPrismBufferUnit.Enabled = ChkAOIBuffer.Checked
+        TxtPrismBufferD.Enabled = ChkAOIBuffer.Checked
     End Sub
 End Class

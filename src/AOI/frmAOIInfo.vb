@@ -115,7 +115,8 @@ Public Class frmAOIInfo
                 Case MeasurementUnit.Millimeters
                     rbtnDepthMM.Checked = True
             End Select
-            Dim dblPrismBuffer As Double = BA_GetBufferDistance(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Prism), AOIPrismFolderNames.annual.ToString)
+            Dim dblPrismBuffer As Double = BA_GetBufferDistance(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Prism), _
+                                                                AOIPrismFolderNames.annual.ToString, esriDatasetType.esriDTRasterDataset)
             If dblPrismBuffer > 0 Then _
                 BA_PRISMClipBuffer = dblPrismBuffer
             txtPrismBufferDist.Text = CStr(BA_PRISMClipBuffer)
@@ -127,7 +128,8 @@ Public Class frmAOIInfo
         temppathname = tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & BA_SNOTELSites
         If BA_File_Exists(temppathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             ChkSNOTELExist.Checked = True
-            Dim dblSnotelBuffer As Double = BA_GetBufferDistance(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), BA_SNOTELSites)
+            Dim dblSnotelBuffer As Double = BA_GetBufferDistance(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), _
+                                                                 BA_SNOTELSites, esriDatasetType.esriDTFeatureClass)
             If dblSnotelBuffer > 0 Then _
                 BA_SnotelClipBuffer = dblSnotelBuffer
             TxtSnotelBuffer.Text = CStr(BA_SnotelClipBuffer)
@@ -140,7 +142,8 @@ Public Class frmAOIInfo
         temppathname = tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & BA_SnowCourseSites
         If BA_File_Exists(temppathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             ChkSnowCourseExist.Checked = True
-            Dim dblSCBuffer As Double = BA_GetBufferDistance(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), BA_SnowCourseSites)
+            Dim dblSCBuffer As Double = BA_GetBufferDistance(tempAOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), _
+                                                             BA_SnowCourseSites, esriDatasetType.esriDTFeatureClass)
             If dblSCBuffer > 0 Then _
                 BA_SnowCourseClipBuffer = dblSCBuffer
             TxtSnowCourseBuffer.Text = CStr(BA_SnowCourseClipBuffer)
@@ -704,6 +707,10 @@ Public Class frmAOIInfo
         TxtSnotelBuffer.Enabled = ChkSNOTELSelected.Checked
         TxtSnotelClipDescr.Enabled = ChkSNOTELSelected.Checked
         txtSnotelMeters.Enabled = ChkSNOTELSelected.Checked
+        'Populate buffer textbox with default values
+        If ChkSNOTELSelected.Checked AndAlso String.IsNullOrEmpty(TxtSnotelBuffer.Text) Then
+            TxtSnotelBuffer.Text = CStr(BA_SnotelClipBuffer)
+        End If
     End Sub
 
     Private Sub ChkSnowCourseSelected_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ChkSnowCourseSelected.CheckedChanged
@@ -715,6 +722,10 @@ Public Class frmAOIInfo
         TxtSnowCourseBuffer.Enabled = ChkSnowCourseSelected.Checked
         TxtSnowCourseClipDescr.Enabled = ChkSnowCourseSelected.Checked
         TxtSnowCourseMeters.Enabled = ChkSnowCourseSelected.Checked
+        'Populate buffer textbox with default values
+        If ChkSnowCourseSelected.Checked AndAlso String.IsNullOrEmpty(TxtSnowCourseBuffer.Text) Then
+            TxtSnowCourseBuffer.Text = CStr(BA_SnowCourseClipBuffer)
+        End If
     End Sub
 
     Private Sub LoadLstLayers()
