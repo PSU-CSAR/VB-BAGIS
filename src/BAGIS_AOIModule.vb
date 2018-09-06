@@ -433,10 +433,11 @@ Module BAGIS_AOIModule
     '-4: no input shapefile
     '0: no intersect between the input and the clip layers
     '1: clipping is done successfully
-    Public Function BA_ClipAOISNOTEL(ByVal AOIFolder As String, ByVal InputShapefile_Path_Name As String, ByVal Is_SNOTEL As Boolean) As Integer
+    Public Function BA_ClipAOISNOTEL(ByVal AOIFolder As String, ByVal InputShapefile_Path_Name As String, ByVal Is_SNOTEL As Boolean, _
+                                     ByVal ClipShapeFile As String) As Integer
         Dim comReleaser As ESRI.ArcGIS.ADF.ComReleaser = New ESRI.ArcGIS.ADF.ComReleaser
         Dim InData_Path As String = "", InData_Name As String
-        Dim InputName As String, ClipName As String, ClipShapeFile As String
+        Dim InputName As String, ClipName As String
         Dim OutputName As String = Nothing, OutputKey As String
         Dim return_value As Integer, response As Integer
 
@@ -466,9 +467,7 @@ Module BAGIS_AOIModule
         OutputName = AOIFolder & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & OutputKey
 
         'If UCase(Right(OutputName, 4)) <> ".SHP" Then OutputName = OutputName & ".shp"
-
-        ClipShapeFile = BA_BufferedAOIExtentCoverage
-        ClipName = AOIFolder & "\" & BA_EnumDescription(GeodatabaseNames.Aoi) & "\" & BA_BufferedAOIExtentCoverage  'GP parameter
+        ClipName = AOIFolder & "\" & BA_EnumDescription(GeodatabaseNames.Aoi) & "\" & ClipShapeFile  'GP parameter
 
         'check if a layer of the same name exists in the AOI
         If BA_File_Exists(OutputName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
@@ -786,8 +785,9 @@ Module BAGIS_AOIModule
     '-4: no input shapefile
     '0: no intersect between the input and the clip layers
     '1: clipping is done successfully
-    Public Function BA_ClipAOISnoWebServices(ByVal AOIFolder As String, ByVal url As String, ByVal Is_SNOTEL As Boolean) As Integer
-        Dim ClipName As String, ClipShapeFile As String
+    Public Function BA_ClipAOISnoWebServices(ByVal AOIFolder As String, ByVal url As String, ByVal Is_SNOTEL As Boolean, _
+                                             ByVal ClipShapeFile As String) As Integer
+        Dim ClipName As String
         Dim OutputName As String = Nothing, OutputKey As String
         Dim return_value As Integer, response As Integer
 
@@ -797,12 +797,9 @@ Module BAGIS_AOIModule
             Return -3
         End If
 
-         'set output file name - BA_UpdateSiteAttributes will change to permanent file name
+        'set output file name - BA_UpdateSiteAttributes will change to permanent file name
         OutputKey = "tmpSnoLayer"
         OutputName = AOIFolder & "\" & BA_EnumDescription(GeodatabaseNames.Layers) & "\" & OutputKey
-
-
-        ClipShapeFile = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
         ClipName = BA_GeodatabasePath(AOIFolder, GeodatabaseNames.Aoi, True) & ClipShapeFile  'GP parameter
 
         'check if a layer of the same name exists in the AOI

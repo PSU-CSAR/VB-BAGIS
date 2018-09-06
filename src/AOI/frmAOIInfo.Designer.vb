@@ -57,7 +57,15 @@ Partial Class frmAOIInfo
         Me.CmbAddSelectionsToMap = New System.Windows.Forms.Button()
         Me.CmdClearSelected = New System.Windows.Forms.Button()
         Me.FrameBAGISLayers = New System.Windows.Forms.GroupBox()
+        Me.TxtSnowCourseBuffer = New System.Windows.Forms.TextBox()
+        Me.TxtSnowCourseMeters = New System.Windows.Forms.TextBox()
+        Me.TxtSnowCourseClipDescr = New System.Windows.Forms.TextBox()
+        Me.TxtSnotelBuffer = New System.Windows.Forms.TextBox()
+        Me.txtSnotelMeters = New System.Windows.Forms.TextBox()
+        Me.TxtSnotelClipDescr = New System.Windows.Forms.TextBox()
         Me.grpboxPRISMUnit = New System.Windows.Forms.GroupBox()
+        Me.txtPrismBufferDist = New System.Windows.Forms.TextBox()
+        Me.txtPrismMeters = New System.Windows.Forms.TextBox()
         Me.txtDepthUnit = New System.Windows.Forms.TextBox()
         Me.txtPrismBufferLbl = New System.Windows.Forms.TextBox()
         Me.rbtnDepthInch = New System.Windows.Forms.RadioButton()
@@ -73,14 +81,6 @@ Partial Class frmAOIInfo
         Me.cmdOK = New System.Windows.Forms.Button()
         Me.CmdReClip = New System.Windows.Forms.Button()
         Me.Label20 = New System.Windows.Forms.Label()
-        Me.txtPrismMeters = New System.Windows.Forms.TextBox()
-        Me.txtPrismBufferDist = New System.Windows.Forms.TextBox()
-        Me.TxtSnotelBuffer = New System.Windows.Forms.TextBox()
-        Me.txtSnotelMeters = New System.Windows.Forms.TextBox()
-        Me.TxtSnotelClipDescr = New System.Windows.Forms.TextBox()
-        Me.TxtSnowCourseBuffer = New System.Windows.Forms.TextBox()
-        Me.TxtSnowCourseMeters = New System.Windows.Forms.TextBox()
-        Me.TxtSnowCourseClipDescr = New System.Windows.Forms.TextBox()
         Me.FrameUserLayers.SuspendLayout()
         Me.FrameBAGISLayers.SuspendLayout()
         Me.grpboxPRISMUnit.SuspendLayout()
@@ -468,6 +468,80 @@ Partial Class frmAOIInfo
         Me.FrameBAGISLayers.TabStop = False
         Me.FrameBAGISLayers.Text = "Presence of BAGIS Layers"
         '
+        'TxtSnowCourseBuffer
+        '
+        Me.TxtSnowCourseBuffer.BackColor = System.Drawing.SystemColors.Window
+        Me.TxtSnowCourseBuffer.Enabled = False
+        Me.TxtSnowCourseBuffer.ForeColor = System.Drawing.SystemColors.WindowText
+        Me.TxtSnowCourseBuffer.Location = New System.Drawing.Point(138, 226)
+        Me.TxtSnowCourseBuffer.Name = "TxtSnowCourseBuffer"
+        Me.TxtSnowCourseBuffer.Size = New System.Drawing.Size(81, 22)
+        Me.TxtSnowCourseBuffer.TabIndex = 24
+        Me.TxtSnowCourseBuffer.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'TxtSnowCourseMeters
+        '
+        Me.TxtSnowCourseMeters.BackColor = System.Drawing.SystemColors.Menu
+        Me.TxtSnowCourseMeters.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.TxtSnowCourseMeters.Enabled = False
+        Me.TxtSnowCourseMeters.ForeColor = System.Drawing.SystemColors.WindowText
+        Me.TxtSnowCourseMeters.Location = New System.Drawing.Point(227, 229)
+        Me.TxtSnowCourseMeters.Name = "TxtSnowCourseMeters"
+        Me.TxtSnowCourseMeters.ReadOnly = True
+        Me.TxtSnowCourseMeters.Size = New System.Drawing.Size(49, 15)
+        Me.TxtSnowCourseMeters.TabIndex = 23
+        Me.TxtSnowCourseMeters.Text = "Meters"
+        '
+        'TxtSnowCourseClipDescr
+        '
+        Me.TxtSnowCourseClipDescr.BackColor = System.Drawing.SystemColors.Menu
+        Me.TxtSnowCourseClipDescr.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.TxtSnowCourseClipDescr.Enabled = False
+        Me.TxtSnowCourseClipDescr.ForeColor = System.Drawing.SystemColors.WindowText
+        Me.TxtSnowCourseClipDescr.Location = New System.Drawing.Point(14, 229)
+        Me.TxtSnowCourseClipDescr.Name = "TxtSnowCourseClipDescr"
+        Me.TxtSnowCourseClipDescr.ReadOnly = True
+        Me.TxtSnowCourseClipDescr.Size = New System.Drawing.Size(123, 15)
+        Me.TxtSnowCourseClipDescr.TabIndex = 22
+        Me.TxtSnowCourseClipDescr.Text = "Clip Buffer Distance:"
+        '
+        'TxtSnotelBuffer
+        '
+        Me.TxtSnotelBuffer.BackColor = System.Drawing.SystemColors.Window
+        Me.TxtSnotelBuffer.Enabled = False
+        Me.TxtSnotelBuffer.ForeColor = System.Drawing.SystemColors.WindowText
+        Me.TxtSnotelBuffer.Location = New System.Drawing.Point(138, 173)
+        Me.TxtSnotelBuffer.Name = "TxtSnotelBuffer"
+        Me.TxtSnotelBuffer.Size = New System.Drawing.Size(81, 22)
+        Me.TxtSnotelBuffer.TabIndex = 21
+        Me.TxtSnotelBuffer.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'txtSnotelMeters
+        '
+        Me.txtSnotelMeters.BackColor = System.Drawing.SystemColors.Menu
+        Me.txtSnotelMeters.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.txtSnotelMeters.Enabled = False
+        Me.txtSnotelMeters.ForeColor = System.Drawing.SystemColors.WindowText
+        Me.txtSnotelMeters.Location = New System.Drawing.Point(227, 176)
+        Me.txtSnotelMeters.Name = "txtSnotelMeters"
+        Me.txtSnotelMeters.ReadOnly = True
+        Me.txtSnotelMeters.Size = New System.Drawing.Size(49, 15)
+        Me.txtSnotelMeters.TabIndex = 20
+        Me.txtSnotelMeters.Text = "Meters"
+        '
+        'TxtSnotelClipDescr
+        '
+        Me.TxtSnotelClipDescr.BackColor = System.Drawing.SystemColors.Menu
+        Me.TxtSnotelClipDescr.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.TxtSnotelClipDescr.Enabled = False
+        Me.TxtSnotelClipDescr.ForeColor = System.Drawing.SystemColors.WindowText
+        Me.TxtSnotelClipDescr.Location = New System.Drawing.Point(14, 176)
+        Me.TxtSnotelClipDescr.Name = "TxtSnotelClipDescr"
+        Me.TxtSnotelClipDescr.ReadOnly = True
+        Me.TxtSnotelClipDescr.Size = New System.Drawing.Size(123, 15)
+        Me.TxtSnotelClipDescr.TabIndex = 19
+        Me.TxtSnotelClipDescr.Text = "Clip Buffer Distance:"
+        '
         'grpboxPRISMUnit
         '
         Me.grpboxPRISMUnit.Controls.Add(Me.txtPrismBufferDist)
@@ -484,6 +558,30 @@ Partial Class frmAOIInfo
         Me.grpboxPRISMUnit.TabIndex = 18
         Me.grpboxPRISMUnit.TabStop = False
         Me.grpboxPRISMUnit.Text = "PRISM"
+        '
+        'txtPrismBufferDist
+        '
+        Me.txtPrismBufferDist.BackColor = System.Drawing.SystemColors.Window
+        Me.txtPrismBufferDist.Enabled = False
+        Me.txtPrismBufferDist.ForeColor = System.Drawing.SystemColors.WindowText
+        Me.txtPrismBufferDist.Location = New System.Drawing.Point(132, 21)
+        Me.txtPrismBufferDist.Name = "txtPrismBufferDist"
+        Me.txtPrismBufferDist.Size = New System.Drawing.Size(81, 22)
+        Me.txtPrismBufferDist.TabIndex = 8
+        Me.txtPrismBufferDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'txtPrismMeters
+        '
+        Me.txtPrismMeters.BackColor = System.Drawing.SystemColors.Menu
+        Me.txtPrismMeters.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.txtPrismMeters.Enabled = False
+        Me.txtPrismMeters.ForeColor = System.Drawing.SystemColors.WindowText
+        Me.txtPrismMeters.Location = New System.Drawing.Point(221, 24)
+        Me.txtPrismMeters.Name = "txtPrismMeters"
+        Me.txtPrismMeters.ReadOnly = True
+        Me.txtPrismMeters.Size = New System.Drawing.Size(49, 15)
+        Me.txtPrismMeters.TabIndex = 7
+        Me.txtPrismMeters.Text = "Meters"
         '
         'txtDepthUnit
         '
@@ -638,104 +736,6 @@ Partial Class frmAOIInfo
         Me.Label20.Size = New System.Drawing.Size(127, 16)
         Me.Label20.TabIndex = 4
         Me.Label20.Text = "Clip Buffer Distance:"
-        '
-        'txtPrismMeters
-        '
-        Me.txtPrismMeters.BackColor = System.Drawing.SystemColors.Menu
-        Me.txtPrismMeters.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.txtPrismMeters.Enabled = False
-        Me.txtPrismMeters.ForeColor = System.Drawing.SystemColors.WindowText
-        Me.txtPrismMeters.Location = New System.Drawing.Point(221, 24)
-        Me.txtPrismMeters.Name = "txtPrismMeters"
-        Me.txtPrismMeters.ReadOnly = True
-        Me.txtPrismMeters.Size = New System.Drawing.Size(49, 15)
-        Me.txtPrismMeters.TabIndex = 7
-        Me.txtPrismMeters.Text = "meters"
-        '
-        'txtPrismBufferDist
-        '
-        Me.txtPrismBufferDist.BackColor = System.Drawing.SystemColors.Window
-        Me.txtPrismBufferDist.Enabled = False
-        Me.txtPrismBufferDist.ForeColor = System.Drawing.SystemColors.WindowText
-        Me.txtPrismBufferDist.Location = New System.Drawing.Point(132, 21)
-        Me.txtPrismBufferDist.Name = "txtPrismBufferDist"
-        Me.txtPrismBufferDist.Size = New System.Drawing.Size(81, 22)
-        Me.txtPrismBufferDist.TabIndex = 8
-        Me.txtPrismBufferDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'TxtSnotelBuffer
-        '
-        Me.TxtSnotelBuffer.BackColor = System.Drawing.SystemColors.Window
-        Me.TxtSnotelBuffer.Enabled = False
-        Me.TxtSnotelBuffer.ForeColor = System.Drawing.SystemColors.WindowText
-        Me.TxtSnotelBuffer.Location = New System.Drawing.Point(138, 173)
-        Me.TxtSnotelBuffer.Name = "TxtSnotelBuffer"
-        Me.TxtSnotelBuffer.Size = New System.Drawing.Size(81, 22)
-        Me.TxtSnotelBuffer.TabIndex = 21
-        Me.TxtSnotelBuffer.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'txtSnotelMeters
-        '
-        Me.txtSnotelMeters.BackColor = System.Drawing.SystemColors.Menu
-        Me.txtSnotelMeters.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.txtSnotelMeters.Enabled = False
-        Me.txtSnotelMeters.ForeColor = System.Drawing.SystemColors.WindowText
-        Me.txtSnotelMeters.Location = New System.Drawing.Point(227, 176)
-        Me.txtSnotelMeters.Name = "txtSnotelMeters"
-        Me.txtSnotelMeters.ReadOnly = True
-        Me.txtSnotelMeters.Size = New System.Drawing.Size(49, 15)
-        Me.txtSnotelMeters.TabIndex = 20
-        Me.txtSnotelMeters.Text = "meters"
-        '
-        'TxtSnotelClipDescr
-        '
-        Me.TxtSnotelClipDescr.BackColor = System.Drawing.SystemColors.Menu
-        Me.TxtSnotelClipDescr.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.TxtSnotelClipDescr.Enabled = False
-        Me.TxtSnotelClipDescr.ForeColor = System.Drawing.SystemColors.WindowText
-        Me.TxtSnotelClipDescr.Location = New System.Drawing.Point(14, 176)
-        Me.TxtSnotelClipDescr.Name = "TxtSnotelClipDescr"
-        Me.TxtSnotelClipDescr.ReadOnly = True
-        Me.TxtSnotelClipDescr.Size = New System.Drawing.Size(123, 15)
-        Me.TxtSnotelClipDescr.TabIndex = 19
-        Me.TxtSnotelClipDescr.Text = "Clip Buffer Distance:"
-        '
-        'TxtSnowCourseBuffer
-        '
-        Me.TxtSnowCourseBuffer.BackColor = System.Drawing.SystemColors.Window
-        Me.TxtSnowCourseBuffer.Enabled = False
-        Me.TxtSnowCourseBuffer.ForeColor = System.Drawing.SystemColors.WindowText
-        Me.TxtSnowCourseBuffer.Location = New System.Drawing.Point(138, 226)
-        Me.TxtSnowCourseBuffer.Name = "TxtSnowCourseBuffer"
-        Me.TxtSnowCourseBuffer.Size = New System.Drawing.Size(81, 22)
-        Me.TxtSnowCourseBuffer.TabIndex = 24
-        Me.TxtSnowCourseBuffer.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'TxtSnowCourseMeters
-        '
-        Me.TxtSnowCourseMeters.BackColor = System.Drawing.SystemColors.Menu
-        Me.TxtSnowCourseMeters.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.TxtSnowCourseMeters.Enabled = False
-        Me.TxtSnowCourseMeters.ForeColor = System.Drawing.SystemColors.WindowText
-        Me.TxtSnowCourseMeters.Location = New System.Drawing.Point(227, 229)
-        Me.TxtSnowCourseMeters.Name = "TxtSnowCourseMeters"
-        Me.TxtSnowCourseMeters.ReadOnly = True
-        Me.TxtSnowCourseMeters.Size = New System.Drawing.Size(49, 15)
-        Me.TxtSnowCourseMeters.TabIndex = 23
-        Me.TxtSnowCourseMeters.Text = "meters"
-        '
-        'TxtSnowCourseClipDescr
-        '
-        Me.TxtSnowCourseClipDescr.BackColor = System.Drawing.SystemColors.Menu
-        Me.TxtSnowCourseClipDescr.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.TxtSnowCourseClipDescr.Enabled = False
-        Me.TxtSnowCourseClipDescr.ForeColor = System.Drawing.SystemColors.WindowText
-        Me.TxtSnowCourseClipDescr.Location = New System.Drawing.Point(14, 229)
-        Me.TxtSnowCourseClipDescr.Name = "TxtSnowCourseClipDescr"
-        Me.TxtSnowCourseClipDescr.ReadOnly = True
-        Me.TxtSnowCourseClipDescr.Size = New System.Drawing.Size(123, 15)
-        Me.TxtSnowCourseClipDescr.TabIndex = 22
-        Me.TxtSnowCourseClipDescr.Text = "Clip Buffer Distance:"
         '
         'frmAOIInfo
         '

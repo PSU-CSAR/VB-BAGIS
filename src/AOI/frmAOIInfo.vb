@@ -150,7 +150,6 @@ Public Class frmAOIInfo
         Else
             ChkSnowCourseExist.Checked = False
             TxtSnowCourseBuffer.Text = Nothing
-            'BA_SystemSettings.GenerateAOIOnly = True  'some AOIs that don't have snow course sites do not have snow course layer
         End If
 
         'BA_SetAOI activates/deactivates the Analysis and Maps menu items based on the presence of SNOTEL, Snow Course, and PRISM data in the AOI.
@@ -389,14 +388,24 @@ Public Class frmAOIInfo
             End If
         End If
 
-        If ChkSNOTELExist.Checked = True And ChkSNOTELSelected.Checked = True Then 'delete SNOTEL file
-            response = BA_Remove_ShapefileFromGDB(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), BA_SNOTELSites)
+        If ChkSNOTELExist.Checked = True And ChkSNOTELSelected.Checked = True Then 'backup or delete SNOTEL file
+            'Backup the original snotel layer if it doesn't exist; Will only do this once per AOI
+            If Not BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) + BA_Orig_SNOTELSites, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                Dim success As BA_ReturnCode = BA_RenameFeatureClassInGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), BA_SNOTELSites, BA_Orig_SNOTELSites)
+            Else
+                response = BA_Remove_ShapefileFromGDB(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), BA_SNOTELSites)
+            End If
             ChkSNOTELExist.Checked = False
             nstep = nstep + 1
         End If
 
-        If ChkSnowCourseExist.Checked = True And ChkSnowCourseSelected.Checked = True Then 'delete Snow Course file
-            response = BA_Remove_ShapefileFromGDB(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), BA_SnowCourseSites)
+        If ChkSnowCourseExist.Checked = True And ChkSnowCourseSelected.Checked = True Then 'backup or delete Snow Course file
+            'Backup the original snow course layer if it doesn't exist; Will only do this once per AOI
+            If Not BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) + BA_Orig_SnowCourseSites, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                Dim success As BA_ReturnCode = BA_RenameFeatureClassInGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), BA_SnowCourseSites, BA_Orig_SnowCourseSites)
+            Else
+                response = BA_Remove_ShapefileFromGDB(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), BA_SnowCourseSites)
+            End If
             ChkSnowCourseExist.Checked = False
             nstep = nstep + 1
         End If
@@ -407,6 +416,7 @@ Public Class frmAOIInfo
         pStepProg.Show()
         pStepProg.Step()
         System.Windows.Forms.Application.DoEvents()
+        Dim sb As StringBuilder = New StringBuilder
 
         'regenerate the files/folders
         If ChkPRISMSelected.Checked = True Then 'Clip PRISM data
@@ -492,7 +502,6 @@ Public Class frmAOIInfo
                         unitText = BA_EnumDescription(MeasurementUnit.Millimeters)
                     End If
 
-                    Dim sb As StringBuilder = New StringBuilder
                     sb.Append(BA_BAGIS_TAG_PREFIX)
                     sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Depth.ToString & "; ")
                     sb.Append(BA_ZUNIT_VALUE_TAG & unitText & ";")
@@ -531,10 +540,13 @@ Public Class frmAOIInfo
                 End If
 
                 If snotelExists Then
+                    Dim snotelClipLayer As String = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
+                    Dim aoiBufferDistance As Double = BA_GetBufferDistance(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces),
+                                                                           BA_EnumDescription(MapsFileName.filled_dem_gdb), esriDatasetType.esriDTRasterDataset)
                     If wType = WorkspaceType.Raster Then
-                        response = BA_ClipAOISNOTEL(AOIFolderBase, LayerPath & LayerName, True)
+                        response = BA_ClipAOISNOTEL(AOIFolderBase, LayerPath & LayerName, True, snotelClipLayer)
                     ElseIf wType = WorkspaceType.FeatureServer Then
-                        response = BA_ClipAOISnoWebServices(AOIFolderBase, InLayerString, True)
+                        response = BA_ClipAOISnoWebServices(AOIFolderBase, InLayerString, True, snotelClipLayer)
                     End If
                     If response <> 1 Then
                         Select Case response
@@ -551,9 +563,19 @@ Public Class frmAOIInfo
                         End Select
                     Else
                         Me.ChkSNOTELExist.Checked = True
+                        'Record buffer units in metadata if snotel layer exists
+                        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) + BA_SNOTELSites, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                            sb.Clear()
+                            sb.Append(BA_BAGIS_TAG_PREFIX)
+                            sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_SnotelClipBuffer) + "; ")
+                            sb.Append(BA_XUNIT_VALUE_TAG + txtSnotelMeters.Text + ";")
+                            sb.Append(BA_BAGIS_TAG_SUFFIX)
+                            BA_UpdateMetadata(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), BA_SNOTELSites, LayerType.Vector, BA_XPATH_TAGS, _
+                                              sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
+                        End If
+                        pStepProg.Step()
+                        System.Windows.Forms.Application.DoEvents()
                     End If
-                    pStepProg.Step()
-                    System.Windows.Forms.Application.DoEvents()
                 Else
                     MsgBox("The specified SNOTEL data source is missing! Please verify the data source information in the Options dialog.")
                 End If
@@ -576,10 +598,11 @@ Public Class frmAOIInfo
                 End If
 
                 If scExists Then
+                    Dim sclClipLayer As String = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
                     If wType = WorkspaceType.Raster Then
-                        response = BA_ClipAOISNOTEL(AOIFolderBase, LayerPath & LayerName, False)
+                        response = BA_ClipAOISNOTEL(AOIFolderBase, LayerPath & LayerName, False, sclClipLayer)
                     ElseIf wType = WorkspaceType.FeatureServer Then
-                        response = BA_ClipAOISnoWebServices(AOIFolderBase, InLayerString, False)
+                        response = BA_ClipAOISnoWebServices(AOIFolderBase, InLayerString, False, sclClipLayer)
                     End If
                     If response <> 1 Then
                         Select Case response
@@ -596,6 +619,16 @@ Public Class frmAOIInfo
                         End Select
                     Else
                         Me.ChkSnowCourseExist.Checked = True
+                        'Record buffer units in metadata if snow course layer exists
+                        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) + BA_SnowCourseSites, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                            sb.Clear()
+                            sb.Append(BA_BAGIS_TAG_PREFIX)
+                            sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_SnowCourseClipBuffer) + "; ")
+                            sb.Append(BA_XUNIT_VALUE_TAG + TxtSnowCourseMeters.Text + ";")
+                            sb.Append(BA_BAGIS_TAG_SUFFIX)
+                            BA_UpdateMetadata(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), BA_SnowCourseSites, LayerType.Vector, BA_XPATH_TAGS, _
+                                              sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
+                        End If
                     End If
                     pStepProg.Step()
                     System.Windows.Forms.Application.DoEvents()

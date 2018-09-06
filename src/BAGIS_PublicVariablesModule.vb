@@ -55,6 +55,9 @@ Module BAGIS_PublicVariablesModule
         " a different buffer distance is always used in clipping PRISM layers." + _
         " The default buffer distance for PRISM is 1000 meters." + _
         " Using any value smaller than 1000 could result in missing PRISM pixel values within the AOI boundaries."
+    Public Const BA_Orig_SNOTELSites = "original_snotel_sites"
+    Public Const BA_Orig_SnowCourseSites = "original_snowcourse_sites"
+
 
 
     'AOI snotel site, snow course site, and pseudo-site attributes

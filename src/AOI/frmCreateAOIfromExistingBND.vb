@@ -795,6 +795,7 @@ Public Class frmCreateAOIfromExistingBND
         If Not BA_SystemSettings.GenerateAOIOnly Then
             'clip snotel layer
             strInLayerPath = BA_SystemSettings.SNOTELLayer
+            Dim snoClipLayer As String = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)  'Use for both Snotel and SC
 
             pStepProg.Message = "Clipping SNOTEL layer... (step 7 of " & nstep & ")"
             pStepProg.Step()
@@ -804,9 +805,9 @@ Public Class frmCreateAOIfromExistingBND
             wType = BA_GetWorkspaceTypeFromPath(strInLayerPath)
             If wType = WorkspaceType.Raster Then
                 strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
-                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, True)
+                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, True, snoClipLayer)
             ElseIf wType = WorkspaceType.FeatureServer Then
-                response = BA_ClipAOISnoWebServices(UserAOIFolderBase, strInLayerPath, True)
+                response = BA_ClipAOISnoWebServices(UserAOIFolderBase, strInLayerPath, True, snoClipLayer)
             End If
 
             'Display error message if appropriate
@@ -849,9 +850,9 @@ Public Class frmCreateAOIfromExistingBND
             wType = BA_GetWorkspaceTypeFromPath(strInLayerPath)
             If wType = WorkspaceType.Raster Then
                 strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
-                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, False)
+                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, False, snoClipLayer)
             ElseIf wType = WorkspaceType.FeatureServer Then
-                response = BA_ClipAOISnoWebServices(UserAOIFolderBase, strInLayerPath, False)
+                response = BA_ClipAOISnoWebServices(UserAOIFolderBase, strInLayerPath, False, snoClipLayer)
             End If
 
             'clip snow course shapefile
