@@ -57,7 +57,8 @@ Module BAGIS_PublicVariablesModule
         " Using any value smaller than 1000 could result in missing PRISM pixel values within the AOI boundaries."
     Public Const BA_Orig_SNOTELSites = "original_snotel_sites"
     Public Const BA_Orig_SnowCourseSites = "original_snowcourse_sites"
-
+    Public Const BA_SnotelClipAoi = "st_aoi_v"
+    Public Const BA_SnowCourseClipAoi = "sc_aoi_v"
 
 
     'AOI snotel site, snow course site, and pseudo-site attributes

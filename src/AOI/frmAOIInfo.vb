@@ -19,8 +19,6 @@ Public Class frmAOIInfo
     Private AOIVectorList() As String
     Private m_aoi As Aoi
     Private m_snotelClipLayer As String = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
-    Private Const m_snoClipFileName = "s_aoi_v"
-    Private Const m_scClipFileName = "sc_aoi_v"
 
     Private Sub cmdOK_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdOK.Click
         Me.Close()
@@ -418,6 +416,10 @@ Public Class frmAOIInfo
             Else
                 response = BA_Remove_ShapefileFromGDB(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), BA_SNOTELSites)
             End If
+            'Delete old clip layer, if it existed
+            If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_SnotelClipAoi, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                response = BA_Remove_ShapefileFromGDB(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Aoi), BA_SnotelClipAoi)
+            End If
             ChkSNOTELExist.Checked = False
             nstep = nstep + 1
         End If
@@ -428,6 +430,10 @@ Public Class frmAOIInfo
                 Dim success As BA_ReturnCode = BA_RenameFeatureClassInGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers), BA_SnowCourseSites, BA_Orig_SnowCourseSites)
             Else
                 response = BA_Remove_ShapefileFromGDB(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Layers), BA_SnowCourseSites)
+            End If
+            'Delete old clip layer, if it existed
+            If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_SnowCourseClipAoi, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                response = BA_Remove_ShapefileFromGDB(AOIFolderBase & "\" & BA_EnumDescription(GeodatabaseNames.Aoi), BA_SnowCourseClipAoi)
             End If
             ChkSnowCourseExist.Checked = False
             nstep = nstep + 1
@@ -663,14 +669,6 @@ Public Class frmAOIInfo
                     sbErrorMessage.Append("Error: The specified Snow Course data source is missing! Please verify the data source information in the Options dialog." + vbCrLf)
                 End If
             End If
-        End If
-
-        'Clean-up temporary snotel/snow course buffer layers if they exist
-        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + m_scClipFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-            Dim retVal As Short = BA_Remove_ShapefileFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi), m_scClipFileName)
-        End If
-        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + m_snoClipFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-            Dim retVal As Short = BA_Remove_ShapefileFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi), m_snoClipFileName)
         End If
 
         pStepProg.Hide()
@@ -1152,12 +1150,17 @@ Public Class frmAOIInfo
         End Try
     End Function
 
-    Private Function ReclipSnotelFiles(ByVal bufferDistance As Double, ByVal outputFeatureClassName As String) As BA_ReturnCode
+    Private Function ReclipSnotelFiles(ByVal bufferDistance As Double, ByVal outputFeatureClassName As String, ByVal strUnits As String) As BA_ReturnCode
+        Dim aoiGdbPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi)
+        'Remove pre-existing file before we try to recreate
+        If BA_File_Exists(aoiGdbPath + "\" + outputFeatureClassName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+            BA_Remove_ShapefileFromGDB(aoiGdbPath, outputFeatureClassName)
+        End If
+
         'use Buffer GP to perform buffer and save the result as a shapefile
         Dim GP As ESRI.ArcGIS.Geoprocessor.Geoprocessor = New ESRI.ArcGIS.Geoprocessor.Geoprocessor()
         Dim BufferTool As ESRI.ArcGIS.AnalysisTools.Buffer = New ESRI.ArcGIS.AnalysisTools.Buffer
         Try
-            Dim aoiGdbPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi)
             With BufferTool
                 .in_features = aoiGdbPath & "\" & BA_AOIExtentCoverage
                 .buffer_distance_or_field = CStr(bufferDistance)
@@ -1170,10 +1173,17 @@ Public Class frmAOIInfo
             'save the buffered AOI as a shapefile and then import it into the GDB
             'to prevent a bug when the buffer distance exceed the xy domain limits of the GDB
             'Copy the temporary line shape file to the aoi.gdb
-            If BA_File_Exists(aoiGdbPath + "\" + outputFeatureClassName, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
-                BA_Remove_ShapefileFromGDB(aoiGdbPath, outputFeatureClassName)
-            End If
             Dim success As BA_ReturnCode = BA_ConvertShapeFileToGDB(AOIFolderBase, BA_StandardizeShapefileName(outputFeatureClassName, True, False), aoiGdbPath, outputFeatureClassName)
+            If success = BA_ReturnCode.Success Then
+                'Record buffer distance in metadata
+                Dim sb As StringBuilder = New StringBuilder()
+                sb.Append(BA_BAGIS_TAG_PREFIX)
+                sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(bufferDistance) + "; ")
+                sb.Append(BA_XUNIT_VALUE_TAG + strUnits + ";")
+                sb.Append(BA_BAGIS_TAG_SUFFIX)
+                BA_UpdateMetadata(aoiGdbPath, outputFeatureClassName, LayerType.Vector, BA_XPATH_TAGS, _
+                                  sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
+            End If
             BA_Remove_Shapefile(AOIFolderBase, BA_StandardizeShapefileName(outputFeatureClassName, False))
             Return success
         Catch ex As Exception
@@ -1197,28 +1207,28 @@ Public Class frmAOIInfo
         End If
 
         If isSnotel = True Then
-            Dim success As BA_ReturnCode = ReclipSnotelFiles(BA_SnotelClipBuffer, m_snoClipFileName)
+            Dim success As BA_ReturnCode = ReclipSnotelFiles(BA_SnotelClipBuffer, BA_SnotelClipAoi, txtSnotelMeters.Text)
             If success = BA_ReturnCode.Success Then
-                m_snotelClipLayer = m_snoClipFileName
+                m_snotelClipLayer = BA_SnotelClipAoi
                 Return m_snotelClipLayer
             End If
         Else
             '2. Is buffer distance the same for snotel and snow course? If so, we can create the layer once for both
             If BA_SnowCourseClipBuffer = BA_SnotelClipBuffer Then
-                If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + m_snoClipFileName, WorkspaceType.Geodatabase, _
+                If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_SnotelClipAoi, WorkspaceType.Geodatabase, _
                                   esriDatasetType.esriDTFeatureClass) Then
-                    Return m_snoClipFileName
+                    Return BA_SnotelClipAoi
                 Else
                     ' May still need to create the clip layer if snotel clip layer creation failed
-                    Dim success As BA_ReturnCode = ReclipSnotelFiles(BA_SnowCourseClipBuffer, m_scClipFileName)
+                    Dim success As BA_ReturnCode = ReclipSnotelFiles(BA_SnowCourseClipBuffer, BA_SnowCourseClipAoi, TxtSnowCourseMeters.Text)
                     If success = BA_ReturnCode.Success Then
-                        Return m_scClipFileName
+                        Return BA_SnowCourseClipAoi
                     End If
                 End If
             Else
-                Dim success As BA_ReturnCode = ReclipSnotelFiles(BA_SnowCourseClipBuffer, m_scClipFileName)
+                Dim success As BA_ReturnCode = ReclipSnotelFiles(BA_SnowCourseClipBuffer, BA_SnowCourseClipAoi, TxtSnowCourseMeters.Text)
                 If success = BA_ReturnCode.Success Then
-                    Return m_scClipFileName
+                    Return BA_SnowCourseClipAoi
                 End If
             End If
         End If
