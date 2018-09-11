@@ -547,6 +547,7 @@ Public Class frmCreateAOI
         Dim strExtension As String = "please Return"
         Dim strParentName As String = "Please return"
 
+        Dim sbErrorMessage As StringBuilder = New StringBuilder
         If Not BA_SystemSettings.GenerateAOIOnly Then
             'clip snotel layer
             strInLayerPath = BA_SystemSettings.SNOTELLayer
@@ -569,15 +570,15 @@ Public Class frmCreateAOI
             If response <> 1 Then
                 Select Case response
                     Case -1 '-1: unknown error
-                        MsgBox("Unknown error occurred when clipping data to AOI!")
+                        sbErrorMessage.Append("Error: Unable to clip the SNOTEL layer to the AOI!" + vbCrLf)
                     Case -2 '-2: output exists
-                        MsgBox("Output target layer exists in the AOI. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Output SNOTEL target layer exists in the AOI. Unable to clip data to AOI!" + vbCrLf)
                     Case -3 '-3: missing parameters
-                        MsgBox("Missing clipping parameters. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Missing SNOTEL clipping parameters. Unable to clip data to AOI!" + vbCrLf)
                     Case -4 '-4: no input shapefile
-                        MsgBox("Missing the clipping shapefile. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Missing the SNOTEL clipping shapefile. Unable to clip data to AOI!" + vbCrLf)
                     Case 0 '0: no intersect between the input and the clip layers
-                        'MsgBox("No SNOTEL data exists within the AOI. Unable to clip new SNOTEL data to AOI!")
+                        sbErrorMessage.Append("Warning: There are no SNOTEL sites within the AOI. The output SNOTEL layer was not created." + vbCrLf)
                 End Select
             End If
 
@@ -614,15 +615,15 @@ Public Class frmCreateAOI
             If response <> 1 Then
                 Select Case response
                     Case -1 '-1: unknown error
-                        MsgBox("Unknown error occurred when clipping data to AOI!")
+                        sbErrorMessage.Append("Error: Unable to clip the Snow Course layer to the AOI!" + vbCrLf)
                     Case -2 '-2: output exists
-                        MsgBox("Output target layer exists in the AOI. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Output Snow Course target layer exists in the AOI. Unable to clip data to AOI!" + vbCrLf)
                     Case -3 '-3: missing parameters
-                        MsgBox("Missing clipping parameters. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Missing Snow Course clipping parameters. Unable to clip data to AOI!" + vbCrLf)
                     Case -4 '-4: no input shapefile
-                        MsgBox("Missing the clipping shapefile. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Missing the Snow Course clipping shapefile. Unable to clip data to AOI!" + vbCrLf)
                     Case 0 '0: no intersect between the input and the clip layers
-                        'MsgBox("No SNOTEL data exists within the AOI. Unable to clip new SNOTEL data to AOI!")
+                        sbErrorMessage.Append("Warning: There are no Snow Course sites within the AOI. The output Snow Course layer was not created." + vbCrLf)
                 End Select
             End If
 
@@ -671,7 +672,7 @@ Public Class frmCreateAOI
                     response = BA_ClipAOIRaster(AOIFolderBase, strInLayerPath & "\" & strInLayerBareName & "\grid", strInLayerBareName, destPRISMGDB, AOIClipFile.PrismClipAOIExtentCoverage)
                 End If
                 If response <= 0 Then
-                    MsgBox("frmCreateAOI: Clipping " & strInLayerBareName & "\grid" & " failed! Return value = " & response & ".")
+                    sbErrorMessage.Append("Error: PRISM Clipping " & strInLayerPath & " failed! Return value = " & response & "." + vbCrLf)
                 End If
             Next
 
@@ -722,7 +723,7 @@ Public Class frmCreateAOI
                             response = BA_ClipAOIVector(AOIFolderBase, strParentName & strInLayerBareName, strInLayerBareName, _
                                                         destLayersGDB, True) 'always use buffered aoi to clip the layers
                         Else
-                            MsgBox(strInLayerBareName & " does not exist", "Missing input")
+                            sbErrorMessage.Append("Error: " + strInLayerBareName & " does not exist. Clipping failed!" + vbCrLf)
                         End If
 
                     ElseIf strExtension = "(Raster)" Then
@@ -730,13 +731,13 @@ Public Class frmCreateAOI
                         If BA_File_Exists(strParentName & strInLayerBareName, workspaceType, esriDatasetType.esriDTRasterDataset) Then
                             response = BA_ClipAOIRaster(AOIFolderBase, strParentName & strInLayerBareName, strInLayerBareName, destLayersGDB, AOIClipFile.BufferedAOIExtentCoverage)
                             If response <= 0 Then
-                                MsgBox("Clipping " & strInLayerBareName & " failed! Return value = " & response & ".")
+                                sbErrorMessage.Append("Error: Clipping " & strInLayerBareName & " failed! Return value = " & response & "." + vbCrLf)
                             End If
                         Else
-                            MsgBox(strInLayerBareName & " does not exist", "Missing input")
+                            sbErrorMessage.Append("Error: " + strInLayerBareName & " does not exist. Clipping failed!" + vbCrLf)
                         End If
                     Else
-                        MsgBox(strInLayerBareName & " cannot be clipped.")
+                        sbErrorMessage.Append("Error: " + strInLayerBareName + " cannot be clipped. " + vbCrLf)
                     End If
                 Next
             End If
@@ -757,11 +758,14 @@ Public Class frmCreateAOI
         progressDialog2 = Nothing
 
         'copy the basinanalyst.def file to the aoi folder
-        'response = BA_CopyBAGISSettings(AOIFolderBase)
-        If BA_Save_Settings(AOIFolderBase & "\" & BA_Settings_Filename) = BA_ReturnCode.Success Then
-            MsgBox("AOI for the selected gauge station was created!")
+        If BA_Save_Settings(AOIFolderBase & "\" & BA_Settings_Filename) <> BA_ReturnCode.Success Then
+            sbErrorMessage.Append("Error: The definition was not copied to the AOI folder " + vbCrLf)
+        End If
+        If sbErrorMessage.Length < 1 Then
+            MessageBox.Show("AOI for the selected gauge station was created!", "BAGIS", MessageBoxButtons.OK)
         Else
-            MsgBox("AOI for the selected gauge station was created but the definition was not copied to the AOI folder!")
+            MessageBox.Show("AOI for the selected gauge station was created with the following warnings: " + vbCrLf + vbCrLf + sbErrorMessage.ToString, _
+            "BAGIS", MessageBoxButtons.OK, MessageBoxIcon.Information)
         End If
 
         'enable and disable relevant UI buttons

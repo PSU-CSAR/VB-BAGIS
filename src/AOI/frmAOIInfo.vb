@@ -647,7 +647,7 @@ Public Class frmAOIInfo
                                 Case -4 '-4: no input shapefile
                                     sbErrorMessage.Append("Error: Missing the Snow Course clipping shapefile. Unable to clip data to AOI!" + vbCrLf)
                                 Case 0 '0: no intersect between the input and the clip layers
-                                    sbErrorMessage.Append("Warning: There are no Snow Course sites within the AOI. The output SNOTEL layer was not created." + vbCrLf)
+                                    sbErrorMessage.Append("Warning: There are no Snow Course sites within the AOI. The output Snow Course layer was not created." + vbCrLf)
                             End Select
                         Else
                             Me.ChkSnowCourseExist.Checked = True
