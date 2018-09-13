@@ -63,6 +63,10 @@ Partial Class frmCreateAOIfromExistingBND
         Me.ChkSlope = New System.Windows.Forms.CheckBox()
         Me.ChkAspect = New System.Windows.Forms.CheckBox()
         Me.ChkHillshade = New System.Windows.Forms.CheckBox()
+        Me.lblWhyBuffer = New System.Windows.Forms.Label()
+        Me.lblPrismBufferUnit = New System.Windows.Forms.Label()
+        Me.TxtPrismBufferD = New System.Windows.Forms.TextBox()
+        Me.lblPrismBufferD = New System.Windows.Forms.Label()
         Me.GroupBox1.SuspendLayout()
         Me.GrpBoxFilter.SuspendLayout()
         Me.grpboxPRISMUnit.SuspendLayout()
@@ -201,7 +205,7 @@ Partial Class frmCreateAOIfromExistingBND
         Me.grpboxPRISMUnit.Controls.Add(Me.rbtnDepthInch)
         Me.grpboxPRISMUnit.Controls.Add(Me.rbtnDepthMM)
         Me.grpboxPRISMUnit.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.grpboxPRISMUnit.Location = New System.Drawing.Point(311, 350)
+        Me.grpboxPRISMUnit.Location = New System.Drawing.Point(311, 397)
         Me.grpboxPRISMUnit.Name = "grpboxPRISMUnit"
         Me.grpboxPRISMUnit.Size = New System.Drawing.Size(238, 54)
         Me.grpboxPRISMUnit.TabIndex = 40
@@ -237,7 +241,7 @@ Partial Class frmCreateAOIfromExistingBND
         Me.lblSlopeUnit.AutoSize = True
         Me.lblSlopeUnit.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.lblSlopeUnit.ForeColor = System.Drawing.Color.Black
-        Me.lblSlopeUnit.Location = New System.Drawing.Point(440, 327)
+        Me.lblSlopeUnit.Location = New System.Drawing.Point(440, 374)
         Me.lblSlopeUnit.Name = "lblSlopeUnit"
         Me.lblSlopeUnit.Size = New System.Drawing.Size(63, 16)
         Me.lblSlopeUnit.TabIndex = 39
@@ -247,7 +251,7 @@ Partial Class frmCreateAOIfromExistingBND
         '
         Me.Label5.AutoSize = True
         Me.Label5.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label5.Location = New System.Drawing.Point(361, 327)
+        Me.Label5.Location = New System.Drawing.Point(361, 374)
         Me.Label5.Name = "Label5"
         Me.Label5.Size = New System.Drawing.Size(73, 16)
         Me.Label5.TabIndex = 38
@@ -258,7 +262,7 @@ Partial Class frmCreateAOIfromExistingBND
         Me.lblDEMUnit.AutoSize = True
         Me.lblDEMUnit.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.lblDEMUnit.ForeColor = System.Drawing.Color.Black
-        Me.lblDEMUnit.Location = New System.Drawing.Point(440, 303)
+        Me.lblDEMUnit.Location = New System.Drawing.Point(440, 350)
         Me.lblDEMUnit.Name = "lblDEMUnit"
         Me.lblDEMUnit.Size = New System.Drawing.Size(63, 16)
         Me.lblDEMUnit.TabIndex = 37
@@ -268,7 +272,7 @@ Partial Class frmCreateAOIfromExistingBND
         '
         Me.Label6.AutoSize = True
         Me.Label6.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label6.Location = New System.Drawing.Point(308, 303)
+        Me.Label6.Location = New System.Drawing.Point(308, 350)
         Me.Label6.Name = "Label6"
         Me.Label6.Size = New System.Drawing.Size(126, 16)
         Me.Label6.TabIndex = 36
@@ -277,7 +281,7 @@ Partial Class frmCreateAOIfromExistingBND
         'cmbRun
         '
         Me.cmbRun.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.cmbRun.Location = New System.Drawing.Point(350, 430)
+        Me.cmbRun.Location = New System.Drawing.Point(350, 485)
         Me.cmbRun.Name = "cmbRun"
         Me.cmbRun.Size = New System.Drawing.Size(139, 31)
         Me.cmbRun.TabIndex = 35
@@ -288,7 +292,7 @@ Partial Class frmCreateAOIfromExistingBND
         '
         Me.lblBufferUnit.AutoSize = True
         Me.lblBufferUnit.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblBufferUnit.Location = New System.Drawing.Point(493, 261)
+        Me.lblBufferUnit.Location = New System.Drawing.Point(493, 280)
         Me.lblBufferUnit.Name = "lblBufferUnit"
         Me.lblBufferUnit.Size = New System.Drawing.Size(49, 16)
         Me.lblBufferUnit.TabIndex = 32
@@ -296,22 +300,20 @@ Partial Class frmCreateAOIfromExistingBND
         '
         'txtBufferD
         '
-        Me.txtBufferD.Location = New System.Drawing.Point(419, 257)
+        Me.txtBufferD.Location = New System.Drawing.Point(419, 277)
         Me.txtBufferD.Name = "txtBufferD"
         Me.txtBufferD.Size = New System.Drawing.Size(68, 20)
         Me.txtBufferD.TabIndex = 34
-        Me.txtBufferD.Text = "100"
-        Me.txtBufferD.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
         'lblBufferD
         '
         Me.lblBufferD.AutoSize = True
         Me.lblBufferD.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblBufferD.Location = New System.Drawing.Point(317, 261)
+        Me.lblBufferD.Location = New System.Drawing.Point(289, 280)
         Me.lblBufferD.Name = "lblBufferD"
-        Me.lblBufferD.Size = New System.Drawing.Size(101, 16)
+        Me.lblBufferD.Size = New System.Drawing.Size(126, 16)
         Me.lblBufferD.TabIndex = 33
-        Me.lblBufferD.Text = "Buffer Distance:"
+        Me.lblBufferD.Text = "AOI Buffer Distance:"
         '
         'ChkAOIBuffer
         '
@@ -509,11 +511,53 @@ Partial Class frmCreateAOIfromExistingBND
         Me.ChkHillshade.Text = "Hillshade"
         Me.ChkHillshade.UseVisualStyleBackColor = True
         '
+        'lblWhyBuffer
+        '
+        Me.lblWhyBuffer.AutoSize = True
+        Me.lblWhyBuffer.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblWhyBuffer.ForeColor = System.Drawing.Color.Blue
+        Me.lblWhyBuffer.Location = New System.Drawing.Point(318, 249)
+        Me.lblWhyBuffer.Name = "lblWhyBuffer"
+        Me.lblWhyBuffer.Size = New System.Drawing.Size(141, 16)
+        Me.lblWhyBuffer.TabIndex = 48
+        Me.lblWhyBuffer.Text = "(Why use a buffer?)"
+        '
+        'lblPrismBufferUnit
+        '
+        Me.lblPrismBufferUnit.AutoSize = True
+        Me.lblPrismBufferUnit.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblPrismBufferUnit.Location = New System.Drawing.Point(493, 308)
+        Me.lblPrismBufferUnit.Name = "lblPrismBufferUnit"
+        Me.lblPrismBufferUnit.Size = New System.Drawing.Size(49, 16)
+        Me.lblPrismBufferUnit.TabIndex = 50
+        Me.lblPrismBufferUnit.Text = "Meters"
+        '
+        'TxtPrismBufferD
+        '
+        Me.TxtPrismBufferD.Location = New System.Drawing.Point(419, 304)
+        Me.TxtPrismBufferD.Name = "TxtPrismBufferD"
+        Me.TxtPrismBufferD.Size = New System.Drawing.Size(68, 20)
+        Me.TxtPrismBufferD.TabIndex = 51
+        '
+        'lblPrismBufferD
+        '
+        Me.lblPrismBufferD.AutoSize = True
+        Me.lblPrismBufferD.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblPrismBufferD.Location = New System.Drawing.Point(272, 308)
+        Me.lblPrismBufferD.Name = "lblPrismBufferD"
+        Me.lblPrismBufferD.Size = New System.Drawing.Size(146, 16)
+        Me.lblPrismBufferD.TabIndex = 49
+        Me.lblPrismBufferD.Text = "PRISM Buffer Distance:"
+        '
         'frmCreateAOIfromExistingBND
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(593, 491)
+        Me.ClientSize = New System.Drawing.Size(593, 551)
+        Me.Controls.Add(Me.lblPrismBufferUnit)
+        Me.Controls.Add(Me.TxtPrismBufferD)
+        Me.Controls.Add(Me.lblPrismBufferD)
+        Me.Controls.Add(Me.lblWhyBuffer)
         Me.Controls.Add(Me.txtSourceData)
         Me.Controls.Add(Me.Label9)
         Me.Controls.Add(Me.txtOutputWorkspace)
@@ -601,4 +645,8 @@ Partial Class frmCreateAOIfromExistingBND
     Friend WithEvents ChkSlope As System.Windows.Forms.CheckBox
     Friend WithEvents ChkAspect As System.Windows.Forms.CheckBox
     Friend WithEvents ChkHillshade As System.Windows.Forms.CheckBox
+    Friend WithEvents lblWhyBuffer As System.Windows.Forms.Label
+    Friend WithEvents lblPrismBufferUnit As System.Windows.Forms.Label
+    Friend WithEvents TxtPrismBufferD As System.Windows.Forms.TextBox
+    Friend WithEvents lblPrismBufferD As System.Windows.Forms.Label
 End Class

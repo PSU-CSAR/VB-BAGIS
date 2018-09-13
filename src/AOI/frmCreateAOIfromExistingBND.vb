@@ -116,11 +116,21 @@ Public Class frmCreateAOIfromExistingBND
         'verify AOI buffer distance
         If ChkAOIBuffer.Checked = True Then
             If Not IsNumeric(txtBufferD.Text) Then
-                MsgBox("Buffer distance must be numeric!")
+                MsgBox("Buffer distance must be numeric! Program stopped!")
                 Exit Sub
             Else
                 BA_AOIClipBuffer = CDbl(txtBufferD.Text) 'Unit is Meter
                 If BA_AOIClipBuffer <= 0 Then BA_AOIClipBuffer = 100 'default buffer distance
+            End If
+        End If
+        'verify PRISM buffer distance
+        If ChkAOIBuffer.Checked = True Then
+            If Not IsNumeric(TxtPrismBufferD.Text) Then
+                MsgBox("PRISM buffer distance must be numeric! Program stopped!")
+                Exit Sub
+            Else
+                BA_PRISMClipBuffer = CDbl(TxtPrismBufferD.Text) 'Unit is Meter
+                If BA_PRISMClipBuffer <= 0 Then BA_PRISMClipBuffer = 1500 'default buffer distance
             End If
         End If
 
@@ -752,8 +762,13 @@ Public Class frmCreateAOIfromExistingBND
         Dim sb As StringBuilder = New StringBuilder
         sb.Clear()
         sb.Append(BA_BAGIS_TAG_PREFIX)
+        'Record elevation units
         sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Elevation.ToString & "; ")
-        sb.Append(BA_ZUNIT_VALUE_TAG & unitText & ";")
+        sb.Append(BA_ZUNIT_VALUE_TAG & unitText & "; ")
+        'Record buffer distance
+        sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + "; ")
+        'Record buffer units
+        sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + ";")
         sb.Append(BA_BAGIS_TAG_SUFFIX)
         BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS, _
                           sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
@@ -769,15 +784,19 @@ Public Class frmCreateAOIfromExistingBND
         BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS, _
                           sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
 
+
+
         'get vector clipping mask, raster clipping mask is created earlier, i.e., pWaterRDS
         Dim strInLayerBareName As String
         Dim strInLayerPath As String
         Dim strExtension As String = "please Return"
         Dim strParentName As String = "Please return"
 
+        Dim sbErrorMessage As StringBuilder = New StringBuilder
         If Not BA_SystemSettings.GenerateAOIOnly Then
             'clip snotel layer
             strInLayerPath = BA_SystemSettings.SNOTELLayer
+            Dim snoClipLayer As String = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)  'Use for both Snotel and SC
 
             pStepProg.Message = "Clipping SNOTEL layer... (step 7 of " & nstep & ")"
             pStepProg.Step()
@@ -787,25 +806,38 @@ Public Class frmCreateAOIfromExistingBND
             wType = BA_GetWorkspaceTypeFromPath(strInLayerPath)
             If wType = WorkspaceType.Raster Then
                 strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
-                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, True)
+                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, True, snoClipLayer)
             ElseIf wType = WorkspaceType.FeatureServer Then
-                response = BA_ClipAOISnoWebServices(UserAOIFolderBase, strInLayerPath, True)
+                response = BA_ClipAOISnoWebServices(UserAOIFolderBase, strInLayerPath, True, snoClipLayer)
             End If
 
             'Display error message if appropriate
             If response <> 1 Then
                 Select Case response
                     Case -1 '-1: unknown error
-                        MsgBox("Unknown error occurred when clipping data to AOI!")
+                        sbErrorMessage.Append("Error: Unable to clip the SNOTEL layer to the AOI!" + vbCrLf)
                     Case -2 '-2: output exists
-                        MsgBox("Output target layer exists in the AOI. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Output SNOTEL target layer exists in the AOI. Unable to clip data to AOI!" + vbCrLf)
                     Case -3 '-3: missing parameters
-                        MsgBox("Missing clipping parameters. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Missing SNOTEL clipping parameters. Unable to clip data to AOI!" + vbCrLf)
                     Case -4 '-4: no input shapefile
-                        MsgBox("Missing the clipping shapefile. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Missing the SNOTEL clipping shapefile. Unable to clip data to AOI!" + vbCrLf)
                     Case 0 '0: no intersect between the input and the clip layers
-                        'MsgBox("No SNOTEL data exists within the AOI. Unable to clip new SNOTEL data to AOI!")
+                        sbErrorMessage.Append("Warning: There are no SNOTEL sites within the AOI. The output SNOTEL layer was not created." + vbCrLf)
                 End Select
+            End If
+
+            'Record buffer units in metadata if snotel layer exists
+            inputFolder = BA_GeodatabasePath(UserAOIFolderBase, GeodatabaseNames.Layers, True)
+            inputFile = BA_GetBareName(BA_EnumDescription(MapsFileName.Snotel))
+            If BA_File_Exists(inputFolder + inputFile, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                sb.Clear()
+                sb.Append(BA_BAGIS_TAG_PREFIX)
+                sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + "; ")
+                sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + ";")
+                sb.Append(BA_BAGIS_TAG_SUFFIX)
+                BA_UpdateMetadata(inputFolder, inputFile, LayerType.Vector, BA_XPATH_TAGS, _
+                                  sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
             End If
 
             'clip snow course layer
@@ -819,25 +851,37 @@ Public Class frmCreateAOIfromExistingBND
             wType = BA_GetWorkspaceTypeFromPath(strInLayerPath)
             If wType = WorkspaceType.Raster Then
                 strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
-                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, False)
+                response = BA_ClipAOISNOTEL(UserAOIFolderBase, strParentName & "\" & strInLayerBareName, False, snoClipLayer)
             ElseIf wType = WorkspaceType.FeatureServer Then
-                response = BA_ClipAOISnoWebServices(UserAOIFolderBase, strInLayerPath, False)
+                response = BA_ClipAOISnoWebServices(UserAOIFolderBase, strInLayerPath, False, snoClipLayer)
             End If
 
             'clip snow course shapefile
             If response <> 1 Then
                 Select Case response
                     Case -1 '-1: unknown error
-                        MsgBox("Unknown error occurred when clipping data to AOI!")
+                        sbErrorMessage.Append("Error: Unable to clip the Snow Course layer to the AOI!" + vbCrLf)
                     Case -2 '-2: output exists
-                        MsgBox("Output target layer exists in the AOI. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Output Snow Course target layer exists in the AOI. Unable to clip data to AOI!" + vbCrLf)
                     Case -3 '-3: missing parameters
-                        MsgBox("Missing clipping parameters. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Missing Snow Course clipping parameters. Unable to clip data to AOI!" + vbCrLf)
                     Case -4 '-4: no input shapefile
-                        MsgBox("Missing the clipping shapefile. Unable to clip new data to AOI!")
+                        sbErrorMessage.Append("Error: Missing the Snow Course clipping shapefile. Unable to clip data to AOI!" + vbCrLf)
                     Case 0 '0: no intersect between the input and the clip layers
-                        'MsgBox("No Snow course data exists within the AOI. Unable to clip new SNOTEL data to AOI!")
+                        sbErrorMessage.Append("Warning: There are no Snow Course sites within the AOI. The output Snow Course layer was not created." + vbCrLf)
                 End Select
+            End If
+
+            'Record buffer units in metadata if SC layer exists
+            inputFile = BA_GetBareName(BA_EnumDescription(MapsFileName.SnowCourse))
+            If BA_File_Exists(inputFolder + inputFile, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                sb.Clear()
+                sb.Append(BA_BAGIS_TAG_PREFIX)
+                sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_AOIClipBuffer) + "; ")
+                sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + ";")
+                sb.Append(BA_BAGIS_TAG_SUFFIX)
+                BA_UpdateMetadata(inputFolder, inputFile, LayerType.Vector, BA_XPATH_TAGS, _
+                                  sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
             End If
 
             'clip PRISM raster data
@@ -872,8 +916,9 @@ Public Class frmCreateAOIfromExistingBND
                 Else
                     response = BA_ClipAOIRaster(UserAOIFolderBase, strInLayerPath & "\" & strInLayerBareName & "\grid", strInLayerBareName, destPRISMGDB, AOIClipFile.PrismClipAOIExtentCoverage)
                 End If
+
                 If response <= 0 Then
-                    MsgBox("frmCreateAOIFromExistingBND: Clipping " & strInLayerBareName & "\grid" & " failed! Return value = " & response & ".")
+                    sbErrorMessage.Append("Error: PRISM Clipping " & strInLayerPath & " failed! Return value = " & response & "." + vbCrLf)
                 End If
             Next
 
@@ -891,69 +936,76 @@ Public Class frmCreateAOIfromExistingBND
             sb.Clear()
             sb.Append(BA_BAGIS_TAG_PREFIX)
             sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Depth.ToString & "; ")
-            sb.Append(BA_ZUNIT_VALUE_TAG & unitText & ";")
+            sb.Append(BA_ZUNIT_VALUE_TAG & unitText & "; ")
+            'Record buffer distance and units
+            sb.Append(BA_BUFFER_DISTANCE_TAG + CStr(BA_PRISMClipBuffer) + "; ")
+            sb.Append(BA_XUNIT_VALUE_TAG + lblBufferUnit.Text + ";")
             sb.Append(BA_BAGIS_TAG_SUFFIX)
             BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS, _
                               sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
         End If
 
-        'clip other participating layers
-        Try
-            If ListLayerCount > 0 Then
-                For j = 0 To ListLayerCount - 1
-                    System.Windows.Forms.Application.DoEvents()
-                    strInLayerPath = BA_SystemSettings.OtherLayers(j)
-                    strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
+            'clip other participating layers
+            Try
+                If ListLayerCount > 0 Then
+                    For j = 0 To ListLayerCount - 1
+                        System.Windows.Forms.Application.DoEvents()
+                        strInLayerPath = BA_SystemSettings.OtherLayers(j)
+                        strInLayerBareName = BA_GetBareNameAndExtension(strInLayerPath, strParentName, strExtension)
 
-                    pStepProg.Message = "Clipping " & strInLayerBareName & " layer... (step " & j + internalLayerCount + 1 & " of " & nstep & ")"
-                    pStepProg.Step()
+                        pStepProg.Message = "Clipping " & strInLayerBareName & " layer... (step " & j + internalLayerCount + 1 & " of " & nstep & ")"
+                        pStepProg.Step()
 
-                    Dim workspaceType As WorkspaceType = BA_GetWorkspaceTypeFromPath(strParentName)
-                    If strExtension = "(Shapefile)" Then
-                        Dim featureClassExists As Boolean = False
-                        If workspaceType = BAGIS_ClassLibrary.WorkspaceType.Raster Then
-                            featureClassExists = BA_Shapefile_Exists(strParentName & strInLayerBareName)
-                        Else
-                            featureClassExists = BA_File_Exists(strParentName & strInLayerBareName, workspaceType, esriDatasetType.esriDTFeatureClass)
-                        End If
-                        If featureClassExists = True Then
-                            'If BA_Shapefile_Exists(strParentName & strInLayerBareName) Then
-                            response = BA_ClipAOIVector(UserAOIFolderBase, strParentName & strInLayerBareName, strInLayerBareName, _
-                                                        destLayersGDB, True) 'always use buffered aoi to clip the layers
-                        Else
-                            MessageBox.Show(strInLayerBareName & " does not exist", "Missing input")
-                        End If
+                        Dim workspaceType As WorkspaceType = BA_GetWorkspaceTypeFromPath(strParentName)
+                        If strExtension = "(Shapefile)" Then
+                            Dim featureClassExists As Boolean = False
+                            If workspaceType = BAGIS_ClassLibrary.WorkspaceType.Raster Then
+                                featureClassExists = BA_Shapefile_Exists(strParentName & strInLayerBareName)
+                            Else
+                                featureClassExists = BA_File_Exists(strParentName & strInLayerBareName, workspaceType, esriDatasetType.esriDTFeatureClass)
+                            End If
+                            If featureClassExists = True Then
+                                'If BA_Shapefile_Exists(strParentName & strInLayerBareName) Then
+                                response = BA_ClipAOIVector(UserAOIFolderBase, strParentName & strInLayerBareName, strInLayerBareName, _
+                                                            destLayersGDB, True) 'always use buffered aoi to clip the layers
+                            Else
+                            sbErrorMessage.Append("Error: " + strInLayerBareName & " does not exist. Clipping failed!" + vbCrLf)
 
-                    ElseIf strExtension = "(Raster)" Then
-                        If BA_File_Exists(strParentName & strInLayerBareName, workspaceType, esriDatasetType.esriDTRasterDataset) Then
-                            response = BA_ClipAOIRaster(UserAOIFolderBase, strParentName & strInLayerBareName, strInLayerBareName, destLayersGDB, AOIClipFile.BufferedAOIExtentCoverage)
-                            If response <= 0 Then
-                                MsgBox("Clipping " & strInLayerBareName & " failed! Return value = " & response & ".")
+                            End If
+
+                        ElseIf strExtension = "(Raster)" Then
+                            If BA_File_Exists(strParentName & strInLayerBareName, workspaceType, esriDatasetType.esriDTRasterDataset) Then
+                                response = BA_ClipAOIRaster(UserAOIFolderBase, strParentName & strInLayerBareName, strInLayerBareName, destLayersGDB, AOIClipFile.BufferedAOIExtentCoverage)
+                                If response <= 0 Then
+                                sbErrorMessage.Append("Error: Clipping " & strInLayerBareName & " failed! Return value = " & response & "." + vbCrLf)
+                                End If
+                            Else
+                            sbErrorMessage.Append("Error: " + strInLayerBareName & " does not exist. Clipping failed!" + vbCrLf)
                             End If
                         Else
-                            MessageBox.Show(strInLayerBareName & " does not exist", "Missing input")
+                        sbErrorMessage.Append("Error: " + strInLayerBareName + " cannot be clipped. " + vbCrLf)
                         End If
-                    Else
-                        MsgBox(strInLayerBareName & " cannot be clipped.")
-                    End If
-                Next
-            End If
+                    Next
+                End If
 
-        Catch ex As Exception
-            MsgBox("Create AOI Exception: " & ex.Message)
-        End Try
+            Catch ex As Exception
+                MsgBox("Create AOI Exception: " & ex.Message)
+            End Try
 
-        pStepProg.Hide()
-        progressDialog2.HideDialog()
-        ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pStepProg)
-        ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(progressDialog2)
+            pStepProg.Hide()
+            progressDialog2.HideDialog()
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pStepProg)
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(progressDialog2)
 
-        'copy the basinanalyst.def file to the aoi folder
-        'response = BA_CopyBAGISSettings(UserAOIFolderBase)
-        If BA_Save_Settings(UserAOIFolderBase & "\" & BA_Settings_Filename) = BA_ReturnCode.Success Then
-            MsgBox("AOI was created!")
+            'copy the basinanalyst.def file to the aoi folder
+        If BA_Save_Settings(UserAOIFolderBase & "\" & BA_Settings_Filename) <> BA_ReturnCode.Success Then
+            sbErrorMessage.Append("Error: The definition was not copied to the AOI folder " + vbCrLf)
+        End If
+        If sbErrorMessage.Length < 1 Then
+            MessageBox.Show("AOI was created!", "BAGIS", MessageBoxButtons.OK)
         Else
-            MsgBox("AOI was created but the definition was not copied to the AOI folder!")
+            MessageBox.Show("AOI was created with the following warnings: " + vbCrLf + vbCrLf + sbErrorMessage.ToString, _
+            "BAGIS", MessageBoxButtons.OK, MessageBoxIcon.Information)
         End If
 
         GC.WaitForPendingFinalizers()
@@ -993,6 +1045,9 @@ Public Class frmCreateAOIfromExistingBND
         lblSlopeUnit.Text = BA_EnumDescription(SlopeUnit.PctSlope) 'BAGIS generates Slope in Degree
 
         grpboxPRISMUnit.Visible = Not BA_SystemSettings.GenerateAOIOnly 'when generate AOI only, no PRISM will be clipped to the AOI
+        txtBufferD.Text = CStr(BA_AOIClipBuffer)
+        TxtPrismBufferD.Text = CStr(BA_PRISMClipBuffer)
+
     End Sub
 
     'return value:
@@ -1075,18 +1130,6 @@ Public Class frmCreateAOIfromExistingBND
         End If
     End Sub
 
-    Private Sub lblBufferD_DoubleClick(sender As Object, e As System.EventArgs) Handles lblBufferD.DoubleClick
-        Dim response As String
-        response = InputBox("Please enter a PRISM buffer distance in meters", "Set/Check PRISM Buffer Distance", BA_PRISMClipBuffer)
-        If Not IsNumeric(response) Then
-            MsgBox("Numeric value required!")
-            Exit Sub
-        End If
-        If Len(Trim(response)) > 0 Then
-            BA_PRISMClipBuffer = Val(response)
-        End If
-    End Sub
-
     Public Sub New()
 
         ' This call is required by the designer.
@@ -1094,5 +1137,18 @@ Public Class frmCreateAOIfromExistingBND
 
         ' Add any initialization after the InitializeComponent() call.
 
+    End Sub
+
+    Private Sub lblWhyBuffer_Click(sender As System.Object, e As System.EventArgs) Handles lblWhyBuffer.Click
+        MessageBox.Show(BA_WhyBufferText, "Why Buffer an AOI", MessageBoxButtons.OK, MessageBoxIcon.Information)
+    End Sub
+
+    Private Sub ChkAOIBuffer_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles ChkAOIBuffer.Click
+        lblBufferD.Enabled = ChkAOIBuffer.Checked
+        lblBufferUnit.Enabled = ChkAOIBuffer.Checked
+        txtBufferD.Enabled = ChkAOIBuffer.Checked
+        lblPrismBufferD.Enabled = ChkAOIBuffer.Checked
+        lblPrismBufferUnit.Enabled = ChkAOIBuffer.Checked
+        TxtPrismBufferD.Enabled = ChkAOIBuffer.Checked
     End Sub
 End Class

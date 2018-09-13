@@ -5,7 +5,7 @@ Module BAGIS_PublicVariablesModule
     'Basin Analyst GIS Version text
     Public Const BA_VersionText = "Basin Analysis GIS Ver 3.1 08/01/2017"
     Public Const BA_CompatibleVersion1Text = "Basin Analysis GIS Ver 3.0 04/30/2016"
-    Public Const BA_SubVersionText = " Release 3.1 (08/24/2017)"
+    Public Const BA_SubVersionText = "BAGIS Release 3.2 (09/14/2018)"
 
     'Global variables
     Public BasinFolderBase As String 'need to append a back slash to form a path
@@ -44,6 +44,22 @@ Module BAGIS_PublicVariablesModule
     Public BA_PRISMClipBuffer As Double = 1000 'default value = 1000 meters, buffer distance for clipping PRISM data
     Public Const BA_NameFieldWidth = 60 'name field in the attribute table to stor reclass range data
     Public BA_AOIClipBuffer As Double = 100 'default value = 100 meters, buffer distance for clipping AOI data
+    Public BA_SnotelClipBuffer As Double = 100
+    Public BA_SnowCourseClipBuffer As Double = 100
+    Public Const BA_WhyBufferText = "Layers can be clipped to an AOI using a buffered AOI boundaries." + _
+        " This practice allows users to include data outside the AOI boundaries in basin analysis." + _
+        " When this option is checked, all AOI associated layers, including DEM," + _
+        " its derivatives, SNOTEL, snow courses, and other participating layers" + _
+        " are clipped to the AOI using the buffered boundaries." + vbCrLf + vbCrLf + _
+        "Due to the significantly coarser resolution of PRISM precipitation layers, " + _
+        " a different buffer distance is always used in clipping PRISM layers." + _
+        " The default buffer distance for PRISM is 1000 meters." + _
+        " Using any value smaller than 1000 could result in missing PRISM pixel values within the AOI boundaries."
+    Public Const BA_Orig_SNOTELSites = "original_snotel_sites"
+    Public Const BA_Orig_SnowCourseSites = "original_snowcourse_sites"
+    Public Const BA_SnotelClipAoi = "st_aoi_v"
+    Public Const BA_SnowCourseClipAoi = "sc_aoi_v"
+
 
     'AOI snotel site, snow course site, and pseudo-site attributes
     Public Const BA_SiteNameField = "BA_SNAME"
