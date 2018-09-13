@@ -5,7 +5,7 @@ Imports BAGIS_ClassLibrary
 Public Class frmAbout
 
     Private Sub Form1_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
-        lblVersionText.Text = BA_VersionText & BA_SubVersionText & " (" & BA_CLASS_LIBRARY_VERSION & ")"
+        lblVersionText.Text = BA_SubVersionText & " (" & BA_CLASS_LIBRARY_VERSION & ")"
     End Sub
 
     Private Sub LblVersionText_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles lblVersionText.Click

@@ -36,7 +36,7 @@ Partial Class frmAbout
         Me.lblVersionText.Name = "lblVersionText"
         Me.lblVersionText.Size = New System.Drawing.Size(511, 31)
         Me.lblVersionText.TabIndex = 2
-        Me.lblVersionText.Text = "BA_VersionText"
+        Me.lblVersionText.Text = "BA_SubVersionText"
         Me.lblVersionText.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
         'LblAbout
