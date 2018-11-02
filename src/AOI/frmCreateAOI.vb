@@ -211,9 +211,17 @@ Public Class frmCreateAOI
         System.Windows.Forms.Application.DoEvents()
 
         'Workaround for bug when saving output of pHydrologyOp directly to a File GDB
-        'We work with the regular raster file for aoibagis until the end of this subroutine when we copy it to aoi.gdb
         response = BA_SaveRasterDataset(pWatershed, AOIFolderBase, BA_AOIExtentRaster)
         pWatershed = Nothing
+
+        'Copy aoibagis to its final location so that it can be accessed later when clipping snotel and snow course
+        If response = 1 Then
+            Dim aoiBagisDSet As IGeoDataset = BA_OpenRasterFromFile(AOIFolderBase, BA_AOIExtentRaster)
+            response = BA_SaveRasterDatasetGDB(aoiBagisDSet, destAOIGDB, BA_RASTER_FORMAT, BA_AOIExtentRaster)
+            aoiBagisDSet = Nothing
+            'Delete original aoibagis layer
+            response = BA_Remove_Raster(AOIFolderBase, BA_AOIExtentRaster)
+        End If
 
         Dim DisplayName As String
         Dim comboBox = AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
@@ -221,7 +229,7 @@ Public Class frmCreateAOI
 
         'Convert watershed to polygon
         'open aoibagis raster and convert it to watershed polygon
-        pWatershed = BA_OpenRasterFromFile(AOIFolderBase, BA_AOIExtentRaster)
+        pWatershed = BA_OpenRasterFromGDB(destAOIGDB, BA_AOIExtentRaster)
         'convert aoibagis watershed raster to polygon 
         response = BA_Raster2PolygonShapefile(destAOIGDB, BA_AOIExtentCoverage, pWatershed)
         pWatershed = Nothing
@@ -331,9 +339,8 @@ Public Class frmCreateAOI
         retVal = BA_ConvertShapeFileToGDB(AOIFolderBase, BA_StandardizeShapefileName(BA_PRISMClipAOI, True, False), destAOIGDB, BA_PRISMClipAOI)
         'create a raster version of the buffered AOI
         Dim Cellsize As Double = 0
-        Dim fullLayerPath As String = AOIFolderBase & "\" & BA_AOIExtentRaster
-        'Dim rasterStat As IRasterStatistics = BA_GetRasterStatsGDB(fullLayerPath, Cellsize)
-        Dim rasterStat As IRasterStatistics = BA_GetRasterStats(fullLayerPath, Cellsize)
+        Dim fullLayerPath As String = destAOIGDB & "\" & BA_AOIExtentRaster
+        Dim rasterStat As IRasterStatistics = BA_GetRasterStatsGDB(fullLayerPath, Cellsize)
         retVal = BA_Feature2RasterGP(AOIFolderBase & BA_StandardizeShapefileName(BA_PRISMClipAOI, True, True), destAOIGDB & BA_EnumDescription(PublicPath.AoiPrismGrid), "ID", Cellsize, fullLayerPath)
         BA_Remove_Shapefile(AOIFolderBase, BA_StandardizeShapefileName(BA_PRISMClipAOI, False))
 
@@ -745,12 +752,6 @@ Public Class frmCreateAOI
         Catch ex As Exception
             MsgBox("Create AOI Exception: " & ex.Message, MsgBoxStyle.OkOnly)
         End Try
-
-        'Move aoibagis from folder to aoi.gdb; workaround for bug where watershed tool can't save to file gdb correctly
-        Dim aoiBagisDSet As IGeoDataset = BA_OpenRasterFromFile(AOIFolderBase, BA_AOIExtentRaster)
-        response = BA_SaveRasterDatasetGDB(aoiBagisDSet, destAOIGDB, BA_RASTER_FORMAT, BA_AOIExtentRaster)
-        aoiBagisDSet = Nothing
-        BA_Remove_Raster(AOIFolderBase, BA_AOIExtentRaster)
 
         pStepProg.Hide()
         progressDialog2.HideDialog()

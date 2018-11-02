@@ -713,11 +713,8 @@ Module BAGIS_AOIModule
             End If
             Dim outPointFeatures As String = File_Path & "\" & outPointFile
 
-
-            Dim aoiFolder As String = "PleaseReturn"
-            Dim tempFile As String = BA_GetBareName(File_Path, aoiFolder)
-            Dim demRasterPath As String = aoiFolder & "\" & BA_EnumDescription(GeodatabaseNames.Surfaces) & "\" & BA_EnumDescription(MapsFileName.filled_dem_gdb)
-            Dim snapRasterPath As String = BA_GeodatabasePath(aoiFolder, GeodatabaseNames.Aoi) & BA_EnumDescription(PublicPath.AoiGrid)
+            Dim demRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
+            Dim snapRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi) & BA_EnumDescription(PublicPath.AoiGrid)
             Dim success As BA_ReturnCode = BA_ExtractValuesToPoints(inPointFeatures, demRasterPath, outPointFeatures, _
                                                                     snapRasterPath, False)
             If success = BA_ReturnCode.Success Then
