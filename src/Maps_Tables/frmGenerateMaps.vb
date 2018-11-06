@@ -2931,7 +2931,7 @@ Public Class frmGenerateMaps
         End If
 
         'Check to see if SnowCourse Shapefile Exist
-        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) & "\" & BA_SnowCourseSites, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+        If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) & BA_SnowCourseSites, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
             hasSnowCourseLayer = True
         Else
             hasSnowCourseLayer = False
