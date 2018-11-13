@@ -1363,7 +1363,16 @@ Public Class frmGenerateMaps
             End If
 
             pTempRaster = pExtractOp.Raster(pZoneRaster, pAOIRaster)
-            response = BA_Raster2PolygonShapefile(strSavePath, BA_VectorElevationZones, pTempRaster)
+            Dim tmpRasterName = "tmpMask"
+            response = BA_SaveRasterDataset(pTempRaster, AOIFolderBase, tmpRasterName)
+            If response = 1 Then
+                Dim success As BA_ReturnCode = BA_Raster2Polygon_GP(AOIFolderBase + "\" + tmpRasterName, strSavePath + "\" + BA_VectorElevationZones,
+                                               BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_AOIExtentRaster)
+                If BA_File_Exists(AOIFolderBase + "\" + tmpRasterName, WorkspaceType.Raster, esriDatasetType.esriDTRasterDataset) Then
+                    response = BA_Remove_Raster(AOIFolderBase, tmpRasterName)
+                End If
+            End If
+            pExtractOp = Nothing    'Release object
 
             If response = 0 Then
                 MsgBox("Unable to convert the elevation zone raster to vector! Program stopped.")
