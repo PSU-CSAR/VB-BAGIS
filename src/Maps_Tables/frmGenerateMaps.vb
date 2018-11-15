@@ -1523,6 +1523,9 @@ Public Class frmGenerateMaps
                 cmdPRISM.Enabled = True
             End If
 
+            'Delete temporary files from AOI root
+            BA_RemoveTempRasters(AOIFolderBase)
+
         Catch ex As Exception
             Debug.Print("cmdApplyElevInterval_Click Exception: " & ex.Message)
         Finally
