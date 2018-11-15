@@ -132,7 +132,7 @@ Public Class frmCreateAOI
         pProgD.Description = "Delineating AOI Boundaries..."
         System.Windows.Forms.Application.DoEvents()
 
-        If ChkSnapPP.Enabled Then 'snap the pourpoint
+        If ChkSnapPP.Checked Then 'snap the pourpoint
             'Snap Pour Point
             Dim snapFileName As String = "tmpSnap"
             Dim extractFileName As String = "tmpExtract"
