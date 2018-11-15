@@ -135,13 +135,14 @@ Public Class frmCreateAOIfromExistingBND
         End If
 
         Dim UserAOIFolderBase As String = txtOutputWorkspace.Text + "\" + txtOutputName.Text
+        AOIFolderBase = UserAOIFolderBase   'Set global variable for functions that need it
         Dim ListLayerCount As Integer = BA_SystemSettings.listCount
         Dim internalLayerCount As Integer = 0
 
         If BA_SystemSettings.GenerateAOIOnly Then
-            internalLayerCount = 6
+            internalLayerCount = 13
         Else
-            internalLayerCount = 25
+            internalLayerCount = 32
         End If
 
         nstep = internalLayerCount + ListLayerCount 'step counter for frmmessage
@@ -235,7 +236,7 @@ Public Class frmCreateAOIfromExistingBND
         Dim pAspect As IGeoDataset2
         Dim pHillshade As IGeoDataset2
 
-        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, nstep)
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, nstep + 2)
         Dim progressDialog2 As IProgressDialog2 = Nothing
         progressDialog2 = BA_GetProgressDialog(pStepProg, "Clipping DEM to AOI Folder ", "Clipping...")
         pStepProg.Show()
@@ -733,17 +734,6 @@ Public Class frmCreateAOIfromExistingBND
             Exit Sub
         End Try
 
-        ''get AOI area and prompt if the user wants to continue
-        'Dim AOIArea As Double
-        'AOIArea = BA_GetShapeArea(destAOIGDB & "\" & BA_AOIExtentCoverage) / 1000000 'the shape unit is in sq meters, converted to sq km
-
-        ''update the area information in the pourpoint shapefile
-        'AOI_ShapeArea = AOIArea
-        'AOI_ShapeUnit = "Square Km"
-        'AOI_ReferenceUnit = BA_SystemSettings.PourAreaUnit
-        'AOI_ReferenceArea = 0
-        'response = BA_UpdatePPAttributes(destAOIGDB)
-
         'update the Z unit metadata of DEM, slope, and PRISM
         Dim inputFolder As String
         Dim inputFile As String
@@ -798,7 +788,7 @@ Public Class frmCreateAOIfromExistingBND
             strInLayerPath = BA_SystemSettings.SNOTELLayer
             Dim snoClipLayer As String = BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)  'Use for both Snotel and SC
 
-            pStepProg.Message = "Clipping SNOTEL layer... (step 7 of " & nstep & ")"
+            pStepProg.Message = "Clipping SNOTEL layer... (step 14 of " & nstep & ")"
             pStepProg.Step()
             System.Windows.Forms.Application.DoEvents()
 
@@ -843,7 +833,7 @@ Public Class frmCreateAOIfromExistingBND
             'clip snow course layer
             strInLayerPath = BA_SystemSettings.SCourseLayer
 
-            pStepProg.Message = "Clipping Snow Course layer... (step 8 of " & nstep & ")"
+            pStepProg.Message = "Clipping Snow Course layer... (step 15 of " & nstep & ")"
             pStepProg.Step()
             System.Windows.Forms.Application.DoEvents()
 
@@ -904,7 +894,7 @@ Public Class frmCreateAOIfromExistingBND
 
                 'Local File
                 strInLayerBareName = PRISMLayer(j)
-                pStepProg.Message = "Clipping PRISM " & strInLayerBareName & " layer... (step " & j + 9 & " of " & nstep & ")"
+                pStepProg.Message = "Clipping PRISM " & strInLayerBareName & " layer... (step " & j + 16 & " of " & nstep & ")"
                 pStepProg.Step()
 
                 If wType = WorkspaceType.ImageServer Then

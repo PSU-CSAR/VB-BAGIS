@@ -129,75 +129,42 @@ Public Class frmCreateAOI
             MsgBox("Unable to save Pour Point")
         End If
 
-        'Load unsnapped pourpoint
-        Dim pPF As IFeatureClass = BA_OpenFeatureClassFromGDB(destAOIGDB, unsnappedppname)
-        Dim pPSource As IGeoDataset = pPF
-        'ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pPF)
-
-        Dim pSnapPourPoint As IGeoDataset = Nothing
-        Dim strSnapName As String 'name of the saved pourpoint
-        strSnapName = BA_POURPOINTCoverage
-
-        'Load Flow Direction
-        Dim pDirection As IGeoDataset = BA_OpenRasterFromGDB(sourceSurfGDB, BA_EnumDescription(MapsFileName.flow_direction_gdb))
-
-        Dim pWatershed As IGeoDataset = Nothing
         pProgD.Description = "Delineating AOI Boundaries..."
         System.Windows.Forms.Application.DoEvents()
 
-        Dim pHydrologyOp As IHydrologyOp = New RasterHydrologyOp
-        Dim pExtractOp As IExtractionOp2 = New RasterExtractionOp
-
-        If ChkSnapPP.Enabled Then 'snap the pourpoint
-            Dim SnapDistance As Double
-            SnapDistance = Val(txtSnapD.Text)
-
-            'Load Flow Accumulation
-            Dim pAccum As IGeoDataset = BA_OpenRasterFromGDB(sourceSurfGDB, BA_EnumDescription(MapsFileName.flow_accumulation_gdb))
-
+        If ChkSnapPP.Checked Then 'snap the pourpoint
             'Snap Pour Point
-            pSnapPourPoint = pHydrologyOp.SnapPourPoint(pPSource, pAccum, SnapDistance) ' ### note that this is in DD not Meters
+            Dim snapFileName As String = "tmpSnap"
+            Dim extractFileName As String = "tmpExtract"
+            success = BA_SnapPourPoint(sourceSurfGDB + "\" + BA_EnumDescription(MapsFileName.flow_accumulation_gdb),
+                                       destAOIGDB + "\" + unsnappedppname,
+                                       txtSnapD.Text, destAOIGDB + "\" + snapFileName)
 
-            'Save the snapped pourpoint
-            'Query the Previous Raster to Include only the PP location
-            'Set QFilter to > -1 (Pour Point Value) AGS 10.5 returns a different value for PP location than 10.2.2
-            Dim pQFilter As IQueryFilter = New QueryFilter
-            pQFilter.WhereClause = "VALUE > -1"
-            Dim pRasDes As IRasterDescriptor = New RasterDescriptor
-            pRasDes.Create(pSnapPourPoint, pQFilter, "VALUE")
-
-            'Run an Extraction Operation
-            Dim pSourceDS As IGeoDataset = pExtractOp.Attribute(pRasDes)
-
-            ' Create Feature from Raster
-            Dim pWSF As IWorkspaceFactory = New FileGDBWorkspaceFactory
-            Dim pFWS As IWorkspace2 = pWSF.OpenFromFile(destAOIGDB, 0)
-
-            Dim pConversionOp As IConversionOp = New RasterConversionOp
-            Dim pSnapGDS As IGeoDataset = pConversionOp.RasterDataToPointFeatureData(pSourceDS, pFWS, strSnapName)
-            pWatershed = pHydrologyOp.Watershed(pDirection, pSnapPourPoint)
-
-            'release memory
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pQFilter)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pRasDes)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pAccum)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pSourceDS)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pConversionOp)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFWS)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pWSF)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pSnapGDS)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pSnapPourPoint)
-            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pExtractOp)
+            If success = BA_ReturnCode.Success Then
+                'Query the Previous Raster to Include only the PP location
+                'Set where_clause to > -1 (Pour Point Value) AGS 10.5 returns a different value for PP location than 10.2.2
+                success = BA_ExtractByAttributes(destAOIGDB + "\" + snapFileName, Nothing,
+                                                 destAOIGDB + "\" + extractFileName, "VALUE > -1")
+                If success = BA_ReturnCode.Success Then
+                    success = BA_RasterToPoint(destAOIGDB + "\" + extractFileName, destAOIGDB + "\" + BA_POURPOINTCoverage,
+                                               BA_FIELD_VALUE)
+                    If success = BA_ReturnCode.Success Then
+                        success = BA_Watershed(sourceSurfGDB + "\" + BA_EnumDescription(MapsFileName.flow_direction_gdb),
+                                               destAOIGDB + "\" + unsnappedppname, destAOIGDB + "\" + BA_AOIExtentRaster)
+                    End If
+                End If
+            End If
+            ' Delete temporary files
+            If BA_File_Exists(destAOIGDB + "\" + snapFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                BA_RemoveRasterFromGDB(destAOIGDB, snapFileName)
+            End If
+            If BA_File_Exists(destAOIGDB + "\" + extractFileName, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                BA_RemoveRasterFromGDB(destAOIGDB, extractFileName)
+            End If
         Else
-            pWatershed = pHydrologyOp.Watershed(pDirection, pPSource)
-
+            success = BA_Watershed(sourceSurfGDB + "\" + BA_EnumDescription(MapsFileName.flow_direction_gdb),
+                                   destAOIGDB + "\" + unsnappedppname, destAOIGDB + "\" + BA_AOIExtentRaster)
         End If
-
-        'release memory
-        ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pHydrologyOp)
-        ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pDirection)
-        ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pPSource)
-        ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pPF)
 
         'Add pourpoint to Map
         Dim pMColor As IRgbColor = New RgbColor
@@ -210,29 +177,13 @@ Public Class frmCreateAOI
         pProgD.Description = "Saving AOI Boundaries..."
         System.Windows.Forms.Application.DoEvents()
 
-        'Workaround for bug when saving output of pHydrologyOp directly to a File GDB
-        response = BA_SaveRasterDataset(pWatershed, AOIFolderBase, BA_AOIExtentRaster)
-        pWatershed = Nothing
-
-        'Copy aoibagis to its final location so that it can be accessed later when clipping snotel and snow course
-        If response = 1 Then
-            Dim aoiBagisDSet As IGeoDataset = BA_OpenRasterFromFile(AOIFolderBase, BA_AOIExtentRaster)
-            response = BA_SaveRasterDatasetGDB(aoiBagisDSet, destAOIGDB, BA_RASTER_FORMAT, BA_AOIExtentRaster)
-            aoiBagisDSet = Nothing
-            'Delete original aoibagis layer
-            response = BA_Remove_Raster(AOIFolderBase, BA_AOIExtentRaster)
-        End If
-
         Dim DisplayName As String
         Dim comboBox = AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
         DisplayName = "AOI " & comboBox.getValue
 
         'Convert watershed to polygon
-        'open aoibagis raster and convert it to watershed polygon
-        pWatershed = BA_OpenRasterFromGDB(destAOIGDB, BA_AOIExtentRaster)
-        'convert aoibagis watershed raster to polygon 
-        response = BA_Raster2PolygonShapefile(destAOIGDB, BA_AOIExtentCoverage, pWatershed)
-        pWatershed = Nothing
+        success = BA_Raster2Polygon_GP(destAOIGDB + "\" + BA_AOIExtentRaster, destAOIGDB + "\" + BA_AOIExtentCoverage,
+                                       destAOIGDB + "\" + BA_AOIExtentRaster)
 
         'update the attribute table of the AOI using basin name
         response = BA_AddAOIVectorAttributes(destAOIGDB, comboBox.getValue())
@@ -244,11 +195,6 @@ Public Class frmCreateAOI
             pProgD.HideDialog()
             ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pProgD)
             MsgBox("Unable to add AOI polygon to ArcMap! Program stopped.")
-
-            'BA_DeleteGeodatabase(AOIFolderBase, My.ArcMap.Document)
-            'If BA_Workspace_Exists(AOIFolderBase) Then 'cannot delete the folder
-            '    MsgBox("Cannot delete the AOI! It's probably caused by a file lock in the Geodatabase. Please restart ArcGIS and repeat the process.")
-            'End If
 
             Me.Close()
             Exit Sub
@@ -360,10 +306,10 @@ Public Class frmCreateAOI
         BufferTool = Nothing
         GP = Nothing
 
-        'response = BA_Graphic2Shapefile(AOIFolderBase, BA_BufferedAOIExtentCoverage)
         retVal = BA_ConvertShapeFileToGDB(AOIFolderBase, BA_StandardizeShapefileName(BA_BufferedAOIExtentCoverage, True, False), destAOIGDB, BA_BufferedAOIExtentCoverage)
         retVal = BA_Feature2RasterGP(AOIFolderBase & BA_StandardizeShapefileName(BA_BufferedAOIExtentCoverage, True, True), destAOIGDB & BA_EnumDescription(PublicPath.AoiBufferedGrid), "ID", Cellsize, fullLayerPath)
-        BA_Remove_Shapefile(AOIFolderBase, BA_StandardizeShapefileName(BA_BufferedAOIExtentCoverage, False))
+        'BA_Remove_Shapefile(AOIFolderBase, BA_StandardizeShapefileName(BA_BufferedAOIExtentCoverage, True))
+        success = BA_DeleteLayer_GP(AOIFolderBase + BA_StandardizeShapefileName(BA_BufferedAOIExtentCoverage, True, True))
 
         '=========================
         'start the clipping preparation
