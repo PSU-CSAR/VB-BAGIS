@@ -882,16 +882,8 @@ Public Class FrmPsuedoSite
         Dim response As Integer = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
         response = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)
         AddLayersToMapFrame(My.ThisApplication, My.Document)
-        Dim Basin_Name As String
-        Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
-        If Len(Trim(cboSelectedBasin.getValue)) = 0 Then
-            Basin_Name = ""
-        Else
-            Basin_Name = cboSelectedBasin.getValue
-        End If
         Dim aoiName As String = BA_GetBareName(AOIFolderBase)
-        Dim mapTitle As String = aoiName & Basin_Name
-        BA_AddMapElements(My.Document, mapTitle, "Subtitle BAGIS")
+        BA_AddMapElements(My.Document, aoiName, "Subtitle BAGIS")
 
         'Toggle the layers we want to see
         Dim LayerNames(11) As String
@@ -919,7 +911,7 @@ Public Class FrmPsuedoSite
         'Note: these functions are called in BA_DisplayMap if we end up adding buttons
         Dim UnitText As String = Nothing    'Textbox above scale bar
         Dim subtitle As String = "PROPOSED PSEUDO SITE LOCATION"
-        BA_MapUpdateSubTitle(My.Document, mapTitle, subtitle, UnitText)
+        BA_MapUpdateSubTitle(My.Document, aoiName, subtitle, UnitText)
         Dim keyLayerName As String = Nothing
         BA_SetLegendFormat(My.Document, keyLayerName)
 

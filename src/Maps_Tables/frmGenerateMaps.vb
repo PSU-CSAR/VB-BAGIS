@@ -2223,19 +2223,12 @@ Public Class frmGenerateMaps
     End Sub
 
     Private Sub AddLayersToMap()
-        Dim Basin_Name As String
-        Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
+        Dim Basin_Name As String = ""
         Dim cboSelectedAoi = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
-
-        If Len(Trim(cboSelectedBasin.getValue)) = 0 Then
-            Basin_Name = ""
-        Else
-            Basin_Name = cboSelectedBasin.getValue
-        End If
 
         'BA_ActivateMapFrame BA_DefaultMapName
         Dim response As Integer = BA_AddLayerstoMapFrame(My.ThisApplication, My.Document, AOIFolderBase, AOI_HasSNOTEL, AOI_HasSnowCourse, Scenario1Map_Flag, Scenario2Map_Flag)
-        BA_AddMapElements(My.Document, cboSelectedAoi.getValue & Basin_Name, "Subtitle BAGIS")
+        BA_AddMapElements(My.Document, cboSelectedAoi.getValue, "Subtitle BAGIS")
         response = BA_DisplayMap(My.Document, 1, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                   "Elevation Distribution")
         BA_RemoveLayersfromLegend(My.Document)

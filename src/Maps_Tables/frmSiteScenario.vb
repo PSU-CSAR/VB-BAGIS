@@ -1651,14 +1651,8 @@ Public Class frmSiteScenario
             SymbolizeSelectedSites()
             Scenario1Map_Flag = True
             'Display scenario 1 map as default
-            Dim Basin_Name As String
-            Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
-            If Len(Trim(cboSelectedBasin.getValue)) = 0 Then
-                Basin_Name = ""
-            Else
-                Basin_Name = cboSelectedBasin.getValue
-            End If
-            BA_AddMapElements(My.Document, m_CurrentAOI & Basin_Name, "Subtitle BAGIS")
+            Dim Basin_Name As String = ""
+            BA_AddMapElements(My.Document, m_CurrentAOI, "Subtitle BAGIS")
             Dim retVal As Integer = BA_DisplayMap(My.Document, 7, Basin_Name, m_CurrentAOI, Map_Display_Elevation_in_Meters, _
                                     Trim(TxtScenario1.Text))
             BA_RemoveLayersfromLegend(My.Document)
@@ -2313,14 +2307,8 @@ Public Class frmSiteScenario
                     SymbolizeSelectedSites()
                     Scenario1Map_Flag = True
                     'Display scenario 1 map as default
-                    Dim Basin_Name As String
-                    Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
-                    If Len(Trim(cboSelectedBasin.getValue)) = 0 Then
-                        Basin_Name = ""
-                    Else
-                        Basin_Name = cboSelectedBasin.getValue
-                    End If
-                    BA_AddMapElements(My.Document, m_CurrentAOI & Basin_Name, "Subtitle BAGIS")
+                    Dim Basin_Name As String = ""
+                    BA_AddMapElements(My.Document, m_CurrentAOI, "Subtitle BAGIS")
                     Dim retVal As Integer = BA_DisplayMap(My.Document, 7, Basin_Name, m_CurrentAOI, Map_Display_Elevation_in_Meters, _
                                             Trim(TxtScenario1.Text))
                     BA_RemoveLayersfromLegend(My.Document)

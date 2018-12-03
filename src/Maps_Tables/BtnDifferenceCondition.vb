@@ -73,14 +73,8 @@ Public Class BtnDifferenceCondition
             Windows.Forms.MessageBox.Show("An error occurred while trying to display the difference map.", "Error", Windows.Forms.MessageBoxButtons.OK)
             Debug.Print("OnClick" & ex.Message)
         End Try
-        Dim Basin_Name As String
-        Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
+        Dim Basin_Name As String = ""
         Dim cboSelectedAoi = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
-        If Len(Trim(cboSelectedBasin.getValue)) = 0 Then
-            Basin_Name = ""
-        Else
-            Basin_Name = cboSelectedBasin.getValue
-        End If
         BA_DisplayMap(My.Document, 9, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                          "Difference of Representations")
         BA_ZoomToAOI(My.Document, AOIFolderBase)

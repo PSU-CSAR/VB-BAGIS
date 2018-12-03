@@ -416,7 +416,7 @@ Public Class frmSiteRepresentations
             Dim success As BA_ReturnCode = DisplaySiteWithSymbol(My.Document, TxtRasterFolder.Text & "\" & fileName, fileName, 2, BA_GetSiteType(strType), _
                                                                  objectId)
             If success = BA_ReturnCode.Success Then
-                BA_AddMapElements(My.Document, m_CurrentAOI & m_basinName, "Subtitle BAGIS")
+                BA_AddMapElements(My.Document, m_CurrentAOI, "Subtitle BAGIS")
                 BA_RemoveLayersfromLegend(My.Document)
                 success = DisplaySiteMap(My.Document, m_basinName, m_CurrentAOI, m_displayInMeters, fileName)
                 'RemoveSiteLayerFromLegend(fileName)

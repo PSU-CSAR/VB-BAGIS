@@ -642,14 +642,8 @@ Public Class frmElevScenario
         If Not Maps_Are_Generated Then
             MsgBox("You need to generate basin analysis maps first before you can use the menu items to show the representation maps!")
         Else
-            Dim Basin_Name As String
-            Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
+            Dim Basin_Name As String = ""
             Dim cboSelectedAoi = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
-            If Len(Trim(cboSelectedBasin.getValue)) = 0 Then
-                Basin_Name = ""
-            Else
-                Basin_Name = " at " & cboSelectedBasin.getValue
-            End If
             If Scenario1Map_Flag Then
                 BA_DisplayMap(My.Document, 7, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                               "SCENARIO 1 SITE REPRESENTATION")

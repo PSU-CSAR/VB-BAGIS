@@ -49,16 +49,10 @@ Public Class BtnScenario2
             Windows.Forms.MessageBox.Show("An error occurred while trying to display the scenario 2 map.", "Error", Windows.Forms.MessageBoxButtons.OK)
             Debug.Print("OnClick" & ex.Message)
         End Try
-        Dim Basin_Name As String
-        Dim cboSelectedBasin = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
+        Dim Basin_Name As String = ""
         Dim cboSelectedAoi = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
         Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of frmSiteScenario.AddinImpl)(My.ThisAddIn.IDs.frmSiteScenario)
         Dim frmSiteScenario As frmSiteScenario = dockWindowAddIn.UI
-        If Len(Trim(cboSelectedBasin.getValue)) = 0 Then
-            Basin_Name = ""
-        Else
-            Basin_Name = cboSelectedBasin.getValue
-        End If
         BA_DisplayMap(My.Document, 8, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                          Trim(frmSiteScenario.TxtScenario2.Text))
         BA_ZoomToAOI(My.Document, AOIFolderBase)
