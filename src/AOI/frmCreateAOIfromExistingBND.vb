@@ -382,13 +382,11 @@ Public Class frmCreateAOIfromExistingBND
                 Else
                     response = BA_ClipAOIRaster(UserAOIFolderBase, inputraster, originalDem, destSurfGDB, AOIClipFile.BufferedAOIExtentCoverage, False)
                 End If
-                Dim ptempDEM As IGeoDataset2 = BA_OpenRasterFromGDB(destSurfGDB, originalDem)
-                pClippedDEM = Smooth(ptempDEM, Val(txtHeight.Text), Val(txtWidth.Text), UserAOIFolderBase)
 
-                If pClippedDEM Is Nothing Then 'no dem within the selected area
+                If response <> 1 Then
                     pStepProg.Hide()
                     progressDialog2.HideDialog()
-                    MsgBox("Unable to perform smoothing on the selected DEM!")
+                    MsgBox("Unable to clip the selected DEM!")
                     ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pStepProg)
                     ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(progressDialog2)
                     GC.WaitForPendingFinalizers()
@@ -396,11 +394,12 @@ Public Class frmCreateAOIfromExistingBND
                     Exit Sub
                 End If
 
-                response = BA_SaveRasterDatasetGDB(pClippedDEM, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.dem_gdb))
-                If response = 0 Then
+                success = BA_Smooth(destSurfGDB & "\" & originalDem, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.dem_gdb), _
+                                    txtWidth.Text, txtHeight.Text)
+                If success <> BA_ReturnCode.Success Then
                     pStepProg.Hide()
                     progressDialog2.HideDialog()
-                    MsgBox("Unable to save CLIPPED DEM to Surfaces GDB!", "Warning")
+                    MsgBox("Unable to perform smoothing on the selected DEM!")
                     ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pStepProg)
                     ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(progressDialog2)
                     GC.WaitForPendingFinalizers()

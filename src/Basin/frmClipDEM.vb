@@ -174,21 +174,24 @@ Public Class frmClipDEMtoAOI
                     response = BA_ClipAOIRaster(BasinFolderBase, strDEMDataSet, "tempdem", destSurfGDB, AOIClipFile.AOIExtentCoverage, False)
                 End If
 
-                Dim ptempDEM As IGeoDataset2 = BA_OpenRasterFromGDB(destSurfGDB, "tempdem")
-                pClippedDEM = Smooth(ptempDEM, Val(txtHeight.Text), Val(txtWidth.Text), BasinFolderBase)
+                If response <> 1 Then
+                    pStepProg.Hide()
+                    progressDialog2.HideDialog()
+                    MsgBox("Unable to clip the selected DEM!")
+                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pStepProg)
+                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(progressDialog2)
+                    GC.WaitForPendingFinalizers()
+                    GC.Collect()
+                    Exit Sub
+                End If
 
-                If pClippedDEM Is Nothing Then 'no dem within the selected area
+                Dim success As BA_ReturnCode = BA_Smooth(destSurfGDB & "\" & "tempdem", destSurfGDB & "\" & BA_EnumDescription(MapsFileName.dem_gdb), _
+                                                         txtWidth.Text, txtHeight.Text)
+
+                If success <> BA_ReturnCode.Success Then
                     pStepProg.Hide()
                     progressDialog2.HideDialog()
                     MsgBox("Unable to perform smoothing on the selected DEM!")
-                    GoTo AbandonClipDEM
-                End If
-
-                response = BA_SaveRasterDatasetGDB(pClippedDEM, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.dem_gdb))
-                If response = 0 Then
-                    pStepProg.Hide()
-                    progressDialog2.HideDialog()
-                    MsgBox("Unable to save CLIPPED DEM to Surfaces GDB!", "Warning")
                     GoTo AbandonClipDEM
                 End If
 
