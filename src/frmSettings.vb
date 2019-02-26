@@ -853,6 +853,40 @@ Public Class frmSettings
             Exit Sub
         End If
 
+        'These layer paths can be directly edited to support ArcGIS Online since it is not
+        'supported by ArcCatalog. Make sure the layer number is indicated and make sure the
+        'url is valid
+        If Not String.IsNullOrEmpty(txtGaugeStation.Text) Then
+            If BA_GetWorkspaceTypeFromPath(txtGaugeStation.Text) = WorkspaceType.FeatureServer Then
+                txtGaugeStation.Text = AddLayerId(txtGaugeStation.Text)
+                If Not BA_File_ExistsFeatureServer(txtGaugeStation.Text) Then
+                    MessageBox.Show("The Gauge Stations value is not a valid feature service. The settings cannot be saved!", "BAGIS")
+                    txtGaugeStation.Focus()
+                    Exit Sub
+                End If
+            End If
+        End If
+        If Not String.IsNullOrEmpty(txtSNOTEL.Text) Then
+            If BA_GetWorkspaceTypeFromPath(txtSNOTEL.Text) = WorkspaceType.FeatureServer Then
+                txtSNOTEL.Text = AddLayerId(txtSNOTEL.Text)
+                If Not BA_File_ExistsFeatureServer(txtSNOTEL.Text) Then
+                    MessageBox.Show("The SNOTEL Stations value is not a valid feature service. The settings cannot be saved!", "BAGIS")
+                    txtSNOTEL.Focus()
+                    Exit Sub
+                End If
+            End If
+        End If
+        If Not String.IsNullOrEmpty(txtSnowCourse.Text) Then
+            If BA_GetWorkspaceTypeFromPath(txtSnowCourse.Text) = WorkspaceType.FeatureServer Then
+                txtSnowCourse.Text = AddLayerId(txtSnowCourse.Text)
+                If Not BA_File_ExistsFeatureServer(txtSnowCourse.Text) Then
+                    MessageBox.Show("The Snow Course Stations value is not a valid feature service. The settings cannot be saved!", "BAGIS")
+                    txtSnowCourse.Focus()
+                    Exit Sub
+                End If
+            End If
+        End If
+
         Dim demProjText As String = BA_GetProjectionString(Me.txtDEM30.Text)
         Dim projectionsToCheck = New SortedList
         projectionsToCheck.Add("Snotel", Me.txtSNOTEL.Text)
@@ -906,6 +940,17 @@ Public Class frmSettings
             CmdUndo.Enabled = False
         End If
     End Sub
+
+    'Appends a layer id of 0 (the first layer) if url is missing layer id
+    Private Function AddLayerId(ByVal url As String) As String
+        Dim lastIdx As Integer = url.LastIndexOf("/")
+        Dim layerId As String = url.Substring(lastIdx + 1)
+        If Not IsNumeric(layerId) Then
+            url = url + "/0"
+        End If
+        Return url
+    End Function
+
     'get the name of the layers listed in the lstLayers and send them to an array for using in frmCreateAOI class
     'Private Sub UpdatelstLayersItemNames()
     '    Dim strArray(lstLayers.Items.Count - 1) As String

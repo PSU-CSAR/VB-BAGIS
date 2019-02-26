@@ -173,7 +173,6 @@ Partial Class frmSettings
         Me.txtGaugeStation.ForeColor = System.Drawing.Color.Navy
         resources.ApplyResources(Me.txtGaugeStation, "txtGaugeStation")
         Me.txtGaugeStation.Name = "txtGaugeStation"
-        Me.txtGaugeStation.ReadOnly = True
         '
         'lblSNOTEL
         '
@@ -186,7 +185,6 @@ Partial Class frmSettings
         Me.txtSNOTEL.ForeColor = System.Drawing.Color.Navy
         resources.ApplyResources(Me.txtSNOTEL, "txtSNOTEL")
         Me.txtSNOTEL.Name = "txtSNOTEL"
-        Me.txtSNOTEL.ReadOnly = True
         '
         'lblSnowCourse
         '
@@ -199,7 +197,6 @@ Partial Class frmSettings
         Me.txtSnowCourse.ForeColor = System.Drawing.Color.Navy
         resources.ApplyResources(Me.txtSnowCourse, "txtSnowCourse")
         Me.txtSnowCourse.Name = "txtSnowCourse"
-        Me.txtSnowCourse.ReadOnly = True
         '
         'lblPRISM
         '
