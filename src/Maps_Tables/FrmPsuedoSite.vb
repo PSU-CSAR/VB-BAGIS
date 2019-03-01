@@ -7,6 +7,7 @@ Imports ESRI.ArcGIS.Framework
 Imports ESRI.ArcGIS.Display
 Imports ESRI.ArcGIS.Carto
 Imports ESRI.ArcGIS.Geodatabase
+Imports System.ComponentModel
 
 Public Class FrmPsuedoSite
 
@@ -22,7 +23,7 @@ Public Class FrmPsuedoSite
     Private m_cellStatsLayer As String = "ps_cellStat"
     Private m_demInMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
-    Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
+    Private m_usingXYUnits As MeasurementUnit  'Inerited from Site Scenario form; Controls proximity display/calculation  
     Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
     Private m_lastAnalysis As PseudoSite = Nothing  'The site currently loaded in form
     Private m_formLoaded As Boolean = False
@@ -44,7 +45,7 @@ Public Class FrmPsuedoSite
     Private m_reuseConstraintLayersFlag As Boolean = False
 
 
-    Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits, _
+    Public Sub New(ByVal demInMeters As Boolean, ByVal useMeters As Boolean, ByVal usingXYUnits As esriUnits,
                    ByVal siteScenarioToolTimeStamp As DateTime, ByVal autoSiteLog As PseudoSite)
 
         ' This call is required by the designer.
@@ -64,7 +65,19 @@ Public Class FrmPsuedoSite
         'Populate class-level variables
         m_usingElevMeters = useMeters
         m_demInMeters = demInMeters
-        m_usingXYUnits = usingXYUnits
+        'Convert esriUnits to measurement unit
+        Select Case usingXYUnits
+            Case esriUnits.esriFeet
+                m_usingXYUnits = MeasurementUnit.Feet
+            Case esriUnits.esriMeters
+                m_usingXYUnits = MeasurementUnit.Meters
+            Case esriUnits.esriMiles
+                m_usingXYUnits = MeasurementUnit.Miles
+            Case esriUnits.esriKilometers
+                m_usingXYUnits = MeasurementUnit.Kilometers
+            Case Else
+                m_usingXYUnits = MeasurementUnit.Meters
+        End Select
 
         ' Add any initialization after the InitializeComponent() call.
         CmboxPrecipType.Items.Clear()
@@ -139,13 +152,13 @@ Public Class FrmPsuedoSite
 
         'Set proximity label; Default is meters when form loads
         Select Case m_usingXYUnits
-            Case esriUnits.esriFeet
+            Case MeasurementUnit.Feet
                 LblBufferDistance.Text = "Feet"
                 LblAddBufferDistance.Text = "Buffer Distance (Feet):"
-            Case esriUnits.esriKilometers
+            Case MeasurementUnit.Kilometers
                 LblBufferDistance.Text = "Kilometers"
                 LblAddBufferDistance.Text = "Buffer Distance (Km):"
-            Case esriUnits.esriMiles
+            Case MeasurementUnit.Miles
                 LblBufferDistance.Text = "Miles"
                 LblAddBufferDistance.Text = "Buffer Distance (Miles):"
         End Select
@@ -172,10 +185,10 @@ Public Class FrmPsuedoSite
 
     Private Sub BtnFindSite_Click(sender As System.Object, e As System.EventArgs) Handles BtnFindSite.Click
         '1. Check to make sure npactual exists before going further; It's a required layer
-        If Not BA_File_Exists(m_analysisFolder + "\" + m_representedArea, WorkspaceType.Geodatabase, _
+        If Not BA_File_Exists(m_analysisFolder + "\" + m_representedArea, WorkspaceType.Geodatabase,
                               ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
 
-            MessageBox.Show("Unable to locate the Scenario 1 represented area. Calculate Scenario 1 using the Site Scenario tool and try again.", _
+            MessageBox.Show("Unable to locate the Scenario 1 represented area. Calculate Scenario 1 using the Site Scenario tool and try again.",
                             "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Exit Sub
         End If
@@ -246,14 +259,14 @@ Public Class FrmPsuedoSite
 
             If m_reuseConstraintLayersFlag = True Then
                 'Check for existence of elev constraint layer
-                If Not BA_File_Exists(m_analysisFolder + "\" + m_elevLayer, WorkspaceType.Geodatabase, _
+                If Not BA_File_Exists(m_analysisFolder + "\" + m_elevLayer, WorkspaceType.Geodatabase,
                                       ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
                     sbElev.Append("BAGIS needs to re-use constraint layers for the new site but the elevation layer " + m_elevLayer + " cannot be found! " + vbCrLf)
                 End If
             End If
 
             If sbElev.Length > 0 Then
-                Dim errMsg As String = "You selected the Elevation option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
+                Dim errMsg As String = "You selected the Elevation option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf +
                     sbElev.ToString + vbCrLf +
                     "Click 'No' to fix the parameters, or 'Yes' to find a site without using the Elevation option"
                 Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid elevation values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
@@ -268,8 +281,8 @@ Public Class FrmPsuedoSite
         'If user selected proximity layer, did they choose a layer?
         If CkProximity.Checked Then
             If GrdProximity.Rows.Count = 0 Then
-                Dim res As DialogResult = MessageBox.Show("You selected the Proximity option but failed to configure any layers. Do you wish to " + _
-                                                          "find a site without using the Proximity option", "Missing layer", MessageBoxButtons.YesNo, _
+                Dim res As DialogResult = MessageBox.Show("You selected the Proximity option but failed to configure any layers. Do you wish to " +
+                                                          "find a site without using the Proximity option", "Missing layer", MessageBoxButtons.YesNo,
                                                           MessageBoxIcon.Question)
                 If res <> Windows.Forms.DialogResult.Yes Then
                     Exit Sub
@@ -279,10 +292,10 @@ Public Class FrmPsuedoSite
             End If
             If m_reuseConstraintLayersFlag = True Then
                 'Check for existence of elev constraint layer
-                If Not BA_File_Exists(m_analysisFolder + "\" + m_proximityLayer, WorkspaceType.Geodatabase, _
+                If Not BA_File_Exists(m_analysisFolder + "\" + m_proximityLayer, WorkspaceType.Geodatabase,
                                       ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
-                    Dim res As DialogResult = MessageBox.Show("BAGIS needs to re-use constraint layers for the new site but the proximity layer " + m_proximityLayer + " cannot be found! Do you wish to " + _
-                                          "find a site without using the Proximity option", "Missing layer", MessageBoxButtons.YesNo, _
+                    Dim res As DialogResult = MessageBox.Show("BAGIS needs to re-use constraint layers for the new site but the proximity layer " + m_proximityLayer + " cannot be found! Do you wish to " +
+                                          "find a site without using the Proximity option", "Missing layer", MessageBoxButtons.YesNo,
                                           MessageBoxIcon.Question)
                     If res <> Windows.Forms.DialogResult.Yes Then
                         Exit Sub
@@ -299,7 +312,7 @@ Public Class FrmPsuedoSite
             Dim sbPrism As StringBuilder = New StringBuilder()
             Dim comps As Double
             If Not Double.TryParse(txtMinPrecip.Text, comps) Then
-                Dim errMsg As String = "You selected the Precipitation option but have not configured a valid range." + vbCrLf + vbCrLf + _
+                Dim errMsg As String = "You selected the Precipitation option but have not configured a valid range." + vbCrLf + vbCrLf +
                     "Click 'No' to add the desired range, or 'Yes' to find a site without using the Precipitation option."
                 Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid precipitation values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
                 If res <> Windows.Forms.DialogResult.Yes Then
@@ -339,14 +352,14 @@ Public Class FrmPsuedoSite
                 End If
                 If m_reuseConstraintLayersFlag = True Then
                     'Check for existence of precip constraint layer
-                    If Not BA_File_Exists(m_analysisFolder + "\" + m_precipLayer, WorkspaceType.Geodatabase, _
+                    If Not BA_File_Exists(m_analysisFolder + "\" + m_precipLayer, WorkspaceType.Geodatabase,
                                           ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
                         sbPrism.Append("BAGIS needs to re-use constraint layers for the new site but the precipitation layer " + m_precipLayer + " cannot be found! " + vbCrLf)
                     End If
                 End If
 
                 If sbPrism.Length > 0 Then
-                    Dim errMsg As String = "You selected the Precipitation option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
+                    Dim errMsg As String = "You selected the Precipitation option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf +
                         sbPrism.ToString + vbCrLf +
                         "Click 'No' to fix the parameters, or 'Yes' to find a site without using the Precipitation option."
                     Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid precipitation values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
@@ -382,13 +395,13 @@ Public Class FrmPsuedoSite
             Next
             If m_reuseConstraintLayersFlag = True Then
                 'Check for existence of precip constraint layer
-                If Not BA_File_Exists(m_analysisFolder + "\" + m_locationLayer, WorkspaceType.Geodatabase, _
+                If Not BA_File_Exists(m_analysisFolder + "\" + m_locationLayer, WorkspaceType.Geodatabase,
                                       ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTRasterDataset) Then
                     sbLoc.Append("BAGIS needs to re-use constraint layers for the new site but the location layer " + m_locationLayer + " cannot be found! " + vbCrLf)
                 End If
             End If
             If sbLoc.Length > 0 Then
-                Dim errMsg As String = "You selected the Location option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf + _
+                Dim errMsg As String = "You selected the Location option but one or more of the parameters are invalid: " + vbCrLf + vbCrLf +
                     sbLoc.ToString + vbCrLf +
                     "Click 'No' to fix the parameters, or 'Yes' to find a site without using the Location option."
                 Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid location values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
@@ -426,12 +439,12 @@ Public Class FrmPsuedoSite
         If success = BA_ReturnCode.Success Then
             pStepProg.Message = "Executing Euclidean distance tool"
             pStepProg.Step()
-            success = BA_EuclideanDistance(m_analysisFolder + "\" + m_representedArea, m_analysisFolder + "\" + tempDistanceFileName, _
+            success = BA_EuclideanDistance(m_analysisFolder + "\" + m_representedArea, m_analysisFolder + "\" + tempDistanceFileName,
                                            CStr(m_cellSize), tempMaskPath, snapRasterPath, tempMaskPath)
         End If
         If success = BA_ReturnCode.Success Then
             'Extract to Mask to clip off area outside AOI
-            success = BA_ExtractByMask(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & m_aoiBoundary, _
+            success = BA_ExtractByMask(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & m_aoiBoundary,
                                        m_analysisFolder + "\" + tempDistanceFileName, snapRasterPath, m_analysisFolder + "\" + distanceFileName)
             If success = BA_ReturnCode.Success Then
                 'Delete temp distance file
@@ -489,7 +502,7 @@ Public Class FrmPsuedoSite
                 pStepProg.Message = "Calculating cell statistics for all constraint layers"
                 pStepProg.Step()
                 sb.Remove(sb.ToString().LastIndexOf("; "), "; ".Length)
-                success = BA_GetCellStatistics(sb.ToString, snapRasterPath, "MINIMUM", _
+                success = BA_GetCellStatistics(sb.ToString, snapRasterPath, "MINIMUM",
                                                m_analysisFolder + "\" + m_cellStatsLayer, "false")
             End If
 
@@ -506,7 +519,7 @@ Public Class FrmPsuedoSite
 
             'Add 'NAME' field cell stats (all constraints) layer to be used as label for map
             If success = BA_ReturnCode.Success Then
-                success = BA_AddUserFieldToRaster(m_analysisFolder, m_cellStatsLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                success = BA_AddUserFieldToRaster(m_analysisFolder, m_cellStatsLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString,
                                               100, BA_MAPS_PS_ALL_CONSTRAINTS)
             End If
 
@@ -514,7 +527,7 @@ Public Class FrmPsuedoSite
             If success = BA_ReturnCode.Success Then
                 pStepProg.Message = "Executing Times tool with distance and cell statistics layers"
                 pStepProg.Step()
-                success = BA_Times(m_analysisFolder + "\" + distanceFileName, m_analysisFolder + "\" + m_cellStatsLayer, _
+                success = BA_Times(m_analysisFolder + "\" + distanceFileName, m_analysisFolder + "\" + m_cellStatsLayer,
                     m_analysisFolder + "\" + timesFileName)
             End If
         End If
@@ -532,16 +545,16 @@ Public Class FrmPsuedoSite
             If pRasterStats IsNot Nothing Then
                 'sample expression: SetNull('C:\Docs\Lesley\animas_AOI_prms_3\analysis.gdb\ps_distance' < 6259,'C:\Docs\Lesley\animas_AOI_prms_3\analysis.gdb\ps_distance')
                 Dim targetPath As String = m_analysisFolder + "\" + furthestPixelInputFile
-                pExpression = "SetNull('" + targetPath + "' < " + _
-                    CStr(Math.Floor(pRasterStats.Maximum)) + _
+                pExpression = "SetNull('" + targetPath + "' < " +
+                    CStr(Math.Floor(pRasterStats.Maximum)) +
                     ",'" + targetPath + "')"
-                success = BA_RasterCalculator(m_analysisFolder + "\" + furthestPixelFileName, pExpression, _
+                success = BA_RasterCalculator(m_analysisFolder + "\" + furthestPixelFileName, pExpression,
                                               snapRasterPath, maskPath)
             End If
         End If
 
         If success = BA_ReturnCode.Success Then
-            success = BA_RasterToPoint(m_analysisFolder + "\" + furthestPixelFileName, _
+            success = BA_RasterToPoint(m_analysisFolder + "\" + furthestPixelFileName,
                                        m_analysisFolder + "\" + m_siteFileName, BA_FIELD_VALUE)
         End If
 
@@ -567,6 +580,12 @@ Public Class FrmPsuedoSite
             If newSite IsNot Nothing Then
                 Dim pseudoPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) + BA_EnumDescription(MapsFileName.Pseudo)
                 If BA_File_Exists(pseudoPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                    'Check to make sure existing feature class has the site type field
+                    success = CheckForSiteType()
+                    If success <> BA_ReturnCode.Success Then
+                        MessageBox.Show("An error occurred while trying to process the new pseudo-site layer!")
+                        Exit Sub
+                    End If
                     success = BA_AppendFeatures(m_analysisFolder + "\" + m_siteFileName, pseudoPath)
                 Else
                     success = BA_CopyFeatures(m_analysisFolder + "\" + m_siteFileName, pseudoPath)
@@ -663,11 +682,11 @@ Public Class FrmPsuedoSite
             sb.Append(strUpperRange + " " + strMaxElev + " NoData")
             Dim inputPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
             Dim reclassElevPath As String = m_analysisFolder & "\" & m_elevLayer
-            Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
+            Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString,
                                                                          reclassElevPath, snapRasterPath)
             'Add 'NAME' field to be used as label for map
             If success = BA_ReturnCode.Success Then
-                success = BA_AddUserFieldToRaster(m_analysisFolder, m_elevLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                success = BA_AddUserFieldToRaster(m_analysisFolder, m_elevLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString,
                                               100, BA_MAPS_PS_ELEVATION)
             End If
             Return success
@@ -711,11 +730,11 @@ Public Class FrmPsuedoSite
             End If
             Dim inputPath As String = inputFolder + prismRasterName
             Dim reclassPrismPath As String = m_analysisFolder & "\" & m_precipLayer
-            Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString, _
+            Dim success As BA_ReturnCode = BA_ReclassifyRasterFromString(inputPath, BA_FIELD_VALUE, sb.ToString,
                                                                                  reclassPrismPath, snapRasterPath)
             'Add 'NAME' field to be used as label for map
             If success = BA_ReturnCode.Success Then
-                success = BA_AddUserFieldToRaster(m_analysisFolder, m_precipLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                success = BA_AddUserFieldToRaster(m_analysisFolder, m_precipLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString,
                                               100, BA_MAPS_PS_PRECIPITATION)
             End If
             Return success
@@ -761,7 +780,7 @@ Public Class FrmPsuedoSite
                     lstRastersToDelete.Add(outputFolderPath)
                     timesOutputFolderPath = m_analysisFolder + "\timesLocation" + CStr(i)
                 End If
-                success = BA_ReclassifyRasterFromTableWithNoData(layerLocation, BA_FIELD_VALUE, reclassItems, _
+                success = BA_ReclassifyRasterFromTableWithNoData(layerLocation, BA_FIELD_VALUE, reclassItems,
                                                                  outputFolderPath, snapRasterPath)
                 If success = BA_ReturnCode.Success AndAlso i > 0 Then
                     'inRasterPath1 always outputFolderPath
@@ -793,7 +812,7 @@ Public Class FrmPsuedoSite
                     Dim layerName As String = BA_GetBareName(layerPath, layerFolder)
                     Dim retVal As Short = BA_RemoveRasterFromGDB(layerFolder, layerName)
                 Next
-                success = BA_AddUserFieldToRaster(m_analysisFolder, m_locationLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                success = BA_AddUserFieldToRaster(m_analysisFolder, m_locationLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString,
                                   100, BA_MAPS_PS_LOCATION)
             End If
             Return success
@@ -921,7 +940,7 @@ Public Class FrmPsuedoSite
         MessageBox.Show("Use ArcMap Table of Contents to view map.", "Map", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
 
-    Private Sub AddLayersToMapFrame(ByVal pApplication As ESRI.ArcGIS.Framework.IApplication, _
+    Private Sub AddLayersToMapFrame(ByVal pApplication As ESRI.ArcGIS.Framework.IApplication,
                                     ByVal pMxDoc As ESRI.ArcGIS.ArcMapUI.IMxDocument)
         Dim pColor As IColor = New RgbColor
         Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
@@ -931,7 +950,7 @@ Public Class FrmPsuedoSite
             'Scenario 1 Represented area
             Dim filepathname As String = m_analysisFolder & "\" & m_representedArea
             If Not BA_File_Exists(filepathname, WorkspaceType.Geodatabase, ESRI.ArcGIS.Geodatabase.esriDatasetType.esriDTFeatureClass) Then
-                MessageBox.Show("Unable to locate the represented area from the site scenario tool. Cannot load map.", "Error", _
+                MessageBox.Show("Unable to locate the represented area from the site scenario tool. Cannot load map.", "Error",
                      MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 Exit Sub
             End If
@@ -991,7 +1010,7 @@ Public Class FrmPsuedoSite
             'add aoib as base layer for difference of representation maps
             If Not LayerIsOnMap(BA_MAPS_AOI_BASEMAP) Then
                 filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) & BA_BufferedAOIExtentRaster
-                retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_AOI_BASEMAP, _
+                retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_AOI_BASEMAP,
                                                     MapsDisplayStyle.Cyan_Light_to_Blue_Dark, 30, WorkspaceType.Geodatabase)
             End If
 
@@ -1010,7 +1029,7 @@ Public Class FrmPsuedoSite
                 filepathname = m_analysisFolder & "\" & m_cellStatsLayer
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
                     If Not LayerIsOnMap(BA_MAPS_PS_ALL_CONSTRAINTS) Then
-                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_ALL_CONSTRAINTS, _
+                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_ALL_CONSTRAINTS,
                                                             MapsDisplayStyle.Pink_to_Yellow_Green, 30, WorkspaceType.Geodatabase)
                     End If
                 End If
@@ -1021,7 +1040,7 @@ Public Class FrmPsuedoSite
                 filepathname = m_analysisFolder & "\" & m_proximityLayer
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
                     If Not LayerIsOnMap(BA_MAPS_PS_PROXIMITY) Then
-                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PROXIMITY, _
+                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PROXIMITY,
                                                             MapsDisplayStyle.Yellows, 30, WorkspaceType.Geodatabase)
                     End If
                 End If
@@ -1032,7 +1051,7 @@ Public Class FrmPsuedoSite
             If m_lastAnalysis.UseElevation Then
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
                     If Not LayerIsOnMap(BA_MAPS_PS_ELEVATION) Then
-                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION, _
+                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_ELEVATION,
                                        MapsDisplayStyle.Slope, 30, WorkspaceType.Geodatabase)
                     End If
                 End If
@@ -1043,7 +1062,7 @@ Public Class FrmPsuedoSite
             If m_lastAnalysis.UsePrism Then
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
                     If Not LayerIsOnMap(BA_MAPS_PS_PRECIPITATION) Then
-                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PRECIPITATION, _
+                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_PRECIPITATION,
                                     MapsDisplayStyle.Purple_Blues, 30, WorkspaceType.Geodatabase)
                     End If
                 End If
@@ -1054,7 +1073,7 @@ Public Class FrmPsuedoSite
             If m_lastAnalysis.UseLocation Then
                 If BA_File_Exists(filepathname, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
                     If Not LayerIsOnMap(BA_MAPS_PS_LOCATION) Then
-                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_LOCATION, _
+                        retVal = BA_DisplayRasterWithSymbol(pMxDoc, filepathname, BA_MAPS_PS_LOCATION,
                                     MapsDisplayStyle.Brown_to_Blue_Green, 30, WorkspaceType.Geodatabase)
                     End If
                 End If
@@ -1062,7 +1081,7 @@ Public Class FrmPsuedoSite
 
             'add hillshade
             If Not LayerIsOnMap(BA_MAPS_HILLSHADE) Then
-                filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) & _
+                filepathname = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) &
                     BA_GetBareName(BA_EnumDescription(PublicPath.Hillshade))
                 retVal = BA_MapDisplayRaster(pMxDoc, filepathname, BA_MAPS_HILLSHADE, 0)
             End If
@@ -1165,7 +1184,7 @@ Public Class FrmPsuedoSite
                 outFeaturesPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tempProximity
                 success = BA_Buffer(Convert.ToString(dRow.Cells(m_idxFullPaths).Value), outFeaturesPath, strBuffer, "ALL")
                 If success = BA_ReturnCode.Success Then
-                    success = BA_AddUserFieldToVector(m_analysisFolder, tempProximity, BA_FIELD_PSITE, esriFieldType.esriFieldTypeInteger, _
+                    success = BA_AddUserFieldToVector(m_analysisFolder, tempProximity, BA_FIELD_PSITE, esriFieldType.esriFieldTypeInteger,
                                                       -1, "1")
                     If success = BA_ReturnCode.Success Then
                         sb.Append(outFeaturesPath + "; ")
@@ -1186,7 +1205,7 @@ Public Class FrmPsuedoSite
             End If
             If success = BA_ReturnCode.Success Then
                 'Add 'NAME' field to be used as label for map
-                success = BA_AddUserFieldToRaster(m_analysisFolder, m_proximityLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString, _
+                success = BA_AddUserFieldToRaster(m_analysisFolder, m_proximityLayer, BA_FIELD_NAME, esriFieldType.esriFieldTypeString,
                                               100, BA_MAPS_PS_PROXIMITY)
                 For Each aPath As String In lstVectorsToDelete
                     Dim folderName As String = "PleaseReturn"
@@ -1232,7 +1251,7 @@ Public Class FrmPsuedoSite
 
     Private Sub SavePseudoSiteLog()
         TxtSiteName.Text = TxtSiteName.Text.Trim()
-        m_lastAnalysis = New PseudoSite(m_siteId, TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked, _
+        m_lastAnalysis = New PseudoSite(m_siteId, TxtSiteName.Text, CkElev.Checked, CkPrecip.Checked, CkProximity.Checked,
                                         CkLocation.Checked)
         'Save Elevation data
         If m_lastAnalysis.UseElevation Then
@@ -1243,7 +1262,7 @@ Public Class FrmPsuedoSite
         End If
         'Save Prism settings
         If m_lastAnalysis.UsePrism Then
-            m_lastAnalysis.PrismProperties(CmboxPrecipType.SelectedIndex, CmboxBegin.SelectedIndex, CmboxEnd.SelectedIndex, _
+            m_lastAnalysis.PrismProperties(CmboxPrecipType.SelectedIndex, CmboxBegin.SelectedIndex, CmboxEnd.SelectedIndex,
                                   CDbl(TxtPrecipUpper.Text), CDbl(TxtPrecipLower.Text))
         End If
         'Save Proximity settings
@@ -1267,7 +1286,7 @@ Public Class FrmPsuedoSite
                 Dim selectedList As List(Of String) = m_dictLocationIncludeValues(filePath)
                 Dim allValuesList As List(Of String) = m_dictLocationAllValues(filePath)
                 Dim layerName As String = Convert.ToString(pRow.Cells(m_idxLayer).Value)
-                m_lastAnalysis.AddLocationProperties(layerName, filePath, BA_FIELD_VALUE, selectedList, allValuesList, _
+                m_lastAnalysis.AddLocationProperties(layerName, filePath, BA_FIELD_VALUE, selectedList, allValuesList,
                                                      BA_PS_LOCATION)
             Next
         End If
@@ -1311,7 +1330,7 @@ Public Class FrmPsuedoSite
             '2. Calculate site elevation: Use extract values to points
             Dim filledDemPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Surfaces, True) + BA_EnumDescription(MapsFileName.filled_dem_gdb)
             Dim tempFileName As String = "tmpExtract"
-            Dim success As BA_ReturnCode = BA_ExtractValuesToPoints(m_analysisFolder + "\" + m_siteFileName, filledDemPath, _
+            Dim success As BA_ReturnCode = BA_ExtractValuesToPoints(m_analysisFolder + "\" + m_siteFileName, filledDemPath,
                                                                     m_analysisFolder + "\" + tempFileName, snapRasterPath, False)
             Dim newSite As Site = Nothing
             If success = BA_ReturnCode.Success Then
@@ -1356,7 +1375,7 @@ Public Class FrmPsuedoSite
             Dim idxOid As Short = fClass.Fields.FindField(BA_FIELD_OBJECT_ID)
             TxtSiteName.Text = TxtSiteName.Text.Trim()
             Dim queryElev As Integer = Math.Round(siteElev, 0)  'Round to avoid rounding differences with ArcMap
-            aQueryFilter.WhereClause = " " & BA_SiteNameField & " = '" & TxtSiteName.Text & _
+            aQueryFilter.WhereClause = " " & BA_SiteNameField & " = '" & TxtSiteName.Text &
                                        "' and ROUND(" & BA_SiteElevField & ",0) = " & queryElev
             If idxOid > -1 Then
                 aCursor = fClass.Search(aQueryFilter, False)
@@ -1571,7 +1590,7 @@ Public Class FrmPsuedoSite
         Dim rasterItem As LayerListItem = LstRasters.SelectedItem
         Dim overwriteExisting As Boolean = False
         If m_dictLocationAllValues.ContainsKey(rasterItem.Value) Then
-            Dim strMsg As String = "Selected values have already been configured for this Location layer. Do you " + _
+            Dim strMsg As String = "Selected values have already been configured for this Location layer. Do you " +
             "wish to overwrite that configuration ?"
             Dim res As DialogResult = MessageBox.Show(strMsg, "Location exists", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
             If res <> Windows.Forms.DialogResult.Yes Then
@@ -1634,7 +1653,7 @@ Public Class FrmPsuedoSite
 
     Private Sub BtnDeleteLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnDeleteLocation.Click
         If GrdLocation.SelectedRows.Count > 0 Then
-            Dim res As DialogResult = MessageBox.Show("You are about to delete a row from the Location constraint list. " + _
+            Dim res As DialogResult = MessageBox.Show("You are about to delete a row from the Location constraint list. " +
                                                       "This cannot be undone." + vbCrLf + vbCrLf + "Do you wish to continue ?",
                                                       "Delete", MessageBoxButtons.YesNo)
             If res = Windows.Forms.DialogResult.Yes Then
@@ -1828,7 +1847,7 @@ Public Class FrmPsuedoSite
 
     Private Sub BtnDeleteProximity_Click(sender As System.Object, e As System.EventArgs) Handles BtnDeleteProximity.Click
         If GrdProximity.SelectedRows.Count > 0 Then
-            Dim res As DialogResult = MessageBox.Show("You are about to delete a row from the Proximity constraint list. " + _
+            Dim res As DialogResult = MessageBox.Show("You are about to delete a row from the Proximity constraint list. " +
                                                       "This cannot be undone." + vbCrLf + vbCrLf + "Do you wish to continue ?",
                                                       "Delete", MessageBoxButtons.YesNo)
             If res = Windows.Forms.DialogResult.Yes Then
@@ -1847,7 +1866,7 @@ Public Class FrmPsuedoSite
         For Each dRow As DataGridViewRow In GrdProximity.Rows
             Dim filePath As String = Convert.ToString(dRow.Cells(m_idxFullPaths).Value)
             If rasterItem.Value.Equals(filePath) Then
-                Dim strMsg As String = "Selected values have already been configured for this Proximity layer. Do you " + _
+                Dim strMsg As String = "Selected values have already been configured for this Proximity layer. Do you " +
 "wish to overwrite that configuration ?"
                 Dim res As DialogResult = MessageBox.Show(strMsg, "Proximity exists", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
                 If res <> Windows.Forms.DialogResult.Yes Then
@@ -1893,11 +1912,13 @@ Public Class FrmPsuedoSite
         TxtSiteName.Text = logSite.SiteName
         If logSite.UseElevation Then
             CkElev.Checked = True
+            Dim logUsingMeters = True
             If logSite.ElevUnits = esriUnits.esriFeet Then
-                LblElevRange.Text = "Desired Range (Feet)"
+                logUsingMeters = False
             End If
-            txtLower.Text = CStr(logSite.LowerElev)
-            TxtUpperRange.Text = CStr(logSite.UpperElev)
+            Dim Conversion_Factor As Double = BA_SetConversionFactor(m_usingElevMeters, logUsingMeters)
+            txtLower.Text = CStr(Math.Round(logSite.LowerElev * Conversion_Factor))
+            TxtUpperRange.Text = CStr(Math.Round(logSite.UpperElev * Conversion_Factor))
         End If
         If logSite.UsePrism Then
             CkPrecip.Checked = True
@@ -2035,6 +2056,61 @@ Public Class FrmPsuedoSite
             Me.Text = "Add Pseudo Site: " + BA_GetBareName(AOIFolderBase)
             Me.EnableForm(True)
         End If
+
+        'Validate and fix the paths for location and proximity layers
+        Dim lstProximityLayers As IList(Of String) = New List(Of String)
+        Dim lstIdxToDelete As IList(Of Integer) = New List(Of Integer)
+        'For Each row As DataGridViewRow In GrdProximity.Rows
+        For i As Integer = 0 To GrdProximity.RowCount - 1
+            Dim row As DataGridViewRow = GrdProximity.Rows.Item(i)
+            Dim layerName As String = Convert.ToString(row.Cells(m_idxLayer).Value)
+            Dim layerLocation As String = Convert.ToString(row.Cells(m_idxFullPaths).Value)
+            If BA_File_Exists(layerLocation, WorkspaceType.Geodatabase,
+                              esriDatasetType.esriDTFeatureDataset) Then
+                'Do nothing; The layer is fine
+            Else
+                Dim isValid = False
+                For Each pName In [Enum].GetValues(GetType(GeodatabaseNames))
+                    Dim idxGdb As Integer = -1
+                    Dim EnumConstant As [Enum] = pName
+                    Dim fi As Reflection.FieldInfo = EnumConstant.GetType().GetField(EnumConstant.ToString())
+                    Dim aattr() As DescriptionAttribute =
+                            DirectCast(fi.GetCustomAttributes(GetType(DescriptionAttribute), False), DescriptionAttribute())
+                    Dim gdbName As String = aattr(0).Description
+                    idxGdb = layerLocation.IndexOf(gdbName)
+                    If idxGdb > 0 Then
+                        Dim relPath As String = layerLocation.Substring(idxGdb)
+                        If BA_File_Exists(AOIFolderBase + "\" + relPath, WorkspaceType.Geodatabase,
+                            esriDatasetType.esriDTFeatureClass) Then
+                            row.Cells(m_idxFullPaths).Value = AOIFolderBase + "\" + relPath
+                            isValid = True
+                            Exit For
+                        End If
+                    End If
+                Next
+                If Not isValid Then
+                    lstProximityLayers.Add(layerName)
+                    lstIdxToDelete.Add(i)
+                End If
+            End If
+        Next
+        'One of more of the layers cannot be used
+        If lstProximityLayers.Count > 0 Then
+            For Each idx As Integer In lstIdxToDelete
+                GrdProximity.Rows.RemoveAt(idx)
+            Next
+            Dim sb As StringBuilder = New StringBuilder
+            sb.Append("The following proximity layers could not be located on your computer and were removed from the analysis: " + vbCrLf)
+            For Each layerName As String In lstProximityLayers
+                sb.Append(layerName + vbCrLf)
+            Next
+            sb.Append(vbCrLf + "Do you wish to continue?")
+            Dim res As DialogResult = MessageBox.Show(sb.ToString, "BAGIS", MessageBoxButtons.YesNo)
+            If res <> DialogResult.Yes Then
+                Exit Sub
+            End If
+        End If
+
         Me.BtnFindSite.Enabled = True
         Me.BtnFindSite.PerformClick()
     End Sub
@@ -2096,4 +2172,38 @@ Public Class FrmPsuedoSite
             MessageBox.Show("The help .html file could not be found!", "BAGIS V3")
         End If
     End Sub
+
+    Private Function CheckForSiteType() As BA_ReturnCode
+        Dim pFeatClass As IFeatureClass
+        Try
+            pFeatClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True), BA_EnumDescription(MapsFileName.Pseudo))
+            Dim idxType As Integer = pFeatClass.FindField(BA_SiteTypeField)
+            If idxType < 0 Then
+                Dim pFld As IFieldEdit = New Field
+                pFld.Name_2 = BA_SiteTypeField
+                pFld.Type_2 = esriFieldType.esriFieldTypeString
+                pFld.Length_2 = 5
+                pFld.Required_2 = False
+                ' Add field
+                pFeatClass.AddField(pFld)
+                idxType = pFeatClass.FindField(BA_SiteTypeField)
+
+                Dim queryFilter As IQueryFilter = New QueryFilter
+                queryFilter.WhereClause = "OBJECTID > 0 "
+                Dim fCursor As IFeatureCursor = pFeatClass.Update(queryFilter, False)
+                Dim pFeature As IFeature = fCursor.NextFeature
+                Do While pFeature IsNot Nothing
+                    pFeature.Value(idxType) = BA_SitePseudo
+                    fCursor.UpdateFeature(pFeature)
+                    pFeature = fCursor.NextFeature
+                Loop
+            End If
+            Return BA_ReturnCode.Success
+        Catch ex As Exception
+            Debug.Print("CheckForSiteType Exception: " + ex.Message)
+            Return BA_ReturnCode.UnknownError
+        Finally
+            pFeatClass = Nothing
+        End Try
+    End Function
 End Class
