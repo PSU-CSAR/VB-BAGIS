@@ -7,7 +7,6 @@ Imports ESRI.ArcGIS.Framework
 Imports ESRI.ArcGIS.Display
 Imports ESRI.ArcGIS.Carto
 Imports ESRI.ArcGIS.Geodatabase
-Imports System.ComponentModel
 
 Public Class FrmPsuedoSite
 
@@ -23,7 +22,7 @@ Public Class FrmPsuedoSite
     Private m_cellStatsLayer As String = "ps_cellStat"
     Private m_demInMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
     Private m_usingElevMeters As Boolean    'Inherited from Site Scenario form; Controls elevation display/calculation
-    Private m_usingXYUnits As MeasurementUnit  'Inerited from Site Scenario form; Controls proximity display/calculation  
+    Private m_usingXYUnits As esriUnits  'Inerited from Site Scenario form; Controls proximity display/calculation  
     Private m_aoiBoundary As String = BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
     Private m_lastAnalysis As PseudoSite = Nothing  'The site currently loaded in form
     Private m_formLoaded As Boolean = False
@@ -65,19 +64,7 @@ Public Class FrmPsuedoSite
         'Populate class-level variables
         m_usingElevMeters = useMeters
         m_demInMeters = demInMeters
-        'Convert esriUnits to measurement unit
-        Select Case usingXYUnits
-            Case esriUnits.esriFeet
-                m_usingXYUnits = MeasurementUnit.Feet
-            Case esriUnits.esriMeters
-                m_usingXYUnits = MeasurementUnit.Meters
-            Case esriUnits.esriMiles
-                m_usingXYUnits = MeasurementUnit.Miles
-            Case esriUnits.esriKilometers
-                m_usingXYUnits = MeasurementUnit.Kilometers
-            Case Else
-                m_usingXYUnits = MeasurementUnit.Meters
-        End Select
+        m_usingXYUnits = usingXYUnits
 
         ' Add any initialization after the InitializeComponent() call.
         CmboxPrecipType.Items.Clear()
@@ -132,7 +119,6 @@ Public Class FrmPsuedoSite
         'Determine if Display ZUnit is the same as DEM ZUnit
         'AOI_DEMMin and AOI_DEMMax use internal system unit, i.e., meters
         Dim Conversion_Factor As Double = BA_SetConversionFactor(m_usingElevMeters, m_demInMeters) 'i.e., meters to meters
-        'm_demMin = Math.Round(pRasterStats.Minimum * Conversion_Factor - 0.005, 2)
         'Cheat up so min is never outside of the actual range
         m_demMin = pRasterStats.Minimum * Conversion_Factor - 0.005
         m_demMax = pRasterStats.Maximum * Conversion_Factor + 0.005
@@ -152,13 +138,13 @@ Public Class FrmPsuedoSite
 
         'Set proximity label; Default is meters when form loads
         Select Case m_usingXYUnits
-            Case MeasurementUnit.Feet
+            Case esriUnits.esriFeet
                 LblBufferDistance.Text = "Feet"
                 LblAddBufferDistance.Text = "Buffer Distance (Feet):"
-            Case MeasurementUnit.Kilometers
+            Case esriUnits.esriKilometers
                 LblBufferDistance.Text = "Kilometers"
                 LblAddBufferDistance.Text = "Buffer Distance (Km):"
-            Case MeasurementUnit.Miles
+            Case esriUnits.esriMiles
                 LblBufferDistance.Text = "Miles"
                 LblAddBufferDistance.Text = "Buffer Distance (Miles):"
         End Select
@@ -672,10 +658,10 @@ Public Class FrmPsuedoSite
                 Dim fromElevUnits As esriUnits = esriUnits.esriFeet
                 If m_usingElevMeters Then _
                     fromElevUnits = esriUnits.esriMeters
-                strMinElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMin, fromElevUnits, toElevUnits)))
+                strMinElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMin, fromElevUnits, toElevUnits), 5))
                 strLower = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(txtLower.Text), fromElevUnits, toElevUnits)))
                 strUpperRange = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(TxtUpperRange.Text), fromElevUnits, toElevUnits)))
-                strMaxElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMax, fromElevUnits, toElevUnits)))
+                strMaxElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMax, fromElevUnits, toElevUnits), 5))
             End If
             sb.Append(strMinElev + " " + strLower + " NoData;")
             sb.Append(strLower + " " + strUpperRange + " 1;")
@@ -1830,11 +1816,19 @@ Public Class FrmPsuedoSite
         If GrdProximity.SelectedRows.Count > 0 Then
             Dim dRow As DataGridViewRow = GrdProximity.SelectedRows(0)
             Dim fullPath As String = Convert.ToString(dRow.Cells(m_idxFullPaths).Value)
+            If Not BA_File_Exists(fullPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
+                Dim idxGdb As Integer = -1
+                idxGdb = fullPath.IndexOf(BA_EnumDescription(GeodatabaseNames.Layers))
+                If idxGdb > 0 Then
+                    fullPath = AOIFolderBase + "\" + fullPath.Substring(idxGdb)
+                End If
+            End If
             LstVectors.ClearSelected()
             For i As Int16 = 0 To LstVectors.Items.Count - 1
                 Dim item As LayerListItem = LstVectors.Items(i)
                 If item.Value.Equals(fullPath) Then
                     LstVectors.SelectedIndex = i
+                    dRow.Cells(m_idxFullPaths).Value = fullPath
                     Exit For
                 End If
             Next
@@ -1944,11 +1938,20 @@ Public Class FrmPsuedoSite
             CkProximity.Checked = True
             If logSite.ProximityLayers IsNot Nothing AndAlso logSite.ProximityLayers.Count > 0 Then
                 For Each pLayer As PseudoSiteLayer In logSite.ProximityLayers
+                    'Convert distance if units are different
+                    Dim bufferDistance As Double = pLayer.BufferDistance
+                    If pLayer.BufferUnits <> m_usingXYUnits Then
+                        Dim converter As IUnitConverter = New UnitConverter
+                        bufferDistance = Math.Round(converter.ConvertUnits(bufferDistance, pLayer.BufferUnits, m_usingXYUnits), 3)
+                        If pLayer.BufferUnits = esriUnits.esriUnknownUnits Then
+                            MessageBox.Show("The units for a proximity layer are missing. The distance displayed may not be correct!", "BAGIS")
+                        End If
+                    End If
                     Dim item As New DataGridViewRow
                     item.CreateCells(GrdLocation)
                     With item
                         .Cells(m_idxLayer).Value = pLayer.LayerName
-                        .Cells(m_idxBufferDistance).Value = pLayer.BufferDistance
+                        .Cells(m_idxBufferDistance).Value = bufferDistance
                         .Cells(m_idxFullPaths).Value = pLayer.LayerPath
                     End With
                     '---add the row---
@@ -2070,24 +2073,17 @@ Public Class FrmPsuedoSite
                 'Do nothing; The layer is fine
             Else
                 Dim isValid = False
-                For Each pName In [Enum].GetValues(GetType(GeodatabaseNames))
-                    Dim idxGdb As Integer = -1
-                    Dim EnumConstant As [Enum] = pName
-                    Dim fi As Reflection.FieldInfo = EnumConstant.GetType().GetField(EnumConstant.ToString())
-                    Dim aattr() As DescriptionAttribute =
-                            DirectCast(fi.GetCustomAttributes(GetType(DescriptionAttribute), False), DescriptionAttribute())
-                    Dim gdbName As String = aattr(0).Description
-                    idxGdb = layerLocation.IndexOf(gdbName)
-                    If idxGdb > 0 Then
-                        Dim relPath As String = layerLocation.Substring(idxGdb)
-                        If BA_File_Exists(AOIFolderBase + "\" + relPath, WorkspaceType.Geodatabase,
-                            esriDatasetType.esriDTFeatureClass) Then
-                            row.Cells(m_idxFullPaths).Value = AOIFolderBase + "\" + relPath
-                            isValid = True
-                            Exit For
-                        End If
+                Dim idxGdb As Integer = -1
+                idxGdb = layerLocation.IndexOf(BA_EnumDescription(GeodatabaseNames.Layers))
+                If idxGdb > 0 Then
+                    Dim relPath As String = layerLocation.Substring(idxGdb)
+                    If BA_File_Exists(AOIFolderBase + "\" + relPath, WorkspaceType.Geodatabase,
+                        esriDatasetType.esriDTFeatureClass) Then
+                        row.Cells(m_idxFullPaths).Value = AOIFolderBase + "\" + relPath
+                        isValid = True
+                        Exit For
                     End If
-                Next
+                End If
                 If Not isValid Then
                     lstProximityLayers.Add(layerName)
                     lstIdxToDelete.Add(i)
