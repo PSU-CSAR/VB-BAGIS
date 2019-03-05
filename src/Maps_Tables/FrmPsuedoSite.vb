@@ -658,10 +658,10 @@ Public Class FrmPsuedoSite
                 Dim fromElevUnits As esriUnits = esriUnits.esriFeet
                 If m_usingElevMeters Then _
                     fromElevUnits = esriUnits.esriMeters
-                strMinElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMin, fromElevUnits, toElevUnits), 5))
-                strLower = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(txtLower.Text), fromElevUnits, toElevUnits)))
-                strUpperRange = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(TxtUpperRange.Text), fromElevUnits, toElevUnits)))
-                strMaxElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMax, fromElevUnits, toElevUnits), 5))
+                strMinElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMin, fromElevUnits, toElevUnits), 3) - 0.005)
+                strLower = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(txtLower.Text), fromElevUnits, toElevUnits), 3))
+                strUpperRange = Convert.ToString(Math.Round(converter.ConvertUnits(Convert.ToDouble(TxtUpperRange.Text), fromElevUnits, toElevUnits), 3))
+                strMaxElev = Convert.ToString(Math.Round(converter.ConvertUnits(m_demMax, fromElevUnits, toElevUnits), 3) + 0.005)
             End If
             sb.Append(strMinElev + " " + strLower + " NoData;")
             sb.Append(strLower + " " + strUpperRange + " 1;")
@@ -1540,6 +1540,7 @@ Public Class FrmPsuedoSite
 
     Private Sub LstRasters_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles LstRasters.SelectedIndexChanged
         PopulateValuesList()
+        RaiseEvent FormInputChanged()
     End Sub
 
     Private Sub ToggleLocationButtons(ByVal enabled As Boolean)
@@ -1685,12 +1686,35 @@ Public Class FrmPsuedoSite
     Private Sub BtnEditLocation_Click(sender As System.Object, e As System.EventArgs) Handles BtnEditLocation.Click
         If GrdLocation.SelectedRows.Count > 0 Then
             Dim dRow As DataGridViewRow = GrdLocation.SelectedRows(0)
-            Dim fullPath As String = Convert.ToString(dRow.Cells(m_idxFullPaths).Value)
+            Dim layerPath As String = Convert.ToString(dRow.Cells(m_idxFullPaths).Value)
+            Dim fullPath = layerPath
+            'Fix the full path if the AOI was moved to another filefolder
+            If Not BA_File_Exists(fullPath, WorkspaceType.Geodatabase, esriDatasetType.esriDTRasterDataset) Then
+                Dim idxGdb As Integer = -1
+                Dim arrGeodatabases() As String = {BA_EnumDescription(GeodatabaseNames.Layers), BA_EnumDescription(GeodatabaseNames.Analysis)}
+                For Each geodatabase As String In arrGeodatabases
+                    idxGdb = layerPath.IndexOf(geodatabase)
+                    If idxGdb > 0 Then
+                        fullPath = AOIFolderBase + "\" + fullPath.Substring(idxGdb)
+                        If m_dictLocationIncludeValues.ContainsKey(layerPath) Then
+                            m_dictLocationIncludeValues.Add(fullPath, m_dictLocationIncludeValues(layerPath))
+                            m_dictLocationIncludeValues.Remove(layerPath)
+                        End If
+                        If m_dictLocationAllValues.ContainsKey(layerPath) Then
+                            m_dictLocationAllValues.Add(fullPath, m_dictLocationAllValues(layerPath))
+                            m_dictLocationAllValues.Remove(layerPath)
+                        End If
+                        Exit For
+                    End If
+                Next
+            End If
+
             LstRasters.ClearSelected()
             For i As Int16 = 0 To LstRasters.Items.Count - 1
                 Dim item As LayerListItem = LstRasters.Items(i)
                 If item.Value.Equals(fullPath) Then
                     LstRasters.SelectedIndex = i
+                    dRow.Cells(m_idxFullPaths).Value = fullPath
                     Exit For
                 End If
             Next
@@ -2060,7 +2084,7 @@ Public Class FrmPsuedoSite
             Me.EnableForm(True)
         End If
 
-        'Validate and fix the paths for location and proximity layers
+        'Validate and fix the paths for proximity layers
         Dim lstProximityLayers As IList(Of String) = New List(Of String)
         Dim lstIdxToDelete As IList(Of Integer) = New List(Of Integer)
         'For Each row As DataGridViewRow In GrdProximity.Rows
@@ -2098,6 +2122,66 @@ Public Class FrmPsuedoSite
             Dim sb As StringBuilder = New StringBuilder
             sb.Append("The following proximity layers could not be located on your computer and were removed from the analysis: " + vbCrLf)
             For Each layerName As String In lstProximityLayers
+                sb.Append(layerName + vbCrLf)
+            Next
+            sb.Append(vbCrLf + "Do you wish to continue?")
+            Dim res As DialogResult = MessageBox.Show(sb.ToString, "BAGIS", MessageBoxButtons.YesNo)
+            If res <> DialogResult.Yes Then
+                Exit Sub
+            End If
+        End If
+
+        'Validate and fix the paths for location layers
+        Dim lstLocationLayers As IList(Of String) = New List(Of String)
+        lstIdxToDelete.Clear()
+        For i As Integer = 0 To GrdLocation.RowCount - 1
+            Dim row As DataGridViewRow = GrdLocation.Rows.Item(i)
+            Dim layerName As String = Convert.ToString(row.Cells(m_idxLayer).Value)
+            Dim layerLocation As String = Convert.ToString(row.Cells(m_idxFullPaths).Value)
+            If BA_File_Exists(layerLocation, WorkspaceType.Geodatabase,
+                              esriDatasetType.esriDTRasterDataset) Then
+                'Do nothing; The layer is fine
+            Else
+                Dim isValid = False
+                Dim idxGdb As Integer = -1
+                Dim arrGeodatabases() As String = {BA_EnumDescription(GeodatabaseNames.Layers), BA_EnumDescription(GeodatabaseNames.Analysis)}
+                For Each geodatabase As String In arrGeodatabases
+                    idxGdb = layerLocation.IndexOf(geodatabase)
+                    If idxGdb > 0 Then
+                        Dim relPath As String = layerLocation.Substring(idxGdb)
+                        If BA_File_Exists(AOIFolderBase + "\" + relPath, WorkspaceType.Geodatabase,
+                            esriDatasetType.esriDTRasterDataset) Then
+                            row.Cells(m_idxFullPaths).Value = AOIFolderBase + "\" + relPath
+                            ' Fix the full path in the location layer dictionaries
+                            If m_dictLocationAllValues.ContainsKey(layerLocation) Then
+                                m_dictLocationAllValues.Add(AOIFolderBase + "\" + relPath, m_dictLocationAllValues.Item(layerLocation))
+                                m_dictLocationAllValues.Remove(layerLocation)
+                            End If
+                            If m_dictLocationIncludeValues.ContainsKey(layerLocation) Then
+                                m_dictLocationIncludeValues.Add(AOIFolderBase + "\" + relPath, m_dictLocationIncludeValues.Item(layerLocation))
+                                m_dictLocationIncludeValues.Remove(layerLocation)
+                            End If
+                            isValid = True
+                            Exit For
+                        End If
+                    End If
+                Next
+                If Not isValid Then
+                    lstLocationLayers.Add(layerName)
+                    lstIdxToDelete.Add(i)
+                    m_dictLocationAllValues.Remove(layerLocation)
+                    m_dictLocationIncludeValues.Remove(layerLocation)
+                End If
+            End If
+        Next
+        'One of more of the layers cannot be used
+        If lstLocationLayers.Count > 0 Then
+            For Each idx As Integer In lstIdxToDelete
+                GrdLocation.Rows.RemoveAt(idx)
+            Next
+            Dim sb As StringBuilder = New StringBuilder
+            sb.Append("The following location layers could not be located on your computer and were removed from the analysis: " + vbCrLf)
+            For Each layerName As String In lstLocationLayers
                 sb.Append(layerName + vbCrLf)
             Next
             sb.Append(vbCrLf + "Do you wish to continue?")
