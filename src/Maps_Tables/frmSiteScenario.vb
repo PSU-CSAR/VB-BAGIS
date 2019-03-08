@@ -58,7 +58,7 @@ Public Class frmSiteScenario
     Friend idxUpper As Integer = 5
     Friend idxLower As Integer = 6
     Friend idxDefaultElevation As Integer = 7
-    Private m_calculateScenario2 As Boolean = False
+    Private m_calculateScenario2 As Boolean = True
     Private m_displayScenarioMaps As Boolean = True
 
     Public Sub New(ByVal hook As Object)
@@ -2135,14 +2135,23 @@ Public Class frmSiteScenario
 
             pStepProg.Message = "Clip represented area map to AOI"
             pStepProg.Step()
-            If BA_File_Exists(analysisFolder + "\" + BA_EnumDescription(MapsFileName.ActualRepresentedArea), WorkspaceType.Geodatabase, _
+            If BA_File_Exists(analysisFolder + "\" + BA_EnumDescription(MapsFileName.ActualRepresentedArea), WorkspaceType.Geodatabase,
                               esriDatasetType.esriDTFeatureClass) = True Then
                 response = BA_Remove_ShapefileFromGDB(analysisFolder, BA_EnumDescription(MapsFileName.ActualRepresentedArea))
             End If
-            response = BA_ClipAOIVector(AOIFolderBase, analysisFolder + "\" + tmpRepFileName,
-                                                       BA_EnumDescription(MapsFileName.ActualRepresentedArea), analysisFolder, False)
-            If response = 1 Then
-                BA_Remove_ShapefileFromGDB(analysisFolder, tmpRepFileName)
+            'Create buffer file to alleviate issues with small connected polygons in AOIs; We only want one polygon in the clip file
+            Dim clipFilePath As String = analysisFolder + "\tmpAoiBuffer"
+            success = BA_Buffer(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_EnumDescription(AOIClipFile.AOIExtentCoverage),
+                                clipFilePath, "0.5 Meters", "ALL")
+            If success = BA_ReturnCode.Success Then
+                success = BA_ClipFeatureClass(analysisFolder + "\" + tmpRepFileName, analysisFolder + "\" + BA_EnumDescription(MapsFileName.ActualRepresentedArea),
+                          clipFilePath)
+            End If
+            If success = BA_ReturnCode.Success Then
+                    BA_Remove_ShapefileFromGDB(analysisFolder, tmpRepFileName)
+                Else
+                MessageBox.Show("An error occurred while clipping the Scenario 1 Represented Area to the AOI. Calculation failed!", "BAGIS")
+                Exit Sub
             End If
             '--- Pseudo Representation ---
             If GrdScenario2.Rows.Count > 0 AndAlso m_calculateScenario2 = True Then
@@ -2257,14 +2266,17 @@ Public Class frmSiteScenario
 
                 pStepProg.Message = "Clip scenario 2 represented area map to AOI"
                 pStepProg.Step()
-                If BA_File_Exists(analysisFolder + "\" + BA_EnumDescription(MapsFileName.PseudoRepresentedArea), WorkspaceType.Geodatabase, _
+                If BA_File_Exists(analysisFolder + "\" + BA_EnumDescription(MapsFileName.PseudoRepresentedArea), WorkspaceType.Geodatabase,
                                   esriDatasetType.esriDTFeatureClass) = True Then
                     response = BA_Remove_ShapefileFromGDB(analysisFolder, BA_EnumDescription(MapsFileName.PseudoRepresentedArea))
                 End If
-                response = BA_ClipAOIVector(AOIFolderBase, analysisFolder + "\" + tmpRepFileName,
-                                                           BA_EnumDescription(MapsFileName.PseudoRepresentedArea), analysisFolder, False)
-                If response = 1 Then
-                    response = BA_Remove_ShapefileFromGDB(analysisFolder, tmpRepFileName)
+                success = BA_ClipFeatureClass(analysisFolder + "\" + tmpRepFileName, analysisFolder + "\" + BA_EnumDescription(MapsFileName.PseudoRepresentedArea),
+                          clipFilePath)
+                If success = BA_ReturnCode.Success Then
+                    BA_Remove_ShapefileFromGDB(analysisFolder, tmpRepFileName)
+                Else
+                    MessageBox.Show("An error occurred while clipping the Scenario 2 Represented Area to the AOI. Calculation failed!", "BAGIS")
+                    Exit Sub
                 End If
             ElseIf m_calculateScenario2 = True Then
                 'Delete old scenario sites layer to avoid confusion
@@ -2330,7 +2342,7 @@ Public Class frmSiteScenario
             Debug.Print("CalculateRepresentedArea Exception: " & ex.Message)
         Finally
             ' Always reset control flags to default for Site Scenario form
-            m_calculateScenario2 = True
+            m_calculateScenario2 = False
             m_displayScenarioMaps = True
             If progressDialog2 IsNot Nothing Then
                 progressDialog2.HideDialog()
@@ -3002,12 +3014,6 @@ Public Class frmSiteScenario
         sb.Append("generating the Site Scenario tables.")
         MessageBox.Show(sb.ToString, "BAGIS Help", MessageBoxButtons.OK, MessageBoxIcon.None)
     End Sub
-
-    Public WriteOnly Property CalculateScenario2Flag
-        Set(value)
-            m_calculateScenario2 = value
-        End Set
-    End Property
 
     Public WriteOnly Property DisplayScenarioMapsFlag
         Set(value)
