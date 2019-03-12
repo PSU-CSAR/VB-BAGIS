@@ -2139,17 +2139,11 @@ Public Class frmSiteScenario
                               esriDatasetType.esriDTFeatureClass) = True Then
                 response = BA_Remove_ShapefileFromGDB(analysisFolder, BA_EnumDescription(MapsFileName.ActualRepresentedArea))
             End If
-            'Create buffer file to alleviate issues with small connected polygons in AOIs; We only want one polygon in the clip file
-            Dim clipFilePath As String = analysisFolder + "\tmpAoiBuffer"
-            success = BA_Buffer(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_EnumDescription(AOIClipFile.AOIExtentCoverage),
-                                clipFilePath, "0.5 Meters", "ALL")
-            If success = BA_ReturnCode.Success Then
-                success = BA_ClipFeatureClass(analysisFolder + "\" + tmpRepFileName, analysisFolder + "\" + BA_EnumDescription(MapsFileName.ActualRepresentedArea),
-                          clipFilePath)
-            End If
-            If success = BA_ReturnCode.Success Then
-                    BA_Remove_ShapefileFromGDB(analysisFolder, tmpRepFileName)
-                Else
+            response = BA_ClipAOIVector(AOIFolderBase, analysisFolder + "\" + tmpRepFileName, BA_EnumDescription(MapsFileName.ActualRepresentedArea),
+                                        analysisFolder, False)
+            If response = 1 Then
+                BA_Remove_ShapefileFromGDB(analysisFolder, tmpRepFileName)
+            Else
                 MessageBox.Show("An error occurred while clipping the Scenario 1 Represented Area to the AOI. Calculation failed!", "BAGIS")
                 Exit Sub
             End If
@@ -2270,9 +2264,8 @@ Public Class frmSiteScenario
                                   esriDatasetType.esriDTFeatureClass) = True Then
                     response = BA_Remove_ShapefileFromGDB(analysisFolder, BA_EnumDescription(MapsFileName.PseudoRepresentedArea))
                 End If
-                success = BA_ClipFeatureClass(analysisFolder + "\" + tmpRepFileName, analysisFolder + "\" + BA_EnumDescription(MapsFileName.PseudoRepresentedArea),
-                          clipFilePath)
-                If success = BA_ReturnCode.Success Then
+                response = BA_ClipAOIVector(AOIFolderBase, analysisFolder + "\" + tmpRepFileName, BA_EnumDescription(MapsFileName.PseudoRepresentedArea), analysisFolder, False)
+                If response = 1 Then
                     BA_Remove_ShapefileFromGDB(analysisFolder, tmpRepFileName)
                 Else
                     MessageBox.Show("An error occurred while clipping the Scenario 2 Represented Area to the AOI. Calculation failed!", "BAGIS")
@@ -2293,6 +2286,7 @@ Public Class frmSiteScenario
             End If
             RepDifferenceMap_Flag = False
             If success = BA_ReturnCode.Success Then
+
                 'We have a second scenario and need to combine the maps
                 If Scenario2Map_Flag = True Then
                     pStepProg.Message = "Create difference in representation map"
@@ -2302,8 +2296,8 @@ Public Class frmSiteScenario
                     layerList.Add(analysisFolder & "\" & BA_EnumDescription(MapsFileName.PseudoRepresentedArea))
                     'Try using this for mask also
                     Dim snapRasterPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi) & "\" & BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
-                    success = BA_CreateRepresentationDifference(snapRasterPath, layerList, analysisFolder, _
-                                                                BA_EnumDescription(MapsFileName.DifferenceRepresentedArea))
+                    success = BA_CreateRepresentationDifference(snapRasterPath, layerList, analysisFolder,
+                                                            BA_EnumDescription(MapsFileName.DifferenceRepresentedArea))
                     If success = BA_ReturnCode.Success Then
                         RepDifferenceMap_Flag = True
                     End If
@@ -2321,8 +2315,8 @@ Public Class frmSiteScenario
                     'Display scenario 1 map as default
                     Dim Basin_Name As String = ""
                     BA_AddMapElements(My.Document, m_CurrentAOI, "Subtitle BAGIS")
-                    Dim retVal As Integer = BA_DisplayMap(My.Document, 7, Basin_Name, m_CurrentAOI, Map_Display_Elevation_in_Meters, _
-                                            Trim(TxtScenario1.Text))
+                    Dim retVal As Integer = BA_DisplayMap(My.Document, 7, Basin_Name, m_CurrentAOI, Map_Display_Elevation_in_Meters,
+                                        Trim(TxtScenario1.Text))
                     BA_RemoveLayersfromLegend(My.Document)
                     Dim sb As StringBuilder = New StringBuilder
                     sb.Append("Please use the menu items to view maps!")
@@ -2333,8 +2327,8 @@ Public Class frmSiteScenario
                     MessageBox.Show(sb.ToString, "BAGIS V3 Site Scenario", MessageBoxButtons.OK, MessageBoxIcon.Information)
                     Call BA_Enable_ScenarioMapFlags(True)
                 Else
-                    MessageBox.Show("The represented area calculation is complete!", "BAGIS V3 Site Scenario", _
-                                    MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    MessageBox.Show("The represented area calculation is complete!", "BAGIS V3 Site Scenario",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information)
                 End If
             End If
             ManageMapsButton()

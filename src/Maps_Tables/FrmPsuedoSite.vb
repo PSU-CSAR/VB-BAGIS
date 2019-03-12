@@ -1497,35 +1497,6 @@ Public Class FrmPsuedoSite
         End If
     End Sub
 
-    Private Sub ClipDataFrameToAoiBorder()
-        Try
-            Dim clipFc As IFeatureClass = BA_OpenFeatureClassFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi), m_aoiBoundary)
-            Dim clipCursor As IFeatureCursor = clipFc.Search(Nothing, True)
-            Dim clipFeature As IFeature = clipCursor.NextFeature
-            If clipFeature IsNot Nothing Then
-                Dim mOptions As IMapClipOptions = CType(My.Document.FocusMap, IMapClipOptions)
-                mOptions.ClipGeometry = clipFeature.Shape
-                'Create border object
-                Dim pBorder As IBorder = New SymbolBorder
-                Dim pStyleGallery As IStyleGallery = My.Document.StyleGallery
-                Dim pEnumStyleGallery As IEnumStyleGalleryItem = pStyleGallery.Items("Borders", "ESRI.style", "Default")
-                pEnumStyleGallery.Reset()
-                Dim pStyleItem As IStyleGalleryItem2 = pEnumStyleGallery.Next
-                Do Until pStyleItem Is Nothing
-                    If pStyleItem.Name = "3.0 Point" Then
-                        pBorder = pStyleItem.Item
-                        'Apply border object
-                        mOptions.ClipBorder = pBorder
-                        Exit Do
-                    End If
-                    pStyleItem = pEnumStyleGallery.Next
-                Loop
-            End If
-        Catch ex As Exception
-            Debug.Print("ClipDataFrameToAoiBorder Exception: " & ex.Message)
-        End Try
-    End Sub
-
     Private Sub CkLocation_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles CkLocation.CheckedChanged
         GrpLocation.Enabled = CkLocation.Checked
         If CkLocation.Checked = False Then

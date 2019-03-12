@@ -1072,8 +1072,7 @@ Public Class frmAOIInfo
                 LstVectors.Items.Add(item)
 
             ElseIf data_type_code = 2 Then 'raster clip
-                Dim clipKey As AOIClipFile = 1
-                response = BA_ClipAOIRaster(m_aoi.FilePath, data_fullname, outlayername, outputFolder, clipKey)
+                response = BA_ClipAOIRaster(m_aoi.FilePath, data_fullname, outlayername, outputFolder, AOIClipFile.BufferedAOIExtentCoverage)
                 If response <= 0 Then
                     Throw New Exception(vbCrLf + "Raster Clipping failed! Return value = " & response & ".")
                     Exit Sub
