@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -288,7 +288,7 @@
     <Compile Include="Basin\frmBasin_Tool.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Basin\frmClipDEMtoAOI.Designer.vb">
+    <Compile Include="Basin\frmClipDEM.Designer.vb">
       <DependentUpon>frmClipDEM.vb</DependentUpon>
     </Compile>
     <Compile Include="Basin\frmClipDEM.vb">
@@ -426,7 +426,7 @@
     <EmbeddedResource Include="Basin\frmBasin_Tool.resx">
       <DependentUpon>frmBasin_Tool.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Basin\frmClipDEMtoAOI.resx">
+    <EmbeddedResource Include="Basin\frmClipDEM.resx">
       <DependentUpon>frmClipDEM.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AOI\frmCreateAOI.resx">
