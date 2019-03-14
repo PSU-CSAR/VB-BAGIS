@@ -288,7 +288,7 @@
     <Compile Include="Basin\frmBasin_Tool.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Basin\frmClipDEM.Designer.vb">
+    <Compile Include="Basin\frmClipDEMtoAOI.Designer.vb">
       <DependentUpon>frmClipDEM.vb</DependentUpon>
     </Compile>
     <Compile Include="Basin\frmClipDEM.vb">
@@ -426,7 +426,7 @@
     <EmbeddedResource Include="Basin\frmBasin_Tool.resx">
       <DependentUpon>frmBasin_Tool.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Basin\frmClipDEM.resx">
+    <EmbeddedResource Include="Basin\frmClipDEMtoAOI.resx">
       <DependentUpon>frmClipDEM.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AOI\frmCreateAOI.resx">

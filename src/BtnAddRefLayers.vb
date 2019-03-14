@@ -1,21 +1,21 @@
-﻿Imports ESRI.ArcGIS.Desktop.AddIns
-Imports System.IO
+﻿
 Imports BAGIS_ClassLibrary
-Imports ESRI.ArcGIS.ArcMapUI
 Imports ESRI.ArcGIS.Geodatabase
-Imports ESRI.ArcGIS.DataSourcesFile
-Imports ESRI.ArcGIS.Carto
+Imports System.Windows.Forms
 
 Public Class BtnAddRefLayers
     Inherits ESRI.ArcGIS.Desktop.AddIns.Button
-    Public settingsform As frmSettings = New frmSettings
+
     Public Sub New()
         BA_SetSettingPath()
         If Len(BA_Settings_Filepath) = 0 Then
             MsgBox("ERROR! BA_Read_Settings: Cannot retrieve the file path and name of the definition file.")
+        Else
+            Dim retVal As Integer = BA_ReadBAGISSettings(BA_Settings_Filepath)
+            If retVal <> 1 Then
+                MessageBox.Show("The BAGIS settings were not loaded successfully!!", "BAGIS")
+            End If
         End If
-        Dim settings_message As String = BA_Read_Settings(settingsform)
-        BA_SystemSettings.listCount = settingsform.lstLayers.Items.Count
     End Sub
     Public WriteOnly Property selectedProperty As Boolean
         Set(ByVal value As Boolean)
@@ -38,16 +38,16 @@ Public Class BtnAddRefLayers
             pourpointRef = ppointpath & pplayername
         Else
             Dim checkedUrls As IDictionary(Of String, Boolean) = New Dictionary(Of String, Boolean)
-            valid1 = BA_VerifyUrl(settingsform.txtGaugeStation.Text, checkedUrls)
+            valid1 = BA_VerifyUrl(pourpointRef, checkedUrls)
         End If
 
         Dim FileExists As Boolean = False
         If valid1 Then
-            If Not String.IsNullOrEmpty(settingsform.txtGaugeStation.Text) Then 'it's OK to not have a specified reference layer
+            If Not String.IsNullOrEmpty(pourpointRef) Then 'it's OK to not have a specified reference layer
                 If wType = WorkspaceType.Raster Then
                     FileExists = BA_Shapefile_Exists(pourpointRef)
                 ElseIf wType = WorkspaceType.FeatureServer Then
-                    FileExists = BA_File_Exists(settingsform.txtGaugeStation.Text, wType, esriDatasetType.esriDTFeatureClass)
+                    FileExists = BA_File_Exists(pourpointRef, wType, esriDatasetType.esriDTFeatureClass)
                 End If
             End If
             If Not FileExists Then

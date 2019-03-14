@@ -35,7 +35,7 @@ Public Class BtnClipDEM
             'remove the grid layers that are to be overwritten from the map
             'they are Basin DEM Extent, Filled DEM, Slope, Aspect, Flow Direction, and Flow Accumulation
             Dim response As Integer = BA_Remove_Basin_Layers() 'response reports the number of layers removed
-            Dim frmClipDEM As frmClipDEMtoAOI = New frmClipDEMtoAOI
+            Dim frmClipDEM As frmClipDEM = New frmClipDEM
 
             frmClipDEM.ShowDialog()
             pMxDoc = Nothing

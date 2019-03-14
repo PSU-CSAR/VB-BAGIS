@@ -1,23 +1,15 @@
-﻿Imports ESRI.ArcGIS.Geoprocessing
+﻿
 Imports ESRI.ArcGIS.esriSystem
 Imports BAGIS_ClassLibrary
 Imports ESRI.ArcGIS.Framework
-Imports ESRI.ArcGIS.ArcMapUI
-Imports ESRI.ArcGIS.Carto
 Imports ESRI.ArcGIS.DataSourcesRaster
 Imports ESRI.ArcGIS.Geodatabase
 Imports System.Windows.Forms
-Imports ESRI.ArcGIS.CatalogUI
-Imports ESRI.ArcGIS.Catalog
-Imports System.IO
-Imports ESRI.ArcGIS.DataSourcesFile
-Imports ESRI.ArcGIS.Geometry
 Imports ESRI.ArcGIS.Desktop.AddIns
 Imports ESRI.ArcGIS.Display
-Imports ESRI.ArcGIS.DataSourcesGDB
 Imports System.Text
 
-Public Class frmClipDEMtoAOI
+Public Class frmClipDEM
 
     Private Sub CmbSelectAll_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmbSelectAll.Click
         SetAllCheckBoxes(True)
@@ -185,7 +177,7 @@ Public Class frmClipDEMtoAOI
                     Exit Sub
                 End If
 
-                Dim success As BA_ReturnCode = BA_Smooth(destSurfGDB & "\" & "tempdem", destSurfGDB & "\" & BA_EnumDescription(MapsFileName.dem_gdb), _
+                Dim success As BA_ReturnCode = BA_Smooth(destSurfGDB & "\" & "tempdem", destSurfGDB & "\" & BA_EnumDescription(MapsFileName.dem_gdb),
                                                          txtWidth.Text, txtHeight.Text)
 
                 If success <> BA_ReturnCode.Success Then
@@ -201,276 +193,276 @@ Public Class frmClipDEMtoAOI
                     Dim newFilePath As String = destSurfGDB & "\" & BA_EnumDescription(MapsFileName.dem_gdb)
                     response = BA_ClipAOIImageServer(BasinFolderBase, strDEMDataSet, newFilePath, AOIClipFile.AOIExtentCoverage)
                 Else
-                    response = BA_ClipAOIRaster(BasinFolderBase, strDEMDataSet, BA_EnumDescription(MapsFileName.dem_gdb), _
+                    response = BA_ClipAOIRaster(BasinFolderBase, strDEMDataSet, BA_EnumDescription(MapsFileName.dem_gdb),
                                                 destSurfGDB, AOIClipFile.AOIExtentCoverage, False)
                 End If
             End If
 
-                If response <= 0 Then
-                    pStepProg.Hide()
-                    progressDialog2.HideDialog()
-                    MsgBox("There is no DEM within the specified area! Please check your DEM source data.")
-                    clipDEMButton.selectedProperty = False
-                    GoTo AbandonClipDEM
-                End If
-
-
-                '=====================================================================================================================
-                'Generate and save Filled DEM
-                '=====================================================================================================================
-                pClippedDEM = BA_OpenRasterFromGDB(destSurfGDB, BA_EnumDescription(MapsFileName.dem_gdb))
-                pStepProg.Message = "Filling DEM... (step 2 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-                pFilledDEM = Fill(pClippedDEM)
-                'pClippedDEM = Nothing 'release memory
-                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pClippedDEM)
-
-                If pFilledDEM Is Nothing Then 'no dem within the selected area
-                    pStepProg.Hide()
-                    progressDialog2.HideDialog()
-                    MsgBox("There is no DEM within the specified area! Please check your DEM source data.")
-                    GoTo AbandonClipDEM
-                End If
-
-                'save filled DEM into surfaces GDB
-                pStepProg.Message = "Saving Filled DEM... (step 3 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-
-                response = BA_SaveRasterDatasetGDB(pFilledDEM, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.filled_dem_gdb))
-                If response = 0 Then
-                    pStepProg.Hide()
-                    progressDialog2.HideDialog()
-                    MsgBox("Unable to save FILLED DEM to Surfaces GDB!", "Warning")
-                    GoTo AbandonClipDEM
-                End If
-
-                BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.filled_dem_gdb))
-
-                'display filled DEM
-                If ChkFilledDEM.Checked Then
-                    response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.filled_dem_gdb)) ' BasinLayerDisplayNames(2))
-                End If
-                System.Windows.Forms.Application.DoEvents()
-
-
-                '=====================================================================================================================
-                'generate and save Slope
-                '=====================================================================================================================
-                pStepProg.Message = "Calculating Slope... (step 4 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-
-                pSlope = Slope(pFilledDEM) 'slope in degree
-
-                pStepProg.Message = "Saving Slope...  (step 5 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-
-                response = BA_SaveRasterDatasetGDB(pSlope, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.slope_gdb))
-                If response = 0 Then
-                    pStepProg.Hide()
-                    progressDialog2.HideDialog()
-                    MsgBox("Unable to save SLOPE to Surfaces GDB!", "Warning")
-                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pSlope)
-                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
-                    GoTo AbandonClipDEM
-                End If
-                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pSlope)
-
-                BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.slope_gdb))
-
-                'display Slope
-                If ChkSlope.Checked = True Then
-                    response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.slope_gdb)) ' BasinLayerDisplayNames(3))
-                End If
-                System.Windows.Forms.Application.DoEvents()
-
-
-                '=====================================================================================================================
-                'generate and save Aspect
-                '=====================================================================================================================
-                pStepProg.Message = "Calculating Aspect... (step 6 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-
-                pAspect = Aspect(pFilledDEM)
-
-                pStepProg.Message = "Saving Aspect... (step 7 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-
-                response = BA_SaveRasterDatasetGDB(pAspect, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.aspect_gdb))
-                If response = 0 Then
-                    pStepProg.Hide()
-                    progressDialog2.HideDialog()
-                    MsgBox("Unable to save ASPECT to Surfaces GDB!", "Warning")
-                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pAspect)
-                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
-                    GoTo AbandonClipDEM
-                End If
-                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pAspect)
-
-                BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.aspect_gdb))
-
-                'display Aspect
-                If ChkAspect.Checked = True Then
-                    response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.aspect_gdb))
-                End If
-                System.Windows.Forms.Application.DoEvents()
-
-
-                '====================================================================================================================
-                'generate and save flow direction
-                '====================================================================================================================
-                pStepProg.Message = "Calculating Flow Direction... (step 8 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-
-                pFlowDir = FlowDirection(pFilledDEM)
-
-                pStepProg.Message = "Saving Flow Direction... (step 9 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-
-                response = BA_SaveRasterDatasetGDB(pFlowDir, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.flow_direction_gdb))
-                If response = 0 Then
-                    pStepProg.Hide()
-                    progressDialog2.HideDialog()
-                    MsgBox("Unable to save FLOW DIRECTION to Surfaces GDB!", "Warning")
-                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFlowDir)
-                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
-                    GoTo AbandonClipDEM
-                End If
-
-                BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.flow_direction_gdb))
-
-                'display Flow Direction
-                If ChkFlowDir.Checked = True Then
-                    response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.flow_direction_gdb))
-                End If
-                System.Windows.Forms.Application.DoEvents()
-
-
-                '======================================================================================================================
-                'generate and save Flow Accumulation
-                '======================================================================================================================
-                pStepProg.Message = "Calculating Flow Accumulation... (step 10 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-
-                pFlowAcc = FlowAccumulation(pFlowDir)
-
-                pStepProg.Message = "Saving Flow Accumulation... (step 11 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-
-                response = BA_SaveRasterDatasetGDB(pFlowAcc, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.flow_accumulation_gdb))
-                If response = 0 Then
-                    pStepProg.Hide()
-                    progressDialog2.HideDialog()
-                    MsgBox("Unable to save FLOW ACCUMULATION to Surfaces GDB!", "Warning")
-                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFlowDir)
-                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFlowAcc)
-                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
-                    GoTo AbandonClipDEM
-                End If
-                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFlowDir)
-                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFlowAcc)
-
-                BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.flow_accumulation_gdb))
-
-                'display Flow Accumulation
-                If ChkFlowAccum.Checked = True Then
-                    response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.flow_accumulation_gdb)) ', BasinLayerDisplayNames(6))
-                End If
-                System.Windows.Forms.Application.DoEvents()
-
-
-                '=====================================================================================================================
-                'generate and save Hillshade
-                '=====================================================================================================================
-                pStepProg.Message = "Calculating Hillshade... (step 12 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-
-                pHillshade = Hillshade(pFilledDEM, Val(txtZFactor.Text))
-
-                pStepProg.Message = "Saving Hillshade... (step 13 of " & nstep & ")"
-                pStepProg.Step()
-                System.Windows.Forms.Application.DoEvents()
-
-                response = BA_SaveRasterDatasetGDB(pHillshade, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.hillshade_gdb))
-                If response = 0 Then
-                    pStepProg.Hide()
-                    progressDialog2.HideDialog()
-                    MsgBox("Unable to save HILLSHADE to Surfaces GDB!", "Warning")
-                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pHillshade)
-                    ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
-                    GoTo AbandonClipDEM
-                End If
-                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pHillshade)
-
-                BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.hillshade_gdb))
-
-                'display Hillshade layer
-                If ChkHillshade.Checked = True Then
-                    response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.hillshade_gdb)) ' BasinLayerDisplayNames(7))
-                End If
-                System.Windows.Forms.Application.DoEvents()
-
-                'pFilledDEM = Nothing   'release memory
-                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
-
-                Dim inputFolder As String
-                Dim inputFile As String
-                Dim unitText As String
-
-                'We need to update the elevation units
-                inputFolder = BA_GeodatabasePath(BasinFolderBase, GeodatabaseNames.Surfaces)
-                inputFile = BA_EnumDescription(MapsFileName.filled_dem_gdb)
-
-                If BA_SystemSettings.DEM_ZUnit_IsMeter Then
-                    unitText = BA_EnumDescription(MeasurementUnit.Meters)
-                Else
-                    unitText = BA_EnumDescription(MeasurementUnit.Feet)
-                End If
-
-                Dim sb As StringBuilder = New StringBuilder
-                sb.Clear()
-                sb.Append(BA_BAGIS_TAG_PREFIX)
-                sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Elevation.ToString & "; ")
-                sb.Append(BA_ZUNIT_VALUE_TAG & unitText & ";")
-                sb.Append(BA_BAGIS_TAG_SUFFIX)
-                BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS, _
-                                  sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
-
-                'We need to update the slope units 'always set it to Degree slope
-                inputFolder = BA_GeodatabasePath(BasinFolderBase, GeodatabaseNames.Surfaces)
-                inputFile = BA_GetBareName(BA_EnumDescription(PublicPath.Slope))
-                sb.Clear()
-                sb.Append(BA_BAGIS_TAG_PREFIX)
-                sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Slope.ToString & "; ")
-                sb.Append(BA_ZUNIT_VALUE_TAG & BA_EnumDescription(SlopeUnit.PctSlope) & ";")
-                sb.Append(BA_BAGIS_TAG_SUFFIX)
-                BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS, _
-                                  sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
-
-                'if DEM is successfully clipped then disable the DEM clip tools and enable the AOI_tool
-                'declare the property value of buttons in the main toolbar
-                setDEMExtenttool.selectedProperty = False
-                clipDEMButton.selectedProperty = False
-                selectAOIButton.selectedProperty = True
-                basinInfoButton.selectedProperty = True
-
-                'set the value of cboSelectedBasin on the main toolbar
-                Dim cboSelectedbasin = AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
-                cboSelectedbasin.setValue(BA_GetBareName(BasinFolderBase))
-
+            If response <= 0 Then
                 pStepProg.Hide()
                 progressDialog2.HideDialog()
-                MsgBox("Basin Tool finished! Basin " & (BA_GetBareName(BasinFolderBase)) & " is created!")
+                MsgBox("There is no DEM within the specified area! Please check your DEM source data.")
+                clipDEMButton.selectedProperty = False
+                GoTo AbandonClipDEM
+            End If
+
+
+            '=====================================================================================================================
+            'Generate and save Filled DEM
+            '=====================================================================================================================
+            pClippedDEM = BA_OpenRasterFromGDB(destSurfGDB, BA_EnumDescription(MapsFileName.dem_gdb))
+            pStepProg.Message = "Filling DEM... (step 2 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+            pFilledDEM = Fill(pClippedDEM)
+            'pClippedDEM = Nothing 'release memory
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pClippedDEM)
+
+            If pFilledDEM Is Nothing Then 'no dem within the selected area
+                pStepProg.Hide()
+                progressDialog2.HideDialog()
+                MsgBox("There is no DEM within the specified area! Please check your DEM source data.")
+                GoTo AbandonClipDEM
+            End If
+
+            'save filled DEM into surfaces GDB
+            pStepProg.Message = "Saving Filled DEM... (step 3 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+
+            response = BA_SaveRasterDatasetGDB(pFilledDEM, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.filled_dem_gdb))
+            If response = 0 Then
+                pStepProg.Hide()
+                progressDialog2.HideDialog()
+                MsgBox("Unable to save FILLED DEM to Surfaces GDB!", "Warning")
+                GoTo AbandonClipDEM
+            End If
+
+            BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.filled_dem_gdb))
+
+            'display filled DEM
+            If ChkFilledDEM.Checked Then
+                response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.filled_dem_gdb)) ' BasinLayerDisplayNames(2))
+            End If
+            System.Windows.Forms.Application.DoEvents()
+
+
+            '=====================================================================================================================
+            'generate and save Slope
+            '=====================================================================================================================
+            pStepProg.Message = "Calculating Slope... (step 4 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+
+            pSlope = Slope(pFilledDEM) 'slope in degree
+
+            pStepProg.Message = "Saving Slope...  (step 5 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+
+            response = BA_SaveRasterDatasetGDB(pSlope, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.slope_gdb))
+            If response = 0 Then
+                pStepProg.Hide()
+                progressDialog2.HideDialog()
+                MsgBox("Unable to save SLOPE to Surfaces GDB!", "Warning")
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pSlope)
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
+                GoTo AbandonClipDEM
+            End If
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pSlope)
+
+            BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.slope_gdb))
+
+            'display Slope
+            If ChkSlope.Checked = True Then
+                response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.slope_gdb)) ' BasinLayerDisplayNames(3))
+            End If
+            System.Windows.Forms.Application.DoEvents()
+
+
+            '=====================================================================================================================
+            'generate and save Aspect
+            '=====================================================================================================================
+            pStepProg.Message = "Calculating Aspect... (step 6 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+
+            pAspect = Aspect(pFilledDEM)
+
+            pStepProg.Message = "Saving Aspect... (step 7 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+
+            response = BA_SaveRasterDatasetGDB(pAspect, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.aspect_gdb))
+            If response = 0 Then
+                pStepProg.Hide()
+                progressDialog2.HideDialog()
+                MsgBox("Unable to save ASPECT to Surfaces GDB!", "Warning")
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pAspect)
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
+                GoTo AbandonClipDEM
+            End If
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pAspect)
+
+            BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.aspect_gdb))
+
+            'display Aspect
+            If ChkAspect.Checked = True Then
+                response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.aspect_gdb))
+            End If
+            System.Windows.Forms.Application.DoEvents()
+
+
+            '====================================================================================================================
+            'generate and save flow direction
+            '====================================================================================================================
+            pStepProg.Message = "Calculating Flow Direction... (step 8 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+
+            pFlowDir = FlowDirection(pFilledDEM)
+
+            pStepProg.Message = "Saving Flow Direction... (step 9 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+
+            response = BA_SaveRasterDatasetGDB(pFlowDir, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.flow_direction_gdb))
+            If response = 0 Then
+                pStepProg.Hide()
+                progressDialog2.HideDialog()
+                MsgBox("Unable to save FLOW DIRECTION to Surfaces GDB!", "Warning")
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFlowDir)
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
+                GoTo AbandonClipDEM
+            End If
+
+            BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.flow_direction_gdb))
+
+            'display Flow Direction
+            If ChkFlowDir.Checked = True Then
+                response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.flow_direction_gdb))
+            End If
+            System.Windows.Forms.Application.DoEvents()
+
+
+            '======================================================================================================================
+            'generate and save Flow Accumulation
+            '======================================================================================================================
+            pStepProg.Message = "Calculating Flow Accumulation... (step 10 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+
+            pFlowAcc = FlowAccumulation(pFlowDir)
+
+            pStepProg.Message = "Saving Flow Accumulation... (step 11 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+
+            response = BA_SaveRasterDatasetGDB(pFlowAcc, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.flow_accumulation_gdb))
+            If response = 0 Then
+                pStepProg.Hide()
+                progressDialog2.HideDialog()
+                MsgBox("Unable to save FLOW ACCUMULATION to Surfaces GDB!", "Warning")
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFlowDir)
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFlowAcc)
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
+                GoTo AbandonClipDEM
+            End If
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFlowDir)
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFlowAcc)
+
+            BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.flow_accumulation_gdb))
+
+            'display Flow Accumulation
+            If ChkFlowAccum.Checked = True Then
+                response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.flow_accumulation_gdb)) ', BasinLayerDisplayNames(6))
+            End If
+            System.Windows.Forms.Application.DoEvents()
+
+
+            '=====================================================================================================================
+            'generate and save Hillshade
+            '=====================================================================================================================
+            pStepProg.Message = "Calculating Hillshade... (step 12 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+
+            pHillshade = Hillshade(pFilledDEM, Val(txtZFactor.Text))
+
+            pStepProg.Message = "Saving Hillshade... (step 13 of " & nstep & ")"
+            pStepProg.Step()
+            System.Windows.Forms.Application.DoEvents()
+
+            response = BA_SaveRasterDatasetGDB(pHillshade, destSurfGDB, BA_RASTER_FORMAT, BA_EnumDescription(MapsFileName.hillshade_gdb))
+            If response = 0 Then
+                pStepProg.Hide()
+                progressDialog2.HideDialog()
+                MsgBox("Unable to save HILLSHADE to Surfaces GDB!", "Warning")
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pHillshade)
+                ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
+                GoTo AbandonClipDEM
+            End If
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pHillshade)
+
+            BA_ComputeStatsRasterDatasetGDB(destSurfGDB, BA_EnumDescription(MapsFileName.hillshade_gdb))
+
+            'display Hillshade layer
+            If ChkHillshade.Checked = True Then
+                response = BA_DisplayRaster(My.ArcMap.Application, destSurfGDB & "\" & BA_EnumDescription(MapsFileName.hillshade_gdb)) ' BasinLayerDisplayNames(7))
+            End If
+            System.Windows.Forms.Application.DoEvents()
+
+            'pFilledDEM = Nothing   'release memory
+            ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFilledDEM)
+
+            Dim inputFolder As String
+            Dim inputFile As String
+            Dim unitText As String
+
+            'We need to update the elevation units
+            inputFolder = BA_GeodatabasePath(BasinFolderBase, GeodatabaseNames.Surfaces)
+            inputFile = BA_EnumDescription(MapsFileName.filled_dem_gdb)
+
+            If BA_SystemSettings.DEM_ZUnit_IsMeter Then
+                unitText = BA_EnumDescription(MeasurementUnit.Meters)
+            Else
+                unitText = BA_EnumDescription(MeasurementUnit.Feet)
+            End If
+
+            Dim sb As StringBuilder = New StringBuilder
+            sb.Clear()
+            sb.Append(BA_BAGIS_TAG_PREFIX)
+            sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Elevation.ToString & "; ")
+            sb.Append(BA_ZUNIT_VALUE_TAG & unitText & ";")
+            sb.Append(BA_BAGIS_TAG_SUFFIX)
+            BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS,
+                                  sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
+
+            'We need to update the slope units 'always set it to Degree slope
+            inputFolder = BA_GeodatabasePath(BasinFolderBase, GeodatabaseNames.Surfaces)
+            inputFile = BA_GetBareName(BA_EnumDescription(PublicPath.Slope))
+            sb.Clear()
+            sb.Append(BA_BAGIS_TAG_PREFIX)
+            sb.Append(BA_ZUNIT_CATEGORY_TAG & MeasurementUnitType.Slope.ToString & "; ")
+            sb.Append(BA_ZUNIT_VALUE_TAG & BA_EnumDescription(SlopeUnit.PctSlope) & ";")
+            sb.Append(BA_BAGIS_TAG_SUFFIX)
+            BA_UpdateMetadata(inputFolder, inputFile, LayerType.Raster, BA_XPATH_TAGS,
+                                  sb.ToString, BA_BAGIS_TAG_PREFIX.Length)
+
+            'if DEM is successfully clipped then disable the DEM clip tools and enable the AOI_tool
+            'declare the property value of buttons in the main toolbar
+            setDEMExtenttool.selectedProperty = False
+            clipDEMButton.selectedProperty = False
+            selectAOIButton.selectedProperty = True
+            basinInfoButton.selectedProperty = True
+
+            'set the value of cboSelectedBasin on the main toolbar
+            Dim cboSelectedbasin = AddIn.FromID(Of cboTargetedBasin)(My.ThisAddIn.IDs.cboTargetedBasin)
+            cboSelectedbasin.setValue(BA_GetBareName(BasinFolderBase))
+
+            pStepProg.Hide()
+            progressDialog2.HideDialog()
+            MsgBox("Basin Tool finished! Basin " & (BA_GetBareName(BasinFolderBase)) & " is created!")
 AbandonClipDEM:
         Catch ex As Exception
             MsgBox("Clipping Error!", ex.Message)
