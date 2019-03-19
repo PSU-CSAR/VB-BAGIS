@@ -1862,9 +1862,10 @@ Public Class frmGenerateMaps
             interval = Val(txtPrecipMapZoneInt.Text)
             ninterval = BA_CreateRangeArray(PMinValue, PMaxValue, interval, IntervalList)
 
-            'Open Input Raster and create the zone raster and vector
-            pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
-            response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, strSavePath, RasterName, NO_VECTOR_NAME, MessageKey)
+            'Create the zone raster and vector
+            Dim maskFilePath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_EnumDescription(AOIClipFile.PrismClipAOIExtentCoverage)
+            response = BA_MakeZoneDatasets(My.Document, InputPath + "\" + InputName, IntervalList,
+                                           BA_FIELD_VALUE, strSavePath, RasterName, maskFilePath, NO_VECTOR_NAME, MessageKey)
 
             '=================================
             'Update map parameters file
@@ -1926,7 +1927,6 @@ Public Class frmGenerateMaps
         Const NO_VECTOR_NAME As String = ""
         Dim RasterName As String
         Dim strSavePath As String
-        Dim pInputRaster As IGeoDataset
         Dim MessageKey As AOIMessageKey
         Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 10)
         Dim progressDialog2 As IProgressDialog2 = Nothing
@@ -1955,10 +1955,10 @@ Public Class frmGenerateMaps
             Dim AspectDirectionsNumber As Short = 2 ^ (CmboxAspect.SelectedIndex + 2) 'either 4, 8, or 16
             BA_SetAspectClasses(IntervalList, AspectDirectionsNumber)
 
-            'Open Input Raster and create the zone raster and vector
-            pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
-            response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, strSavePath, RasterName, NO_VECTOR_NAME, MessageKey)
-            pInputRaster = Nothing
+            'Create the zone raster and vector
+            Dim maskFolderPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
+            response = BA_MakeZoneDatasets(My.Document, InputPath + "\" + InputName, IntervalList, BA_FIELD_VALUE,
+                                           strSavePath, RasterName, maskFolderPath, NO_VECTOR_NAME, MessageKey)
 
             '=================================
             'create slope zones
@@ -1975,10 +1975,9 @@ Public Class frmGenerateMaps
             'set reclass
             BA_SetSlopeClasses(IntervalList)
 
-            'Open Input Raster and create the zone raster and vector
-            pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
-            response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, strSavePath, RasterName, NO_VECTOR_NAME, MessageKey)
-            pInputRaster = Nothing
+            'Create the zone raster and vector
+            response = BA_MakeZoneDatasets(My.Document, InputPath + "\" + InputName, IntervalList,
+                                           BA_FIELD_VALUE, strSavePath, RasterName, maskFolderPath, NO_VECTOR_NAME, MessageKey)
 
             Dim DataConversionFact As Double = BA_SetConversionFactor(m_demInMeters, True)
 
@@ -2027,10 +2026,10 @@ Public Class frmGenerateMaps
             If response = 0 Then 'input attribute out of the elevation bounds
                 MsgBox("Elevation data in the SNOTEL layer are out of the DEM elevation range!")
             ElseIf response > 0 Then
-                'Open Input Raster and create the zone raster and vector
-                pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
-                response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, strSavePath, RasterName, NO_VECTOR_NAME, MessageKey)
-                pInputRaster = Nothing
+                'Create the zone raster and vector
+                maskFolderPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_EnumDescription(AOIClipFile.AOIExtentCoverage)
+                response = BA_MakeZoneDatasets(My.Document, InputPath + "\" + InputName, IntervalList,
+                                               BA_FIELD_VALUE, strSavePath, RasterName, maskFolderPath, NO_VECTOR_NAME, MessageKey)
             End If
 
             '===================================
@@ -2057,10 +2056,9 @@ Public Class frmGenerateMaps
             If response = 0 Then 'input attribute out of the elevation bounds
                 MsgBox("Elevation data in the snow course layer are out of the DEM elevation range!")
             ElseIf response > 0 Then
-                'Open Input Raster and create the zone raster and vector
-                pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
-                response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, strSavePath, RasterName, NO_VECTOR_NAME, MessageKey)
-                pInputRaster = Nothing
+                'create the zone raster and vector
+                response = BA_MakeZoneDatasets(My.Document, InputPath + "\" + InputName, IntervalList,
+                                               BA_FIELD_VALUE, strSavePath, RasterName, maskFolderPath, NO_VECTOR_NAME, MessageKey)
             End If
 
             If ChkRepresentedPrecip.Checked = True Then

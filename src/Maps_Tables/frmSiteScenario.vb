@@ -2588,8 +2588,6 @@ Public Class frmSiteScenario
         Dim pChartsWorksheet As Worksheet = bkWorkBook.Sheets.Add
         pChartsWorksheet.Name = "Chart"
 
-        Dim pInputRaster As IGeoDataset = Nothing
-
         'Declare progress indicator variables
         Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 15)
         Dim progressDialog2 As IProgressDialog2 = Nothing
@@ -2621,17 +2619,15 @@ Public Class frmSiteScenario
             Const NO_VECTOR_NAME As String = ""
             Dim MessageKey As AOIMessageKey
 
+            Dim maskFolderPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Aoi, True) + BA_EnumDescription(AOIClipFile.BufferedAOIExtentCoverage)
             If AOI_HasSNOTEL Then
                 MessageKey = AOIMessageKey.Snotel
                 success = GetUniqueSortedValues(dictSnotel, AOI_DEMMin, AOI_DEMMax, IntervalList)
                 If success = BA_ReturnCode.Success Then
-                    'Open Input Raster and create the zone raster and vector
-                    pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
-                    If pInputRaster IsNot Nothing Then
-                        response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, _
-                                                       OutputPath, BA_EnumDescription(MapsFileName.S1SnotelZone), _
-                                                       NO_VECTOR_NAME, MessageKey)
-                    End If
+                    'create the zone raster and vector
+                    response = BA_MakeZoneDatasets(My.Document, InputPath + "\" + InputName, IntervalList,
+                                                       BA_FIELD_VALUE, OutputPath, BA_EnumDescription(MapsFileName.S1SnotelZone),
+                                                       maskFolderPath, NO_VECTOR_NAME, MessageKey)
                 End If
                 pStepProg.Message = "Creating SNOTEL Table..."
                 pStepProg.Step()
@@ -2642,13 +2638,10 @@ Public Class frmSiteScenario
                 MessageKey = AOIMessageKey.SnowCourse
                 success = GetUniqueSortedValues(dictScos, AOI_DEMMin, AOI_DEMMax, IntervalList)
                 If success = BA_ReturnCode.Success Then
-                    'Open Input Raster and create the zone raster and vector
-                    pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
-                    If pInputRaster IsNot Nothing Then
-                        response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, _
-                                                       OutputPath, BA_EnumDescription(MapsFileName.S1SnowCourseZone), _
-                                                       NO_VECTOR_NAME, MessageKey)
-                    End If
+                    'create the zone raster and vector
+                    response = BA_MakeZoneDatasets(My.Document, InputPath + "\" + InputName, IntervalList,
+                                                       BA_FIELD_VALUE, OutputPath, BA_EnumDescription(MapsFileName.S1SnowCourseZone),
+                                                       maskFolderPath, NO_VECTOR_NAME, MessageKey)
                 End If
                 pStepProg.Message = "Creating Snow Course Table..."
                 pStepProg.Step()
@@ -2659,13 +2652,10 @@ Public Class frmSiteScenario
                 MessageKey = AOIMessageKey.Pseudo
                 success = GetUniqueSortedValues(dictPSite, AOI_DEMMin, AOI_DEMMax, IntervalList)
                 If success = BA_ReturnCode.Success Then
-                    'Open Input Raster and create the zone raster and vector
-                    pInputRaster = BA_OpenRasterFromGDB(InputPath, InputName)
-                    If pInputRaster IsNot Nothing Then
-                        response = BA_MakeZoneDatasets(My.Document, pInputRaster, IntervalList, _
-                                                       OutputPath, BA_EnumDescription(MapsFileName.S1PseudoZone), _
-                                                       NO_VECTOR_NAME, MessageKey)
-                    End If
+                    'create the zone raster and vector
+                    response = BA_MakeZoneDatasets(My.Document, InputPath + "\" + InputName, IntervalList,
+                                                       BA_FIELD_VALUE, OutputPath, BA_EnumDescription(MapsFileName.S1PseudoZone),
+                                                       maskFolderPath, NO_VECTOR_NAME, MessageKey)
                 End If
                 pStepProg.Message = "Creating Psuedo Site Table..."
                 pStepProg.Step()
@@ -2798,7 +2788,6 @@ Public Class frmSiteScenario
             Debug.Print("BtnTables_Click Exception: " & ex.Message)
         Finally
             objExcel.Visible = True
-            pInputRaster = Nothing
             If pStepProg IsNot Nothing Then
                 pStepProg.Hide()
                 pStepProg = Nothing
