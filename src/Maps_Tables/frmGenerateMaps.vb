@@ -2420,12 +2420,14 @@ Public Class frmGenerateMaps
             response = BA_Excel_CreateElevationChart(pSubElvWorksheet, pChartsWorksheet, BA_ChartSpacing, BA_ChartSpacing, Chart_YMinScale, Chart_YMaxScale, _
                                                      Chart_YMapUnit, OptZMeters.Checked, OptZFeet.Checked)
 
+            Dim positionLeftSecondColumn As Int16 = 675
+            Dim positionTopSecondPage As Int16 = 950
             If AOI_HasSNOTEL Then
                 pStepProg.Message = "Creating SNOTEL Table and Chart..."
                 pStepProg.Step()
                 response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSNOTELWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.SnotelZone), conversionFactor)
-                response = BA_Excel_CreateSNOTELChart(pSNOTELWorksheet, pSubElvWorksheet, pChartsWorksheet, True, _
-                    BA_ChartWidth + BA_ChartSpacing + BA_ChartSpacing, BA_ChartHeight + BA_ChartSpacing + BA_ChartSpacing, _
+                response = BA_Excel_CreateSNOTELChart(pSNOTELWorksheet, pSubElvWorksheet, pChartsWorksheet, True,
+                    positionLeftSecondColumn, BA_ChartHeight + BA_ChartSpacing + BA_ChartSpacing,
                     Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, OptZMeters.Checked, OptZFeet.Checked)
             End If
 
@@ -2434,8 +2436,8 @@ Public Class frmGenerateMaps
                 pStepProg.Step()
 
                 response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSnowCourseWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.SnowCourseZone), conversionFactor)
-                response = BA_Excel_CreateSNOTELChart(pSnowCourseWorksheet, pSubElvWorksheet, pChartsWorksheet, False, _
-                        BA_ChartWidth + BA_ChartSpacing + BA_ChartSpacing, (BA_ChartHeight + BA_ChartSpacing) * 2 + BA_ChartSpacing, _
+                response = BA_Excel_CreateSNOTELChart(pSnowCourseWorksheet, pSubElvWorksheet, pChartsWorksheet, False,
+                        positionLeftSecondColumn, positionTopSecondPage,
                         Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, OptZMeters.Checked, OptZFeet.Checked)
             End If
 
@@ -2443,13 +2445,13 @@ Public Class frmGenerateMaps
             pStepProg.Step()
 
             response = BA_Excel_CreateAspectTable(AOIFolderBase, pAspectWorksheet)
-            response = BA_Excel_CreateAspectChart(pAspectWorksheet, pChartsWorksheet)
+            response = BA_Excel_CreateAspectChart(pAspectWorksheet, pChartsWorksheet, positionTopSecondPage + BA_ChartHeight + BA_ChartSpacing)
 
             pStepProg.Message = "Creating SLOPE Table and Chart..."
             pStepProg.Step()
 
             response = BA_Excel_CreateSlopeTable(AOIFolderBase, pSlopeWorksheet)
-            response = BA_Excel_CreateSlopeChart(pSlopeWorksheet, pChartsWorksheet)
+            response = BA_Excel_CreateSlopeChart(pSlopeWorksheet, pChartsWorksheet, positionTopSecondPage)
 
             pStepProg.Message = "Creating Precipitation Table and Chart..."
             pStepProg.Step()
@@ -2458,9 +2460,9 @@ Public Class frmGenerateMaps
             SetPrecipPathInfo()
             response = BA_Excel_CreatePRISMTable(AOIFolderBase, pPRISMWorkSheet, pSubElvWorksheet, MaxPRISMValue, _
                                                  PrecipPath & "\" + PRISMRasterName, AOI_DEMMin, conversionFactor, OptZMeters.Checked)
-            response = BA_Excel_CreatePRISMChart(pPRISMWorkSheet, pSubElvWorksheet, pChartsWorksheet, _
-                                                 BA_ChartWidth + BA_ChartSpacing + BA_ChartSpacing, BA_ChartSpacing, _
-                                                 Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, MaxPRISMValue, OptZMeters.Checked, _
+            response = BA_Excel_CreatePRISMChart(pPRISMWorkSheet, pSubElvWorksheet, pChartsWorksheet,
+                                                 positionLeftSecondColumn, BA_ChartSpacing,
+                                                 Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, MaxPRISMValue, OptZMeters.Checked,
                                                  OptZFeet.Checked)
 
             pStepProg.Message = "Creating Combined Charts..."
@@ -2536,27 +2538,52 @@ Public Class frmGenerateMaps
 
                 If AOI_HasSNOTEL Then
                     response = BA_Excel_CreateSNOTELRangeTable(pSTRangeWorksheet, pSNOTELWorksheet, pSubElvWorksheet, CDbl(txtFromElev.Text), CDbl(txtToElev.Text))
-                    response = BA_Excel_CreateSNOTELChart(pSTRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, True, _
-                                                          BA_ChartWidth + BA_ChartSpacing + BA_ChartSpacing, BA_ChartHeight + BA_ChartSpacing + BA_ChartSpacing, _
+                    response = BA_Excel_CreateSNOTELChart(pSTRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, True,
+                                                          BA_ChartSpacing, positionTopSecondPage,
                                                           CDbl(txtFromElev.Text), CDbl(txtToElev.Text), Chart_YMapUnit, OptZMeters.Checked, OptZFeet.Checked)
                 End If
 
                 If AOI_HasSnowCourse Then
                     response = BA_Excel_CreateSNOTELRangeTable(pSCRangeWorksheet, pSnowCourseWorksheet, pSubElvWorksheet, CDbl(txtFromElev.Text), CDbl(txtToElev.Text))
-                    response = BA_Excel_CreateSNOTELChart(pSCRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, False, _
-                        BA_ChartWidth + BA_ChartSpacing + BA_ChartSpacing, (BA_ChartHeight + BA_ChartSpacing) * 2 + BA_ChartSpacing, _
-                        CDbl(txtFromElev.Text), CDbl(txtToElev.Text), Chart_YMapUnit, OptZMeters.Checked, OptZFeet.Checked)
+                    response = BA_Excel_CreateSNOTELChart(pSCRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, False,
+                               BA_ChartSpacing, positionTopSecondPage + BA_ChartHeight + BA_ChartSpacing,
+                               CDbl(txtFromElev.Text), CDbl(txtToElev.Text), Chart_YMapUnit, OptZMeters.Checked, OptZFeet.Checked)
                 End If
 
-                response = BA_Excel_CreatePRISMChart(pPrecipitationRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, _
-                                                     BA_ChartWidth + BA_ChartSpacing + BA_ChartSpacing, BA_ChartSpacing, _
-                                                     CDbl(txtFromElev.Text), CDbl(txtToElev.Text), Chart_YMapUnit, MaxPRISMValue, _
+                response = BA_Excel_CreatePRISMChart(pPrecipitationRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet,
+                                                     positionLeftSecondColumn, BA_ChartSpacing,
+                                                     CDbl(txtFromElev.Text), CDbl(txtToElev.Text), Chart_YMapUnit, MaxPRISMValue,
                                                      OptZMeters.Checked, OptZFeet.Checked)
 
                 response = BA_Excel_CreateCombinedChart(pPrecipitationRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, pSCRangeWorksheet, _
                                                         pSTRangeWorksheet, CDbl(txtFromElev.Text), CDbl(txtToElev.Text), Chart_YMapUnit, MaxPRISMValue, _
                                                         OptZMeters.Checked, OptZFeet.Checked, AOI_HasSNOTEL, AOI_HasSnowCourse, Nothing, _
                                                         False, topPosition)
+            End If
+
+            Dim pathToSave As String = AOIFolderBase + "\maps\Charts.pdf"
+
+            'Charts Tab
+            pChartsWorksheet.PageSetup.Zoom = 72
+            'pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+
+            'Elev-Precip Chart Tab
+            If pPrecipChartWorksheet IsNot Nothing Then
+                With pPrecipChartWorksheet.PageSetup
+                    .Orientation = XlPageOrientation.xlLandscape
+                    .Zoom = False
+                    .FitToPagesTall = 1
+                    .FitToPagesWide = 1
+                End With
+                pathToSave = AOIFolderBase + "\maps\Elev_Precip.pdf"
+                'pPrecipChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+            End If
+
+            'Range Charts
+            If pRangeChartWorksheet IsNot Nothing Then
+                pRangeChartWorksheet.PageSetup.Zoom = 72
+                pathToSave = AOIFolderBase + "\maps\Range_Charts.pdf"
+                'pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
             End If
 
         Catch ex As Exception
