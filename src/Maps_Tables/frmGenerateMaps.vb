@@ -2505,8 +2505,8 @@ Public Class frmGenerateMaps
                     zonesFieldName = BA_FIELD_VALUE
                 End If
 
-                Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev, _
-                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_FIELD_ASPECT, partitionFileName, pPrecipDemElevWorksheet, demTitleUnit, conversionFactor, _
+                Dim success As BA_ReturnCode = BA_CreateRepresentPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev,
+                    PRISMRasterName + "_1", BA_RasterPrecMeanElev, BA_FIELD_ASPECT, partitionFieldName, pPrecipDemElevWorksheet, demTitleUnit, conversionFactor,
                     MeasurementUnit.Inches, partitionFieldName, zonesFileName, zonesFieldName)
                 If success = BA_ReturnCode.Success Then
                     success = BA_CreateSnotelPrecipTable(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_VectorSnotelPrec, _
@@ -2659,6 +2659,7 @@ Public Class frmGenerateMaps
         LblPartitionLayer.Text = Nothing
     End Sub
 
+    '** Note: this logic is duplicated two properties of the MapsSettings object **
     Private Sub SetPrecipPathInfo()
         If CmboxPrecipType.SelectedIndex = 0 Then  'read direct Annual PRISM raster
             PrecipPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Prism)
@@ -2981,4 +2982,5 @@ Public Class frmGenerateMaps
             CmdGenerate.Enabled = enable
         End If
     End Sub
+
 End Class

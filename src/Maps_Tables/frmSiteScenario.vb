@@ -754,58 +754,37 @@ Public Class frmSiteScenario
     End Sub
 
     Private Sub TxtBufferDistance_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtBufferDistance.Validating
-        If Not IsValidInteger(TxtBufferDistance.Text) Then
+        If Not BA_IsValidInteger(TxtBufferDistance.Text) Then
             ' Cancel the event and select the text to be corrected by the user.
             e.Cancel = True
             TxtBufferDistance.Select(0, TxtBufferDistance.Text.Length)
-            MessageBox.Show("Please use a positive number when setting the buffer distance. Deselect the checkbox " & _
-                            "to exclude the buffer distance from your calculation.", "Invalid buffer distance", MessageBoxButtons.OK, _
+            MessageBox.Show("Please use a positive number when setting the buffer distance. Deselect the checkbox " &
+                            "to exclude the buffer distance from your calculation.", "Invalid buffer distance", MessageBoxButtons.OK,
                             MessageBoxIcon.Information)
         End If
     End Sub
 
     Private Sub TxtUpperRange_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtUpperRange.Validating
-        If Not IsValidInteger(TxtUpperRange.Text) Then
+        If Not BA_IsValidInteger(TxtUpperRange.Text) Then
             ' Cancel the event and select the text to be corrected by the user.
             e.Cancel = True
             TxtUpperRange.Select(0, TxtUpperRange.Text.Length)
-            MessageBox.Show("Please use a positive number when setting the elevation upper range. Deselect the checkbox " & _
-                            "to exclude the elevation upper range from your calculation.", "Invalid elevation upper range", MessageBoxButtons.OK, _
+            MessageBox.Show("Please use a positive number when setting the elevation upper range. Deselect the checkbox " &
+                            "to exclude the elevation upper range from your calculation.", "Invalid elevation upper range", MessageBoxButtons.OK,
                             MessageBoxIcon.Information)
         End If
     End Sub
 
     Private Sub TxtLowerRange_Validating(sender As Object, e As System.ComponentModel.CancelEventArgs) Handles TxtLowerRange.Validating
-        If Not IsValidInteger(TxtLowerRange.Text) Then
+        If Not BA_IsValidInteger(TxtLowerRange.Text) Then
             ' Cancel the event and select the text to be corrected by the user.
             e.Cancel = True
             TxtLowerRange.Select(0, TxtLowerRange.Text.Length)
-            MessageBox.Show("Please use a positive number when setting the elevation lower range. Deselect the checkbox " & _
-                            "to exclude the elevation lower range from your calculation.", "Invalid elevation lower range", MessageBoxButtons.OK, _
+            MessageBox.Show("Please use a positive number when setting the elevation lower range. Deselect the checkbox " &
+                            "to exclude the elevation lower range from your calculation.", "Invalid elevation lower range", MessageBoxButtons.OK,
                             MessageBoxIcon.Information)
         End If
     End Sub
-
-    Private Function IsValidInteger(ByVal fn As String) As Boolean
-        ' Check for any value
-        If String.IsNullOrEmpty(fn) Then Return False
-        ' Check for numeric value
-        If Not IsNumeric(fn) Then Return False
-        ' Try to convert to Integer
-        Dim iVal As Integer
-        Try
-            iVal = CInt(fn)
-        Catch ex As Exception
-            ' Could not convert to Integer, return false
-            Return False
-        End Try
-        ' Don't allow negative numbers
-        If iVal >= 0 Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
 
     Private Sub ManageUpperRange()
         Dim DEMMax As Double = CDbl(txtMaxElev.Text) + 0.005
@@ -2402,7 +2381,7 @@ Public Class frmSiteScenario
 
     Private Sub BtnTables_Click(sender As System.Object, e As System.EventArgs) Handles BtnTables.Click
 
-        Dim mapsSettings As MapsSettings = ReadMapSettings()
+        Dim mapsSettings As MapsSettings = BA_ReadMapSettings()
         Dim dblSubRangeFromElev = CDbl(mapsSettings.SubRangeFromElev)
         Dim dblSubRangeToElev = CDbl(mapsSettings.SubRangeToElev)
         If mapsSettings.ZMeters <> OptZMeters.Checked Then
@@ -2904,90 +2883,6 @@ Public Class frmSiteScenario
             End If
         End If
         Return conversionFactor
-    End Function
-
-    ''' <summary>
-    ''' 
-    ''' </summary>
-    ''' <returns></returns>
-    ''' <remarks></remarks>
-    Private Function ReadMapSettings() As MapsSettings
-        Dim retSettings As MapsSettings = Nothing
-        Dim filePathName As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + _
-            "\" + BA_MapParameterFile
-        If BA_File_ExistsWindowsIO(filePathName) Then
-            'This list corresponds to the values in frmGenerateMaps.CmboxElevInterval
-            Dim lstElevationInterval As IList(Of String) = _
-                New List(Of String) From {"50", "100", "200", "250", "500", "1000", "2500", "5000"}
-            Using sr As IO.StreamReader = New IO.StreamReader(filePathName)
-                'read the version text
-                Dim linestring As String = sr.ReadLine
-                Dim errormessage As String = Nothing
-                'check version
-                If Trim(linestring) <> BA_VersionText And Trim(linestring) <> BA_CompatibleVersion1Text Then
-                    sr.Close()
-                    errormessage = "The map parameter file's version doesn't match the version of the model!"
-                    MessageBox.Show(errormessage, "BAGIS", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                    Return retSettings
-                End If
-                'read the map unit text
-                retSettings = New MapsSettings()
-                linestring = sr.ReadLine
-                If Trim(linestring) = "True" Then
-                    retSettings.ZMeters = True
-                Else
-                    retSettings.ZMeters = False
-                End If
-                'prepare the elevation interval list
-                linestring = sr.ReadLine
-                Dim idxElevation As Integer = 0
-                If IsValidInteger(linestring) Then idxElevation = CInt(linestring)
-                If lstElevationInterval.Count > (idxElevation + 1) Then
-                    retSettings.ElevationInterval = lstElevationInterval.Item(idxElevation)
-                End If
-                linestring = sr.ReadLine    'Elevation class number
-                Dim listCount As Integer = 0
-                If IsValidInteger(linestring) Then listCount = CInt(linestring)
-                For i As Integer = 0 To listCount - 1
-                    linestring = sr.ReadLine    'throw this away; we don't need it
-                Next
-                'prepare the PRISM list
-                linestring = sr.ReadLine
-                retSettings.IdxPrecipType = Val(linestring)
-                'ignore rest of PRISM settings; Not used
-                linestring = sr.ReadLine    'Begin date
-                linestring = sr.ReadLine    'End date
-                retSettings.MinimumPrecip = sr.ReadLine    'Min precip
-                linestring = sr.ReadLine    'Max precip
-                linestring = sr.ReadLine    'Precip range
-                linestring = sr.ReadLine    'Precip interval
-                linestring = sr.ReadLine    'Number of precip zones
-                linestring = sr.ReadLine    'Precip zones listbox; throw away, not used
-                listCount = Val(Trim(linestring))
-                If listCount > 0 Then
-                    For i = 1 To listCount
-                        linestring = sr.ReadLine
-                    Next
-                End If
-                linestring = sr.ReadLine    'number of subdivision
-                'subrange analysis settings
-                retSettings.UseSubRange = Convert.ToBoolean(sr.ReadLine)
-                retSettings.SubRangeFromElev = sr.ReadLine
-                retSettings.SubRangeToElev = sr.ReadLine
-                If sr.Peek > -1 Then 'check if additional parameters were added after BAGIS Ver 1. Aspect was added in version 2
-                    linestring = sr.ReadLine 'skip the REVISION text
-                    linestring = sr.ReadLine 'aspect
-                    Dim tokenstring() As String = linestring.Split(New Char(), " "c)
-                    If tokenstring(0).ToUpper = "ASPECT" Then
-                        retSettings.AspectDirections = tokenstring(1)
-                    End If
-                End If
-            End Using
-        Else
-            MessageBox.Show("Unable to open the maps settings file. Please configure the settings from the Map Settings screen!", _
-                            "BAGIS", MessageBoxButtons.OK, MessageBoxIcon.Information)
-        End If
-        Return retSettings
     End Function
 
     Private Sub BtnTableHelp_Click(sender As System.Object, e As System.EventArgs) Handles BtnTableHelp.Click

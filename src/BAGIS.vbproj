@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -153,6 +153,14 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
+    <Reference Include="PdfSharp, Version=1.50.5147.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>packages\PDFsharp.1.50.5147\lib\net20\PdfSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PdfSharp.Charting, Version=1.50.5147.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>packages\PDFsharp.1.50.5147\lib\net20\PdfSharp.Charting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -204,6 +212,7 @@
     <Compile Include="Help\FrmHelp.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Maps_Tables\BtnExportMapPackage.vb" />
     <Compile Include="Maps_Tables\BtnScenario1.vb" />
     <Compile Include="BtnAddRefLayers.vb" />
     <Compile Include="BAGIS_PublicModule.vb" />
@@ -518,6 +527,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="Resources\SandClock.png" />
   </ItemGroup>
   <ItemGroup>
@@ -638,6 +648,7 @@
     </Content>
     <AddInContent Include="Images\BtnWebServices.png" />
     <AddInContent Include="Images\BtnRepresentPrecip.png" />
+    <AddInContent Include="Images\BtnExportMapPackage.png" />
     <Content Include="Images\GenericYellowLeftArrow32.png" />
     <Content Include="Images\GenericYellowRightArrow32.png" />
     <AddInContent Include="Images\SelectSiteTool.png" />
