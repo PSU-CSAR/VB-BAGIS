@@ -12,7 +12,12 @@ Public Class BtnExportMapPackage
 
     Protected Overrides Sub OnClick()
         If String.IsNullOrEmpty(AOIFolderBase) Then
-            MessageBox.Show("You must select an AOI before exporting!!")
+            MessageBox.Show("You must select an AOI before exporting!!", "BAGIS")
+            Exit Sub
+        End If
+        If Not BA_File_ExistsWindowsIO(BA_GetPath(AOIFolderBase, PublicPath.Maps) +
+            "\" + BA_MapParameterFile) Then
+            MessageBox.Show("The map settings have not been configured for this AOI. Use the Generate Maps button to complete the configuration!!", "BAGIS")
             Exit Sub
         End If
         Dim oMapsSettings As MapsSettings = BA_ReadMapSettings()
@@ -28,40 +33,53 @@ Public Class BtnExportMapPackage
             AOI_HasSnowCourse = True
         End If
 
-        Dim pRasterStats As ESRI.ArcGIS.DataSourcesRaster.IRasterStatistics =
-            BAGIS_ClassLibrary.BA_GetDemStatsGDB(AOIFolderBase)
+        Dim pRasterStats As ESRI.ArcGIS.DataSourcesRaster.IRasterStatistics = BA_GetDemStatsGDB(AOIFolderBase)
         Dim DisplayConversion_Factor As Double = BAGIS_ClassLibrary.BA_SetConversionFactor(oMapsSettings.ZMeters, True)
         Dim dblMinElev As Double = Math.Round(pRasterStats.Minimum * DisplayConversion_Factor - 0.005, 2)  'adjust value to include the actual min, max
         Dim dblMaxElev As Double = Math.Round(pRasterStats.Maximum * DisplayConversion_Factor + 0.005, 2)
 
-        BA_GenerateTables(oMapsSettings, dblMaxElev, dblMinElev)
+        Dim parentPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\"
+        Dim files As String() = {"title_page.pdf", BA_ChartsPdf, BA_RangeChartsPdf, BA_ElevPrecipPdf}
+        'Delete old .pdf files from previous runs (if they exist)
+        For i As Integer = 1 To files.Length - 1
+            Dim fullPath As String = parentPath + files(i)
+            If BA_File_ExistsWindowsIO(fullPath) Then
+                System.IO.File.Delete(fullPath)
+            End If
+        Next
 
-        'Dim parentPath As String = "C:\Docs\animas_AOI_prms\maps\"
-        'Dim files As String() = {"title_page.pdf", "ElevDist.pdf", "ElevSnotel.pdf", "ElevSnow.pdf",
-        '    "PrecipMap.pdf", "ElevAspect.pdf", "ElevSlope.pdf", "Tables_Resize.pdf", "TablePrecip.pdf"}
+        BA_GenerateTables(oMapsSettings, dblMaxElev, dblMinElev, False)
+
+        'Check for files to prepare list for concatenation
+        Dim lstFoundFiles As IList(Of String) = New List(Of String)
+        For Each strFile In files
+            Dim fullPath As String = parentPath + strFile
+            If BA_File_ExistsWindowsIO(fullPath) Then
+                lstFoundFiles.Add(fullPath)
+            End If
+        Next
 
         '' Open the output document
-        'Dim outputDocument As PdfDocument = New PdfDocument()
+        Dim outputDocument As PdfDocument = New PdfDocument()
 
         '' Iterate through files
-        'For Each strFileName As String In files
-        '    Dim fullPath As String = parentPath + strFileName
-        '    'Open the document to import pages from it.
-        '    Dim inputDocument As PdfDocument = PdfReader.Open(fullPath, PdfDocumentOpenMode.Import)
-        '    'Iterate pages
-        '    Dim count As Int16 = inputDocument.PageCount
-        '    For idx As Int16 = 0 To count - 1
-        '        'Get the page from the external document...
-        '        Dim page As PdfPage = inputDocument.Pages(idx)
-        '        '...And add it to the output document.
-        '        outputDocument.AddPage(page)
-        '    Next
-        'Next
+        For Each strFullPath As String In lstFoundFiles
+            'Open the document to import pages from it.
+            Dim inputDocument As PdfDocument = PdfReader.Open(strFullPath, PdfDocumentOpenMode.Import)
+            'Iterate pages
+            Dim count As Int16 = inputDocument.PageCount
+            For idx As Int16 = 0 To count - 1
+                'Get the page from the external document...
+                Dim page As PdfPage = inputDocument.Pages(idx)
+                '...And add it to the output document.
+                outputDocument.AddPage(page)
+            Next
+        Next
 
-        ''Save the document...
-        'Dim concatFileName As String = parentPath + "animas_AOI_prms.pdf"
-        'outputDocument.Save(concatFileName)
-        'MessageBox.Show("Document saved!")
+        'Save the document...
+        Dim concatFileName As String = parentPath + BA_GetBareName(AOIFolderBase) + ".pdf"
+        outputDocument.Save(concatFileName)
+        MessageBox.Show("Document saved!")
     End Sub
 
     Protected Overrides Sub OnUpdate()

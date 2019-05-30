@@ -2177,7 +2177,8 @@ Module BAGIS_MapModule
         End If
     End Function
 
-    Public Sub BA_GenerateTables(ByVal oMapsSettings As MapsSettings, ByVal EMaxValue As Double, ByVal EMinValue As Double)
+    Public Sub BA_GenerateTables(ByVal oMapsSettings As MapsSettings, ByVal EMaxValue As Double, ByVal EMinValue As Double,
+                                 ByVal bInteractive As Boolean)
         Dim response As Integer
         Dim SNOTELParentPath As String
         Dim SNOTELBareName As String
@@ -2498,11 +2499,13 @@ Module BAGIS_MapModule
                                                         False, topPosition)
             End If
 
-            Dim pathToSave As String = AOIFolderBase + "\maps\Charts.pdf"
+            Dim pathToSave As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\" + BA_ChartsPdf
 
             'Charts Tab
             pChartsWorksheet.PageSetup.Zoom = 72
-            pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+            If bInteractive = False Then
+                pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+            End If
 
             'Elev-Precip Chart Tab
             If pPrecipChartWorksheet IsNot Nothing Then
@@ -2512,21 +2515,27 @@ Module BAGIS_MapModule
                     .FitToPagesTall = 1
                     .FitToPagesWide = 1
                 End With
-                pathToSave = AOIFolderBase + "\maps\Elev_Precip.pdf"
-                pPrecipChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                pathToSave = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\" + BA_ElevPrecipPdf
+                If bInteractive = False Then
+                    pPrecipChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                End If
             End If
 
             'Range Charts
             If pRangeChartWorksheet IsNot Nothing Then
                 pRangeChartWorksheet.PageSetup.Zoom = 72
-                pathToSave = AOIFolderBase + "\maps\Range_Charts.pdf"
-                pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                pathToSave = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\" + BA_RangeChartsPdf
+                If bInteractive = False Then
+                    pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                End If
             End If
 
         Catch ex As Exception
             Debug.Print("CmdTables_Click Exception: " & ex.Message)
         Finally
-            objExcel.Visible = True
+            If bInteractive = True Then
+                objExcel.Visible = True
+            End If
             If pStepProg IsNot Nothing Then
                 pStepProg.Hide()
                 pStepProg = Nothing
