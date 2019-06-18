@@ -11,6 +11,24 @@ Public Class BtnExportMapPackage
     End Sub
 
     Protected Overrides Sub OnClick()
+        Dim parentPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\"
+        '' Open the output document
+        Dim outputDocument As PdfDocument = New PdfDocument()
+        Dim sourceFolder As String = parentPath + "excel"
+        ConcatenatePdfFromFolder(sourceFolder, outputDocument)
+
+        'Save the document...
+        'Dim concatFileName As String = parentPath + BA_GetBareName(AOIFolderBase) + ".pdf"
+        Dim concatFileName As String = parentPath + "excel\sample_charts.pdf"
+        outputDocument.Save(concatFileName)
+        MessageBox.Show("Document saved!")
+    End Sub
+
+    Protected Overrides Sub OnUpdate()
+
+    End Sub
+
+    Private Sub GenerateCharts(ByVal parentPath As String, ByRef outputDocument As PdfDocument)
         If String.IsNullOrEmpty(AOIFolderBase) Then
             MessageBox.Show("You must select an AOI before exporting!!", "BAGIS")
             Exit Sub
@@ -38,7 +56,6 @@ Public Class BtnExportMapPackage
         Dim dblMinElev As Double = Math.Round(pRasterStats.Minimum * DisplayConversion_Factor - 0.005, 2)  'adjust value to include the actual min, max
         Dim dblMaxElev As Double = Math.Round(pRasterStats.Maximum * DisplayConversion_Factor + 0.005, 2)
 
-        Dim parentPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\"
         Dim files As String() = {"title_page.pdf", BA_ChartsPdf, BA_RangeChartsPdf, BA_ElevPrecipPdf}
         'Delete old .pdf files from previous runs (if they exist)
         For i As Integer = 1 To files.Length - 1
@@ -59,9 +76,6 @@ Public Class BtnExportMapPackage
             End If
         Next
 
-        '' Open the output document
-        Dim outputDocument As PdfDocument = New PdfDocument()
-
         '' Iterate through files
         For Each strFullPath As String In lstFoundFiles
             'Open the document to import pages from it.
@@ -75,14 +89,21 @@ Public Class BtnExportMapPackage
                 outputDocument.AddPage(page)
             Next
         Next
-
-        'Save the document...
-        Dim concatFileName As String = parentPath + BA_GetBareName(AOIFolderBase) + ".pdf"
-        outputDocument.Save(concatFileName)
-        MessageBox.Show("Document saved!")
     End Sub
 
-    Protected Overrides Sub OnUpdate()
-
+    Private Sub ConcatenatePdfFromFolder(ByVal strFolderPath As String, ByRef outputDocument As PdfDocument)
+        Dim arrFiles As String() = System.IO.Directory.GetFiles(strFolderPath)
+        For Each strFullPath As String In arrFiles
+            'Open the document to import pages from it.
+            Dim inputDocument As PdfDocument = PdfReader.Open(strFullPath, PdfDocumentOpenMode.Import)
+            'Iterate pages
+            Dim count As Int16 = inputDocument.PageCount
+            For idx As Int16 = 0 To count - 1
+                'Get the page from the external document...
+                Dim page As PdfPage = inputDocument.Pages(idx)
+                '...And add it to the output document.
+                outputDocument.AddPage(page)
+            Next
+        Next
     End Sub
 End Class

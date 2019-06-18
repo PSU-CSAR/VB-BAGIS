@@ -2353,14 +2353,15 @@ Module BAGIS_MapModule
             response = BA_Excel_CreateElevationChart(pSubElvWorksheet, pChartsWorksheet, BA_ChartSpacing, BA_ChartSpacing, Chart_YMinScale, Chart_YMaxScale,
                                                      Chart_YMapUnit, oMapsSettings.ZMeters, Not oMapsSettings.ZMeters)
 
-            Dim positionLeftSecondColumn As Int16 = 675
-            Dim positionTopSecondPage As Int16 = 950
+            Dim positionLeftSecondColumn As Int16 = 650
+            Dim row2TopPosition As Int16 = BA_ChartHeight + 70
+            Dim row3TopPosition As Int16 = row2TopPosition + BA_ChartHeight + 70
             If AOI_HasSNOTEL Then
                 pStepProg.Message = "Creating SNOTEL Table and Chart..."
                 pStepProg.Step()
                 response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSNOTELWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.SnotelZone), conversionFactor)
                 response = BA_Excel_CreateSNOTELChart(pSNOTELWorksheet, pSubElvWorksheet, pChartsWorksheet, True,
-                    positionLeftSecondColumn, BA_ChartHeight + BA_ChartSpacing + BA_ChartSpacing,
+                    positionLeftSecondColumn, row2TopPosition,
                     Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, oMapsSettings.ZMeters, Not oMapsSettings.ZMeters)
             End If
 
@@ -2370,7 +2371,7 @@ Module BAGIS_MapModule
 
                 response = BA_Excel_CreateSNOTELTable(AOIFolderBase, pSnowCourseWorksheet, pSubElvWorksheet, BA_EnumDescription(MapsFileName.SnowCourseZone), conversionFactor)
                 response = BA_Excel_CreateSNOTELChart(pSnowCourseWorksheet, pSubElvWorksheet, pChartsWorksheet, False,
-                        positionLeftSecondColumn, positionTopSecondPage,
+                        positionLeftSecondColumn, row3TopPosition,
                         Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, oMapsSettings.ZMeters, Not oMapsSettings.ZMeters)
             End If
 
@@ -2378,13 +2379,13 @@ Module BAGIS_MapModule
             pStepProg.Step()
 
             response = BA_Excel_CreateAspectTable(AOIFolderBase, pAspectWorksheet)
-            response = BA_Excel_CreateAspectChart(pAspectWorksheet, pChartsWorksheet, positionTopSecondPage + BA_ChartHeight + BA_ChartSpacing)
+            response = BA_Excel_CreateAspectChart(pAspectWorksheet, pChartsWorksheet, row3TopPosition + BA_ChartHeight + 70)
 
             pStepProg.Message = "Creating SLOPE Table and Chart..."
             pStepProg.Step()
 
             response = BA_Excel_CreateSlopeTable(AOIFolderBase, pSlopeWorksheet)
-            response = BA_Excel_CreateSlopeChart(pSlopeWorksheet, pChartsWorksheet, positionTopSecondPage)
+            response = BA_Excel_CreateSlopeChart(pSlopeWorksheet, pChartsWorksheet, row3TopPosition)
 
             pStepProg.Message = "Creating Precipitation Table and Chart..."
             pStepProg.Step()
@@ -2400,11 +2401,10 @@ Module BAGIS_MapModule
             pStepProg.Message = "Creating Combined Charts..."
             pStepProg.Step()
 
-            Dim topPosition As Integer = BA_ChartHeight + (BA_ChartSpacing * 2)
             response = BA_Excel_CreateCombinedChart(pPRISMWorkSheet, pSubElvWorksheet, pChartsWorksheet, pSnowCourseWorksheet,
                                                     pSNOTELWorksheet, Chart_YMinScale, Chart_YMaxScale, Chart_YMapUnit, MaxPRISMValue,
                                                     oMapsSettings.ZMeters, Not oMapsSettings.ZMeters, AOI_HasSNOTEL, AOI_HasSnowCourse,
-                                                    Nothing, False, topPosition)
+                                                    Nothing, False, row2TopPosition)
 
             'copy DEM area and %_area to the PRISM table
             'response = Excel_CopyCells(pAreaElvWorksheet, 3, pPRISMWorkSheet, 12)
@@ -2477,14 +2477,14 @@ Module BAGIS_MapModule
                 If AOI_HasSNOTEL Then
                     response = BA_Excel_CreateSNOTELRangeTable(pSTRangeWorksheet, pSNOTELWorksheet, pSubElvWorksheet, CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev))
                     response = BA_Excel_CreateSNOTELChart(pSTRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, True,
-                                                          BA_ChartSpacing, positionTopSecondPage,
+                                                          BA_ChartSpacing, row3TopPosition,
                                                           CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev), Chart_YMapUnit, oMapsSettings.ZMeters, Not oMapsSettings.ZMeters)
                 End If
 
                 If AOI_HasSnowCourse Then
                     response = BA_Excel_CreateSNOTELRangeTable(pSCRangeWorksheet, pSnowCourseWorksheet, pSubElvWorksheet, CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev))
                     response = BA_Excel_CreateSNOTELChart(pSCRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, False,
-                               BA_ChartSpacing, positionTopSecondPage + BA_ChartHeight + BA_ChartSpacing,
+                               positionLeftSecondColumn, row3TopPosition,
                                CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev), Chart_YMapUnit, oMapsSettings.ZMeters, Not oMapsSettings.ZMeters)
                 End If
 
@@ -2496,7 +2496,7 @@ Module BAGIS_MapModule
                 response = BA_Excel_CreateCombinedChart(pPrecipitationRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, pSCRangeWorksheet,
                                                         pSTRangeWorksheet, CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev), Chart_YMapUnit, MaxPRISMValue,
                                                         oMapsSettings.ZMeters, Not oMapsSettings.ZMeters, AOI_HasSNOTEL, AOI_HasSnowCourse, Nothing,
-                                                        False, topPosition)
+                                                        False, row2TopPosition)
             End If
 
             Dim pathToSave As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\" + BA_ChartsPdf
