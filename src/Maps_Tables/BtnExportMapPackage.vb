@@ -11,15 +11,18 @@ Public Class BtnExportMapPackage
     End Sub
 
     Protected Overrides Sub OnClick()
-        Dim parentPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\"
+        'Dim parentPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\"
+        Dim parentPath As String = AOIFolderBase + "\" + "maps_export"
+        BA_ExportMapPackageFolder = parentPath
         '' Open the output document
         Dim outputDocument As PdfDocument = New PdfDocument()
-        Dim sourceFolder As String = parentPath + "excel"
-        ConcatenatePdfFromFolder(sourceFolder, outputDocument)
+        GenerateCharts(parentPath, outputDocument)
+        'Dim sourceFolder As String = parentPath + "excel"
+        'ConcatenatePdfFromFolder(sourceFolder, outputDocument)
 
         'Save the document...
         'Dim concatFileName As String = parentPath + BA_GetBareName(AOIFolderBase) + ".pdf"
-        Dim concatFileName As String = parentPath + "excel\sample_charts.pdf"
+        Dim concatFileName As String = parentPath + "\sample_charts.pdf"
         outputDocument.Save(concatFileName)
         MessageBox.Show("Document saved!")
     End Sub
@@ -56,7 +59,9 @@ Public Class BtnExportMapPackage
         Dim dblMinElev As Double = Math.Round(pRasterStats.Minimum * DisplayConversion_Factor - 0.005, 2)  'adjust value to include the actual min, max
         Dim dblMaxElev As Double = Math.Round(pRasterStats.Maximum * DisplayConversion_Factor + 0.005, 2)
 
-        Dim files As String() = {"title_page.pdf", BA_ChartsPdf, BA_RangeChartsPdf, BA_ElevPrecipPdf}
+        Dim files As String() = {"title_page.pdf", BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
+            BA_ExportChartAreaElevSnotelPdf, BA_ExportChartAreaElevScosPdf, BA_ExportChartSlopePdf, BA_ExportChartAspectPdf,
+            BA_RangeChartsPdf, BA_ExportChartElevPrecipCorrelPdf}
         'Delete old .pdf files from previous runs (if they exist)
         For i As Integer = 1 To files.Length - 1
             Dim fullPath As String = parentPath + files(i)
@@ -70,7 +75,7 @@ Public Class BtnExportMapPackage
         'Check for files to prepare list for concatenation
         Dim lstFoundFiles As IList(Of String) = New List(Of String)
         For Each strFile In files
-            Dim fullPath As String = parentPath + strFile
+            Dim fullPath As String = parentPath + "\" + strFile
             If BA_File_ExistsWindowsIO(fullPath) Then
                 lstFoundFiles.Add(fullPath)
             End If

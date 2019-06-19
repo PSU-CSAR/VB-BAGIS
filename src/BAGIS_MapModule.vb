@@ -2348,14 +2348,18 @@ Module BAGIS_MapModule
             End If
             response = BA_Excel_CreateElevationTable(AOIFolderBase, pAreaElvWorksheet, conversionFactor, AOI_DEMMin, oMapsSettings.ZMeters)
 
+            Dim positionLeftSecondColumn As Int16 = 650
+            Dim row2TopPosition As Int16 = BA_ChartHeight + 80
+            Dim row3TopPosition As Int16 = row2TopPosition + BA_ChartHeight + 80
+
+            'populate the settings for the text description boxes
+            LoadChartTextboxSettings(positionLeftSecondColumn, row2TopPosition, row3TopPosition)
+
             'create subdivided elevation table for plotting the curve
             response = BA_Excel_CreateSubElevationTable(AOIFolderBase, pSubElvWorksheet, conversionFactor, AOI_DEMMin, oMapsSettings.ZMeters)
             response = BA_Excel_CreateElevationChart(pSubElvWorksheet, pChartsWorksheet, BA_ChartSpacing, BA_ChartSpacing, Chart_YMinScale, Chart_YMaxScale,
                                                      Chart_YMapUnit, oMapsSettings.ZMeters, Not oMapsSettings.ZMeters)
 
-            Dim positionLeftSecondColumn As Int16 = 650
-            Dim row2TopPosition As Int16 = BA_ChartHeight + 70
-            Dim row3TopPosition As Int16 = row2TopPosition + BA_ChartHeight + 70
             If AOI_HasSNOTEL Then
                 pStepProg.Message = "Creating SNOTEL Table and Chart..."
                 pStepProg.Step()
@@ -2379,7 +2383,7 @@ Module BAGIS_MapModule
             pStepProg.Step()
 
             response = BA_Excel_CreateAspectTable(AOIFolderBase, pAspectWorksheet)
-            response = BA_Excel_CreateAspectChart(pAspectWorksheet, pChartsWorksheet, row3TopPosition + BA_ChartHeight + 70)
+            response = BA_Excel_CreateAspectChart(pAspectWorksheet, pChartsWorksheet, row3TopPosition + BA_ChartHeight + 80)
 
             pStepProg.Message = "Creating SLOPE Table and Chart..."
             pStepProg.Step()
@@ -2499,23 +2503,70 @@ Module BAGIS_MapModule
                                                         False, row2TopPosition)
             End If
 
-            Dim pathToSave As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\" + BA_ChartsPdf
 
             'Charts Tab
-            pChartsWorksheet.PageSetup.Zoom = 72
             If bInteractive = False Then
+                Dim pathToSave As String = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevPdf
+                With pChartsWorksheet.PageSetup
+                    .Zoom = False
+                    .FitToPagesTall = 1
+                    .FitToPagesWide = 1
+                    .PrintArea = "$A$1:$M$27"
+                End With
                 pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+
+                pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevPrecipPdf
+                With pChartsWorksheet.PageSetup
+                    .PrintArea = "$N$1:$AA$27"
+                End With
+                pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+
+                If AOI_HasSNOTEL Or AOI_HasSnowCourse Then
+                    pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevPrecipSitePdf
+                    With pChartsWorksheet.PageSetup
+                        .PrintArea = "$A$29:$M$56"
+                    End With
+                    pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                End If
+
+                If AOI_HasSNOTEL Then
+                    pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevSnotelPdf
+                    With pChartsWorksheet.PageSetup
+                        .PrintArea = "$N$29:$AA$56"
+                    End With
+                    pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                End If
+
+                If AOI_HasSnowCourse Then
+                    pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevScosPdf
+                    With pChartsWorksheet.PageSetup
+                        .PrintArea = "$N$57:$AA$85"
+                    End With
+                    pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                End If
+                pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartSlopePdf
+                With pChartsWorksheet.PageSetup
+                    .PrintArea = "$A$57:$M$85"
+                End With
+                pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAspectPdf
+                With pChartsWorksheet.PageSetup
+                    .PrintArea = "$A$86:$M$113"
+                End With
+                pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+
+
             End If
 
-            'Elev-Precip Chart Tab
-            If pPrecipChartWorksheet IsNot Nothing Then
+                'Elev-Precip Chart Tab
+                If pPrecipChartWorksheet IsNot Nothing Then
                 With pPrecipChartWorksheet.PageSetup
                     .Orientation = XlPageOrientation.xlLandscape
                     .Zoom = False
                     .FitToPagesTall = 1
                     .FitToPagesWide = 1
                 End With
-                pathToSave = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\" + BA_ElevPrecipPdf
+                Dim pathToSave As String = BA_ExportMapPackageFolder + "\" + BA_ExportChartElevPrecipCorrelPdf
                 If bInteractive = False Then
                     pPrecipChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
                 End If
@@ -2524,7 +2575,7 @@ Module BAGIS_MapModule
             'Range Charts
             If pRangeChartWorksheet IsNot Nothing Then
                 pRangeChartWorksheet.PageSetup.Zoom = 72
-                pathToSave = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\" + BA_RangeChartsPdf
+                Dim pathToSave = BA_ExportMapPackageFolder + "\" + +BA_RangeChartsPdf
                 If bInteractive = False Then
                     pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
                 End If
@@ -2546,4 +2597,68 @@ Module BAGIS_MapModule
             End If
         End Try
     End Sub
+
+    Private Sub LoadChartTextboxSettings(ByVal positionLeftSecondColumn As Single, ByVal row2TopPosition As Single,
+                                         ByVal row3TopPosition As Single)
+        BA_DictChartTextBoxSettings = New Dictionary(Of String, ChartTextBoxSettings)
+        Dim areaElevSettings As ChartTextBoxSettings = New ChartTextBoxSettings()
+        With areaElevSettings
+            .Left = BA_ChartSpacing
+            .Top = BA_ChartHeight + 10
+            .Message = "Area-Elevation Distribution chart"
+        End With
+        BA_DictChartTextBoxSettings.Add(BA_ExportChartAreaElevPdf, areaElevSettings)
+        Dim areaElevPrecipSettings As ChartTextBoxSettings = New ChartTextBoxSettings()
+        With areaElevPrecipSettings
+            .Left = positionLeftSecondColumn
+            .Top = BA_ChartHeight + 10
+            .Message = "Area-Elevation and Precipitation Distribution chart"
+        End With
+        BA_DictChartTextBoxSettings.Add(BA_ExportChartAreaElevPrecipPdf, areaElevPrecipSettings)
+        Dim areaElevPrecipSiteSettings As ChartTextBoxSettings = New ChartTextBoxSettings()
+        With areaElevPrecipSiteSettings
+            .Left = BA_ChartSpacing
+            .Top = row2TopPosition + BA_ChartHeight + 10
+            .Message = "Area-Elevation, Precipitation and Site Distribution chart"
+        End With
+        BA_DictChartTextBoxSettings.Add(BA_ExportChartAreaElevPrecipSitePdf, areaElevPrecipSiteSettings)
+        Dim areaElevSnotelSiteSettings As ChartTextBoxSettings = New ChartTextBoxSettings()
+        With areaElevSnotelSiteSettings
+            .Left = positionLeftSecondColumn
+            .Top = row2TopPosition + BA_ChartHeight + 10
+            .Message = "Area-Elevation and SNOTEL Distribution chart"
+        End With
+        BA_DictChartTextBoxSettings.Add(BA_ExportChartAreaElevSnotelPdf, areaElevSnotelSiteSettings)
+        Dim areaElevScosSiteSettings As ChartTextBoxSettings = New ChartTextBoxSettings()
+        With areaElevScosSiteSettings
+            .Left = positionLeftSecondColumn
+            .Top = row3TopPosition + BA_ChartHeight + 10
+            .Message = "Area-Elevation and Snow Course Distribution chart"
+        End With
+        BA_DictChartTextBoxSettings.Add(BA_ExportChartAreaElevScosPdf, areaElevScosSiteSettings)
+        Dim slopeSettings As ChartTextBoxSettings = New ChartTextBoxSettings()
+        With slopeSettings
+            .Left = BA_ChartSpacing
+            .Top = row3TopPosition + BA_ChartHeight + 10
+            .Message = "Slope Distribution chart"
+        End With
+        BA_DictChartTextBoxSettings.Add(BA_ExportChartSlopePdf, slopeSettings)
+        Dim aspectSettings As ChartTextBoxSettings = New ChartTextBoxSettings()
+        With aspectSettings
+            .Left = BA_ChartSpacing
+            .Top = row3TopPosition + BA_ChartHeight + 80 + BA_ChartHeight + 10
+            .Message = "Aspect Distribution chart"
+        End With
+        BA_DictChartTextBoxSettings.Add(BA_ExportChartAspectPdf, aspectSettings)
+        Dim correlationSettings As ChartTextBoxSettings = New ChartTextBoxSettings()
+        With correlationSettings
+            .Width = BA_LargeChartWidth
+            .Left = BA_ChartSpacing
+            .Top = BA_LargeChartHeight + 10
+            .Message = "Elevation Precipitation Correlation chart"
+        End With
+        BA_DictChartTextBoxSettings.Add(BA_ExportChartElevPrecipCorrelPdf, correlationSettings)
+
+    End Sub
+
 End Module
