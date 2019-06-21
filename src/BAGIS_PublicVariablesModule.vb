@@ -103,6 +103,7 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_ZonesRasterPrefix = "aggzone_"
     Public Const BA_VectorAllSitesPrec = "sitesprec_v"
     Public Const BA_RangeChartsPdf = "Range_Charts.pdf"
+    Public Const BA_DefaultMapPackageFolder As String = "\maps_export"
     Public BA_ExportMapPackageFolder As String
 
 

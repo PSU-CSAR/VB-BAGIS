@@ -2209,6 +2209,29 @@ Module BAGIS_MapModule
             End If
         End If
 
+        'convert unit to internal system unit, i.e., meters
+        Dim elevUnit As MeasurementUnit = BA_GetElevationUnitsForAOI(AOIFolderBase)
+        If elevUnit = MeasurementUnit.Missing Then
+            Dim aoiName As String = BA_GetBareName(AOIFolderBase)
+            Dim pAoi As Aoi = New Aoi(aoiName, AOIFolderBase, "", "")
+            Dim frmDataUnits As FrmDataUnits = New FrmDataUnits(pAoi)
+            If frmDataUnits.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
+                elevUnit = frmDataUnits.NewElevationUnit
+            Else
+                'Set elevUnit to system default and warn the user
+                elevUnit = MeasurementUnit.Meters
+                Dim sb As StringBuilder = New StringBuilder
+                sb.Append("You did not define the elevation units for this" & vbCrLf)
+                sb.Append("AOI. BAGIS assumes the elevation units are" & vbCrLf)
+                sb.Append(BA_EnumDescription(MeasurementUnit.Meters) & ". If the elevation units are not " & BA_EnumDescription(MeasurementUnit.Meters) & vbCrLf)
+                sb.Append("the results will be incorrect." & vbCrLf)
+                MessageBox.Show(sb.ToString, "Elevation units not defined", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            End If
+        End If
+        If elevUnit = MeasurementUnit.Meters Then
+            bDemInMeters = True
+        End If
+
         If oMapsSettings.ZMeters = True Then
             BA_ElevationUnitString = "Meters"
         Else
@@ -2333,7 +2356,7 @@ Module BAGIS_MapModule
 
             'create elevation table for summary statistics
             Dim conversionFactor As Double
-            If oMapsSettings.ZMeters = True Then 'Display = Feet
+            If oMapsSettings.ZMeters = False Then 'Display = Feet
                 If bDemInMeters = False Then 'DEM = Feet
                     conversionFactor = 1
                 Else 'DEM = METERS

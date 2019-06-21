@@ -378,11 +378,13 @@ ErrorHandler:
         Dim Scenario2RepButton = AddIn.FromID(Of BtnScenario2)(My.ThisAddIn.IDs.BtnScenario2)
         Dim DifferenceConditionButton = AddIn.FromID(Of BtnDifferenceCondition)(My.ThisAddIn.IDs.BtnDifferenceCondition)
         Dim SiteRepresentationButton = AddIn.FromID(Of BtnSiteRepresentation)(My.ThisAddIn.IDs.BtnSiteRepresentation)
+        Dim ExportMapPackageButton = AddIn.FromID(Of BtnExportMapPackage)(My.ThisAddIn.IDs.BtnExportMapPackage)
         'disable addition elevational representation maps
         Scenario1RepButton.SelectedProperty = False
         Scenario2RepButton.SelectedProperty = False
         DifferenceConditionButton.SelectedProperty = False
         SiteRepresentationButton.selectedProperty = False
+        ExportMapPackageButton.selectedProperty = False
         'disable SNOTEL, Snow Course, and Pseudo-Site flags; They will be re-calculated by Maps or Site Scenario tools
         AOI_HasSNOTEL = False
         AOI_HasSnowCourse = False
@@ -392,10 +394,12 @@ ErrorHandler:
             GeneratMapsButton.SelectedProperty = False
             SiteScenarioButton.selectedProperty = False
             SaveAOIMXDButton.selectedProperty = False
+            ExportMapPackageButton.selectedProperty = False
         Else
             GeneratMapsButton.SelectedProperty = True
             SiteScenarioButton.selectedProperty = True
             SaveAOIMXDButton.selectedProperty = True
+            ExportMapPackageButton.selectedProperty = True
         End If
 
         'Close the dockable windows for Site Scenario and Representation if they are open
@@ -409,6 +413,11 @@ ErrorHandler:
         dockWinID2.Value = My.ThisAddIn.IDs.frmSiteRepresentations
         dockWindow2 = My.ArcMap.DockableWindowManager.GetDockableWindow(dockWinID2)
         If dockWindow2 IsNot Nothing AndAlso dockWindow2.IsVisible Then dockWindow2.Show(False)
+        Dim dockWindow3 As ESRI.ArcGIS.Framework.IDockableWindow
+        Dim dockWinID3 As UID = New UIDClass()
+        dockWinID3.Value = My.ThisAddIn.IDs.FrmExportMapPackage
+        dockWindow3 = My.ArcMap.DockableWindowManager.GetDockableWindow(dockWinID3)
+        If dockWindow3 IsNot Nothing AndAlso dockWindow3.IsVisible Then dockWindow3.Show(False)
 
         'Set the default scratch workspace for all Analyst functions to follow
         Dim workspaceFactory As IWorkspaceFactory = New RasterWorkspaceFactory()

@@ -333,6 +333,12 @@
     <Compile Include="frmViewDEMLayers.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Maps_Tables\FrmExportMapPackage.Designer.vb">
+      <DependentUpon>FrmExportMapPackage.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Maps_Tables\FrmExportMapPackage.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Maps_Tables\frmGenerateMaps.designer.vb">
       <DependentUpon>frmGenerateMaps.vb</DependentUpon>
     </Compile>
@@ -453,6 +459,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmViewDEMLayers.resx">
       <DependentUpon>frmViewDEMLayers.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Maps_Tables\FrmExportMapPackage.resx">
+      <DependentUpon>FrmExportMapPackage.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Maps_Tables\frmGenerateMaps.resx">
       <DependentUpon>frmGenerateMaps.vb</DependentUpon>
@@ -649,6 +658,7 @@
     <AddInContent Include="Images\BtnWebServices.png" />
     <AddInContent Include="Images\BtnRepresentPrecip.png" />
     <AddInContent Include="Images\BtnExportMapPackage.png" />
+    <AddInContent Include="Images\FrmExportMapPackage.png" />
     <Content Include="Images\GenericYellowLeftArrow32.png" />
     <Content Include="Images\GenericYellowRightArrow32.png" />
     <AddInContent Include="Images\SelectSiteTool.png" />

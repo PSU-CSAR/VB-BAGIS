@@ -7,7 +7,7 @@
   <Image>Images\BAGIS.png</Image>
   <Author>Lesley Bross, Masoud Momeni, and Geoffrey Duh</Author>
   <Company>Portland State University</Company>
-  <Date>5/2/2019</Date>
+  <Date>6/21/2019</Date>
   <Targets>
     <Target name="Desktop" version="10.5" />
   </Targets>
@@ -94,7 +94,7 @@
         <Button id="Microsoft_BAGIS_BtnAOIfromShapefile" class="BtnAOIfromShapefile" message="Creating an AOI using an existing shapefile." caption="Create AOI from a shapefile" tip="Creating an AOI using an existing shapefile." category="BAGIS" />
         <Tool id="Microsoft_BAGIS_SelectSiteTool" class="SelectSiteTool" message="Select a pseudo site" caption="Select Site Tool" tip="Select Site Tool" category="BAGIS" image="Images\SelectSiteTool.png" />
         <Button id="Portland_State_University_BAGIS_BtnWebServices" class="BtnWebServices" message="Web Services Testing" caption="Web Services Testing" tip="Web Services Testing" category="BAGIS" image="Images\BtnWebServices.png" />
-        <Button id="Portland_State_University_BAGIS_BtnExportMapPackage" class="BtnExportMapPackage" message="" caption="Export Map Package For Web (Beta)" tip="Export Map Package For Web (Beta)" category="BAGIS" />
+        <Button id="Portland_State_University_BAGIS_BtnExportMapPackage" class="BtnExportMapPackage" message="" caption="Export Map Package For Web (Beta)" tip="Export Map Package For Web (Beta)" category="BAGIS" onDemand="false"/>
       </Commands>
       <DockableWindows>
         <DockableWindow id="Portland_State_University_BAGIS_frmSiteScenario" class="frmSiteScenario+AddinImpl" caption="Site Scenario Analysis Tool" image="Images\frmSiteScenario.png">
@@ -102,6 +102,9 @@
         </DockableWindow>
         <DockableWindow id="Portland_State_University_BAGIS_frmSiteRepresentations" class="frmSiteRepresentations+AddinImpl" caption="Site Representations" image="Images\frmSiteRepresentations.png">
           <InitialPlacement height="600" width="553" state="hidden" position="float" />
+        </DockableWindow>
+        <DockableWindow id="Portland_State_University_BAGIS_FrmExportMapPackage" class="FrmExportMapPackage+AddinImpl" caption="Export Map Package" image="Images\FrmExportMapPackage.png">
+          <InitialPlacement height="300" width="750" state="hidden" position="left" />
         </DockableWindow>
       </DockableWindows>
     </ArcMap>
