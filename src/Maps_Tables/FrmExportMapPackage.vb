@@ -40,9 +40,16 @@ Public Class FrmExportMapPackage
         End Set
     End Property
 
-    Public Sub InitializeForm()
-        txtExportFolder.Text = AOIFolderBase + BA_DefaultMapPackageFolder
+    Public Sub InitializeForm(ByVal strExportFolder As String, ByVal strCurrentMapTitle As String)
+        txtExportFolder.Text = strExportFolder
+        TxtCurrentMap.Text = strCurrentMapTitle
     End Sub
+
+    Public WriteOnly Property SelectedMap(ByVal strSelectedMap) As String
+        Set(value As String)
+            TxtCurrentMap.Text = strSelectedMap
+        End Set
+    End Property
 
     ''' <summary>
     ''' Implementation class of the dockable window add-in. It is responsible for
@@ -74,19 +81,7 @@ Public Class FrmExportMapPackage
 
     End Class
 
-    Private Sub CmdFolder_Click(sender As Object, e As EventArgs) Handles CmdFolder.Click
-        If Not String.IsNullOrEmpty(txtExportFolder.Text) Then
-            If Not System.IO.Directory.Exists(txtExportFolder.Text) Then
-                System.IO.Directory.CreateDirectory(txtExportFolder.Text)
-            End If
-        End If
-        FolderBrowserDialog1.SelectedPath = txtExportFolder.Text
-        If FolderBrowserDialog1.ShowDialog = Windows.Forms.DialogResult.OK Then
-            txtExportFolder.Text = FolderBrowserDialog1.SelectedPath
-        End If
-    End Sub
-
-    Private Sub CmdExport_Click(sender As Object, e As EventArgs) Handles CmdExport.Click
+    Private Sub CmdExport_Click(sender As Object, e As EventArgs) Handles CmdPublish.Click
         BA_ExportMapPackageFolder = txtExportFolder.Text
 
         If Not String.IsNullOrEmpty(BA_ExportMapPackageFolder) Then

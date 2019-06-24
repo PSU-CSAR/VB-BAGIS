@@ -2684,4 +2684,8 @@ Module BAGIS_MapModule
 
     End Sub
 
+    Public Function GetCurrentMapTitle() As String()
+
+    End Function
+
 End Module

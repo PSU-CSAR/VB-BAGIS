@@ -42,14 +42,14 @@ Public Class BtnExportMapPackage
             Dim parentPos As ESRI.ArcGIS.Framework.IWindowPosition = CType(My.ArcMap.Application, ESRI.ArcGIS.Framework.IWindowPosition)
             ' Set dimensions of dockable window
             Dim windowPos As ESRI.ArcGIS.Framework.IWindowPosition = CType(dockWindow, ESRI.ArcGIS.Framework.IWindowPosition)
-            windowPos.Height = 300
-            windowPos.Width = 750
+            windowPos.Height = 270
+            windowPos.Width = 715
             ' Must be floating before calling any IWindowPosition members
             dockWindow.Dock(ESRI.ArcGIS.Framework.esriDockFlags.esriDockFloat)
             windowPos.Move(parentPos.Left + 30, parentPos.Top + 30, windowPos.Width, windowPos.Height)
 
             dockWindow.Caption = "Export Map Package (Current AOI --> " & aoiName & ")"
-            dockWindowAddIn.UI.InitializeForm()
+            dockWindowAddIn.UI.InitializeForm(AOIFolderBase + BA_DefaultMapPackageFolder, "MAPTITLE")
 
         End If
     End Sub
