@@ -2,6 +2,7 @@
 Imports BAGIS_ClassLibrary
 Imports PdfSharp.Pdf
 Imports PdfSharp.Pdf.IO
+Imports TheArtOfDev.HtmlRenderer.PdfSharp
 
 ''' <summary>
 ''' Designer class of the dockable window add-in. It contains user interfaces that
@@ -118,7 +119,7 @@ Public Class FrmExportMapPackage
         Dim dblMinElev As Double = Math.Round(pRasterStats.Minimum * DisplayConversion_Factor - 0.005, 2)  'adjust value to include the actual min, max
         Dim dblMaxElev As Double = Math.Round(pRasterStats.Maximum * DisplayConversion_Factor + 0.005, 2)
 
-        Dim files As String() = {BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
+        Dim files As String() = {BA_TitlePagePdf, BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
             BA_ExportChartAreaElevSnotelPdf, BA_ExportChartAreaElevScosPdf, BA_ExportChartSlopePdf, BA_ExportChartAspectPdf,
             BA_RangeChartsPdf, BA_ExportChartElevPrecipCorrelPdf}
         'Delete old .pdf files from previous runs (if they exist)
@@ -130,6 +131,8 @@ Public Class FrmExportMapPackage
         Next
 
         BA_GenerateTables(oMapsSettings, dblMaxElev, dblMinElev, False)
+
+        PublishTitlePage(parentPath)
 
         'Check for files to prepare list for concatenation
         Dim lstFoundFiles As IList(Of String) = New List(Of String)
@@ -153,5 +156,47 @@ Public Class FrmExportMapPackage
                 outputDocument.AddPage(page)
             Next
         Next
+    End Sub
+
+    Private Sub BtnCancel_Click(sender As Object, e As EventArgs) Handles BtnCancel.Click
+        Dim dockWindow As ESRI.ArcGIS.Framework.IDockableWindow
+        Dim dockWinID As UID = New UIDClass()
+        dockWinID.Value = My.ThisAddIn.IDs.FrmExportMapPackage
+        dockWindow = My.ArcMap.DockableWindowManager.GetDockableWindow(dockWinID)
+        dockWindow.Show(False)
+    End Sub
+
+    Private Sub PublishTitlePage(ByVal parentPath As String)
+        Dim comboBox = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
+        Dim aoiName As String = comboBox.getValue()
+
+        'Save the values for the title page in an .xml file
+        Dim titlePage As ExportTitlePage = New ExportTitlePage
+        With titlePage
+            .aoi_name = aoiName
+            .publisher = TxtPublisher.Text.Trim
+            .comments = TxtComments.Text.Trim
+            .local_path = AOIFolderBase.Trim
+            .date_created = DateAndTime.Now
+        End With
+        Dim xmlOutputPath As String = parentPath + "\title_page.xml"
+        titlePage.Save(xmlOutputPath)
+
+        'Format the xml file using an xsl style sheet to produce an html document
+        Dim xslTemplate As String = BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TitlePageXsl)
+        Dim xslFileExists As Boolean = BA_File_ExistsWindowsIO(xslTemplate)
+        Dim htmlFile As String = parentPath + "\title_page.html"
+        If xslFileExists Then
+            Dim inputFile As String = xmlOutputPath
+            Dim success As BA_ReturnCode = BA_XSLTransformToHtml(inputFile, xslTemplate, htmlFile)
+        End If
+
+        'Read the contents of the html file into a string and use the PDFGenerator to generate the title page
+        'in .pdf format
+        If System.IO.File.Exists(htmlFile) Then
+            Dim htmlText As String = System.IO.File.ReadAllText(htmlFile)
+            Dim titlePagDoc As PdfDocument = PdfGenerator.GeneratePdf(htmlText, PdfSharp.PageSize.Letter)
+            titlePagDoc.Save(parentPath + "\" + BA_TitlePagePdf)
+        End If
     End Sub
 End Class
