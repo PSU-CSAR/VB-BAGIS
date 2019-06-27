@@ -2503,16 +2503,20 @@ Module BAGIS_MapModule
 
                 If AOI_HasSNOTEL Then
                     response = BA_Excel_CreateSNOTELRangeTable(pSTRangeWorksheet, pSNOTELWorksheet, pSubElvWorksheet, CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev))
-                    response = BA_Excel_CreateSNOTELChart(pSTRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, True,
+                    If response = 1 Then
+                        response = BA_Excel_CreateSNOTELChart(pSTRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, True,
                                                           positionLeftSecondColumn, row2TopPosition,
                                                           CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev), Chart_YMapUnit, oMapsSettings.ZMeters, Not oMapsSettings.ZMeters)
+                    End If
                 End If
 
                 If AOI_HasSnowCourse Then
                     response = BA_Excel_CreateSNOTELRangeTable(pSCRangeWorksheet, pSnowCourseWorksheet, pSubElvWorksheet, CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev))
-                    response = BA_Excel_CreateSNOTELChart(pSCRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, False,
+                    If response = 1 Then
+                        response = BA_Excel_CreateSNOTELChart(pSCRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, False,
                                positionLeftSecondColumn, row3TopPosition,
                                CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev), Chart_YMapUnit, oMapsSettings.ZMeters, Not oMapsSettings.ZMeters)
+                    End If
                 End If
 
                 response = BA_Excel_CreatePRISMChart(pPrecipitationRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet,
@@ -2592,15 +2596,6 @@ Module BAGIS_MapModule
                 Dim pathToSave As String = BA_ExportMapPackageFolder + "\" + BA_ExportChartElevPrecipCorrelPdf
                 If bInteractive = False Then
                     pPrecipChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
-                End If
-            End If
-
-            'Range Charts
-            If pRangeChartWorksheet IsNot Nothing Then
-                pRangeChartWorksheet.PageSetup.Zoom = 72
-                Dim pathToSave = BA_ExportMapPackageFolder + "\" + +BA_RangeChartsPdf
-                If bInteractive = False Then
-                    pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
                 End If
             End If
 
