@@ -2504,7 +2504,7 @@ Module BAGIS_MapModule
                 If AOI_HasSNOTEL Then
                     response = BA_Excel_CreateSNOTELRangeTable(pSTRangeWorksheet, pSNOTELWorksheet, pSubElvWorksheet, CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev))
                     response = BA_Excel_CreateSNOTELChart(pSTRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, True,
-                                                          BA_ChartSpacing, row3TopPosition,
+                                                          positionLeftSecondColumn, row2TopPosition,
                                                           CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev), Chart_YMapUnit, oMapsSettings.ZMeters, Not oMapsSettings.ZMeters)
                 End If
 

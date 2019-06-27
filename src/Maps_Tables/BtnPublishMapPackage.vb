@@ -5,7 +5,7 @@ Imports BAGIS_ClassLibrary
 Imports ESRI.ArcGIS.esriSystem
 Imports ESRI.ArcGIS.Desktop.AddIns
 
-Public Class BtnExportMapPackage
+Public Class BtnPublishMapPackage
     Inherits ESRI.ArcGIS.Desktop.AddIns.Button
 
     Public Sub New()
@@ -15,7 +15,7 @@ Public Class BtnExportMapPackage
         If String.IsNullOrEmpty(AOIFolderBase) Then
             Dim dockWindow As ESRI.ArcGIS.Framework.IDockableWindow
             Dim dockWinID As UID = New UIDClass()
-            dockWinID.Value = My.ThisAddIn.IDs.FrmExportMapPackage
+            dockWinID.Value = My.ThisAddIn.IDs.FrmPublishMapPackage
             dockWindow = My.ArcMap.DockableWindowManager.GetDockableWindow(dockWinID)
             If dockWindow IsNot Nothing Then
                 dockWindow.Show(False)
@@ -32,11 +32,11 @@ Public Class BtnExportMapPackage
         Else
             Dim dockWindow As ESRI.ArcGIS.Framework.IDockableWindow
             Dim dockWinID As UID = New UIDClass()
-            dockWinID.Value = My.ThisAddIn.IDs.FrmExportMapPackage
+            dockWinID.Value = My.ThisAddIn.IDs.FrmPublishMapPackage
             dockWindow = My.ArcMap.DockableWindowManager.GetDockableWindow(dockWinID)
             ' Get handle to UI (form) to reload lists
-            Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of FrmExportMapPackage.AddinImpl)(My.ThisAddIn.IDs.FrmExportMapPackage)
-            Dim frmMapPackage As FrmExportMapPackage = dockWindowAddIn.UI
+            Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of FrmPublishMapPackage.AddinImpl)(My.ThisAddIn.IDs.FrmPublishMapPackage)
+            Dim frmMapPackage As FrmPublishMapPackage = dockWindowAddIn.UI
             dockWindow.Show((Not dockWindow.IsVisible()))
             ' Get handle to parent window so we can place the child
             Dim parentPos As ESRI.ArcGIS.Framework.IWindowPosition = CType(My.ArcMap.Application, ESRI.ArcGIS.Framework.IWindowPosition)
@@ -48,8 +48,8 @@ Public Class BtnExportMapPackage
             dockWindow.Dock(ESRI.ArcGIS.Framework.esriDockFlags.esriDockFloat)
             windowPos.Move(parentPos.Left + 30, parentPos.Top + 30, windowPos.Width, windowPos.Height)
 
-            dockWindow.Caption = "Export Map Package (Current AOI --> " & aoiName & ")"
-            dockWindowAddIn.UI.InitializeForm(AOIFolderBase + BA_DefaultMapPackageFolder, "MAPTITLE")
+            dockWindow.Caption = "Publish Map Package (Current AOI --> " & aoiName & ")"
+            dockWindowAddIn.UI.InitializeForm(AOIFolderBase + BA_DefaultMapPackageFolder)
 
         End If
     End Sub

@@ -378,7 +378,7 @@ ErrorHandler:
         Dim Scenario2RepButton = AddIn.FromID(Of BtnScenario2)(My.ThisAddIn.IDs.BtnScenario2)
         Dim DifferenceConditionButton = AddIn.FromID(Of BtnDifferenceCondition)(My.ThisAddIn.IDs.BtnDifferenceCondition)
         Dim SiteRepresentationButton = AddIn.FromID(Of BtnSiteRepresentation)(My.ThisAddIn.IDs.BtnSiteRepresentation)
-        Dim ExportMapPackageButton = AddIn.FromID(Of BtnExportMapPackage)(My.ThisAddIn.IDs.BtnExportMapPackage)
+        Dim ExportMapPackageButton = AddIn.FromID(Of BtnPublishMapPackage)(My.ThisAddIn.IDs.BtnPublishMapPackage)
         'disable addition elevational representation maps
         Scenario1RepButton.SelectedProperty = False
         Scenario2RepButton.SelectedProperty = False
@@ -415,7 +415,7 @@ ErrorHandler:
         If dockWindow2 IsNot Nothing AndAlso dockWindow2.IsVisible Then dockWindow2.Show(False)
         Dim dockWindow3 As ESRI.ArcGIS.Framework.IDockableWindow
         Dim dockWinID3 As UID = New UIDClass()
-        dockWinID3.Value = My.ThisAddIn.IDs.FrmExportMapPackage
+        dockWinID3.Value = My.ThisAddIn.IDs.FrmPublishMapPackage
         dockWindow3 = My.ArcMap.DockableWindowManager.GetDockableWindow(dockWinID3)
         If dockWindow3 IsNot Nothing AndAlso dockWindow3.IsVisible Then dockWindow3.Show(False)
 

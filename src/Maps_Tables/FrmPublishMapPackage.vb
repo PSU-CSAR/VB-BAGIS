@@ -3,12 +3,13 @@ Imports BAGIS_ClassLibrary
 Imports PdfSharp.Pdf
 Imports PdfSharp.Pdf.IO
 Imports TheArtOfDev.HtmlRenderer.PdfSharp
+Imports System.Windows.Forms
 
 ''' <summary>
 ''' Designer class of the dockable window add-in. It contains user interfaces that
 ''' make up the dockable window.
 ''' </summary>
-Public Class FrmExportMapPackage
+Public Class FrmPublishMapPackage
 
     Public Sub New(ByVal hook As Object)
 
@@ -21,10 +22,11 @@ Public Class FrmExportMapPackage
         If String.IsNullOrEmpty(AOIFolderBase) Then
             Dim dockWindow As ESRI.ArcGIS.Framework.IDockableWindow
             Dim dockWinID As UID = New UIDClass()
-            dockWinID.Value = My.ThisAddIn.IDs.FrmExportMapPackage
+            dockWinID.Value = My.ThisAddIn.IDs.FrmPublishMapPackage
             dockWindow = My.ArcMap.DockableWindowManager.GetDockableWindow(dockWinID)
             dockWindow.Show(False)
         End If
+
     End Sub
 
 
@@ -41,16 +43,27 @@ Public Class FrmExportMapPackage
         End Set
     End Property
 
-    Public Sub InitializeForm(ByVal strExportFolder As String, ByVal strCurrentMapTitle As String)
+    Public Sub InitializeForm(ByVal strExportFolder As String)
         txtExportFolder.Text = strExportFolder
-        TxtCurrentMap.Text = strCurrentMapTitle
+        Dim rowId As Int16 = DataGridView1.Rows.Add()
+        Dim row As DataGridViewRow = DataGridView1.Rows.Item(rowId)
+        With row
+            .Cells("file_name").Value = "map_elevation.pdf"
+            .Cells("Published_YN").Value = "Y"
+        End With
+        rowId = DataGridView1.Rows.Add()
+        Dim row1 As DataGridViewRow = DataGridView1.Rows.Item(rowId)
+        With row1
+            .Cells("file_name").Value = "map_elevation_snotel.pdf"
+            .Cells("Published_YN").Value = "N"
+        End With
+        rowId = DataGridView1.Rows.Add()
+        Dim row2 As DataGridViewRow = DataGridView1.Rows.Item(rowId)
+        With row2
+            .Cells("file_name").Value = "map_elevation_sc.pdf"
+            .Cells("Published_YN").Value = "N"
+        End With
     End Sub
-
-    Public WriteOnly Property SelectedMap(ByVal strSelectedMap) As String
-        Set(value As String)
-            TxtCurrentMap.Text = strSelectedMap
-        End Set
-    End Property
 
     ''' <summary>
     ''' Implementation class of the dockable window add-in. It is responsible for
@@ -59,10 +72,10 @@ Public Class FrmExportMapPackage
     Public Class AddinImpl
         Inherits ESRI.ArcGIS.Desktop.AddIns.DockableWindow
 
-        Private m_windowUI As FrmExportMapPackage
+        Private m_windowUI As FrmPublishMapPackage
 
         Protected Overrides Function OnCreateChild() As System.IntPtr
-            m_windowUI = New FrmExportMapPackage(Me.Hook)
+            m_windowUI = New FrmPublishMapPackage(Me.Hook)
             Return m_windowUI.Handle
         End Function
 
@@ -74,7 +87,7 @@ Public Class FrmExportMapPackage
             MyBase.Dispose(Param)
         End Sub
 
-        Protected Friend ReadOnly Property UI() As FrmExportMapPackage
+        Protected Friend ReadOnly Property UI() As FrmPublishMapPackage
             Get
                 Return m_windowUI
             End Get
@@ -161,7 +174,7 @@ Public Class FrmExportMapPackage
     Private Sub BtnCancel_Click(sender As Object, e As EventArgs) Handles BtnCancel.Click
         Dim dockWindow As ESRI.ArcGIS.Framework.IDockableWindow
         Dim dockWinID As UID = New UIDClass()
-        dockWinID.Value = My.ThisAddIn.IDs.FrmExportMapPackage
+        dockWinID.Value = My.ThisAddIn.IDs.FrmPublishMapPackage
         dockWindow = My.ArcMap.DockableWindowManager.GetDockableWindow(dockWinID)
         dockWindow.Show(False)
     End Sub
