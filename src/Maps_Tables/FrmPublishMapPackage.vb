@@ -43,26 +43,40 @@ Public Class FrmPublishMapPackage
         End Set
     End Property
 
+    Dim m_files_all As String()
+    Dim m_mapsSettings As MapsSettings
+
     Public Sub InitializeForm(ByVal strExportFolder As String)
         txtExportFolder.Text = strExportFolder
-        Dim rowId As Int16 = DataGridView1.Rows.Add()
-        Dim row As DataGridViewRow = DataGridView1.Rows.Item(rowId)
-        With row
-            .Cells("file_name").Value = "map_elevation.pdf"
-            .Cells("Published_YN").Value = "Y"
-        End With
-        rowId = DataGridView1.Rows.Add()
-        Dim row1 As DataGridViewRow = DataGridView1.Rows.Item(rowId)
-        With row1
-            .Cells("file_name").Value = "map_elevation_snotel.pdf"
-            .Cells("Published_YN").Value = "N"
-        End With
-        rowId = DataGridView1.Rows.Add()
-        Dim row2 As DataGridViewRow = DataGridView1.Rows.Item(rowId)
-        With row2
-            .Cells("file_name").Value = "map_elevation_sc.pdf"
-            .Cells("Published_YN").Value = "N"
-        End With
+        m_mapsSettings = BA_ReadMapSettings()
+        If m_mapsSettings.UseSubRange = False Then
+            m_files_all = {BA_TitlePagePdf, BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
+            BA_ExportChartAreaElevSnotelPdf, BA_ExportChartAreaElevScosPdf, BA_ExportChartSlopePdf, BA_ExportChartAspectPdf,
+            BA_ExportChartElevPrecipCorrelPdf}
+        Else
+            m_files_all = {BA_TitlePagePdf, BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
+            BA_ExportChartAreaElevSnotelPdf, BA_ExportChartAreaElevScosPdf, BA_ExportChartSlopePdf, BA_ExportChartAspectPdf,
+            BA_ExportChartElevPrecipCorrelPdf, BA_ExportChartAreaElevSubrangePdf, BA_ExportChartAreaElevPrecipSubrangePdf, BA_ExportChartAreaElevPrecipSiteSubrangePdf,
+            BA_ExportChartAreaElevSnotelSubrangePdf, BA_ExportChartAreaElevScosSubrangePdf}
+        End If
+        DataGridView1.Rows.Clear()
+        For Each strFile In m_files_all
+            If Not strFile.Equals(BA_TitlePagePdf) Then
+                Dim rowId As Int16 = DataGridView1.Rows.Add()
+                Dim row As DataGridViewRow = DataGridView1.Rows.Item(rowId)
+                With row
+                    .Cells("file_name").Value = strFile
+                    If System.IO.File.Exists(strExportFolder + "\" + strFile) Then
+                        Dim datePublished As DateTime = System.IO.File.GetCreationTime(strExportFolder + "\" + strFile)
+                        .Cells("Published").Value = datePublished.ToString("MM/dd/yy H:mm:ss")
+                    End If
+
+                End With
+            End If
+        Next
+        ' Clear any selected cells
+        DataGridView1.ClearSelection()
+        DataGridView1.CurrentCell = Nothing
     End Sub
 
     ''' <summary>
@@ -95,7 +109,7 @@ Public Class FrmPublishMapPackage
 
     End Class
 
-    Private Sub CmdExport_Click(sender As Object, e As EventArgs) Handles CmdPublish.Click
+    Private Sub CmdPublish_Click(sender As Object, e As EventArgs) Handles CmdPublish.Click
         BA_ExportMapPackageFolder = txtExportFolder.Text
 
         If Not String.IsNullOrEmpty(BA_ExportMapPackageFolder) Then
@@ -108,13 +122,12 @@ Public Class FrmPublishMapPackage
         GenerateCharts(BA_ExportMapPackageFolder, outputDocument)
 
         'Save the document...
-        Dim concatFileName As String = BA_ExportMapPackageFolder + "\sample_charts.pdf"
+        Dim concatFileName As String = BA_ExportMapPackageFolder + "\" + BA_AllMapsChartsPdf
         outputDocument.Save(concatFileName)
         Windows.Forms.MessageBox.Show("Document saved!")
     End Sub
 
     Private Sub GenerateCharts(ByVal parentPath As String, ByRef outputDocument As PdfDocument)
-        Dim oMapsSettings As MapsSettings = BA_ReadMapSettings()
         'Check for Snotel and snow course layers
         If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) +
                           BA_EnumDescription(MapsFileName.Snotel), WorkspaceType.Geodatabase,
@@ -128,28 +141,27 @@ Public Class FrmPublishMapPackage
         End If
 
         Dim pRasterStats As ESRI.ArcGIS.DataSourcesRaster.IRasterStatistics = BA_GetDemStatsGDB(AOIFolderBase)
-        Dim DisplayConversion_Factor As Double = BAGIS_ClassLibrary.BA_SetConversionFactor(oMapsSettings.ZMeters, True)
+        Dim DisplayConversion_Factor As Double = BAGIS_ClassLibrary.BA_SetConversionFactor(m_mapsSettings.ZMeters, True)
         Dim dblMinElev As Double = Math.Round(pRasterStats.Minimum * DisplayConversion_Factor - 0.005, 2)  'adjust value to include the actual min, max
         Dim dblMaxElev As Double = Math.Round(pRasterStats.Maximum * DisplayConversion_Factor + 0.005, 2)
 
-        Dim files As String() = {BA_TitlePagePdf, BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
-            BA_ExportChartAreaElevSnotelPdf, BA_ExportChartAreaElevScosPdf, BA_ExportChartSlopePdf, BA_ExportChartAspectPdf,
-            BA_RangeChartsPdf, BA_ExportChartElevPrecipCorrelPdf}
+
+
         'Delete old .pdf files from previous runs (if they exist)
-        For i As Integer = 1 To files.Length - 1
-            Dim fullPath As String = parentPath + files(i)
+        For i As Integer = 1 To m_files_all.Length - 1
+            Dim fullPath As String = parentPath + m_files_all(i)
             If BA_File_ExistsWindowsIO(fullPath) Then
                 System.IO.File.Delete(fullPath)
             End If
         Next
 
-        BA_GenerateTables(oMapsSettings, dblMaxElev, dblMinElev, False)
+        BA_GenerateTables(m_mapsSettings, dblMaxElev, dblMinElev, False)
 
         PublishTitlePage(parentPath)
 
         'Check for files to prepare list for concatenation
         Dim lstFoundFiles As IList(Of String) = New List(Of String)
-        For Each strFile In files
+        For Each strFile In m_files_all
             Dim fullPath As String = parentPath + "\" + strFile
             If BA_File_ExistsWindowsIO(fullPath) Then
                 lstFoundFiles.Add(fullPath)
@@ -171,7 +183,7 @@ Public Class FrmPublishMapPackage
         Next
     End Sub
 
-    Private Sub BtnCancel_Click(sender As Object, e As EventArgs) Handles BtnCancel.Click
+    Private Sub CmdCancel_Click(sender As Object, e As EventArgs) Handles CmdCancel.Click
         Dim dockWindow As ESRI.ArcGIS.Framework.IDockableWindow
         Dim dockWinID As UID = New UIDClass()
         dockWinID.Value = My.ThisAddIn.IDs.FrmPublishMapPackage

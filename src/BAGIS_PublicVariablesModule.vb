@@ -102,9 +102,9 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_AspectPrec = "aspzoneprec"
     Public Const BA_ZonesRasterPrefix = "aggzone_"
     Public Const BA_VectorAllSitesPrec = "sitesprec_v"
-    Public Const BA_RangeChartsPdf = "Range_Charts.pdf"
-    Public Const BA_DefaultMapPackageFolder As String = "\maps_export"
+    Public Const BA_DefaultMapPackageFolder As String = "\maps_publish"
     Public BA_ExportMapPackageFolder As String
+    Public Const BA_AllMapsChartsPdf As String = "all_maps_charts.pdf"
 
 
     'scenario output rasters

@@ -2491,6 +2491,8 @@ Module BAGIS_MapModule
                 End If
             End If
 
+            Dim bHasSnotelRange As Boolean = False
+            Dim bHasSCRange As Boolean = False
             If oMapsSettings.UseSubRange = True Then
                 pStepProg.Message = "Creating Elevation Range Tables and Charts..."
                 pStepProg.Step()
@@ -2507,6 +2509,7 @@ Module BAGIS_MapModule
                         response = BA_Excel_CreateSNOTELChart(pSTRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, True,
                                                           positionLeftSecondColumn, row2TopPosition,
                                                           CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev), Chart_YMapUnit, oMapsSettings.ZMeters, Not oMapsSettings.ZMeters)
+                        If response = 1 Then bHasSnotelRange = True
                     End If
                 End If
 
@@ -2516,6 +2519,7 @@ Module BAGIS_MapModule
                         response = BA_Excel_CreateSNOTELChart(pSCRangeWorksheet, pElevationRangeWorksheet, pRangeChartWorksheet, False,
                                positionLeftSecondColumn, row3TopPosition,
                                CDbl(oMapsSettings.SubRangeFromElev), CDbl(oMapsSettings.SubRangeToElev), Chart_YMapUnit, oMapsSettings.ZMeters, Not oMapsSettings.ZMeters)
+                        If response = 1 Then bHasSCRange = True
                     End If
                 End If
 
@@ -2531,7 +2535,7 @@ Module BAGIS_MapModule
             End If
 
 
-            'Charts Tab
+            'Publish Charts Tab
             If bInteractive = False Then
                 Dim pathToSave As String = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevPdf
                 With pChartsWorksheet.PageSetup
@@ -2582,11 +2586,51 @@ Module BAGIS_MapModule
                 End With
                 pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
 
+                'Subrange Chart Tab
+                If pRangeChartWorksheet IsNot Nothing Then
+                    pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevSubrangePdf
+                    With pRangeChartWorksheet.PageSetup
+                        .Zoom = False
+                        .FitToPagesTall = 1
+                        .FitToPagesWide = 1
+                        .PrintArea = "$A$1:$M$27"
+                    End With
+                    pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
 
+                    pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevPrecipSubrangePdf
+                    With pRangeChartWorksheet.PageSetup
+                        .PrintArea = "$N$1:$AA$27"
+                    End With
+                    pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+
+                    If bHasSCRange = True Or bHasSnotelRange = True Then
+                        pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevPrecipSiteSubrangePdf
+                        With pRangeChartWorksheet.PageSetup
+                            .PrintArea = "$A$29:$M$56"
+                        End With
+                        pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                    End If
+
+                    If bHasSnotelRange = True Then
+                        pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevSnotelSubrangePdf
+                        With pRangeChartWorksheet.PageSetup
+                            .PrintArea = "$N$29:$AA$56"
+                        End With
+                        pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                    End If
+
+                    If bHasSCRange = True Then
+                        pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevScosSubrangePdf
+                        With pRangeChartWorksheet.PageSetup
+                            .PrintArea = "$N$57:$AA$85"
+                        End With
+                        pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                    End If
+                End If
             End If
 
-                'Elev-Precip Chart Tab
-                If pPrecipChartWorksheet IsNot Nothing Then
+            'Elev-Precip Chart Tab
+            If pPrecipChartWorksheet IsNot Nothing Then
                 With pPrecipChartWorksheet.PageSetup
                     .Orientation = XlPageOrientation.xlLandscape
                     .Zoom = False

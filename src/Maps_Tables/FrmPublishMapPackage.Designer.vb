@@ -27,10 +27,10 @@ Partial Class FrmPublishMapPackage
         Me.Label3 = New System.Windows.Forms.Label()
         Me.TxtComments = New System.Windows.Forms.TextBox()
         Me.Label4 = New System.Windows.Forms.Label()
-        Me.BtnCancel = New System.Windows.Forms.Button()
+        Me.CmdCancel = New System.Windows.Forms.Button()
         Me.DataGridView1 = New System.Windows.Forms.DataGridView()
         Me.file_name = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.published_YN = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Published = New System.Windows.Forms.DataGridViewTextBoxColumn()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -122,22 +122,22 @@ Partial Class FrmPublishMapPackage
         Me.Label4.TabIndex = 84
         Me.Label4.Text = "Publisher Comments"
         '
-        'BtnCancel
+        'CmdCancel
         '
-        Me.BtnCancel.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.2!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.BtnCancel.Location = New System.Drawing.Point(351, 388)
-        Me.BtnCancel.Name = "BtnCancel"
-        Me.BtnCancel.Size = New System.Drawing.Size(100, 33)
-        Me.BtnCancel.TabIndex = 86
-        Me.BtnCancel.Text = "Cancel"
-        Me.BtnCancel.UseVisualStyleBackColor = True
+        Me.CmdCancel.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.2!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CmdCancel.Location = New System.Drawing.Point(351, 388)
+        Me.CmdCancel.Name = "CmdCancel"
+        Me.CmdCancel.Size = New System.Drawing.Size(100, 33)
+        Me.CmdCancel.TabIndex = 86
+        Me.CmdCancel.Text = "Cancel"
+        Me.CmdCancel.UseVisualStyleBackColor = True
         '
         'DataGridView1
         '
         Me.DataGridView1.AllowUserToAddRows = False
         Me.DataGridView1.AllowUserToDeleteRows = False
         Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.DataGridView1.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.file_name, Me.published_YN})
+        Me.DataGridView1.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.file_name, Me.Published})
         Me.DataGridView1.Location = New System.Drawing.Point(17, 183)
         Me.DataGridView1.Name = "DataGridView1"
         Me.DataGridView1.ReadOnly = True
@@ -150,20 +150,20 @@ Partial Class FrmPublishMapPackage
         Me.file_name.HeaderText = "File Name"
         Me.file_name.Name = "file_name"
         Me.file_name.ReadOnly = True
-        Me.file_name.Width = 476
+        Me.file_name.Width = 375
         '
-        'published_YN
+        'Published
         '
-        Me.published_YN.HeaderText = "Published ?"
-        Me.published_YN.Name = "published_YN"
-        Me.published_YN.ReadOnly = True
-        Me.published_YN.Width = 150
+        Me.Published.HeaderText = "Published"
+        Me.Published.Name = "Published"
+        Me.Published.ReadOnly = True
+        Me.Published.Width = 225
         '
-        'FrmExportMapPackage
+        'FrmPublishMapPackage
         '
         Me.Controls.Add(Me.DataGridView1)
         Me.Controls.Add(Me.CmdPublish)
-        Me.Controls.Add(Me.BtnCancel)
+        Me.Controls.Add(Me.CmdCancel)
         Me.Controls.Add(Me.TxtComments)
         Me.Controls.Add(Me.Label4)
         Me.Controls.Add(Me.TxtPublisher)
@@ -171,7 +171,7 @@ Partial Class FrmPublishMapPackage
         Me.Controls.Add(Me.TextBox1)
         Me.Controls.Add(Me.txtExportFolder)
         Me.Controls.Add(Me.Label2)
-        Me.Name = "FrmExportMapPackage"
+        Me.Name = "FrmPublishMapPackage"
         Me.Size = New System.Drawing.Size(715, 450)
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
@@ -186,8 +186,8 @@ Partial Class FrmPublishMapPackage
     Friend WithEvents Label3 As Windows.Forms.Label
     Friend WithEvents TxtComments As Windows.Forms.TextBox
     Friend WithEvents Label4 As Windows.Forms.Label
-    Friend WithEvents BtnCancel As Windows.Forms.Button
+    Friend WithEvents CmdCancel As Windows.Forms.Button
     Friend WithEvents DataGridView1 As Windows.Forms.DataGridView
     Friend WithEvents file_name As Windows.Forms.DataGridViewTextBoxColumn
-    Friend WithEvents published_YN As Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents Published As Windows.Forms.DataGridViewTextBoxColumn
 End Class
