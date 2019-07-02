@@ -43,41 +43,51 @@ Public Class FrmPublishMapPackage
         End Set
     End Property
 
-    Dim m_files_all As String()
+    Dim m_charts_all As String()
+    Dim m_maps_all As String() = {BA_ExportMapElevPdf, BA_ExportMapElevStelPdf, BA_ExportMapElevScPdf,
+                                  BA_ExportMapElevPrecipPdf, BA_ExportMapAspectPdf, BA_ExportMapSlopePdf}
     Dim m_mapsSettings As MapsSettings
+    Dim m_currentMap As String
 
     Public Sub InitializeForm(ByVal strExportFolder As String)
         txtExportFolder.Text = strExportFolder
         m_mapsSettings = BA_ReadMapSettings()
         If m_mapsSettings.UseSubRange = False Then
-            m_files_all = {BA_TitlePagePdf, BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
+            m_charts_all = {BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
             BA_ExportChartAreaElevSnotelPdf, BA_ExportChartAreaElevScosPdf, BA_ExportChartSlopePdf, BA_ExportChartAspectPdf,
             BA_ExportChartElevPrecipCorrelPdf}
         Else
-            m_files_all = {BA_TitlePagePdf, BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
+            m_charts_all = {BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
             BA_ExportChartAreaElevSnotelPdf, BA_ExportChartAreaElevScosPdf, BA_ExportChartSlopePdf, BA_ExportChartAspectPdf,
             BA_ExportChartElevPrecipCorrelPdf, BA_ExportChartAreaElevSubrangePdf, BA_ExportChartAreaElevPrecipSubrangePdf, BA_ExportChartAreaElevPrecipSiteSubrangePdf,
             BA_ExportChartAreaElevSnotelSubrangePdf, BA_ExportChartAreaElevScosSubrangePdf}
         End If
         DataGridView1.Rows.Clear()
-        For Each strFile In m_files_all
-            If Not strFile.Equals(BA_TitlePagePdf) Then
-                Dim rowId As Int16 = DataGridView1.Rows.Add()
-                Dim row As DataGridViewRow = DataGridView1.Rows.Item(rowId)
-                With row
-                    .Cells("file_name").Value = strFile
-                    If System.IO.File.Exists(strExportFolder + "\" + strFile) Then
-                        Dim datePublished As DateTime = System.IO.File.GetCreationTime(strExportFolder + "\" + strFile)
-                        .Cells("Published").Value = datePublished.ToString("MM/dd/yy H:mm:ss")
-                    End If
+        For Each strFile In m_maps_all
+            Dim rowId As Int16 = DataGridView1.Rows.Add()
+            Dim row As DataGridViewRow = DataGridView1.Rows.Item(rowId)
+            With row
+                .Cells("file_name").Value = strFile
+                If System.IO.File.Exists(strExportFolder + "\" + strFile) Then
+                    Dim datePublished As DateTime = System.IO.File.GetCreationTime(strExportFolder + "\" + strFile)
+                    .Cells("Published").Value = datePublished.ToString("MM/dd/yy H:mm:ss")
+                End If
 
-                End With
-            End If
+            End With
         Next
         ' Clear any selected cells
         DataGridView1.ClearSelection()
         DataGridView1.CurrentCell = Nothing
     End Sub
+
+    Protected Friend Property CurrentMap() As String
+        Get
+            Return m_currentMap
+        End Get
+        Set(ByVal Value As String)
+            m_currentMap = Value
+        End Set
+    End Property
 
     ''' <summary>
     ''' Implementation class of the dockable window add-in. It is responsible for
@@ -145,11 +155,9 @@ Public Class FrmPublishMapPackage
         Dim dblMinElev As Double = Math.Round(pRasterStats.Minimum * DisplayConversion_Factor - 0.005, 2)  'adjust value to include the actual min, max
         Dim dblMaxElev As Double = Math.Round(pRasterStats.Maximum * DisplayConversion_Factor + 0.005, 2)
 
-
-
         'Delete old .pdf files from previous runs (if they exist)
-        For i As Integer = 1 To m_files_all.Length - 1
-            Dim fullPath As String = parentPath + m_files_all(i)
+        For i As Integer = 1 To m_charts_all.Length - 1
+            Dim fullPath As String = parentPath + m_charts_all(i)
             If BA_File_ExistsWindowsIO(fullPath) Then
                 System.IO.File.Delete(fullPath)
             End If
@@ -161,14 +169,28 @@ Public Class FrmPublishMapPackage
 
         'Check for files to prepare list for concatenation
         Dim lstFoundFiles As IList(Of String) = New List(Of String)
-        For Each strFile In m_files_all
+        'title page
+        If BA_File_ExistsWindowsIO(parentPath + "\" + BA_TitlePagePdf) Then
+            lstFoundFiles.Add(parentPath + "\" + BA_TitlePagePdf)
+        End If
+
+        'maps
+        For Each strFile In m_maps_all
             Dim fullPath As String = parentPath + "\" + strFile
             If BA_File_ExistsWindowsIO(fullPath) Then
                 lstFoundFiles.Add(fullPath)
             End If
         Next
 
-        '' Iterate through files
+        'charts
+        For Each strFile In m_charts_all
+            Dim fullPath As String = parentPath + "\" + strFile
+            If BA_File_ExistsWindowsIO(fullPath) Then
+                lstFoundFiles.Add(fullPath)
+            End If
+        Next
+
+        ' Iterate through files
         For Each strFullPath As String In lstFoundFiles
             'Open the document to import pages from it.
             Dim inputDocument As PdfDocument = PdfReader.Open(strFullPath, PdfDocumentOpenMode.Import)

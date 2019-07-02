@@ -11,6 +11,10 @@
         BA_DisplayMap(My.Document, 6, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                          "SLOPE DISTRIBUTION")
         BAGIS_ClassLibrary.BA_ZoomToAOI(My.Document, AOIFolderBase)
+
+        Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of FrmPublishMapPackage.AddinImpl)(My.ThisAddIn.IDs.FrmPublishMapPackage)
+        Dim frmMapPackage As FrmPublishMapPackage = dockWindowAddIn.UI
+        frmMapPackage.CurrentMap = BAGIS_ClassLibrary.BA_ExportMapSlopePdf
     End Sub
 
     Public WriteOnly Property SelectedProperty As Boolean

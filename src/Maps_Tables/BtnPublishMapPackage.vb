@@ -74,7 +74,7 @@ Public Class BtnPublishMapPackage
 
     'Protected Overrides Sub OnClick()
     '    'Dim parentPath As String = BA_GetPath(AOIFolderBase, PublicPath.Maps) + "\"
-    Dim parentPath As String = AOIFolderBase + "\" + "maps_export"
+    'Dim parentPath As String = AOIFolderBase + "\" + "maps_export"
     'BA_ExportMapPackageFolder = parentPath
 
     '    '' Open the output document

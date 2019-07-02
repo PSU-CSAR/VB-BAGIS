@@ -94,8 +94,8 @@
         <Button id="Microsoft_BAGIS_BtnAOIfromShapefile" class="BtnAOIfromShapefile" message="Creating an AOI using an existing shapefile." caption="Create AOI from a shapefile" tip="Creating an AOI using an existing shapefile." category="BAGIS" />
         <Tool id="Microsoft_BAGIS_SelectSiteTool" class="SelectSiteTool" message="Select a pseudo site" caption="Select Site Tool" tip="Select Site Tool" category="BAGIS" image="Images\SelectSiteTool.png" />
         <Button id="Portland_State_University_BAGIS_BtnWebServices" class="BtnWebServices" message="Web Services Testing" caption="Web Services Testing" tip="Web Services Testing" category="BAGIS" image="Images\BtnWebServices.png" />
-        <Button id="Portland_State_University_BAGIS_BtnPublishMapPackage" class="BtnPublishMapPackage" message="" caption="Publish Map Package For Web (Beta)" tip="Publish Map Package For Web (Beta)" category="BAGIS" onDemand="false" />
-        <Button id="Portland_State_University_BAGIS_BtnPublishMap" class="BtnPublishMap" message="Publish Current Map as .pdf" caption="Publish Current Map" tip="Publish Current Map as .pdf" category="BAGIS" onDemand="false" />
+        <Button id="Portland_State_University_BAGIS_BtnPublishMapPackage" class="BtnPublishMapPackage" message="" caption="Publish Map Package For Web (Beta)" tip="Publish Map Package For Web (Beta)" category="BAGIS" image="Images\BtnPublishMap.png" onDemand="false" />
+        <Button id="Portland_State_University_BAGIS_BtnPublishMap" class="BtnPublishMap" message="" caption="Publish Current Map" tip="Publish Current Map as .pdf" category="BAGIS" image="Images\BtnPublishMap.png" onDemand="false" />
       </Commands>
       <DockableWindows>
         <DockableWindow id="Portland_State_University_BAGIS_frmSiteScenario" class="frmSiteScenario+AddinImpl" caption="Site Scenario Analysis Tool" image="Images\frmSiteScenario.png">

@@ -2238,6 +2238,13 @@ Public Class frmGenerateMaps
         response = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)
         AddLayersToMap()
         Call BA_Enable_MapFlags(True)
+        'Set elevation distro as the currently displayed map
+        Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of FrmPublishMapPackage.AddinImpl)(My.ThisAddIn.IDs.FrmPublishMapPackage)
+        Dim frmMapPackage As FrmPublishMapPackage = dockWindowAddIn.UI
+        frmMapPackage.CurrentMap = BAGIS_ClassLibrary.BA_ExportMapElevPdf
+        'Enable publish maps button
+        Dim PublishMapButton As BtnPublishMap = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of BtnPublishMap)(My.ThisAddIn.IDs.BtnPublishMap)
+        PublishMapButton.selectedProperty = True
         MsgBox("Please use the menu items to view maps!")
         Me.Close()
     End Sub

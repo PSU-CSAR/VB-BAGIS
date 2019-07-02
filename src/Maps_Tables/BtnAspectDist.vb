@@ -10,6 +10,11 @@
         Dim Basin_Name As String = ""
         BA_DisplayMap(My.Document, 5, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, "ASPECT DISTRIBUTION")
         BAGIS_ClassLibrary.BA_ZoomToAOI(My.Document, AOIFolderBase)
+
+        Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of FrmPublishMapPackage.AddinImpl)(My.ThisAddIn.IDs.FrmPublishMapPackage)
+        Dim frmMapPackage As FrmPublishMapPackage = dockWindowAddIn.UI
+        frmMapPackage.CurrentMap = BAGIS_ClassLibrary.BA_ExportMapAspectPdf
+
     End Sub
 
     Public WriteOnly Property SelectedProperty As Boolean

@@ -378,13 +378,14 @@ ErrorHandler:
         Dim Scenario2RepButton = AddIn.FromID(Of BtnScenario2)(My.ThisAddIn.IDs.BtnScenario2)
         Dim DifferenceConditionButton = AddIn.FromID(Of BtnDifferenceCondition)(My.ThisAddIn.IDs.BtnDifferenceCondition)
         Dim SiteRepresentationButton = AddIn.FromID(Of BtnSiteRepresentation)(My.ThisAddIn.IDs.BtnSiteRepresentation)
-        Dim ExportMapPackageButton = AddIn.FromID(Of BtnPublishMapPackage)(My.ThisAddIn.IDs.BtnPublishMapPackage)
+        Dim PublishMapPackageButton = AddIn.FromID(Of BtnPublishMapPackage)(My.ThisAddIn.IDs.BtnPublishMapPackage)
+        Dim PublishMapButton = AddIn.FromID(Of BtnPublishMapPackage)(My.ThisAddIn.IDs.BtnPublishMap)
         'disable addition elevational representation maps
         Scenario1RepButton.SelectedProperty = False
         Scenario2RepButton.SelectedProperty = False
         DifferenceConditionButton.SelectedProperty = False
         SiteRepresentationButton.selectedProperty = False
-        ExportMapPackageButton.selectedProperty = False
+        PublishMapPackageButton.selectedProperty = False
         'disable SNOTEL, Snow Course, and Pseudo-Site flags; They will be re-calculated by Maps or Site Scenario tools
         AOI_HasSNOTEL = False
         AOI_HasSnowCourse = False
@@ -394,12 +395,13 @@ ErrorHandler:
             GeneratMapsButton.SelectedProperty = False
             SiteScenarioButton.selectedProperty = False
             SaveAOIMXDButton.selectedProperty = False
-            ExportMapPackageButton.selectedProperty = False
+            PublishMapPackageButton.selectedProperty = False
+            PublishMapButton.selectedProperty = False
         Else
             GeneratMapsButton.SelectedProperty = True
             SiteScenarioButton.selectedProperty = True
             SaveAOIMXDButton.selectedProperty = True
-            ExportMapPackageButton.selectedProperty = True
+            PublishMapPackageButton.selectedProperty = True
         End If
 
         'Close the dockable windows for Site Scenario and Representation if they are open
@@ -468,25 +470,6 @@ ErrorHandler:
         PrecipDistMapButton.SelectedProperty = BValue
         SlopeDistMapButton.SelectedProperty = BValue
         AspectDistMapButton.SelectedProperty = BValue
-        'PrecipDistMap_Flag = BValue
-        'SlopeDistMap_Flag = BValue
-        ' AspectDistMap_Flag = BValue
-        'If ActualRepMap_Flag = True Then
-        '    Dim ActualRepButton = AddIn.FromID(Of BtnActualCondition)(My.ThisAddIn.IDs.BtnActualCondition)
-        '    ActualRepButton.SelectedProperty = True
-        'End If
-        'If PseudoRepMap_Flag = True Then
-        '    Dim PseudoRepButton = AddIn.FromID(Of BtnPseudoCondition)(My.ThisAddIn.IDs.BtnPseudoCondition)
-        '    PseudoRepButton.SelectedProperty = True
-        'End If
-
-        'If RepDifferenceMap_Flag = True Then
-        '    Dim RefDifferenceButton = AddIn.FromID(Of BtnDifferenceCondition)(My.ThisAddIn.IDs.BtnDifferenceCondition)
-        '    RefDifferenceButton.SelectedProperty = True
-        'End If
-
-        'Dim SiteConditionButton = AddIn.FromID(Of BtnSiteCondition)(My.ThisAddIn.IDs.BtnSiteCondition)
-        'SiteConditionButton.selectedProperty = True
         Maps_Are_Generated = BValue
     End Sub
 

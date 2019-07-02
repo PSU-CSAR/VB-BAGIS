@@ -15,7 +15,11 @@
         BA_DisplayMap(My.Document, 2, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
                                          "ELEVATION - SNOTEL SITES")
         BAGIS_ClassLibrary.BA_ZoomToAOI(My.Document, AOIFolderBase)
-  End Sub
+
+        Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of FrmPublishMapPackage.AddinImpl)(My.ThisAddIn.IDs.FrmPublishMapPackage)
+        Dim frmMapPackage As FrmPublishMapPackage = dockWindowAddIn.UI
+        frmMapPackage.CurrentMap = BAGIS_ClassLibrary.BA_ExportMapElevStelPdf
+    End Sub
 
   Protected Overrides Sub OnUpdate()
 
