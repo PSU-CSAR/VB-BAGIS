@@ -11,6 +11,7 @@ Imports ESRI.ArcGIS.Geometry
 Imports ESRI.ArcGIS.Desktop.AddIns
 Imports Microsoft.Office.Interop.Excel
 Imports ESRI.ArcGIS.GeoAnalyst
+Imports ESRI.ArcGIS.Carto
 
 Public Class frmGenerateMaps
 
@@ -104,7 +105,7 @@ Public Class frmGenerateMaps
         If Not BA_Folder_ExistsWindowsIO(filepath) Then
             Dim newFolder As String = BA_CreateFolder(AOIFolderBase, BA_GetBareName(BA_EnumDescription(PublicPath.Maps)))
             If String.IsNullOrEmpty(newFolder) Then
-                MessageBox.Show("Could not create maps folder in AOI. The Generate Maps screen is unavailable.", _
+                MessageBox.Show("Could not create maps folder in AOI. The Generate Maps screen is unavailable.",
                                 "Failed to create folder", MessageBoxButtons.OK, MessageBoxIcon.Error)
             End If
         End If
@@ -141,7 +142,7 @@ Public Class frmGenerateMaps
             ninterval = BA_CreateRangeArray(Val(txtMinElev.Text), Val(txtMaxElev.Text), Elev_Interval, rvalues_arr)
             txtElevClassNumber.Text = ninterval
             Display_IntervalList(rvalues_arr)
-            nsubinterval = Subdivide_IntervalList(rvalues_arr, Elev_Interval, _
+            nsubinterval = Subdivide_IntervalList(rvalues_arr, Elev_Interval,
                 subrvalues_arr, Elev_Subdivision)
             Display_ElevationRange(rvalues_arr)
         Else
@@ -155,7 +156,7 @@ Public Class frmGenerateMaps
 
             ninterval = BA_CreateRangeArray(Val(txtMinElev.Text), Val(txtMaxElev.Text), Elev_Interval, rvalues_arr)
             'txtElevClassNumber.Text = ninterval
-            nsubinterval = Subdivide_IntervalList(rvalues_arr, Elev_Interval, _
+            nsubinterval = Subdivide_IntervalList(rvalues_arr, Elev_Interval,
                 subrvalues_arr, Elev_Subdivision)
             Display_ElevationRange(rvalues_arr)
             'Check for existence of elev-precip AOI table; If it doesn't exist, disable elevation-precip tool
@@ -685,7 +686,7 @@ Public Class frmGenerateMaps
         End Try
     End Function
 
-    Private Function Subdivide_IntervalList(ByVal In_List() As BA_IntervalList, ByVal In_Interval As Integer, _
+    Private Function Subdivide_IntervalList(ByVal In_List() As BA_IntervalList, ByVal In_Interval As Integer,
                                             ByRef Out_List() As BA_IntervalList, ByVal SubdivideNo As Integer) As Long
         Dim new_interval As Double
         Dim ninterval As Long
@@ -923,7 +924,7 @@ Public Class frmGenerateMaps
                                           + BA_TablePrecMeanElev, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
                         ChkPrecipAoiTable.Checked = True
                     End If
-                    If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + _
+                    If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) +
                                       BA_VectorSnotelPrec, WorkspaceType.Geodatabase, esriDatasetType.esriDTFeatureClass) Then
                         ChkPrecipSitesLayer.Checked = True
                     End If
@@ -948,7 +949,7 @@ Public Class frmGenerateMaps
             End If
 
             'set UI control
-            If DataCount = ndata - 1 AndAlso ElevPrecipLayersReady = True AndAlso _
+            If DataCount = ndata - 1 AndAlso ElevPrecipLayersReady = True AndAlso
                 Flag_ElevOrPrecipChange = False Then 'not counting the AOI stream layer
                 CmdMaps.Enabled = True
                 If BA_Excel_Available Then
@@ -994,14 +995,14 @@ Public Class frmGenerateMaps
             txtElevClassNumber.Text = ninterval
 
             Display_IntervalList(rvalues_arr)
-            nsubinterval = Subdivide_IntervalList(rvalues_arr, Val(CmboxElevInterval.Items(CmboxElevInterval.SelectedIndex)), _
+            nsubinterval = Subdivide_IntervalList(rvalues_arr, Val(CmboxElevInterval.Items(CmboxElevInterval.SelectedIndex)),
                                                   subrvalues_arr, Val(ComboxSubDivide.Items(ComboxSubDivide.SelectedIndex)))
             Display_ElevationRange(rvalues_arr)
             ResetElevationRange()
 
             Map_Display_Elevation_in_Meters = True
             If Not Set_Silent_Mode Then
-                MsgBox("You must reapply the change (i.e., click the 1. Apply button) on Elevation Distribution Map to update the change!" & _
+                MsgBox("You must reapply the change (i.e., click the 1. Apply button) on Elevation Distribution Map to update the change!" &
                 vbCrLf & "Or, reopen this dialog window to load the previous result.")
             End If
 
@@ -1028,14 +1029,14 @@ Public Class frmGenerateMaps
             txtElevClassNumber.Text = ninterval
 
             Display_IntervalList(rvalues_arr)
-            nsubinterval = Subdivide_IntervalList(rvalues_arr, Val(CmboxElevInterval.Items(CmboxElevInterval.SelectedIndex)), _
+            nsubinterval = Subdivide_IntervalList(rvalues_arr, Val(CmboxElevInterval.Items(CmboxElevInterval.SelectedIndex)),
                 subrvalues_arr, Val(ComboxSubDivide.Items(ComboxSubDivide.SelectedIndex)))
             Display_ElevationRange(rvalues_arr)
             ResetElevationRange()
 
             Map_Display_Elevation_in_Meters = False
             If Not Set_Silent_Mode Then
-                MsgBox("You must reapply the change (i.e., click the 1. Apply button) on Elevation Distribution Map to update the change!" & _
+                MsgBox("You must reapply the change (i.e., click the 1. Apply button) on Elevation Distribution Map to update the change!" &
                 vbCrLf & "Or, reopen this dialog window to load the previous result.")
             End If
         End If
@@ -1210,7 +1211,7 @@ Public Class frmGenerateMaps
             DisplayConversionFact = BA_SetConversionFactor(OptZMeters.Checked, True)
 
             'calculate range values for reclass in Display ZUnits
-            ninterval = BA_CreateRangeArray(Math.Round(AOI_DEMMin * DisplayConversionFact - 0.005, 2), _
+            ninterval = BA_CreateRangeArray(Math.Round(AOI_DEMMin * DisplayConversionFact - 0.005, 2),
                                             Math.Round(AOI_DEMMax * DisplayConversionFact + 0.005, 2), interval, IntervalList)
 
             Elev_Interval = interval
@@ -2095,12 +2096,12 @@ Public Class frmGenerateMaps
                                 pStepProg.Message = "Extracting DEM and PRISM values to table..."
                                 pStepProg.Step()
                                 Dim prismCellSize As Double = BA_CellSize(PrecipPath, PRISMRasterName)
-                                success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath, _
+                                success = BA_Sample(sb.ToString, PrecipPath + "\" + PRISMRasterName, sampleTablePath,
                                           PrecipPath + "\" + PRISMRasterName, BA_Resample_Nearest, CStr(prismCellSize))
                                 If success = BA_ReturnCode.Success Then
                                     'set reclass
                                     Dim aspFieldName As String = BA_GetBareName(aspLayerPath)
-                                    success = BA_UpdateTableAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
+                                    success = BA_UpdateTableAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis),
                                                              BA_TablePrecMeanElev, BA_FIELD_ASPECT, aspFieldName, esriFieldType.esriFieldTypeString)
                                 End If
                             End If
@@ -2113,32 +2114,32 @@ Public Class frmGenerateMaps
                 If success = BA_ReturnCode.Success Then
                     ChkPrecipAoiTable.Checked = True
                 End If
-                Dim sitesPath As String = BA_CreateSitesLayer(AOIFolderBase, BA_MergedSites, BA_SiteTypeField, _
+                Dim sitesPath As String = BA_CreateSitesLayer(AOIFolderBase, BA_MergedSites, BA_SiteTypeField,
                                                               BA_SiteSnotel, BA_SiteSnowCourse)
                 'Extract values to sites; DEM comes from BA_SELEV
                 If Not String.IsNullOrEmpty(sitesPath) Then
                     Dim snotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + BA_VectorSnotelPrec
                     Dim tempSnotelPrecipPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + "tmpSnoExtract"
                     'Extract PRISM values to sites
-                    success = BA_ExtractValuesToPoints(sitesPath, _
+                    success = BA_ExtractValuesToPoints(sitesPath,
                                                        PrecipPath + "\" + PRISMRasterName, tempSnotelPrecipPath, PrecipPath + "\" + PRISMRasterName, True)
                     If success = BA_ReturnCode.Success Then
                         'Rename extracted precip field
                         Dim tempfileName As String = BA_GetBareName(tempSnotelPrecipPath)
-                        BA_RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempfileName, BA_FIELD_RASTERVALU, _
+                        BA_RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempfileName, BA_FIELD_RASTERVALU,
                                                 BA_FIELD_PRECIP, esriFieldType.esriFieldTypeDouble)
                         Dim aspectValuesInputPath As String = tempSnotelPrecipPath
                         Dim partitionFileName As String = "tmpPartition"
                         If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
                             'Extract PARTITION values to sites
-                            success = BA_ExtractValuesToPoints(tempSnotelPrecipPath, m_partitionRasterPath, _
-                                                              BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName, _
+                            success = BA_ExtractValuesToPoints(tempSnotelPrecipPath, m_partitionRasterPath,
+                                                              BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName,
                                                                PrecipPath + "\" + PRISMRasterName, True)
                             If success = BA_ReturnCode.Success Then
                                 'Rename extracted partition field
                                 Dim partFileName As String = BA_GetBareName(m_partitionRasterPath)
                                 Dim partitionFieldName As String = partFileName.Substring(BA_RasterPartPrefix.Length)
-                                BA_RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), partitionFileName, BA_FIELD_RASTERVALU, _
+                                BA_RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), partitionFileName, BA_FIELD_RASTERVALU,
                                                         partitionFieldName, esriFieldType.esriFieldTypeDouble)
                                 aspectValuesInputPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + partitionFileName
                             End If
@@ -2146,20 +2147,20 @@ Public Class frmGenerateMaps
                         Dim tmpZonesFileName As String = "tmpZones"
                         If Not String.IsNullOrEmpty(m_zoneRasterPath) Then
                             'Extract ZONES values to sites
-                            success = BA_ExtractValuesToPoints(aspectValuesInputPath, m_zoneRasterPath, _
-                                  BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tmpZonesFileName, _
+                            success = BA_ExtractValuesToPoints(aspectValuesInputPath, m_zoneRasterPath,
+                                  BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tmpZonesFileName,
                                   PrecipPath + "\" + PRISMRasterName, True)
                             If success = BA_ReturnCode.Success Then
                                 'Rename extracted partition field
                                 Dim zonesFileName As String = BA_GetBareName(m_zoneRasterPath)
                                 Dim zonesFieldName As String = zonesFileName.Substring(BA_ZonesRasterPrefix.Length)
-                                BA_RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tmpZonesFileName, BA_FIELD_RASTERVALU, _
+                                BA_RenameRasterValuesField(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tmpZonesFileName, BA_FIELD_RASTERVALU,
                                                         zonesFieldName, esriFieldType.esriFieldTypeInteger)
                                 aspectValuesInputPath = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) + tmpZonesFileName
                             End If
                         End If
                         'Extract ASPECT values to sites
-                        success = BA_ExtractValuesToPoints(aspectValuesInputPath, aspLayerPath, snotelPrecipPath, _
+                        success = BA_ExtractValuesToPoints(aspectValuesInputPath, aspLayerPath, snotelPrecipPath,
                                                            PrecipPath + "\" + PRISMRasterName, True)
                         If Not String.IsNullOrEmpty(m_partitionRasterPath) Then
                             BA_Remove_ShapefileFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), partitionFileName)
@@ -2169,7 +2170,7 @@ Public Class frmGenerateMaps
                         End If
                         BA_Remove_ShapefileFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), tempfileName)
                         If success = BA_ReturnCode.Success Then
-                            success = BA_UpdateFeatureClassAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), _
+                            success = BA_UpdateFeatureClassAttributes(AspIntervalList, BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis),
                                                                       BA_VectorSnotelPrec, BA_FIELD_ASPECT, BA_FIELD_RASTERVALU, esriFieldType.esriFieldTypeString)
                             If success = BA_ReturnCode.Success Then
                                 ChkPrecipSitesLayer.Checked = True
@@ -2227,12 +2228,22 @@ Public Class frmGenerateMaps
         'BA_ActivateMapFrame BA_DefaultMapName
         Dim response As Integer = BA_AddLayerstoMapFrame(My.ThisApplication, My.Document, AOIFolderBase, AOI_HasSNOTEL, AOI_HasSnowCourse, Scenario1Map_Flag, Scenario2Map_Flag)
         BA_AddMapElements(My.Document, cboSelectedAoi.getValue, "Subtitle BAGIS")
-        response = BA_DisplayMap(My.Document, 1, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
+        response = BA_DisplayMap(My.Document, 1, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters,
                                   "Elevation Distribution")
         BA_RemoveLayersfromLegend(My.Document)
     End Sub
 
     Private Sub CmdMaps_Click(sender As System.Object, e As System.EventArgs) Handles CmdMaps.Click
+        'Warn if there are maps in the viewer that may be overwritten
+        Dim aMap As IMap = My.Document.FocusMap()
+        If aMap.LayerCount > 0 Then
+            Dim warnMessage As String = "Adding the maps to the display will overwrite the current arrangement of data layers. " +
+                "This action cannot be undone." + vbCrLf + "Do you wish to continue ?"
+            Dim res As DialogResult = MessageBox.Show(warnMessage, "BAGIS", MessageBoxButtons.YesNo)
+            If res <> DialogResult.Yes Then
+                Exit Sub
+            End If
+        End If
         'Ensure default map frame name is set before trying to build map
         Dim response As Integer = BA_SetDefaultMapFrameName(BA_MAPS_DEFAULT_MAP_NAME, My.Document)
         response = BA_SetMapFrameDimension(BA_MAPS_DEFAULT_MAP_NAME, 1, 2, 7.5, 9, True)
