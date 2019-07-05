@@ -379,6 +379,7 @@ ErrorHandler:
         Dim DifferenceConditionButton = AddIn.FromID(Of BtnDifferenceCondition)(My.ThisAddIn.IDs.BtnDifferenceCondition)
         Dim SiteRepresentationButton = AddIn.FromID(Of BtnSiteRepresentation)(My.ThisAddIn.IDs.BtnSiteRepresentation)
         Dim PublishMapPackageButton = AddIn.FromID(Of BtnPublishMapPackage)(My.ThisAddIn.IDs.BtnPublishMapPackage)
+        PublishMapPackageButton.selectedProperty = False 'Should only be enabled after the maps are loaded into the viewer
         Dim PublishMapButton = AddIn.FromID(Of BtnPublishMapPackage)(My.ThisAddIn.IDs.BtnPublishMap)
         'disable addition elevational representation maps
         Scenario1RepButton.SelectedProperty = False
@@ -395,13 +396,11 @@ ErrorHandler:
             GeneratMapsButton.SelectedProperty = False
             SiteScenarioButton.selectedProperty = False
             SaveAOIMXDButton.selectedProperty = False
-            PublishMapPackageButton.selectedProperty = False
             PublishMapButton.selectedProperty = False
         Else
             GeneratMapsButton.SelectedProperty = True
             SiteScenarioButton.selectedProperty = True
             SaveAOIMXDButton.selectedProperty = True
-            PublishMapPackageButton.selectedProperty = True
         End If
 
         'Close the dockable windows for Site Scenario and Representation if they are open

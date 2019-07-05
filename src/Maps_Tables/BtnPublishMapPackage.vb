@@ -49,7 +49,7 @@ Public Class BtnPublishMapPackage
             windowPos.Move(parentPos.Left + 30, parentPos.Top + 30, windowPos.Width, windowPos.Height)
 
             dockWindow.Caption = "Publish Map Package (Current AOI --> " & aoiName & ")"
-            dockWindowAddIn.UI.InitializeForm(AOIFolderBase + BA_DefaultMapPackageFolder)
+            dockWindowAddIn.UI.InitializeForm()
 
         End If
     End Sub

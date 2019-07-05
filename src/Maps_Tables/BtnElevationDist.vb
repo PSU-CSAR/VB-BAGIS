@@ -17,10 +17,13 @@
         frmMapPackage.CurrentMap = BAGIS_ClassLibrary.BA_ExportMapElevPdf
     End Sub
 
-    Public WriteOnly Property SelectedProperty As Boolean
+    Public Property SelectedProperty As Boolean
         Set(ByVal value As Boolean)
             Me.Enabled = value
         End Set
+        Get
+            Return Me.Enabled
+        End Get
     End Property
 
     Protected Overrides Sub OnUpdate()

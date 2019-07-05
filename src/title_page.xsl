@@ -44,16 +44,20 @@
                     <tr>
                         <td class="style3"/>
                     </tr>
+                  <xsl:if test="publisher != ''">
                     <tr>
                         <td class="style3">
                             Publisher: <xsl:value-of select="publisher"/>
                         </td>
                     </tr>
+                  </xsl:if>
+                  <xsl:if test="comments != ''">
                     <tr>
                         <td class="style3">
                            Comments: <xsl:value-of select="comments"/>
                         </td>
                     </tr>
+                  </xsl:if>
                     <tr>
                         <td class="style3">
                             Local file path to AOI: <xsl:value-of select="local_path"/>

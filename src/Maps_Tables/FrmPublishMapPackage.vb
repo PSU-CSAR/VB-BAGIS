@@ -4,6 +4,8 @@ Imports PdfSharp.Pdf
 Imports PdfSharp.Pdf.IO
 Imports TheArtOfDev.HtmlRenderer.PdfSharp
 Imports System.Windows.Forms
+Imports ESRI.ArcGIS.Desktop.AddIns
+Imports ESRI.ArcGIS.Framework
 
 ''' <summary>
 ''' Designer class of the dockable window add-in. It contains user interfaces that
@@ -49,8 +51,8 @@ Public Class FrmPublishMapPackage
     Dim m_mapsSettings As MapsSettings
     Dim m_currentMap As String
 
-    Public Sub InitializeForm(ByVal strExportFolder As String)
-        txtExportFolder.Text = strExportFolder
+    Public Sub InitializeForm()
+        txtExportFolder.Text = AOIFolderBase + BA_ExportMapPackageFolder
         m_mapsSettings = BA_ReadMapSettings()
         If m_mapsSettings.UseSubRange = False Then
             m_charts_all = {BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
@@ -68,11 +70,11 @@ Public Class FrmPublishMapPackage
             Dim row As DataGridViewRow = DataGridView1.Rows.Item(rowId)
             With row
                 .Cells("file_name").Value = strFile
-                If System.IO.File.Exists(strExportFolder + "\" + strFile) Then
-                    Dim datePublished As DateTime = System.IO.File.GetCreationTime(strExportFolder + "\" + strFile)
+                If System.IO.File.Exists(AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile) Then
+                    Dim datePublished As DateTime =
+                        System.IO.File.GetCreationTime(AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile)
                     .Cells("Published").Value = datePublished.ToString("MM/dd/yy H:mm:ss")
                 End If
-
             End With
         Next
         ' Clear any selected cells
@@ -120,24 +122,63 @@ Public Class FrmPublishMapPackage
     End Class
 
     Private Sub CmdPublish_Click(sender As Object, e As EventArgs) Handles CmdPublish.Click
-        BA_ExportMapPackageFolder = txtExportFolder.Text
+        Dim sOutputDir As String = AOIFolderBase + BA_ExportMapPackageFolder
+        If Not System.IO.Directory.Exists(sOutputDir) Then
+            System.IO.Directory.CreateDirectory(sOutputDir)
+        End If
 
-        If Not String.IsNullOrEmpty(BA_ExportMapPackageFolder) Then
-            If Not System.IO.Directory.Exists(BA_ExportMapPackageFolder) Then
-                System.IO.Directory.CreateDirectory(BA_ExportMapPackageFolder)
+        'Check for existence of map package product; If it exists, ask if we should overwrite
+        If System.IO.File.Exists(sOutputDir + "\" + BA_ExportAllMapsChartsPdf) Then
+            Dim strMessage As String = "A map package has already been created for this AOI at " +
+                sOutputDir + "\" + BA_ExportAllMapsChartsPdf + "." + vbCrLf + "Do you wish to overwrite the existing " +
+                "map package ?"
+            Dim res As DialogResult = MessageBox.Show(strMessage, "BAGIS", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+            If res = DialogResult.Yes Then
+                Dim dirInfo As System.IO.DirectoryInfo = New System.IO.DirectoryInfo(sOutputDir)
+                For Each fileInfo As System.IO.FileInfo In dirInfo.EnumerateFiles
+                    fileInfo.Delete()
+                Next
+            Else
+                Exit Sub
             End If
         End If
-        '' Open the output document
+
+        'Check to see if 1 or more maps exist in the output directory
+        Dim bMapsExist As Boolean = False
+        For Each strMapFile As String In m_maps_all
+            If System.IO.File.Exists(sOutputDir + "\" + strMapFile) Then
+                bMapsExist = True
+                Exit For
+            End If
+        Next
+        'If they do, ask the user if they want to overwrite ?
+        If bMapsExist = True Then
+            Dim strMessage As String = "At least one map .pdf exists in  " + sOutputDir +
+                "." + vbCrLf + "Do you wish to overwrite the existing maps ?"
+            Dim res As DialogResult = MessageBox.Show(strMessage, "BAGIS", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+            If res = DialogResult.Yes Then
+                For Each strMapFile As String In m_maps_all
+                    If System.IO.File.Exists(sOutputDir + "\" + strMapFile) Then
+                        System.IO.File.Delete(sOutputDir + "\" + strMapFile)
+                    End If
+                Next
+            End If
+        End If
+
+        ' Publish the maps
+        Dim success As BA_ReturnCode = PublishMaps(AOIFolderBase + BA_ExportMapPackageFolder)
+
+        ' Open the output document
         Dim outputDocument As PdfDocument = New PdfDocument()
-        GenerateCharts(BA_ExportMapPackageFolder, outputDocument)
+        PublishCharts(AOIFolderBase + BA_ExportMapPackageFolder, outputDocument)
 
         'Save the document...
-        Dim concatFileName As String = BA_ExportMapPackageFolder + "\" + BA_AllMapsChartsPdf
+        Dim concatFileName As String = AOIFolderBase + BA_ExportMapPackageFolder + "\" + BA_ExportAllMapsChartsPdf
         outputDocument.Save(concatFileName)
-        Windows.Forms.MessageBox.Show("Document saved!")
+        MessageBox.Show("Document published!")
     End Sub
 
-    Private Sub GenerateCharts(ByVal parentPath As String, ByRef outputDocument As PdfDocument)
+    Private Sub PublishCharts(ByVal parentPath As String, ByRef outputDocument As PdfDocument)
         'Check for Snotel and snow course layers
         If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Layers, True) +
                           BA_EnumDescription(MapsFileName.Snotel), WorkspaceType.Geodatabase,
@@ -214,7 +255,7 @@ Public Class FrmPublishMapPackage
     End Sub
 
     Private Sub PublishTitlePage(ByVal parentPath As String)
-        Dim comboBox = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
+        Dim comboBox = AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
         Dim aoiName As String = comboBox.getValue()
 
         'Save the values for the title page in an .xml file
@@ -246,4 +287,63 @@ Public Class FrmPublishMapPackage
             titlePagDoc.Save(parentPath + "\" + BA_TitlePagePdf)
         End If
     End Sub
+
+    Private Function PublishMaps(ByVal parentPath As String) As BA_ReturnCode
+        Dim document As IDocument = My.ArcMap.Document
+        Dim uid As UID
+        Dim success As BA_ReturnCode = BA_ReturnCode.OtherError
+        For Each strMap As String In m_maps_all
+            Dim bPublishMap As Boolean = False
+            If Not System.IO.File.Exists(parentPath + "\" + strMap) Then
+                Select Case strMap
+                    Case BA_ExportMapElevPdf
+                        Dim ElevDistButton As BtnElevationDist = AddIn.FromID(Of BtnElevationDist)(My.ThisAddIn.IDs.BtnElevationDist)
+                        If ElevDistButton.SelectedProperty = True Then
+                            uid = New UIDClass()
+                            uid.Value = "Microsoft_BAGIS_BtnElevationDist"
+                            Dim commandItem As ICommandItem = document.CommandBars.Find(uid)
+                            commandItem.Execute()
+                            bPublishMap = True
+                        End If
+                    Case BA_ExportMapElevStelPdf
+                        Dim ElevSNOTELButton As BtnElevationSNOTEL = AddIn.FromID(Of BtnElevationSNOTEL)(My.ThisAddIn.IDs.BtnElevationSNOTEL)
+                        If ElevSNOTELButton.SelectedProperty = True Then
+                            uid = New UIDClass()
+                            uid.Value = "Microsoft_BAGIS_BtnElevationSNOTEL"
+                            Dim commandItem As ICommandItem = document.CommandBars.Find(uid)
+                            commandItem.Execute()
+                            bPublishMap = True
+                        End If
+                        bPublishMap = True
+                    Case BA_ExportMapElevScPdf
+                        Dim ElevScosButton As BtnElevSnowCourse = AddIn.FromID(Of BtnElevSnowCourse)(My.ThisAddIn.IDs.BtnElevSnowCourse)
+                        If ElevScosButton.SelectedProperty = True Then
+                            uid = New UIDClass()
+                            uid.Value = "Microsoft_BAGIS_BtnElevSnowCourse"
+                            Dim commandItem As ICommandItem = document.CommandBars.Find(uid)
+                            commandItem.Execute()
+                            bPublishMap = True
+                        End If
+                        bPublishMap = True
+                    Case BA_ExportMapElevPrecipPdf
+                        Dim PrecipButton As BtnPrecipitationDist = AddIn.FromID(Of BtnPrecipitationDist)(My.ThisAddIn.IDs.BtnPrecipitationDist)
+                        If PrecipButton.SelectedProperty = True Then
+                            uid = New UIDClass()
+                            uid.Value = "Microsoft_BAGIS_BtnPrecipitationDist"
+                            Dim commandItem As ICommandItem = document.CommandBars.Find(uid)
+                            commandItem.Execute()
+                            bPublishMap = True
+                        End If
+                        bPublishMap = True
+                    Case BA_ExportMapSlopePdf
+
+                    Case BA_ExportMapAspectPdf
+                End Select
+                If bPublishMap = True Then
+                    success = BA_ExportActiveViewAsPdf(parentPath, strMap, BA_MapPdfOutputResolution, BA_MapPdfResampleRatio, False)
+                End If
+            End If
+        Next
+        Return success
+    End Function
 End Class

@@ -102,9 +102,6 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_AspectPrec = "aspzoneprec"
     Public Const BA_ZonesRasterPrefix = "aggzone_"
     Public Const BA_VectorAllSitesPrec = "sitesprec_v"
-    Public Const BA_DefaultMapPackageFolder As String = "\maps_publish"
-    Public BA_ExportMapPackageFolder As String
-    Public Const BA_AllMapsChartsPdf As String = "all_maps_charts.pdf"
 
 
     'scenario output rasters
@@ -138,6 +135,11 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_ChartWidth = 600
     Public Const BA_ChartHeight = 330
     Public Const BA_ChartSpacing = 5
+
+    'PDF map publish settings
+    Public Const BA_MapPdfResampleRatio As Integer = 1
+    Public Const BA_MapPdfOutputResolution As Integer = 300
+
 
     'location of the basin analyst definition file
     Public BA_Settings_Filepath As String 'read from ARCGISHOME environ variable

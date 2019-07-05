@@ -2253,9 +2253,12 @@ Public Class frmGenerateMaps
         Dim dockWindowAddIn = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of FrmPublishMapPackage.AddinImpl)(My.ThisAddIn.IDs.FrmPublishMapPackage)
         Dim frmMapPackage As FrmPublishMapPackage = dockWindowAddIn.UI
         frmMapPackage.CurrentMap = BAGIS_ClassLibrary.BA_ExportMapElevPdf
-        'Enable publish maps button
+        'Enable publish map buttons
         Dim PublishMapButton As BtnPublishMap = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of BtnPublishMap)(My.ThisAddIn.IDs.BtnPublishMap)
         PublishMapButton.selectedProperty = True
+        Dim PublishMapPackageButton As BtnPublishMapPackage =
+            ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of BtnPublishMapPackage)(My.ThisAddIn.IDs.BtnPublishMapPackage)
+        PublishMapPackageButton.selectedProperty = True
         MsgBox("Please use the menu items to view maps!")
         Me.Close()
     End Sub

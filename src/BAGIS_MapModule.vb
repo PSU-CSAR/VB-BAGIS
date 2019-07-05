@@ -14,6 +14,7 @@ Imports ESRI.ArcGIS.esriSystem
 Imports Microsoft.Office.Interop.Excel
 Imports ESRI.ArcGIS.Framework
 Imports System.Windows.Forms
+Imports ESRI.ArcGIS.Output
 
 Module BAGIS_MapModule
     'resize the mapframe on the pagelayout
@@ -2537,7 +2538,8 @@ Module BAGIS_MapModule
 
             'Publish Charts Tab
             If bInteractive = False Then
-                Dim pathToSave As String = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevPdf
+                Dim sOutputFolder As String = AOIFolderBase + BA_ExportMapPackageFolder
+                Dim pathToSave As String = sOutputFolder + "\" + BA_ExportChartAreaElevPdf
                 With pChartsWorksheet.PageSetup
                     .Zoom = False
                     .FitToPagesTall = 1
@@ -2546,14 +2548,14 @@ Module BAGIS_MapModule
                 End With
                 pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
 
-                pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevPrecipPdf
+                pathToSave = sOutputFolder + "\" + BA_ExportChartAreaElevPrecipPdf
                 With pChartsWorksheet.PageSetup
                     .PrintArea = "$N$1:$AA$27"
                 End With
                 pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
 
                 If AOI_HasSNOTEL Or AOI_HasSnowCourse Then
-                    pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevPrecipSitePdf
+                    pathToSave = sOutputFolder + "\" + BA_ExportChartAreaElevPrecipSitePdf
                     With pChartsWorksheet.PageSetup
                         .PrintArea = "$A$29:$M$56"
                     End With
@@ -2561,7 +2563,7 @@ Module BAGIS_MapModule
                 End If
 
                 If AOI_HasSNOTEL Then
-                    pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevSnotelPdf
+                    pathToSave = sOutputFolder + "\" + BA_ExportChartAreaElevSnotelPdf
                     With pChartsWorksheet.PageSetup
                         .PrintArea = "$N$29:$AA$56"
                     End With
@@ -2569,18 +2571,18 @@ Module BAGIS_MapModule
                 End If
 
                 If AOI_HasSnowCourse Then
-                    pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevScosPdf
+                    pathToSave = sOutputFolder + "\" + BA_ExportChartAreaElevScosPdf
                     With pChartsWorksheet.PageSetup
                         .PrintArea = "$N$57:$AA$85"
                     End With
                     pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
                 End If
-                pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartSlopePdf
+                pathToSave = sOutputFolder + "\" + BA_ExportChartSlopePdf
                 With pChartsWorksheet.PageSetup
                     .PrintArea = "$A$57:$M$85"
                 End With
                 pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
-                pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAspectPdf
+                pathToSave = sOutputFolder + "\" + BA_ExportChartAspectPdf
                 With pChartsWorksheet.PageSetup
                     .PrintArea = "$A$86:$M$113"
                 End With
@@ -2588,7 +2590,7 @@ Module BAGIS_MapModule
 
                 'Subrange Chart Tab
                 If pRangeChartWorksheet IsNot Nothing Then
-                    pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevSubrangePdf
+                    pathToSave = sOutputFolder + "\" + BA_ExportChartAreaElevSubrangePdf
                     With pRangeChartWorksheet.PageSetup
                         .Zoom = False
                         .FitToPagesTall = 1
@@ -2597,14 +2599,14 @@ Module BAGIS_MapModule
                     End With
                     pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
 
-                    pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevPrecipSubrangePdf
+                    pathToSave = sOutputFolder + "\" + BA_ExportChartAreaElevPrecipSubrangePdf
                     With pRangeChartWorksheet.PageSetup
                         .PrintArea = "$N$1:$AA$27"
                     End With
                     pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
 
                     If bHasSCRange = True Or bHasSnotelRange = True Then
-                        pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevPrecipSiteSubrangePdf
+                        pathToSave = sOutputFolder + "\" + BA_ExportChartAreaElevPrecipSiteSubrangePdf
                         With pRangeChartWorksheet.PageSetup
                             .PrintArea = "$A$29:$M$56"
                         End With
@@ -2612,7 +2614,7 @@ Module BAGIS_MapModule
                     End If
 
                     If bHasSnotelRange = True Then
-                        pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevSnotelSubrangePdf
+                        pathToSave = sOutputFolder + "\" + BA_ExportChartAreaElevSnotelSubrangePdf
                         With pRangeChartWorksheet.PageSetup
                             .PrintArea = "$N$29:$AA$56"
                         End With
@@ -2620,25 +2622,22 @@ Module BAGIS_MapModule
                     End If
 
                     If bHasSCRange = True Then
-                        pathToSave = BA_ExportMapPackageFolder + "\" + BA_ExportChartAreaElevScosSubrangePdf
+                        pathToSave = sOutputFolder + "\" + BA_ExportChartAreaElevScosSubrangePdf
                         With pRangeChartWorksheet.PageSetup
                             .PrintArea = "$N$57:$AA$85"
                         End With
                         pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
                     End If
                 End If
-            End If
-
-            'Elev-Precip Chart Tab
-            If pPrecipChartWorksheet IsNot Nothing Then
-                With pPrecipChartWorksheet.PageSetup
-                    .Orientation = XlPageOrientation.xlLandscape
-                    .Zoom = False
-                    .FitToPagesTall = 1
-                    .FitToPagesWide = 1
-                End With
-                Dim pathToSave As String = BA_ExportMapPackageFolder + "\" + BA_ExportChartElevPrecipCorrelPdf
-                If bInteractive = False Then
+                'Elev-Precip Chart Tab
+                If pPrecipChartWorksheet IsNot Nothing Then
+                    With pPrecipChartWorksheet.PageSetup
+                        .Orientation = XlPageOrientation.xlLandscape
+                        .Zoom = False
+                        .FitToPagesTall = 1
+                        .FitToPagesWide = 1
+                    End With
+                    pathToSave = sOutputFolder + "\" + BA_ExportChartElevPrecipCorrelPdf
                     pPrecipChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
                 End If
             End If
@@ -2722,5 +2721,46 @@ Module BAGIS_MapModule
         BA_DictChartTextBoxSettings.Add(BA_ExportChartElevPrecipCorrelPdf, correlationSettings)
 
     End Sub
+
+    Public Function BA_ExportActiveViewAsPdf(ByVal sOutputDir As String, ByVal sFileName As String, ByVal iOutputResolution As Long,
+                                             ByVal lResampleRatio As Long, ByVal bClipToGraphicsExtent As Boolean) As BA_ReturnCode
+        'Export the active view using the specified parameters
+        Dim docActiveView As IActiveView
+        Dim docExport As IExport = New ExportPDF
+        Dim docPrintAndExport As IPrintAndExport = New PrintAndExport
+        Dim RasterSettings As IOutputRasterSettings
+
+        Try
+            docActiveView = My.ArcMap.Document.ActiveView
+
+            ' Output Image Quality of the export.  The value here will only be used if the export
+            '  object is a format that allows setting of Output Image Quality, i.e. a vector exporter.
+            '  The value assigned to ResampleRatio should be in the range 1 to 5.
+            '  1 corresponds to "Best", 5 corresponds to "Fast"
+
+            If TypeOf docExport Is IOutputRasterSettings Then
+                ' for vector formats, assign a ResampleRatio to control drawing of raster layers at export time
+                RasterSettings = docExport
+                RasterSettings.ResampleRatio = lResampleRatio
+
+                ' NOTE: for raster formats output quality of the DISPLAY is set to 1 for image export 
+                ' formats by default which is what should be used
+            End If
+
+            'assign the output path and filename.  We can use the Filter property of the export object to
+            ' automatically assign the proper extension to the file.
+
+            docExport.ExportFileName = sOutputDir + "\" + sFileName
+
+            docPrintAndExport.Export(docActiveView, docExport, iOutputResolution, bClipToGraphicsExtent, Nothing)
+
+            'cleanup for the exporter
+            docExport.Cleanup()
+            Return BA_ReturnCode.Success
+        Catch ex As Exception
+            Debug.Print("BA_ExportActiveViewAsPdf Exception: " + ex.Message)
+            Return BA_ReturnCode.UnknownError
+        End Try
+    End Function
 
 End Module

@@ -4,12 +4,15 @@
   Public Sub New()
         Me.Enabled = False
     End Sub
-    Public WriteOnly Property SelectedProperty As Boolean
+    Public Property SelectedProperty As Boolean
         Set(ByVal value As Boolean)
             Me.Enabled = value
         End Set
+        Get
+            Return Me.Enabled
+        End Get
     End Property
-  Protected Overrides Sub OnClick()
+    Protected Overrides Sub OnClick()
         Dim Basin_Name As String = ""
         Dim cboSelectedAoi = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
         BA_DisplayMap(My.Document, 2, Basin_Name, cboSelectedAoi.getValue, Map_Display_Elevation_in_Meters, _
