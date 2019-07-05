@@ -1,7 +1,4 @@
-﻿Imports ESRI.ArcGIS.Carto
-Imports ESRI.ArcGIS.Display
-Imports ESRI.ArcGIS.Output
-Imports BAGIS_ClassLibrary
+﻿Imports BAGIS_ClassLibrary
 Imports System.Windows.Forms
 
 Public Class BtnPublishMap
@@ -66,12 +63,5 @@ Public Class BtnPublishMap
             Me.Enabled = value
         End Set
     End Property
-
-    Public Sub ExportActiveViewParameterized(ByVal sOutputDir As String, ByVal sFileName As String, ByVal iOutputResolution As Long,
-                                             ByVal lResampleRatio As Long, ByVal bClipToGraphicsExtent As Boolean)
-
-
-
-    End Sub
 
 End Class
