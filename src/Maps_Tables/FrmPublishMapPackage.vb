@@ -64,22 +64,7 @@ Public Class FrmPublishMapPackage
             BA_ExportChartElevPrecipCorrelPdf, BA_ExportChartAreaElevSubrangePdf, BA_ExportChartAreaElevPrecipSubrangePdf, BA_ExportChartAreaElevPrecipSiteSubrangePdf,
             BA_ExportChartAreaElevSnotelSubrangePdf, BA_ExportChartAreaElevScosSubrangePdf}
         End If
-        DataGridView1.Rows.Clear()
-        For Each strFile In m_maps_all
-            Dim rowId As Int16 = DataGridView1.Rows.Add()
-            Dim row As DataGridViewRow = DataGridView1.Rows.Item(rowId)
-            With row
-                .Cells("file_name").Value = strFile
-                If System.IO.File.Exists(AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile) Then
-                    Dim datePublished As DateTime =
-                        System.IO.File.GetCreationTime(AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile)
-                    .Cells("Published").Value = datePublished.ToString("MM/dd/yy H:mm:ss")
-                End If
-            End With
-        Next
-        ' Clear any selected cells
-        DataGridView1.ClearSelection()
-        DataGridView1.CurrentCell = Nothing
+        LoadDataGridView()
     End Sub
 
     Protected Friend Property CurrentMap() As String
@@ -165,17 +150,93 @@ Public Class FrmPublishMapPackage
             End If
         End If
 
-        ' Publish the maps
-        Dim success As BA_ReturnCode = PublishMaps(AOIFolderBase + BA_ExportMapPackageFolder)
+        'Declare progress indicator variables
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 10)
+        Dim progressDialog2 As IProgressDialog2 = Nothing
+        Try
+            progressDialog2 = BA_GetProgressDialog(pStepProg, "Publishing map pdf documents", "Running...")
+            pStepProg.Show()
+            progressDialog2.ShowDialog()
+            pStepProg.Step()
 
-        ' Open the output document
-        Dim outputDocument As PdfDocument = New PdfDocument()
-        PublishCharts(AOIFolderBase + BA_ExportMapPackageFolder, outputDocument)
+            ' Publish the maps
+            Dim success As BA_ReturnCode = PublishMaps(AOIFolderBase + BA_ExportMapPackageFolder, pStepProg)
+            pStepProg.Hide()
+            progressDialog2.HideDialog()
 
-        'Save the document...
-        Dim concatFileName As String = AOIFolderBase + BA_ExportMapPackageFolder + "\" + BA_ExportAllMapsChartsPdf
-        outputDocument.Save(concatFileName)
-        MessageBox.Show("Document published!")
+            ' Open the output document
+            Dim outputDocument As PdfDocument = New PdfDocument()
+            PublishCharts(AOIFolderBase + BA_ExportMapPackageFolder, outputDocument)
+
+            'Re-initialize the step progressor
+            pStepProg = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 4)
+            progressDialog2 = BA_GetProgressDialog(pStepProg, "Publishing map package", "Running...")
+            pStepProg.Show()
+            progressDialog2.ShowDialog()
+            pStepProg.Message = "Publishing title page..."
+            pStepProg.Step()
+
+            PublishTitlePage(AOIFolderBase + BA_ExportMapPackageFolder)
+
+            pStepProg.Message = "Assembling full document..."
+            pStepProg.Step()
+
+            'Check for files to prepare list for concatenation
+            Dim lstFoundFiles As IList(Of String) = New List(Of String)
+            'title page
+            If BA_File_ExistsWindowsIO(AOIFolderBase + BA_ExportMapPackageFolder + "\" + BA_TitlePagePdf) Then
+                lstFoundFiles.Add(AOIFolderBase + BA_ExportMapPackageFolder + "\" + BA_TitlePagePdf)
+            End If
+
+            'maps
+            For Each strFile In m_maps_all
+                Dim fullPath As String = AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile
+                If BA_File_ExistsWindowsIO(fullPath) Then
+                    lstFoundFiles.Add(fullPath)
+                End If
+            Next
+
+            'charts
+            For Each strFile In m_charts_all
+                Dim fullPath As String = AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile
+                If BA_File_ExistsWindowsIO(fullPath) Then
+                    lstFoundFiles.Add(fullPath)
+                End If
+            Next
+
+            ' Iterate through files
+            For Each strFullPath As String In lstFoundFiles
+                'Open the document to import pages from it.
+                Dim inputDocument As PdfDocument = PdfReader.Open(strFullPath, PdfDocumentOpenMode.Import)
+                'Iterate pages
+                Dim count As Int16 = inputDocument.PageCount
+                For idx As Int16 = 0 To count - 1
+                    'Get the page from the external document...
+                    Dim page As PdfPage = inputDocument.Pages(idx)
+                    '...And add it to the output document.
+                    outputDocument.AddPage(page)
+                Next
+            Next
+
+            'Save the document...
+            Dim concatFileName As String = AOIFolderBase + BA_ExportMapPackageFolder + "\" + BA_ExportAllMapsChartsPdf
+            outputDocument.Save(concatFileName)
+
+            'Reload the datagrid
+            LoadDataGridView()
+            MessageBox.Show("Document published!")
+        Catch ex As Exception
+            Debug.Print("CmdPublish_Click" + ex.Message)
+        Finally
+            If pStepProg IsNot Nothing Then
+                pStepProg.Hide()
+                pStepProg = Nothing
+            End If
+            If progressDialog2 IsNot Nothing Then
+                progressDialog2.HideDialog()
+                progressDialog2 = Nothing
+            End If
+        End Try
     End Sub
 
     Private Sub PublishCharts(ByVal parentPath As String, ByRef outputDocument As PdfDocument)
@@ -205,45 +266,6 @@ Public Class FrmPublishMapPackage
         Next
 
         BA_GenerateTables(m_mapsSettings, dblMaxElev, dblMinElev, False)
-
-        PublishTitlePage(parentPath)
-
-        'Check for files to prepare list for concatenation
-        Dim lstFoundFiles As IList(Of String) = New List(Of String)
-        'title page
-        If BA_File_ExistsWindowsIO(parentPath + "\" + BA_TitlePagePdf) Then
-            lstFoundFiles.Add(parentPath + "\" + BA_TitlePagePdf)
-        End If
-
-        'maps
-        For Each strFile In m_maps_all
-            Dim fullPath As String = parentPath + "\" + strFile
-            If BA_File_ExistsWindowsIO(fullPath) Then
-                lstFoundFiles.Add(fullPath)
-            End If
-        Next
-
-        'charts
-        For Each strFile In m_charts_all
-            Dim fullPath As String = parentPath + "\" + strFile
-            If BA_File_ExistsWindowsIO(fullPath) Then
-                lstFoundFiles.Add(fullPath)
-            End If
-        Next
-
-        ' Iterate through files
-        For Each strFullPath As String In lstFoundFiles
-            'Open the document to import pages from it.
-            Dim inputDocument As PdfDocument = PdfReader.Open(strFullPath, PdfDocumentOpenMode.Import)
-            'Iterate pages
-            Dim count As Int16 = inputDocument.PageCount
-            For idx As Int16 = 0 To count - 1
-                'Get the page from the external document...
-                Dim page As PdfPage = inputDocument.Pages(idx)
-                '...And add it to the output document.
-                outputDocument.AddPage(page)
-            Next
-        Next
     End Sub
 
     Private Sub CmdCancel_Click(sender As Object, e As EventArgs) Handles CmdCancel.Click
@@ -288,13 +310,15 @@ Public Class FrmPublishMapPackage
         End If
     End Sub
 
-    Private Function PublishMaps(ByVal parentPath As String) As BA_ReturnCode
+    Private Function PublishMaps(ByVal parentPath As String, ByRef pStepProg As IStepProgressor) As BA_ReturnCode
         Dim document As IDocument = My.ArcMap.Document
         Dim uid As UID
         Dim success As BA_ReturnCode = BA_ReturnCode.OtherError
         For Each strMap As String In m_maps_all
             Dim bPublishMap As Boolean = False
             If Not System.IO.File.Exists(parentPath + "\" + strMap) Then
+                pStepProg.Message = "Publishing " + strMap + "..."
+                pStepProg.Step()
                 Select Case strMap
                     Case BA_ExportMapElevPdf
                         Dim ElevDistButton As BtnElevationDist = AddIn.FromID(Of BtnElevationDist)(My.ThisAddIn.IDs.BtnElevationDist)
@@ -336,8 +360,25 @@ Public Class FrmPublishMapPackage
                         End If
                         bPublishMap = True
                     Case BA_ExportMapSlopePdf
-
+                        Dim SlopeButton As BtnSlopeDist = AddIn.FromID(Of BtnSlopeDist)(My.ThisAddIn.IDs.BtnSlopeDist)
+                        If SlopeButton.SelectedProperty = True Then
+                            uid = New UIDClass()
+                            uid.Value = "Microsoft_BAGIS_BtnSlopeDist"
+                            Dim commandItem As ICommandItem = document.CommandBars.Find(uid)
+                            commandItem.Execute()
+                            bPublishMap = True
+                        End If
+                        bPublishMap = True
                     Case BA_ExportMapAspectPdf
+                        Dim AspectButton As BtnAspectDist = AddIn.FromID(Of BtnAspectDist)(My.ThisAddIn.IDs.BtnAspectDist)
+                        If AspectButton.SelectedProperty = True Then
+                            uid = New UIDClass()
+                            uid.Value = "Microsoft_BAGIS_BtnAspectDist"
+                            Dim commandItem As ICommandItem = document.CommandBars.Find(uid)
+                            commandItem.Execute()
+                            bPublishMap = True
+                        End If
+                        bPublishMap = True
                 End Select
                 If bPublishMap = True Then
                     success = BA_ExportActiveViewAsPdf(parentPath, strMap, BA_MapPdfOutputResolution, BA_MapPdfResampleRatio, False)
@@ -346,4 +387,23 @@ Public Class FrmPublishMapPackage
         Next
         Return success
     End Function
+
+    Private Sub LoadDataGridView()
+        DataGridView1.Rows.Clear()
+        For Each strFile In m_maps_all
+            Dim rowId As Int16 = DataGridView1.Rows.Add()
+            Dim row As DataGridViewRow = DataGridView1.Rows.Item(rowId)
+            With row
+                .Cells("file_name").Value = strFile
+                If System.IO.File.Exists(AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile) Then
+                    Dim datePublished As DateTime =
+                        System.IO.File.GetCreationTime(AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile)
+                    .Cells("Published").Value = datePublished.ToString("MM/dd/yy H:mm:ss")
+                End If
+            End With
+        Next
+        ' Clear any selected cells
+        DataGridView1.ClearSelection()
+        DataGridView1.CurrentCell = Nothing
+    End Sub
 End Class

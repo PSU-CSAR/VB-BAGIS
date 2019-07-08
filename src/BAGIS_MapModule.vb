@@ -2538,6 +2538,10 @@ Module BAGIS_MapModule
 
             'Publish Charts Tab
             If bInteractive = False Then
+
+                pStepProg.Message = "Publishing .pdf chart documents ..."
+                pStepProg.Step()
+
                 Dim sOutputFolder As String = AOIFolderBase + BA_ExportMapPackageFolder
                 Dim pathToSave As String = sOutputFolder + "\" + BA_ExportChartAreaElevPdf
                 With pChartsWorksheet.PageSetup
@@ -2647,14 +2651,17 @@ Module BAGIS_MapModule
         Finally
             If bInteractive = True Then
                 objExcel.Visible = True
-            End If
-            If pStepProg IsNot Nothing Then
+                If pStepProg IsNot Nothing Then
+                    pStepProg.Hide()
+                    pStepProg = Nothing
+                End If
+                If progressDialog2 IsNot Nothing Then
+                    progressDialog2.HideDialog()
+                    progressDialog2 = Nothing
+                End If
+            Else
                 pStepProg.Hide()
-                pStepProg = Nothing
-            End If
-            If progressDialog2 IsNot Nothing Then
                 progressDialog2.HideDialog()
-                progressDialog2 = Nothing
             End If
         End Try
     End Sub
