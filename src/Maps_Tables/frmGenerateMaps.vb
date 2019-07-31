@@ -603,8 +603,8 @@ Public Class frmGenerateMaps
             nlines = 1
             oldVersonLines = 1
             Dim endofOldVersion As Boolean = False
+            linestring = sr.ReadLine
             Do While linestring IsNot Nothing
-                linestring = sr.ReadLine
                 If linestring.Length > 8 Then
                     If linestring.Substring(0, 8) = "REVISION" Then
                         endofOldVersion = True
@@ -612,6 +612,7 @@ Public Class frmGenerateMaps
                 End If
                 nlines = nlines + 1 'count the number of lines in the file
                 If Not endofOldVersion Then oldVersonLines = oldVersonLines + 1
+                linestring = sr.ReadLine
             Loop
             sr.Close() 'close the file and reopen to read
 
