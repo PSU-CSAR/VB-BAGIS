@@ -113,19 +113,21 @@ Public Class FrmPublishMapPackage
         End If
 
         'Check for existence of map package product; If it exists, ask if we should overwrite
+        Dim success As BA_ReturnCode = BA_ReturnCode.OtherError
         If System.IO.File.Exists(sOutputDir + "\" + BA_ExportAllMapsChartsPdf) Then
             Dim strMessage As String = "A map package has already been created for this AOI at " +
                 sOutputDir + "\" + BA_ExportAllMapsChartsPdf + "." + vbCrLf + "Do you wish to overwrite the existing " +
                 "map package ?"
             Dim res As DialogResult = MessageBox.Show(strMessage, "BAGIS", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-            If res = DialogResult.Yes Then
-                Dim dirInfo As System.IO.DirectoryInfo = New System.IO.DirectoryInfo(sOutputDir)
-                For Each fileInfo As System.IO.FileInfo In dirInfo.EnumerateFiles
-                    fileInfo.Delete()
-                Next
-            Else
+            If res <> DialogResult.Yes Then
                 Exit Sub
             End If
+        End If
+
+        success = BA_DeleteMapPackageElements()
+        If success <> BA_ReturnCode.Success Then
+            MessageBox.Show("An error occurred while deleting the map package!!", "BAGIS")
+            Exit Sub
         End If
 
         'Check to see if 1 or more maps exist in the output directory
@@ -144,7 +146,13 @@ Public Class FrmPublishMapPackage
             If res = DialogResult.Yes Then
                 For Each strMapFile As String In m_maps_all
                     If System.IO.File.Exists(sOutputDir + "\" + strMapFile) Then
-                        System.IO.File.Delete(sOutputDir + "\" + strMapFile)
+                        Try
+                            System.IO.File.Delete(sOutputDir + "\" + strMapFile)
+                        Catch ex As System.IO.IOException
+                            MessageBox.Show("Unable to delete " + sOutputDir + "\" + strMapFile + "! The most likely cause is that you have the file open. " +
+                                        "Please check and try again.", "BAGIS")
+                            Exit Sub
+                        End Try
                     End If
                 Next
             End If
@@ -160,7 +168,7 @@ Public Class FrmPublishMapPackage
             pStepProg.Step()
 
             ' Publish the maps
-            Dim success As BA_ReturnCode = PublishMaps(AOIFolderBase + BA_ExportMapPackageFolder, pStepProg)
+            success = PublishMaps(AOIFolderBase + BA_ExportMapPackageFolder, pStepProg)
             pStepProg.Hide()
             progressDialog2.HideDialog()
 
@@ -397,7 +405,7 @@ Public Class FrmPublishMapPackage
                 .Cells("file_name").Value = strFile
                 If System.IO.File.Exists(AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile) Then
                     Dim datePublished As DateTime =
-                        System.IO.File.GetCreationTime(AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile)
+                        System.IO.File.GetLastWriteTime(AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile)
                     .Cells("Published").Value = datePublished.ToString("MM/dd/yy H:mm:ss")
                 End If
             End With

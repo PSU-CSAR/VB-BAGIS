@@ -19,16 +19,18 @@ Public Class BtnPublishMap
         End If
 
         'Check for existence of map package product; If it exists, ask if we should overwrite
+        Dim success As BA_ReturnCode = BA_ReturnCode.OtherError
         If IO.File.Exists(sOutputDir + "\" + BA_ExportAllMapsChartsPdf) Then
             Dim strMessage As String = "A map package has already been created for this AOI at " +
                 sOutputDir + "\" + BA_ExportAllMapsChartsPdf + "." + vbCrLf + "Do you wish to overwrite the existing " +
                 "map package ?"
             Dim res As DialogResult = MessageBox.Show(strMessage, "BAGIS", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
             If res = DialogResult.Yes Then
-                Dim dirInfo As IO.DirectoryInfo = New IO.DirectoryInfo(sOutputDir)
-                For Each fileInfo As IO.FileInfo In dirInfo.EnumerateFiles
-                    fileInfo.Delete()
-                Next
+                success = BA_DeleteMapPackageElements()
+                If success <> BA_ReturnCode.Success Then
+                    MessageBox.Show("An error occurred while deleting the map package!!", "BAGIS")
+                    Exit Sub
+                End If
             Else
                 Exit Sub
             End If
@@ -40,12 +42,19 @@ Public Class BtnPublishMap
                 "map ?"
             Dim res As DialogResult = MessageBox.Show(strMessage, "BAGIS", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
             If res = DialogResult.Yes Then
-                IO.File.Delete(sOutputDir + "\" + frmMapPackage.CurrentMap)
+                Try
+                    IO.File.Delete(sOutputDir + "\" + frmMapPackage.CurrentMap)
+                Catch ex As IO.IOException
+                    MessageBox.Show("Unable to delete " + sOutputDir + "\" + frmMapPackage.CurrentMap +
+                                    "!" + vbCrLf + "The most likely cause is that you have the file open. " +
+                                    "Please check and try again.", "BAGIS")
+                    Exit Sub
+                End Try
             Else
                 Exit Sub
             End If
         End If
-        Dim success As BA_ReturnCode = BA_ExportActiveViewAsPdf(sOutputDir, frmMapPackage.CurrentMap, BA_MapPdfOutputResolution,
+        success = BA_ExportActiveViewAsPdf(sOutputDir, frmMapPackage.CurrentMap, BA_MapPdfOutputResolution,
                                                                  BA_MapPdfResampleRatio, False)
         If success = BA_ReturnCode.Success Then
             MessageBox.Show("Finished publishing " + sOutputDir + "\" + frmMapPackage.CurrentMap + "!", "BAGIS")

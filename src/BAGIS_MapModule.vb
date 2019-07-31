@@ -2770,4 +2770,28 @@ Module BAGIS_MapModule
         End Try
     End Function
 
+    Public Function BA_DeleteMapPackageElements() As BA_ReturnCode
+        Dim arr_package_all As String() = {BA_ExportChartAreaElevPdf, BA_ExportChartAreaElevPrecipPdf, BA_ExportChartAreaElevPrecipSitePdf,
+            BA_ExportChartAreaElevSnotelPdf, BA_ExportChartAreaElevScosPdf, BA_ExportChartSlopePdf, BA_ExportChartAspectPdf,
+            BA_ExportChartElevPrecipCorrelPdf, BA_ExportChartAreaElevSubrangePdf, BA_ExportChartAreaElevPrecipSubrangePdf, BA_ExportChartAreaElevPrecipSiteSubrangePdf,
+            BA_ExportChartAreaElevSnotelSubrangePdf, BA_ExportChartAreaElevScosSubrangePdf, BA_ExportAllMapsChartsPdf, BA_TitlePagePdf}
+        Dim success As BA_ReturnCode = BA_ReturnCode.OtherError
+        Dim strFilePath As String = ""
+        For Each strFile As String In arr_package_all
+            strFilePath = AOIFolderBase + BA_ExportMapPackageFolder + "\" + strFile
+            If IO.File.Exists(strFilePath) Then
+                Try
+                    IO.File.Delete(strFilePath)
+                Catch ex As IO.IOException
+                    MessageBox.Show("Unable to delete " + strFilePath + "! " + vbCrLf +
+                                    "The most likely cause is that you have the file open. " +
+                                    "Please check and try again.", "BAGIS")
+                    Return success
+                End Try
+            End If
+        Next
+        success = BA_ReturnCode.Success
+        Return success
+    End Function
+
 End Module
