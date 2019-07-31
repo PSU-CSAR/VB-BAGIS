@@ -286,7 +286,7 @@ Public Class FrmPublishMapPackage
 
     Private Sub PublishTitlePage(ByVal parentPath As String)
         Dim comboBox = AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
-        Dim aoiName As String = comboBox.getValue()
+        Dim aoiName As String = comboBox.getValue().ToUpper
 
         'Save the values for the title page in an .xml file
         Dim titlePage As ExportTitlePage = New ExportTitlePage

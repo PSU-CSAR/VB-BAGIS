@@ -2544,11 +2544,18 @@ Module BAGIS_MapModule
 
                 Dim sOutputFolder As String = AOIFolderBase + BA_ExportMapPackageFolder
                 Dim pathToSave As String = sOutputFolder + "\" + BA_ExportChartAreaElevPdf
+                Dim cboSelectAOI = ESRI.ArcGIS.Desktop.AddIns.AddIn.FromID(Of cboTargetedAOI)(My.ThisAddIn.IDs.cboTargetedAOI)
+                Dim aoiName As String = ""
+                If Not String.IsNullOrEmpty(cboSelectAOI.getValue) Then
+                    aoiName = cboSelectAOI.getValue.ToUpper
+                End If
+
                 With pChartsWorksheet.PageSetup
                     .Zoom = False
                     .FitToPagesTall = 1
                     .FitToPagesWide = 1
                     .PrintArea = "$A$1:$M$27"
+                    .CenterHeader = "&C&""Arial,Bold""&16 " + aoiName
                 End With
                 pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
 
@@ -2600,6 +2607,7 @@ Module BAGIS_MapModule
                         .FitToPagesTall = 1
                         .FitToPagesWide = 1
                         .PrintArea = "$A$1:$M$27"
+                        .CenterHeader = "&C&""Arial,Bold""&16 " + aoiName
                     End With
                     pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
 
@@ -2640,6 +2648,7 @@ Module BAGIS_MapModule
                         .Zoom = False
                         .FitToPagesTall = 1
                         .FitToPagesWide = 1
+                        .CenterHeader = "&C&""Arial,Bold""&16 " + aoiName
                     End With
                     pathToSave = sOutputFolder + "\" + BA_ExportChartElevPrecipCorrelPdf
                     pPrecipChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
