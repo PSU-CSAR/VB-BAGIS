@@ -17,6 +17,8 @@ Public Class BtnPublishMap
         If Not IO.Directory.Exists(sOutputDir) Then
             IO.Directory.CreateDirectory(sOutputDir)
         End If
+        Dim fileNameBase As String = IO.Path.GetFileNameWithoutExtension(frmMapPackage.CurrentMap)
+        Dim sMxdFullPath As String = sOutputDir + "\" + fileNameBase + ".mxd"
 
         'Check for existence of map package product; If it exists, ask if we should overwrite
         Dim success As BA_ReturnCode = BA_ReturnCode.OtherError
@@ -35,6 +37,7 @@ Public Class BtnPublishMap
                 Exit Sub
             End If
         End If
+        Dim bOverwriteMapDocument As Boolean = False
         'Check for existence of map we want to export; If it exists, ask if we should overwrite
         If IO.File.Exists(sOutputDir + "\" + frmMapPackage.CurrentMap) Then
             Dim strMessage As String = "A .pdf version of this map already exists at " +
@@ -50,6 +53,27 @@ Public Class BtnPublishMap
                                     "Please check and try again.", "BAGIS")
                     Exit Sub
                 End Try
+                ' Manage saving of .mxd document
+                If IO.File.Exists(sMxdFullPath) Then
+                    Try
+                        Dim pMxDoc As ESRI.ArcGIS.ArcMapUI.IMxDocument = My.ArcMap.Application.Document
+                        Dim pMapDoc As ESRI.ArcGIS.Carto.MapDocument = CType(pMxDoc, ESRI.ArcGIS.Carto.IMapDocument)
+                        Dim strMapName = pMapDoc.DocumentFilename
+                        'Get the path of the current .mxd, if it is the same as the one we will momentarily save,
+                        'we will use save instead of save as down below. Otherwise we delete the old copy
+                        If sMxdFullPath.Equals(strMapName) Then
+                            bOverwriteMapDocument = True
+                        Else
+                            IO.File.Delete(sMxdFullPath)
+                        End If
+                    Catch ex As IO.IOException
+                        ' Hopefully will never need this but leaving it just in case
+                        MessageBox.Show("Unable to delete " + sMxdFullPath +
+                                        "!" + vbCrLf + "The most likely cause is that you are using the .mxd in ArcMap. " +
+                                        "Use the 'Save As' menu item to save the .mxd under a different name and try again.", "BAGIS")
+                        Exit Sub
+                    End Try
+                End If
             Else
                 Exit Sub
             End If
@@ -57,6 +81,13 @@ Public Class BtnPublishMap
         success = BA_ExportActiveViewAsPdf(sOutputDir, frmMapPackage.CurrentMap, BA_MapPdfOutputResolution,
                                                                  BA_MapPdfResampleRatio, False)
         If success = BA_ReturnCode.Success Then
+            If bOverwriteMapDocument = False Then
+                My.ArcMap.Application.SaveAsDocument(sMxdFullPath)
+            Else
+                My.ArcMap.Application.SaveDocument(sMxdFullPath)
+            End If
+        End If
+            If success = BA_ReturnCode.Success Then
             MessageBox.Show("Finished publishing " + sOutputDir + "\" + frmMapPackage.CurrentMap + "!", "BAGIS")
         Else
             MessageBox.Show("Unable to publish " + sOutputDir + "\" + frmMapPackage.CurrentMap + "!", "BAGIS")

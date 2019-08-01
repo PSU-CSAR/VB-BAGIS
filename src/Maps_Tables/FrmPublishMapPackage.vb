@@ -154,6 +154,19 @@ Public Class FrmPublishMapPackage
                             Exit Sub
                         End Try
                     End If
+                    'Also check for/delete any associated .mxd
+                    Dim fileNameBase As String = System.IO.Path.GetFileNameWithoutExtension(strMapFile)
+                    Dim sMxdFullPath As String = sOutputDir + "\" + fileNameBase + ".mxd"
+                    If System.IO.File.Exists(sMxdFullPath) Then
+                        Try
+                            System.IO.File.Delete(sMxdFullPath)
+                        Catch ex As System.IO.IOException
+                            MessageBox.Show("Unable to delete " + sMxdFullPath +
+                                            "!" + vbCrLf + "The most likely cause is that you are using the .mxd in ArcMap. " +
+                                            "Use the 'Save As' menu item to save the .mxd under a different name and try again.", "BAGIS")
+                            Exit Sub
+                        End Try
+                    End If
                 Next
             End If
         End If
