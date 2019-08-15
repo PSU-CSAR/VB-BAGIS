@@ -2669,6 +2669,9 @@ Module BAGIS_MapModule
                     progressDialog2 = Nothing
                 End If
             Else
+                bkWorkBook.Close(SaveChanges:=False)
+                objExcel.Quit()
+                objExcel = Nothing
                 pStepProg.Hide()
                 progressDialog2.HideDialog()
             End If

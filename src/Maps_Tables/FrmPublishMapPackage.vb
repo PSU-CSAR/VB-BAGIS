@@ -142,7 +142,7 @@ Public Class FrmPublishMapPackage
         If bMapsExist = True Then
             Dim strMessage As String = "At least one map .pdf exists in  " + sOutputDir +
                 "." + vbCrLf + "Do you wish to overwrite the existing maps ?"
-            Dim res As DialogResult = MessageBox.Show(strMessage, "BAGIS", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+            Dim res As DialogResult = MessageBox.Show(strMessage, "BAGIS", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question)
             If res = DialogResult.Yes Then
                 For Each strMapFile As String In m_maps_all
                     If System.IO.File.Exists(sOutputDir + "\" + strMapFile) Then
@@ -168,6 +168,11 @@ Public Class FrmPublishMapPackage
                         End Try
                     End If
                 Next
+            ElseIf res = DialogResult.No Then
+                'Do nothing; The maps will not be deleted but will be collated into the package
+            Else
+                'User clicked Cancel or closed the window to stop the process
+                Exit Sub
             End If
         End If
 
