@@ -2063,6 +2063,12 @@ Public Class frmGenerateMaps
                                                BA_FIELD_VALUE, strSavePath, RasterName, maskFolderPath, NO_VECTOR_NAME, MessageKey)
             End If
 
+            Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
+            'Delete aggregated precip output table if it exists
+            If BA_File_Exists(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis) + "\" +
+                    BA_TablePrecMeanElev, WorkspaceType.Geodatabase, esriDatasetType.esriDTTable) Then
+                success = BA_Remove_TableFromGDB(BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis), BA_TablePrecMeanElev)
+            End If
             If ChkRepresentedPrecip.Checked = True Then
                 pStepProg.Message = "Creating Precipitation Mean Elevation layer ..."
                 pStepProg.Step()
@@ -2072,7 +2078,6 @@ Public Class frmGenerateMaps
                 BA_SetAspectClasses(AspIntervalList, AspectDirectionsNumber)
                 Dim aspLayerPath As String = BA_GeodatabasePath(AOIFolderBase, GeodatabaseNames.Analysis, True) & BA_RasterAspectZones
 
-                Dim success As BA_ReturnCode = BA_ReturnCode.UnknownError
                 If OptAggZone.Checked = False Then
                     'AGGREGATING BY PRISM CELLS
                     'Resample DEM to PRISM resolution

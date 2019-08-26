@@ -108,8 +108,6 @@ Partial Class FrmPublishMapPackage
         Me.TxtComments.Name = "TxtComments"
         Me.TxtComments.Size = New System.Drawing.Size(671, 71)
         Me.TxtComments.TabIndex = 85
-        Me.TxtComments.Text = "Now is the time for all good men to come to the aid of their country. Now is the " &
-    "time for all good men to come to the aid of their country"
         '
         'Label4
         '
