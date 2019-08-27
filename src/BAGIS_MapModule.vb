@@ -2550,8 +2550,19 @@ Module BAGIS_MapModule
                     aoiName = cboSelectAOI.getValue.ToUpper
                 End If
 
+                Dim oPaperSize As XlPaperSize = XlPaperSize.xlPaperLetter
+                Try
+                    oPaperSize = pChartsWorksheet.PageSetup.PaperSize
+                Catch ex As Exception
+                    Debug.Print("BA_GenerateTables Exception: " + ex.Message)
+                    MessageBox.Show("An error occurred while querying Excel's paper size! Please test printing from Excel and try again", "BAGIS")
+                    Exit Sub
+                End Try
+
+                Dim oReqPaperSize As XlPaperSize = XlPaperSize.xlPaperLetter
                 With pChartsWorksheet.PageSetup
                     .Zoom = False
+                    .PaperSize = oReqPaperSize
                     .FitToPagesTall = 1
                     .FitToPagesWide = 1
                     .PrintArea = "$A$1:$M$27"
@@ -2598,12 +2609,15 @@ Module BAGIS_MapModule
                     .PrintArea = "$A$86:$M$113"
                 End With
                 pChartsWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                pChartsWorksheet.PageSetup.PaperSize = oPaperSize
 
                 'Subrange Chart Tab
                 If pRangeChartWorksheet IsNot Nothing Then
                     pathToSave = sOutputFolder + "\" + BA_ExportChartAreaElevSubrangePdf
+                    oPaperSize = pRangeChartWorksheet.PageSetup.PaperSize
                     With pRangeChartWorksheet.PageSetup
                         .Zoom = False
+                        .PaperSize = oReqPaperSize
                         .FitToPagesTall = 1
                         .FitToPagesWide = 1
                         .PrintArea = "$A$1:$M$27"
@@ -2640,18 +2654,22 @@ Module BAGIS_MapModule
                         End With
                         pRangeChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
                     End If
+                    pRangeChartWorksheet.PageSetup.PaperSize = oPaperSize
                 End If
                 'Elev-Precip Chart Tab
                 If pPrecipChartWorksheet IsNot Nothing Then
+                    oPaperSize = pPrecipChartWorksheet.PageSetup.PaperSize
                     With pPrecipChartWorksheet.PageSetup
                         .Orientation = XlPageOrientation.xlLandscape
                         .Zoom = False
+                        .PaperSize = oReqPaperSize
                         .FitToPagesTall = 1
                         .FitToPagesWide = 1
                         .CenterHeader = "&C&""Arial,Bold""&16 " + aoiName
                     End With
                     pathToSave = sOutputFolder + "\" + BA_ExportChartElevPrecipCorrelPdf
                     pPrecipChartWorksheet.ExportAsFixedFormat(XlFixedFormatType.xlTypePDF, pathToSave)
+                    pPrecipChartWorksheet.PageSetup.PaperSize = oPaperSize
                 End If
             End If
 
