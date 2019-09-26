@@ -1,6 +1,7 @@
 ﻿Imports BAGIS_ClassLibrary
 Imports ESRI.ArcGIS.Display
 Imports ESRI.ArcGIS.Carto
+Imports System.Windows.Forms
 
 Public Class BtnScenario2
     Inherits ESRI.ArcGIS.Desktop.AddIns.Button
@@ -46,7 +47,7 @@ Public Class BtnScenario2
             'BA_MoveScenarioLayers()
             'End If
         Catch ex As Exception
-            Windows.Forms.MessageBox.Show("An error occurred while trying to display the scenario 2 map.", "Error", Windows.Forms.MessageBoxButtons.OK)
+            MessageBox.Show("An error occurred while trying to display the scenario 2 map.", "Error", MessageBoxButtons.OK)
             Debug.Print("OnClick" & ex.Message)
         End Try
         Dim Basin_Name As String = ""

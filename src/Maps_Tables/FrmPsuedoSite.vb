@@ -256,7 +256,7 @@ Public Class FrmPsuedoSite
                     sbElev.ToString + vbCrLf +
                     "Click 'No' to fix the parameters, or 'Yes' to find a site without using the Elevation option"
                 Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid elevation values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
-                If res <> Windows.Forms.DialogResult.Yes Then
+                If res <> DialogResult.Yes Then
                     Exit Sub
                 Else
                     CkElev.Checked = False
@@ -270,7 +270,7 @@ Public Class FrmPsuedoSite
                 Dim res As DialogResult = MessageBox.Show("You selected the Proximity option but failed to configure any layers. Do you wish to " +
                                                           "find a site without using the Proximity option", "Missing layer", MessageBoxButtons.YesNo,
                                                           MessageBoxIcon.Question)
-                If res <> Windows.Forms.DialogResult.Yes Then
+                If res <> DialogResult.Yes Then
                     Exit Sub
                 Else
                     CkProximity.Checked = False
@@ -283,7 +283,7 @@ Public Class FrmPsuedoSite
                     Dim res As DialogResult = MessageBox.Show("BAGIS needs to re-use constraint layers for the new site but the proximity layer " + m_proximityLayer + " cannot be found! Do you wish to " +
                                           "find a site without using the Proximity option", "Missing layer", MessageBoxButtons.YesNo,
                                           MessageBoxIcon.Question)
-                    If res <> Windows.Forms.DialogResult.Yes Then
+                    If res <> DialogResult.Yes Then
                         Exit Sub
                     Else
                         CkProximity.Checked = False
@@ -301,7 +301,7 @@ Public Class FrmPsuedoSite
                 Dim errMsg As String = "You selected the Precipitation option but have not configured a valid range." + vbCrLf + vbCrLf +
                     "Click 'No' to add the desired range, or 'Yes' to find a site without using the Precipitation option."
                 Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid precipitation values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
-                If res <> Windows.Forms.DialogResult.Yes Then
+                If res <> DialogResult.Yes Then
                     Exit Sub
                 Else
                     CkPrecip.Checked = False
@@ -349,7 +349,7 @@ Public Class FrmPsuedoSite
                         sbPrism.ToString + vbCrLf +
                         "Click 'No' to fix the parameters, or 'Yes' to find a site without using the Precipitation option."
                     Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid precipitation values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
-                    If res <> Windows.Forms.DialogResult.Yes Then
+                    If res <> DialogResult.Yes Then
                         Exit Sub
                     Else
                         CkPrecip.Checked = False
@@ -391,7 +391,7 @@ Public Class FrmPsuedoSite
                     sbLoc.ToString + vbCrLf +
                     "Click 'No' to fix the parameters, or 'Yes' to find a site without using the Location option."
                 Dim res As DialogResult = MessageBox.Show(errMsg, "Invalid location values", MessageBoxButtons.YesNo, MessageBoxIcon.Hand)
-                If res <> Windows.Forms.DialogResult.Yes Then
+                If res <> DialogResult.Yes Then
                     Exit Sub
                 Else
                     CkLocation.Checked = False
@@ -1551,7 +1551,7 @@ Public Class FrmPsuedoSite
             Dim strMsg As String = "Selected values have already been configured for this Location layer. Do you " +
             "wish to overwrite that configuration ?"
             Dim res As DialogResult = MessageBox.Show(strMsg, "Location exists", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-            If res <> Windows.Forms.DialogResult.Yes Then
+            If res <> DialogResult.Yes Then
                 Exit Sub
             Else
                 overwriteExisting = True
@@ -1614,7 +1614,7 @@ Public Class FrmPsuedoSite
             Dim res As DialogResult = MessageBox.Show("You are about to delete a row from the Location constraint list. " +
                                                       "This cannot be undone." + vbCrLf + vbCrLf + "Do you wish to continue ?",
                                                       "Delete", MessageBoxButtons.YesNo)
-            If res = Windows.Forms.DialogResult.Yes Then
+            If res = DialogResult.Yes Then
                 Dim dRow As DataGridViewRow = GrdLocation.SelectedRows(0)
                 Dim fullPath As String = Convert.ToString(dRow.Cells(m_idxFullPaths).Value)
                 If m_dictLocationAllValues.ContainsKey(fullPath) Then _
@@ -1839,7 +1839,7 @@ Public Class FrmPsuedoSite
             Dim res As DialogResult = MessageBox.Show("You are about to delete a row from the Proximity constraint list. " +
                                                       "This cannot be undone." + vbCrLf + vbCrLf + "Do you wish to continue ?",
                                                       "Delete", MessageBoxButtons.YesNo)
-            If res = Windows.Forms.DialogResult.Yes Then
+            If res = DialogResult.Yes Then
                 Dim dRow As DataGridViewRow = GrdProximity.SelectedRows(0)
                 Dim fullPath As String = Convert.ToString(dRow.Cells(m_idxFullPaths).Value)
                 GrdProximity.Rows.Remove(GrdProximity.SelectedRows(0))
@@ -1858,7 +1858,7 @@ Public Class FrmPsuedoSite
                 Dim strMsg As String = "Selected values have already been configured for this Proximity layer. Do you " +
 "wish to overwrite that configuration ?"
                 Dim res As DialogResult = MessageBox.Show(strMsg, "Proximity exists", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-                If res <> Windows.Forms.DialogResult.Yes Then
+                If res <> System.Windows.Forms.DialogResult.Yes Then
                     Exit Sub
                 Else
                     overwriteExisting = True

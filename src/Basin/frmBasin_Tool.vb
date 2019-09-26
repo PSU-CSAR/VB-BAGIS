@@ -299,7 +299,7 @@ Public Class frmBasin_Tool
         NeedtoClipDEM = True
 
         If BA_Enable_SAExtension(My.ArcMap.Application) <> ESRI.ArcGIS.esriSystem.esriExtensionState.esriESEnabled Then
-            Windows.Forms.MessageBox.Show("Spatial Analyst is required for BAGIS and is not available. Program stopped.")
+            MessageBox.Show("Spatial Analyst is required for BAGIS and is not available. Program stopped.")
             Exit Sub
         End If
 
@@ -319,7 +319,7 @@ Public Class frmBasin_Tool
         Dim basinInfoButton = AddIn.FromID(Of BtnBasinInfo)(My.ThisAddIn.IDs.BtnBasinInfo)
         Me.Hide()
 
-        Dim result As DialogResult = Windows.Forms.DialogResult.No
+        Dim result As DialogResult = DialogResult.No
         Dim sb As New StringBuilder()
 
         If UCase(lblDEMStatus.Text).IndexOf("RESOLUTION") > -1 Then 'FGDB exists

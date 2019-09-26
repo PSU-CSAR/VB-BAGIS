@@ -70,7 +70,8 @@ Public Class BtnDifferenceCondition
             'Reorder scenario layers so things are visible
             ''BA_MoveScenarioLayers()
         Catch ex As Exception
-            Windows.Forms.MessageBox.Show("An error occurred while trying to display the difference map.", "Error", Windows.Forms.MessageBoxButtons.OK)
+            System.Windows.Forms.MessageBox.Show("An error occurred while trying to display the difference map.", "Error",
+                                                 System.Windows.Forms.MessageBoxButtons.OK)
             Debug.Print("OnClick" & ex.Message)
         End Try
         Dim Basin_Name As String = ""

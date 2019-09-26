@@ -1,4 +1,6 @@
-﻿Public Class BtnGenerateMaps
+﻿Imports System.Windows.Forms
+
+Public Class BtnGenerateMaps
     Inherits ESRI.ArcGIS.Desktop.AddIns.Button
 
     Public Sub New()
@@ -11,8 +13,8 @@
             frmGeneratemaps.ShowDialog()
         Catch ex As Exception
             'Debug.Print("BtnGenerateMaps.OnClick Exception: " & ex.Message)
-            Windows.Forms.MessageBox.Show("BtnGenerateMaps.OnClick Exception: " & ex.Message)
-            Windows.Forms.MessageBox.Show("An error occurred while trying to open the Generate Maps menu.", "Unable to open menu", Windows.Forms.MessageBoxButtons.OK)
+            MessageBox.Show("BtnGenerateMaps.OnClick Exception: " & ex.Message)
+            MessageBox.Show("An error occurred while trying to open the Generate Maps menu.", "Unable to open menu", MessageBoxButtons.OK)
         End Try
     End Sub
     Public WriteOnly Property SelectedProperty As Boolean

@@ -4,7 +4,6 @@ Imports ESRI.ArcGIS.Carto
 Imports ESRI.ArcGIS.Geometry
 Imports ESRI.ArcGIS.Display
 Imports System.Windows.Forms
-Imports System.Text
 Imports ESRI.ArcGIS.Geodatabase
 Imports ESRI.ArcGIS.esriSystem
 
@@ -12,7 +11,7 @@ Public Class SelectSiteTool
     Inherits ESRI.ArcGIS.Desktop.AddIns.Tool
 
     Public Sub New()
-        Me.Cursor = Windows.Forms.Cursors.Cross
+        Me.Cursor = System.Windows.Forms.Cursors.Cross
     End Sub
 
     Protected Overrides Sub OnUpdate()

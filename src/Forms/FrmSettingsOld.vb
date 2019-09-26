@@ -749,7 +749,7 @@ AbandonSub:
             sb.Append(vbCrLf)
             sb.Append("Do you still wish to save the settings ?")
             Dim res As DialogResult = MessageBox.Show(sb.ToString, "Projection mismatch", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-            If res <> Windows.Forms.DialogResult.Yes Then
+            If res <> DialogResult.Yes Then
                 Exit Sub
             End If
         End If

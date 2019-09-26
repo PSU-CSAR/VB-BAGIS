@@ -923,7 +923,7 @@ Public Class frmSettings
             sb.Append(vbCrLf)
             sb.Append("Do you still wish to save the settings ?")
             Dim res As DialogResult = MessageBox.Show(sb.ToString, "Projection mismatch", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-            If res <> Windows.Forms.DialogResult.Yes Then
+            If res <> DialogResult.Yes Then
                 Exit Sub
             End If
         End If
@@ -1268,7 +1268,7 @@ Public Class frmSettings
                     Dim result As DialogResult = MessageBox.Show("The terrain reference layer already exists at " & terrainPath & "." & _
                                                                  vbCrLf & "Do you wish to download the default layer and overwrite the existing layer definition?", _
                                                                  "Terrain layer", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-                    If result <> Windows.Forms.DialogResult.Yes Then
+                    If result <> DialogResult.Yes Then
                         'Set the path to the file the user wants to keep
                         txtTerrain.Text = terrainPath
                         copyFile = False

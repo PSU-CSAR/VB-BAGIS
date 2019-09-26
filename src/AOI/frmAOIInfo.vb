@@ -39,7 +39,7 @@ Public Class frmAOIInfo
         Dim response As Integer
 
         If BA_Enable_SAExtension(My.ArcMap.Application) <> ESRI.ArcGIS.esriSystem.esriExtensionState.esriESEnabled Then
-            Windows.Forms.MessageBox.Show("Spatial Analyst is required for BAGIS and is not available. Program stopped.")
+            MessageBox.Show("Spatial Analyst is required for BAGIS and is not available. Program stopped.")
             Exit Sub
         End If
 

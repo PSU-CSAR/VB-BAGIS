@@ -23,7 +23,7 @@ Public Class BtnAOIfromShapefile
         Dim data_fullname As String = ""
 
         If BA_Enable_SAExtension(My.ArcMap.Application) <> ESRI.ArcGIS.esriSystem.esriExtensionState.esriESEnabled Then
-            Windows.Forms.MessageBox.Show("Spatial Analyst is required for BAGIS and is not available. Program stopped.")
+            MessageBox.Show("Spatial Analyst is required for BAGIS and is not available. Program stopped.")
             Exit Sub
         End If
 

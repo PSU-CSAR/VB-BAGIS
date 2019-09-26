@@ -176,16 +176,16 @@ Partial Class FrmPublishMapPackage
         Me.PerformLayout()
 
     End Sub
-    Friend WithEvents Label2 As Windows.Forms.Label
-    Friend WithEvents txtExportFolder As Windows.Forms.TextBox
-    Friend WithEvents CmdPublish As Windows.Forms.Button
-    Friend WithEvents TextBox1 As Windows.Forms.TextBox
-    Friend WithEvents TxtPublisher As Windows.Forms.TextBox
-    Friend WithEvents Label3 As Windows.Forms.Label
-    Friend WithEvents TxtComments As Windows.Forms.TextBox
-    Friend WithEvents Label4 As Windows.Forms.Label
-    Friend WithEvents CmdCancel As Windows.Forms.Button
-    Friend WithEvents DataGridView1 As Windows.Forms.DataGridView
-    Friend WithEvents file_name As Windows.Forms.DataGridViewTextBoxColumn
-    Friend WithEvents Published As Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents Label2 As System.Windows.Forms.Label
+    Friend WithEvents txtExportFolder As System.Windows.Forms.TextBox
+    Friend WithEvents CmdPublish As System.Windows.Forms.Button
+    Friend WithEvents TextBox1 As System.Windows.Forms.TextBox
+    Friend WithEvents TxtPublisher As System.Windows.Forms.TextBox
+    Friend WithEvents Label3 As System.Windows.Forms.Label
+    Friend WithEvents TxtComments As System.Windows.Forms.TextBox
+    Friend WithEvents Label4 As System.Windows.Forms.Label
+    Friend WithEvents CmdCancel As System.Windows.Forms.Button
+    Friend WithEvents DataGridView1 As System.Windows.Forms.DataGridView
+    Friend WithEvents file_name As System.Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents Published As System.Windows.Forms.DataGridViewTextBoxColumn
 End Class
