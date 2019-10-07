@@ -1184,7 +1184,7 @@ Public Class FrmPsuedoSite
                 sb.Remove(sb.ToString().LastIndexOf("; "), "; ".Length)
                 outFeaturesPath = m_analysisFolder + "\tmpMerge"
                 lstVectorsToDelete.Add(outFeaturesPath)
-                success = BA_MergeFeatures(sb.ToString, outFeaturesPath, snapRasterPath)
+                success = BA_Intersect(sb.ToString, outFeaturesPath)
             End If
             If success = BA_ReturnCode.Success Then
                 success = BA_Feature2RasterGP(outFeaturesPath, m_analysisFolder + "\" + m_proximityLayer, BA_FIELD_PSITE, m_cellSize, snapRasterPath)
