@@ -221,7 +221,7 @@ Module BAGIS_SettingsModule
                 Dim pFields As IFields = Nothing
                 Dim aField As IField
                 Dim FieldIndex As Integer
-                Dim aoiIdField As String = BA_AOI_IDField
+                Dim aoiIdField As String = BA_Field_awdb_id
 
                 wType = BA_GetWorkspaceTypeFromPath(SettingsForm.txtGaugeStation.Text)
                 valid1 = BA_VerifyUrl(SettingsForm.txtGaugeStation.Text, checkedUrls)
@@ -234,7 +234,7 @@ Module BAGIS_SettingsModule
                             FileExists = BA_Shapefile_Exists(TempPathName)
                         ElseIf wType = WorkspaceType.FeatureServer Then
                             FileExists = BA_File_Exists(SettingsForm.txtGaugeStation.Text, wType, esriDatasetType.esriDTFeatureClass)
-                            aoiIdField = BA_AOI_IDFieldFeatService
+                            aoiIdField = BA_Field_stationtriplet
                         End If
                     End If
                 Else

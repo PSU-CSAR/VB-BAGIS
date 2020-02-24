@@ -1669,7 +1669,7 @@ ErrorHandler:
                 pFClass.AddField(pFld)
             End If
 
-            FIDName = BA_AOI_IDField
+            FIDName = BA_Field_awdb_id
             FID_Index = pFClass.FindField(FIDName)
 
             'Ver1E Update - to handle the forecast point id

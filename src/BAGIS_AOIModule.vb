@@ -343,20 +343,21 @@ Module BAGIS_AOIModule
         Dim FieldIndex As Integer = 0
         Dim pFld As IFieldEdit2 = Nothing
 
-        Dim FName(7) As String
+        Dim FName(8) As String
         FName(1) = BA_AOIShapeAreaField
         FName(2) = BA_AOIShapeUnitField
         FName(3) = BA_AOIRefAreaField
         FName(4) = BA_AOIRefUnitField
         FName(5) = "AOI_SQMI"
         FName(6) = "BASIN"
-        FName(7) = BA_AOI_IDField 'Ver1E update - this module was modified to handle the extra att field
+        FName(7) = BA_Field_awdb_id 'Ver1E update - this module was modified to handle the extra att field
+        FName(8) = BA_Field_stationtriplet 'V3 update - stationTriplet is preferred AOI ID and available in web service
 
         Dim pFCursor As IFeatureCursor = Nothing
         Dim pFeature As IFeature = Nothing
 
         Try
-            For i As Integer = 1 To 7
+            For i As Integer = 1 To 8
                 'check if field exist
                 FieldIndex = pFClass.FindField(FName(i))
 
@@ -374,7 +375,7 @@ Module BAGIS_AOIModule
                             pFld.Type_2 = esriFieldType.esriFieldTypeString
                             pFld.Length_2 = 15
                             pFld.Required_2 = 0
-                        Case 6, 7 'basin name, aoi_id
+                        Case 6, 7, 8 'basin name, awdb_id, stationTriplet
                             pFld.Type_2 = esriFieldType.esriFieldTypeString
                             pFld.Length_2 = 30
                             pFld.Required_2 = 0
@@ -388,7 +389,8 @@ Module BAGIS_AOIModule
             'update value
             ' Get field index again
             Dim FI1 As Integer, FI2 As Integer, FI3 As Integer
-            Dim FI4 As Integer, FI5 As Integer, FI6 As Integer, FI7 As Integer
+            Dim FI4 As Integer, FI5 As Integer, FI6 As Integer, FI7 As Integer, FI8 As Integer
+
 
             FI1 = pFClass.FindField(FName(1))
             FI2 = pFClass.FindField(FName(2))
@@ -397,6 +399,7 @@ Module BAGIS_AOIModule
             FI5 = pFClass.FindField(FName(5))
             FI6 = pFClass.FindField(FName(6))
             FI7 = pFClass.FindField(FName(7))
+            FI8 = pFClass.FindField(FName(8))
 
             pFCursor = pFClass.Update(Nothing, False)
             comReleaser.ManageLifetime(pFCursor)
@@ -410,13 +413,14 @@ Module BAGIS_AOIModule
                 pFeature.Value(FI5) = 0 'no value is provided
                 pFeature.Value(FI6) = BA_GetBareName(BasinFolderBase)
                 pFeature.Value(FI7) = BA_AOI_Forecast_ID 'the unique id of the forecast point 
+                pFeature.Value(FI8) = BA_StationTriplet 'the station triplet for forecast point 
                 pFCursor.UpdateFeature(pFeature)
                 pFeature = pFCursor.NextFeature
                 return_value = return_value + 1
             Loop
 
         Catch ex As Exception
-
+            Debug.Print("BA_UpdatePPAttributes Exception: " + ex.Message)
         Finally
             ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFeature)
             ESRI.ArcGIS.ADF.ComReleaser.ReleaseCOMObject(pFCursor)
