@@ -19,6 +19,7 @@ Module BAGIS_PublicVariablesModule
     Public BA_Network_Available As String  'computer connected to network ?
     Public BA_Last_PseudoSite As PseudoSite
     Public BA_StationTriplet As String
+    Public BA_StationName As String
 
     'Basin Layer Names
     Public BasinLayerDisplayNames(0 To 7) As String
@@ -77,6 +78,7 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_Field_awdb_id = "awdb_id"
     Public Const BA_Field_usgs_id = "usgs_id"
     Public Const BA_Field_stationtriplet = "stationTriplet"
+    Public Const BA_Field_stationname = "stationName"
 
     'analysis output data names
     Public Const BA_RasterElevationZones = "elevzone"

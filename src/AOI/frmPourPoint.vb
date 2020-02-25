@@ -152,6 +152,7 @@ Public Class frmPourPoint
                 'FGDB will continue to use the awdb_id
                 'The web service will record both the usgs_id field (same data as awdb_id) and the stationTriplet
                 'but will only show an error if the station
+                BA_StationName = AOIName
                 If wType <> WorkspaceType.FeatureServer Then
                     awdb_id_field = BA_Field_awdb_id
                 Else
@@ -187,7 +188,7 @@ Public Class frmPourPoint
         'check the length of aoi folder name, it cannot exceed 80 characters
         If Len(AOIName) >= 71 Then 'the base name is too long
             AOIName = Microsoft.VisualBasic.Left(AOIName, 50)
-            MsgBox("AOI folder name is too long and is truncated by the program." & vbCrLf & "ArcInfo doesn't allow the name of any folder to exceed 80 characters.")
+            MsgBox("AOI folder name is too long and is truncated by the program." & vbCrLf & "ArcMap doesn't allow the name of any folder to exceed 80 characters.")
         End If
 
         'pad an underbar before the Datestring if it doesn't already have one
