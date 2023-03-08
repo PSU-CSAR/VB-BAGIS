@@ -1255,7 +1255,7 @@ Public Class frmSettings
             progressDialog2.Animation = esriProgressAnimationTypes.esriProgressSpiral
             pStepProg.Hide()    'Don't use step progressor
             progressDialog2.ShowDialog()
-            Dim defaultSettings As Settings = BA_QueryDefaultSettings(BA_WebServerName)
+            Dim defaultSettings As Settings = BA_QueryDefaultSettings()
             If defaultSettings IsNot Nothing Then
                 Dim warningSb As StringBuilder = New StringBuilder()
                 warningSb.Append("WARNING!")
@@ -1275,7 +1275,7 @@ Public Class frmSettings
                     End If
                 End If
                 If copyFile = True Then
-                    Dim success As BA_ReturnCode = DownloadLyrFile(BA_WebServerName, terrainPath)
+                    Dim success As BA_ReturnCode = DownloadLyrFile(terrainPath)
                     'If BA_File_ExistsWindowsIO(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer)) Then
 
                     '    IO.File.Copy(BA_GetAddInDirectory() & BA_EnumDescription(PublicPath.TerrainLayer), BA_Settings_Filepath & BA_EnumDescription(PublicPath.TerrainLayer), True)
@@ -1590,9 +1590,10 @@ Public Class frmSettings
         End Try
     End Sub
 
-    Private Function DownloadLyrFile(ByVal webserviceUrl As String, ByVal outputFilePath As String) As BA_ReturnCode
+    Private Function DownloadLyrFile(ByVal outputFilePath As String) As BA_ReturnCode
         Try
-            Dim downloadUri As Uri = New Uri(webserviceUrl & "/api/rest/desktop/lyr/")
+            'Dim downloadUri As Uri = New Uri(webserviceUrl & "/api/rest/desktop/lyr/")
+            Dim downloadUri As Uri = New Uri("https://github.com/PSU-CSAR/bagis-conf/raw/main/BAGIS_Reference_Maps.lyr")
             Dim lyrDownload As New LayerDownload()
             lyrDownload.downLoadUrl = downloadUri.AbsoluteUri
             lyrDownload.downloadFolder = outputFilePath
