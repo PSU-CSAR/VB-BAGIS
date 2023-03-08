@@ -83,6 +83,11 @@ Public Class frmPourPoint
         End If
     End Sub
 
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="sender"></param>
+    ''' <param name="e"></param>
     Private Sub CmdSelect_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdSelect.Click
         'get today's date string in mmddyy format, e.g., 113009
         Dim DateString As String
@@ -139,15 +144,36 @@ Public Class frmPourPoint
                 AOI_ReferenceArea = CDbl(BA_QueryAttributeTable(pourpointRef, _
                                                                 BA_SystemSettings.PourPointField, _
                                                                 AOIName, BA_STRING_ATTRIBUTE, BA_SystemSettings.PourAreaField))
-                Dim aoiIdField As String = BA_AOI_IDField
-                If BA_GetWorkspaceTypeFromPath(BA_SystemSettings.PourPointLayer) = WorkspaceType.FeatureServer Then
-                    aoiIdField = BA_AOI_IDFieldFeatService
+                Dim missingField As String = ""
+                Dim awdb_id_field As String = BA_Field_usgs_id
+                Dim wType As WorkspaceType = BA_GetWorkspaceTypeFromPath(BA_SystemSettings.PourPointLayer)
+                'After migrating to the stations_USGS_ACTIVE, we have some new options available for the AOI Id
+                'NWCC prefers to use the stationTriplet which is not available from the older FGDB pourpoint layers
+                'FGDB will continue to use the awdb_id
+                'The web service will record both the usgs_id field (same data as awdb_id) and the stationTriplet
+                'but will only show an error if the station
+                BA_StationName = AOIName
+                If wType <> WorkspaceType.FeatureServer Then
+                    awdb_id_field = BA_Field_awdb_id
+                Else
+                    BA_StationTriplet = Convert.ToString(BA_QueryAttributeTable(pourpointRef,
+                                     BA_SystemSettings.PourPointField,
+                                     AOIName, BA_STRING_ATTRIBUTE, BA_Field_stationtriplet))
                 End If
-                BA_AOI_Forecast_ID = CStr(BA_QueryAttributeTable(pourpointRef, _
-                                                                 BA_SystemSettings.PourPointField, _
-                                                                 AOIName, BA_STRING_ATTRIBUTE, aoiIdField))
-                If BA_AOI_Forecast_ID = "0" Or BA_AOI_Forecast_ID = "" Then 'invalid id
-                    MsgBox("WARNING!!!" & vbCrLf & "The attribute table of the forecast point layer does not contain valid data in " & BA_AOI_IDField & ".")
+                BA_AOI_Forecast_ID = CStr(BA_QueryAttributeTable(pourpointRef,
+                                                                 BA_SystemSettings.PourPointField,
+                                                                 AOIName, BA_STRING_ATTRIBUTE, awdb_id_field))
+                If wType = WorkspaceType.FeatureServer Then
+                    If (String.IsNullOrEmpty(BA_StationTriplet)) Then
+                        missingField = BA_Field_stationtriplet
+                    End If
+                Else
+                    If BA_AOI_Forecast_ID = "0" Or BA_AOI_Forecast_ID = "" Then 'invalid id
+                        missingField = awdb_id_field
+                    End If
+                End If
+                If Not String.IsNullOrEmpty(missingField) Then 'invalid id
+                    MsgBox("WARNING!!!" & vbCrLf & "The attribute table of the forecast point layer does not contain valid data in " & missingField & "!")
                 End If
             End If
         End If
@@ -162,7 +188,7 @@ Public Class frmPourPoint
         'check the length of aoi folder name, it cannot exceed 80 characters
         If Len(AOIName) >= 71 Then 'the base name is too long
             AOIName = Microsoft.VisualBasic.Left(AOIName, 50)
-            MsgBox("AOI folder name is too long and is truncated by the program." & vbCrLf & "ArcInfo doesn't allow the name of any folder to exceed 80 characters.")
+            MsgBox("AOI folder name is too long and is truncated by the program." & vbCrLf & "ArcMap doesn't allow the name of any folder to exceed 80 characters.")
         End If
 
         'pad an underbar before the Datestring if it doesn't already have one
@@ -270,7 +296,11 @@ ReEnter:
         Dim CreatAOIButton = AddIn.FromID(Of BtnCreateAOI)(My.ThisAddIn.IDs.BtnCreateAOI)
         SetPourPointtool.selectedProperty = True
         CreatAOIButton.selectedProperty = True
-        MsgBox("Please select a pourpoint location and then create the AOI! ID: " & BA_AOI_Forecast_ID)
+        Dim strMessageId = BA_AOI_Forecast_ID
+        If Not String.IsNullOrEmpty(BA_StationTriplet) Then
+            strMessageId = BA_StationTriplet
+        End If
+        MsgBox("Please select a pourpoint location and then create the AOI! ID: " & strMessageId)
     End Sub
 
     Private Sub CmdExit_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CmdExit.Click

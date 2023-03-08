@@ -18,6 +18,8 @@ Module BAGIS_PublicVariablesModule
     Public BA_AOI_Forecast_ID As String 'Ver1E Update
     Public BA_Network_Available As String  'computer connected to network ?
     Public BA_Last_PseudoSite As PseudoSite
+    Public BA_StationTriplet As String
+    Public BA_StationName As String
 
     'Basin Layer Names
     Public BasinLayerDisplayNames(0 To 7) As String
@@ -72,9 +74,11 @@ Module BAGIS_PublicVariablesModule
     Public Const BA_AOIShapeUnitField = "AOISHPUNIT"
     Public Const BA_AOIRefAreaField = "AOIREFAREA"
     Public Const BA_AOIRefUnitField = "AOIREFUNIT"
-    'Ver1E update - new field to be added to pourpoin and aoi layers
-    Public Const BA_AOI_IDField = "awdb_id"
-    Public Const BA_AOI_IDFieldFeatService = "usgs_id"
+    'Ver1E update - new field to be added to pourpoint and aoi layers
+    Public Const BA_Field_awdb_id = "awdb_id"
+    Public Const BA_Field_usgs_id = "usgs_id"
+    Public Const BA_Field_stationtriplet = "stationTriplet"
+    Public Const BA_Field_stationname = "stationName"
 
     'analysis output data names
     Public Const BA_RasterElevationZones = "elevzone"

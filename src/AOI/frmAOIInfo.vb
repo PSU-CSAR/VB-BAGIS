@@ -988,11 +988,14 @@ Public Class frmAOIInfo
         data_type = pDatasetName.Type
 
         'Set Data Type Name from Data Type
+        Dim clippedLayerType As esriDatasetType
         Select Case data_type
             Case 4, 5 'shapefile
                 data_type_code = 1
+                clippedLayerType = esriDatasetType.esriDTFeatureClass
             Case 12, 13 'raster
                 data_type_code = 2
+                clippedLayerType = esriDatasetType.esriDTRasterDataset
             Case Else 'unsupported format
                 data_type_code = 0
         End Select
@@ -1006,14 +1009,14 @@ Public Class frmAOIInfo
 
         'allow user to specify a different output name
         Dim outlayername As String
-        outlayername = InputBox("Set output layer name (please don't use space in the name):", "Clip Layer to AOI", Data_Name)
+        outlayername = InputBox("Set output layer name (please don't use space in the name):", "Clip Layer to AOI", Path.GetFileNameWithoutExtension(Data_Name))
 
         If String.IsNullOrEmpty(outlayername) Then 'user cancelled the action
             Exit Sub
         End If
 
         ' Create/configure a step progressor
-        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 4)
+        Dim pStepProg As IStepProgressor = BA_GetStepProgressor(My.ArcMap.Application.hWnd, 5)
         Dim progressDialog2 As IProgressDialog2 = Nothing
         If data_type_code = 1 Then
             progressDialog2 = BA_GetProgressDialog(pStepProg, "Adding the vector layer ", "Adding...")
@@ -1024,8 +1027,22 @@ Public Class frmAOIInfo
         progressDialog2.ShowDialog()
         pStepProg.Step()
 
-        'check if a layer of the same name exist
+        ' Validate output file name
         Try
+            Dim outputFolder As String = m_aoi.FilePath & "\" & BA_EnumDescription(GeodatabaseNames.Layers)
+            Dim validTableName As String = BA_ValidateTableName(outputFolder, outlayername)
+            If String.IsNullOrEmpty(validTableName) Then
+                MessageBox.Show("!!The output layer name you provided was not valid. Clipping aborted!!", "BAGIS V3")
+            ElseIf (Not validTableName.Equals(outlayername)) Then
+                Dim res As DialogResult = MessageBox.Show("!! The output layer name you provided was not valid. BAGIS suggests '" + validTableName + "'. Do you wish to continue?",
+                                                      "BAGIS V3", MessageBoxButtons.YesNo)
+                If Not res = DialogResult.Yes Then
+                    Exit Sub
+                End If
+            End If
+
+            pStepProg.Step()
+            'check if a layer of the same name exist
             Dim Layer_Exist As Boolean = False
             If data_type_code = 1 Then 'shapefile
                 For i As Integer = 0 To LstVectors.Items.Count - 1
@@ -1050,7 +1067,7 @@ Public Class frmAOIInfo
 
             If Layer_Exist Then
                 'MsgBox(outlayername & " already exists in the AOI! Please Choose another name.")
-                Throw New Exception(vbCrLf + outlayername + " is already exists")
+                Throw New Exception(vbCrLf + outlayername + " already exists")
             End If
             'confirm the selection
             'response = MsgBox("Clip " & Data_Name & " to the AOI?" & vbCrLf & "Output: " & outlayername, vbYesNo)
@@ -1058,7 +1075,6 @@ Public Class frmAOIInfo
 
             'prepare for data clipping
             Dim response As Integer
-            Dim outputFolder As String = m_aoi.FilePath & "\" & BA_EnumDescription(GeodatabaseNames.Layers)
             If data_type_code = 1 Then 'clip shapefile
                 response = BA_ClipAOIVector(m_aoi.FilePath, data_fullname, outlayername, outputFolder, True)
                 If response <= 0 Then
