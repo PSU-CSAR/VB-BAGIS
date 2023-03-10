@@ -1068,7 +1068,7 @@ Module BAGIS_SettingsModule
 
     Public Function BA_QueryDefaultSettings() As Settings
         'webserviceUrl = webserviceUrl & "/api/rest/desktop/settings/"
-        Dim webserviceUrl As String = "https://github.com/PSU-CSAR/bagis-conf/raw/main/settings/bagis.json"
+        Dim webserviceUrl As String = "https://github.com/PSU-CSAR/bagis-pro/raw/master/Settings/bagis.json"
         Dim req As System.Net.WebRequest = System.Net.WebRequest.Create(webserviceUrl)
         Try
             Dim settings = New Settings()

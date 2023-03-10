@@ -1593,7 +1593,7 @@ Public Class frmSettings
     Private Function DownloadLyrFile(ByVal outputFilePath As String) As BA_ReturnCode
         Try
             'Dim downloadUri As Uri = New Uri(webserviceUrl & "/api/rest/desktop/lyr/")
-            Dim downloadUri As Uri = New Uri("https://github.com/PSU-CSAR/bagis-conf/raw/main/BAGIS_Reference_Maps.lyr")
+            Dim downloadUri As Uri = New Uri("https://github.com/PSU-CSAR/vb-bagis/raw/master/src/BAGIS_Reference_Maps.lyr")
             Dim lyrDownload As New LayerDownload()
             lyrDownload.downLoadUrl = downloadUri.AbsoluteUri
             lyrDownload.downloadFolder = outputFilePath
