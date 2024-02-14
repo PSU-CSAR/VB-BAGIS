@@ -321,11 +321,12 @@ Module BAGIS_SettingsModule
                         Next
                     End If
 
+                    'Disable error message for basinarea field. This field is no longer available on the gauge stations web service
                     If linestring1 = "No data" Then
                         SettingsForm.ComboStationArea.SelectedIndex = 0
                     Else
                         If FieldIndex <= 0 Then
-                            return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring1 & " is not in " & TempPathName
+                            'return_message = return_message & vbCrLf & "Attribute Field Missing: " & linestring1 & " is not in " & TempPathName
                             SettingsForm.ComboStationArea.SelectedIndex = 0
                         Else
                             SettingsForm.ComboStationArea.SelectedIndex = FieldIndex

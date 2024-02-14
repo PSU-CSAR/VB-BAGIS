@@ -1402,9 +1402,10 @@ Public Class frmSettings
                                 End If
                             End If
                         Next
-                        If foundIt = False Then
-                            warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.gaugeStationArea & " is not in gauge station data")
-                        End If
+                        'Disable warning for gaugeStationArea. We are no longer maintaining this data in the service
+                        'If foundIt = False Then
+                        '    warningSb.Append(vbCrLf & "Attribute Field Missing: " & defaultSettings.gaugeStationArea & " is not in gauge station data")
+                        'End If
                         foundIt = False
 
                         'Areal units; The combo box is loaded when the form loads
